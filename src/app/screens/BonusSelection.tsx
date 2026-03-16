@@ -1,0 +1,64 @@
+import { useNavigate, useLocation } from "react-router";
+import { Gift, X } from "lucide-react";
+import { BrutalistCard } from "../components/BrutalistCard";
+import { Navigation } from "../components/Navigation";
+
+export function BonusSelection() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const peopleCount = location.state?.peopleCount || 1;
+
+  const handleJoinBonus = () => {
+    navigate("/bonus-guide", { state: { peopleCount } });
+  };
+  const handleSkipBonus = () => {
+    navigate("/templates", { state: { peopleCount, joinedBonus: false } });
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-100">
+      <Navigation currentStep={2} totalSteps={5} />
+
+      <div className="flex items-center justify-center min-h-screen p-8 pt-32">
+        <div className="max-w-7xl w-full">
+          <div className="text-center mb-16">
+            <h1 className="text-6xl font-bold mb-6">Bonus Activity</h1>
+            <p className="text-3xl text-gray-700">
+              Would you like to join our special bonus activity?
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-5xl mx-auto">
+            <BrutalistCard
+              interactive
+              onClick={handleJoinBonus}
+              className="flex flex-col items-center justify-center text-center p-16 min-h-[450px] hover:scale-105"
+            >
+              <div className="w-32 h-32 bg-black rounded-full flex items-center justify-center mb-8 border-4 border-black">
+                <Gift size={64} className="text-white" strokeWidth={3} />
+              </div>
+              <h2 className="text-5xl font-bold mb-6">Join Bonus</h2>
+              <p className="text-2xl text-gray-600">
+                Participate in our special activity and win prizes!
+              </p>
+            </BrutalistCard>
+
+            <BrutalistCard
+              interactive
+              onClick={handleSkipBonus}
+              className="flex flex-col items-center justify-center text-center p-16 min-h-[450px] hover:scale-105"
+            >
+              <div className="w-32 h-32 bg-white border-4 border-black rounded-full flex items-center justify-center mb-8">
+                <X size={64} className="text-black" strokeWidth={3} />
+              </div>
+              <h2 className="text-5xl font-bold mb-6">Skip Bonus</h2>
+              <p className="text-2xl text-gray-600">
+                Continue directly to template selection
+              </p>
+            </BrutalistCard>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
