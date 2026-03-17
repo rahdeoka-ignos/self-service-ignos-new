@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router";
-import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 import { BrutalistCard } from "../components/BrutalistCard";
 import { BrutalistButton } from "../components/BrutalistButton";
 import { Navigation } from "../components/Navigation";
@@ -8,6 +7,7 @@ import { ImageWithFallback } from "../components/figma/ImageWithFallback";
 import { Check } from "lucide-react";
 import { generatePrint } from "../../utils/print4r";
 import { ButtonTemplate } from "../components/ButtonTemplate";
+import { SlotImage } from "../components/SlotImage";
 
 type Template = {
   background: string;
@@ -23,7 +23,6 @@ export function PhotoArrangement() {
   const joinedBonus = location.state?.joinedBonus || false;
 
   let totalPrint = peopleCount;
-
   if (joinedBonus) {
     if (peopleCount <= 3) {
       totalPrint = peopleCount * 2;
@@ -53,10 +52,8 @@ export function PhotoArrangement() {
   useEffect(() => {
     const cached = sessionStorage.getItem("gallery");
     if (cached) {
-      // ✅ Langsung pakai cache, tidak perlu tunggu
       setPhotoGallery(JSON.parse(cached));
     } else {
-      // Fallback jika cache belum ada
       fetch("http://localhost:5000/api/photos")
         .then((res) => res.json())
         .then((data) => {
@@ -84,15 +81,11 @@ export function PhotoArrangement() {
 
   const handlePhotoClick = (photo: { thumb: string; full: string }) => {
     preloadImage(photo.full);
-
-    // Cari slot pertama yang kosong
     const currentSlots = filledSlots[activeTemplate] || {};
     const emptySlot = Array.from({ length: totalSlots }, (_, i) => i + 1).find(
       (slotNum) => !currentSlots[slotNum],
     );
-
     if (emptySlot !== undefined) {
-      // Langsung isi slot kosong pertama
       setFilledSlots((prev) => ({
         ...prev,
         [activeTemplate]: {
@@ -101,14 +94,12 @@ export function PhotoArrangement() {
         },
       }));
     } else {
-      // Semua slot penuh, pilih manual
       setSelectedPhoto(photo.full);
     }
   };
 
   const handleSlotClick = (slotNumber: number) => {
     if (!selectedPhoto) return;
-
     setFilledSlots((prev) => ({
       ...prev,
       [activeTemplate]: {
@@ -116,53 +107,29 @@ export function PhotoArrangement() {
         [slotNumber]: selectedPhoto,
       },
     }));
-
-    setSelectedPhoto(null); // tetap sama
+    setSelectedPhoto(null);
   };
 
-  // Tambah ref untuk mengukur slot
   const slotRef = useRef<HTMLDivElement>(null);
 
-  // Ambil ukuran slot saat render
+  // Simpan ukuran slot per templateIndex
   const [uiSlotSizes, setUiSlotSizes] = useState<{
     [templateIndex: number]: { w: number; h: number };
   }>({});
 
+  // Ukur slot setiap kali layout atau template aktif berubah
   useEffect(() => {
-    setTimeout(() => {
+    const timeout = setTimeout(() => {
       if (slotRef.current) {
         const rect = slotRef.current.getBoundingClientRect();
-        // ✅ simpan per activeTemplate, bukan global
         setUiSlotSizes((prev) => ({
           ...prev,
           [activeTemplate]: { w: rect.width, h: rect.height },
         }));
       }
-    }, 50);
-  }, [filledSlots, activeTemplate]);
-
-  // PENTING NI BOS
-
-  useEffect(() => {
-    setTimeout(() => {
-      if (slotRef.current) {
-        const rect = slotRef.current.getBoundingClientRect();
-        console.log(
-          "UI slot W:",
-          rect.width,
-          "H:",
-          rect.height,
-          "ratio:",
-          rect.width / rect.height,
-        );
-        console.log("Canvas slot ratio:", 994 / 652);
-        setUiSlotSizes((prev) => ({
-          ...prev,
-          [activeTemplate]: { w: rect.width, h: rect.height },
-        }));
-      }
-    }, 50);
-  }, [filledSlots, activeTemplate]);
+    }, 100);
+    return () => clearTimeout(timeout);
+  }, [activeTemplate, activeLayout, filledSlots]);
 
   const handleDragStart = (e: React.DragEvent, photoUrl: string) => {
     e.dataTransfer.setData("photoUrl", photoUrl);
@@ -170,11 +137,8 @@ export function PhotoArrangement() {
 
   const handleDrop = (e: React.DragEvent, slotNumber: number) => {
     e.preventDefault();
-
     const photoUrl = e.dataTransfer.getData("photoUrl");
-
     if (!photoUrl) return;
-
     setFilledSlots((prev) => ({
       ...prev,
       [activeTemplate]: {
@@ -186,63 +150,6 @@ export function PhotoArrangement() {
 
   const allowDrop = (e: React.DragEvent) => {
     e.preventDefault();
-  };
-
-  const template = {
-    background: "/templates/bubble/background.png",
-    overlay: "/templates/bubble/overlay.png",
-  };
-
-  // console.log("BACKGROUND PATH:", template.background);
-  // console.log("OVERLAY PATH:", template.overlay);
-
-  const handlePrint = async () => {
-    try {
-      setPrinting(true);
-      for (let i = 0; i < templates.length; i++) {
-        const slotSize = uiSlotSizes[i] || { w: 0, h: 0 }; // ✅ per template
-        await generatePrint(filledSlots[i], {
-          layout: templates[i].layout,
-          background: templates[i].background,
-          frameOverlay: templates[i].overlay,
-          watermark: "IGNOS STUDIO",
-          transforms: slotTransforms[i],
-          uiSlotW: slotSize.w, // ✅
-          uiSlotH: slotSize.h, // ✅
-        });
-      }
-      setPrinted(true);
-      setSuccessOpen(true);
-    } catch (err) {
-      console.error("PRINT ERROR:", err);
-      alert("Print failed");
-    } finally {
-      setPrinting(false);
-    }
-  };
-
-  const handlePreviewPrint = async () => {
-    try {
-      const slotSize = uiSlotSizes[activeTemplate] || { w: 0, h: 0 }; // ✅
-      const url = await generatePrint(filledSlots[activeTemplate], {
-        layout: templates[activeTemplate].layout,
-        background: templates[activeTemplate].background,
-        frameOverlay: templates[activeTemplate].overlay,
-        watermark: "IGNOS STUDIO",
-        preview: true,
-        transforms: slotTransforms[activeTemplate],
-        uiSlotW: slotSize.w, // ✅
-        uiSlotH: slotSize.h, // ✅
-      });
-
-      if (url) {
-        setPreviewUrl(url);
-        setPreviewOpen(true);
-      }
-    } catch (err) {
-      console.error("PREVIEW ERROR:", err);
-      alert("Preview failed");
-    }
   };
 
   const [slotTransforms, setSlotTransforms] = useState<{
@@ -267,18 +174,52 @@ export function PhotoArrangement() {
     }));
   };
 
-  const [photoAspects, setPhotoAspects] = useState<{ [key: string]: number }>(
-    {},
-  );
+  const handlePrint = async () => {
+    try {
+      setPrinting(true);
+      for (let i = 0; i < templates.length; i++) {
+        const slotSize = uiSlotSizes[i] || { w: 0, h: 0 };
+        await generatePrint(filledSlots[i], {
+          layout: templates[i].layout,
+          background: templates[i].background,
+          frameOverlay: templates[i].overlay,
+          watermark: "IGNOS STUDIO",
+          transforms: slotTransforms[i],
+          uiSlotW: slotSize.w,
+          uiSlotH: slotSize.h,
+        });
+      }
+      setPrinted(true);
+      setSuccessOpen(true);
+    } catch (err) {
+      console.error("PRINT ERROR:", err);
+      alert("Print failed");
+    } finally {
+      setPrinting(false);
+    }
+  };
 
-  // Saat foto di-assign ke slot, load dan simpan aspectnya
-  const loadPhotoAspect = (src: string) => {
-    if (photoAspects[src]) return;
-    const img = new Image();
-    img.onload = () => {
-      setPhotoAspects((prev) => ({ ...prev, [src]: img.width / img.height }));
-    };
-    img.src = src;
+  const handlePreviewPrint = async () => {
+    try {
+      const slotSize = uiSlotSizes[activeTemplate] || { w: 0, h: 0 };
+      const url = await generatePrint(filledSlots[activeTemplate], {
+        layout: templates[activeTemplate].layout,
+        background: templates[activeTemplate].background,
+        frameOverlay: templates[activeTemplate].overlay,
+        watermark: "IGNOS STUDIO",
+        preview: true,
+        transforms: slotTransforms[activeTemplate],
+        uiSlotW: slotSize.w,
+        uiSlotH: slotSize.h,
+      });
+      if (url) {
+        setPreviewUrl(url);
+        setPreviewOpen(true);
+      }
+    } catch (err) {
+      console.error("PREVIEW ERROR:", err);
+      alert("Preview failed");
+    }
   };
 
   const canConfirm = templates.every((tpl, templateIndex) => {
@@ -292,6 +233,58 @@ export function PhotoArrangement() {
             : 6;
     return Object.keys(filledSlots[templateIndex] || {}).length === slots;
   });
+
+  // Helper render slot isi — sama untuk semua layout
+  const renderSlotContent = (slotNum: number) => {
+    const slotSize = uiSlotSizes[activeTemplate];
+    if (filledSlots[activeTemplate]?.[slotNum]) {
+      return (
+        <div className="relative w-full h-full group">
+          <SlotImage
+            src={filledSlots[activeTemplate][slotNum]}
+            slotW={slotSize?.w ?? 243}
+            slotH={slotSize?.h ?? 328}
+            transform={
+              slotTransforms[activeTemplate]?.[slotNum] ?? {
+                scale: 1,
+                x: 0,
+                y: 0,
+              }
+            }
+            onTransformChange={(t) =>
+              updateTransform(activeTemplate, slotNum, t.scale, t.x, t.y)
+            }
+          />
+          <button
+            className="absolute top-1 right-1 z-50 bg-red-500 hover:bg-red-600 text-white rounded-full w-7 h-7 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity border-2 border-white shadow-lg cursor-pointer"
+            onClick={(e) => {
+              e.stopPropagation();
+              setFilledSlots((prev) => {
+                const updated = { ...(prev[activeTemplate] || {}) };
+                delete updated[slotNum];
+                return { ...prev, [activeTemplate]: updated };
+              });
+              setSlotTransforms((prev) => {
+                const updated = { ...(prev[activeTemplate] || {}) };
+                delete updated[slotNum];
+                return { ...prev, [activeTemplate]: updated };
+              });
+            }}
+          >
+            ✕
+          </button>
+        </div>
+      );
+    }
+    return (
+      <div className="h-full bg-gray-100 flex flex-col items-center justify-center text-gray-400">
+        <div className="text-8xl font-bold mb-2">{slotNum}</div>
+        <p className="text-xl font-bold">
+          {selectedPhoto ? "Click to place" : "Empty Slot"}
+        </p>
+      </div>
+    );
+  };
 
   return (
     <div className="h-[100dvh] overflow-hidden bg-gray-100 flex flex-col">
@@ -323,7 +316,6 @@ export function PhotoArrangement() {
                       selected={selectedPhoto === photo.full}
                       onClick={() => handlePhotoClick(photo)}
                       className={`p-0 overflow-hidden cursor-pointer group ${
-                        // ✅ tambah group
                         selectedPhoto === photo.full ? "scale-95 border-8" : ""
                       }`}
                     >
@@ -344,12 +336,10 @@ export function PhotoArrangement() {
                           />
                         </div>
                       )}
-
-                      {/* ✅ Preview button - muncul saat hover */}
                       <button
                         className="absolute top-2 right-2 z-50 bg-white text-black text-base font-bold px-5 py-2 rounded-lg border-2 border-black opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black hover:text-white cursor-pointer"
                         onClick={(e) => {
-                          e.stopPropagation(); // ✅ jangan trigger handlePhotoClick
+                          e.stopPropagation();
                           setPreviewPhotoUrl(photo.full);
                           setPreviewPhotoOpen(true);
                         }}
@@ -366,7 +356,6 @@ export function PhotoArrangement() {
             <BrutalistCard className="col-span-3 h-fit pb-5 flex flex-col overflow-hidden">
               <div className="px-6">
                 <h2 className="text-3xl font-bold my-2">Template Layout</h2>
-
                 <div className="flex gap-3 overflow-x-auto pb-2">
                   {templates.map((tpl, index) => {
                     const isActive = activeTemplate === index;
@@ -375,7 +364,7 @@ export function PhotoArrangement() {
                         key={index}
                         onClick={() => setActiveTemplate(index)}
                         className={`text-lg px-4 py-2 whitespace-nowrap border-4 border-black transition-all cursor-pointer
-            ${isActive ? "bg-black text-white border-8" : "bg-transparent !text-black hover:bg-black hover:!text-white"}`}
+                          ${isActive ? "bg-black text-white border-8" : "bg-transparent !text-black hover:bg-black hover:!text-white"}`}
                       >
                         Template {index + 1}
                       </ButtonTemplate>
@@ -394,147 +383,53 @@ export function PhotoArrangement() {
                     />
 
                     {/* SLOT AREA */}
-                    {activeLayout === "1" ? (
-                      // ✅ Layout 1: slot 3:4 di-center horizontal, padding atas proporsional
-                      <div
-                        className="absolute inset-0 z-10 flex flex-col"
-                        style={{
-                          paddingTop: `${(60 / 1800) * 100}%`,
-                          paddingBottom: `${(60 / 1800) * 100}%`,
-                        }}
-                      >
-                        {/* Slot area: 86% tinggi */}
-                        <div
-                          className="flex justify-center"
-                          style={{ height: "86%" }}
-                        >
-                          {/* Lebar slot = tinggi * (3/4), sama seperti canvas */}
-                          <div
-                            className="h-full"
-                            style={{ aspectRatio: "3/4" }}
-                            ref={slotRef}
-                          >
-                            <BrutalistCard
-                              interactive
-                              onClick={() => handleSlotClick(1)}
-                              onDrop={(e) => handleDrop(e, 1)}
-                              onDragOver={allowDrop}
-                              className={`w-full h-full p-0 overflow-hidden shadow-none border-0 ${
-                                selectedPhoto
-                                  ? "cursor-pointer hover:scale-105 hover:border-8"
-                                  : ""
-                              }`}
-                            >
-                              {filledSlots[activeTemplate]?.[1] ? (
-                                <div className="relative w-full h-full overflow-hidden group">
-                                  {" "}
-                                  {/* ✅ hapus bg-black */}
-                                  <TransformWrapper
-                                    key={`${activeTemplate}-1-${filledSlots[activeTemplate][1]}`}
-                                    minScale={1}
-                                    maxScale={3}
-                                    limitToBounds={true}
-                                    centerOnInit={true} // ✅ auto center
-                                    wheel={{ step: 0.2 }}
-                                    doubleClick={{ disabled: true }}
-                                    panning={{ velocityDisabled: true }}
-                                    initialScale={
-                                      slotTransforms[activeTemplate]?.[1]
-                                        ?.scale || 1
-                                    }
-                                    initialPositionX={
-                                      slotTransforms[activeTemplate]?.[1]?.x ||
-                                      0
-                                    }
-                                    initialPositionY={
-                                      slotTransforms[activeTemplate]?.[1]?.y ||
-                                      0
-                                    }
-                                    onTransformed={(e) => {
-                                      updateTransform(
-                                        activeTemplate,
-                                        1,
-                                        e.state.scale,
-                                        e.state.positionX,
-                                        e.state.positionY,
-                                      );
-                                    }}
-                                  >
-                                    <TransformComponent
-                                      wrapperClass="!w-full !h-full"
-                                      contentClass="!w-full" // ✅ hapus !h-full
-                                    >
-                                      <div
-                                        className="w-full relative"
-                                        style={{ paddingBottom: "150%" }}
-                                      >
-                                        <ImageWithFallback
-                                          src={filledSlots[activeTemplate][1]}
-                                          alt="Slot 1"
-                                          className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none"
-                                          draggable={false}
-                                        />
-                                      </div>
-                                    </TransformComponent>
-                                  </TransformWrapper>
-                                  <button
-                                    className="absolute top-1 right-1 z-50 bg-red-500 hover:bg-red-600 text-white rounded-full w-7 h-7 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity border-2 border-white shadow-lg cursor-pointer"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setFilledSlots((prev) => {
-                                        const updated = {
-                                          ...(prev[activeTemplate] || {}),
-                                        };
-                                        delete updated[1];
-                                        return {
-                                          ...prev,
-                                          [activeTemplate]: updated,
-                                        };
-                                      });
-                                      setSlotTransforms((prev) => {
-                                        const updated = {
-                                          ...(prev[activeTemplate] || {}),
-                                        };
-                                        delete updated[1];
-                                        return {
-                                          ...prev,
-                                          [activeTemplate]: updated,
-                                        };
-                                      });
-                                    }}
-                                  >
-                                    ✕
-                                  </button>
-                                </div>
-                              ) : (
-                                <div className="h-full bg-gray-100 flex flex-col items-center justify-center text-gray-400">
-                                  <div className="text-8xl font-bold mb-2">
-                                    1
-                                  </div>
-                                  <p className="text-xl font-bold">
-                                    {selectedPhoto
-                                      ? "Click to place"
-                                      : "Empty Slot"}
-                                  </p>
-                                </div>
-                              )}
-                            </BrutalistCard>
-                          </div>
-                        </div>
-                      </div>
-                    ) : activeLayout === "4" ? (
-                      // ✅ Layout 4: posisi persis dari template 1066x1600
+
+                    {/* ── Layout 1 ── */}
+                    {activeLayout === "1" && (
                       <div
                         className="absolute inset-0 z-10"
                         style={{
                           paddingTop: `${(41 / 1600) * 100}%`,
-                          paddingBottom: `${((1600 - 41 - 652 * 2 - 26) / 1600) * 100}%`, // sisa bawah = branding
+                          paddingBottom: `${((1600 - 41 - 1320) / 1600) * 100}%`,
                           paddingLeft: `${(36 / 1066) * 100}%`,
                           paddingRight: `${(36 / 1066) * 100}%`,
                         }}
                       >
                         <div
-                          className="grid grid-cols-2 grid-rows-2 h-full"
+                          className="w-full"
+                          style={{ aspectRatio: "994/1320" }}
+                          ref={slotRef}
+                        >
+                          <BrutalistCard
+                            interactive
+                            onClick={() => handleSlotClick(1)}
+                            onDrop={(e) => handleDrop(e, 1)}
+                            onDragOver={allowDrop}
+                            className={`w-full h-full p-0 overflow-hidden shadow-none border-0 ${
+                              selectedPhoto
+                                ? "cursor-pointer hover:scale-105 hover:border-8"
+                                : ""
+                            }`}
+                          >
+                            {renderSlotContent(1)}
+                          </BrutalistCard>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* ── Layout 4 ── */}
+                    {activeLayout === "4" && (
+                      <div
+                        className="absolute inset-0 z-10"
+                        style={{
+                          paddingTop: `${(41 / 1600) * 100}%`,
+                          paddingBottom: `${((1600 - 41 - 652 * 2 - 26) / 1600) * 100}%`,
+                          paddingLeft: `${(36 / 1066) * 100}%`,
+                          paddingRight: `${(36 / 1066) * 100}%`,
+                        }}
+                      >
+                        <div
+                          className="grid grid-cols-2"
                           style={{
                             gap: `${(26 / 1600) * 100}% ${(26 / 1066) * 100}%`,
                           }}
@@ -544,8 +439,8 @@ export function PhotoArrangement() {
                               <div
                                 key={slotNum}
                                 ref={slotNum === 1 ? slotRef : undefined}
-                                className="h-full"
-                                // style={{ aspectRatio: "484/652" }} // ← tambahkan ini
+                                className="w-full"
+                                style={{ aspectRatio: "484/652" }}
                               >
                                 <BrutalistCard
                                   interactive
@@ -558,125 +453,38 @@ export function PhotoArrangement() {
                                       : ""
                                   }`}
                                 >
-                                  {filledSlots[activeTemplate]?.[slotNum] ? (
-                                    <div className="relative w-full h-full bg-black overflow-hidden group">
-                                      <TransformWrapper
-                                        key={`${activeTemplate}-${slotNum}-${filledSlots[activeTemplate][slotNum]}`}
-                                        minScale={1}
-                                        maxScale={3}
-                                        wheel={{ step: 0.2 }}
-                                        doubleClick={{ disabled: true }}
-                                        panning={{ velocityDisabled: true }}
-                                        initialScale={
-                                          slotTransforms[activeTemplate]?.[
-                                            slotNum
-                                          ]?.scale || 1
-                                        }
-                                        initialPositionX={
-                                          slotTransforms[activeTemplate]?.[
-                                            slotNum
-                                          ]?.x || 0
-                                        }
-                                        initialPositionY={
-                                          slotTransforms[activeTemplate]?.[
-                                            slotNum
-                                          ]?.y || 0
-                                        }
-                                        onTransformed={(e) => {
-                                          updateTransform(
-                                            activeTemplate,
-                                            slotNum,
-                                            e.state.scale,
-                                            e.state.positionX,
-                                            e.state.positionY,
-                                          );
-                                        }}
-                                      >
-                                        <TransformComponent
-                                          wrapperClass="!w-full !h-full"
-                                          contentClass="!w-full !h-full flex items-center justify-center">
-                                          <div className="relative h-full aspect-[484/652]">
-                                            <ImageWithFallback
-                                              src={
-                                                filledSlots[activeTemplate][
-                                                  slotNum
-                                                ]
-                                              }
-                                              alt={`Slot ${slotNum}`}
-                                              className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none"
-                                              draggable={false}
-                                            />
-                                          </div>
-                                        </TransformComponent>
-                                      </TransformWrapper>
-                                      <button
-                                        className="absolute top-1 right-1 z-50 bg-red-500 hover:bg-red-600 text-white rounded-full w-7 h-7 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity border-2 border-white shadow-lg cursor-pointer"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          setFilledSlots((prev) => {
-                                            const updated = {
-                                              ...(prev[activeTemplate] || {}),
-                                            };
-                                            delete updated[slotNum];
-                                            return {
-                                              ...prev,
-                                              [activeTemplate]: updated,
-                                            };
-                                          });
-                                          setSlotTransforms((prev) => {
-                                            const updated = {
-                                              ...(prev[activeTemplate] || {}),
-                                            };
-                                            delete updated[slotNum];
-                                            return {
-                                              ...prev,
-                                              [activeTemplate]: updated,
-                                            };
-                                          });
-                                        }}
-                                      >
-                                        ✕
-                                      </button>
-                                    </div>
-                                  ) : (
-                                    <div className="h-full bg-gray-100 flex flex-col items-center justify-center text-gray-400">
-                                      <div className="text-8xl font-bold mb-2">
-                                        {slotNum}
-                                      </div>
-                                      <p className="text-xl font-bold">
-                                        {selectedPhoto
-                                          ? "Click to place"
-                                          : "Empty Slot"}
-                                      </p>
-                                    </div>
-                                  )}
+                                  {renderSlotContent(slotNum)}
                                 </BrutalistCard>
                               </div>
                             ),
                           )}
                         </div>
                       </div>
-                    ) : (
+                    )}
+
+                    {/* ── Layout 2 ── */}
+                    {activeLayout === "2" && (
                       <div
                         className="absolute inset-0 z-10"
                         style={{
-                          paddingTop: `${(60 / 1800) * 100}%`,
-                          paddingBottom: `${(60 / 1800) * 100}%`,
-                          paddingLeft: `${(60 / 1200) * 100}%`,
-                          paddingRight: `${(60 / 1200) * 100}%`,
+                          paddingTop: `${(41 / 1600) * 100}%`,
+                          paddingBottom: `${((1600 - 41 - 652 * 2 - 26) / 1600) * 100}%`,
+                          paddingLeft: `${(36 / 1066) * 100}%`,
+                          paddingRight: `${(36 / 1066) * 100}%`,
                         }}
                       >
                         <div
-                          className="grid grid-cols-1 grid-rows-2 h-full"
+                          className="grid grid-cols-1"
                           style={{
-                            gap: `${(40 / 1800) * 100}%`,
+                            gap: `${(26 / 1600) * 100}%`,
                           }}
                         >
                           {[1, 2].map((slotNum) => (
                             <div
                               key={slotNum}
                               ref={slotNum === 1 ? slotRef : undefined}
-                              className="h-full"
+                              className="w-full"
+                              style={{ aspectRatio: "994/652" }}
                             >
                               <BrutalistCard
                                 interactive
@@ -689,99 +497,55 @@ export function PhotoArrangement() {
                                     : ""
                                 }`}
                               >
-                                {filledSlots[activeTemplate]?.[slotNum] ? (
-                                  <div className="relative w-full h-full overflow-hidden group">
-                                    <TransformWrapper
-                                     key={`${activeTemplate}-${slotNum}-${filledSlots[activeTemplate][slotNum]}`}
-                                      minScale={1}
-                                      maxScale={3}
-                                      limitToBounds={true}
-                                      centerOnInit={false}   // ✅ tambahkan ini agar konsisten dengan layout 1
-                                      wheel={{ step: 0.2 }}
-                                      doubleClick={{ disabled: true }}
-                                      panning={{ velocityDisabled: true }}
-                                      initialScale={
-                                        slotTransforms[activeTemplate]?.[
-                                          slotNum
-                                        ]?.scale || 1
-                                      }
-                                      initialPositionX={
-                                        slotTransforms[activeTemplate]?.[
-                                          slotNum
-                                        ]?.x || 0
-                                      }
-                                      initialPositionY={
-                                        slotTransforms[activeTemplate]?.[
-                                          slotNum
-                                        ]?.y || 0
-                                      }
-                                      onTransformed={(e) => {
-                                        updateTransform(
-                                          activeTemplate,
-                                          slotNum,
-                                          e.state.scale,
-                                          e.state.positionX,
-                                          e.state.positionY,
-                                        );
-                                      }}
-                                    >
-                                      <TransformComponent
-                                        wrapperClass="!w-full !h-full"
-                                        contentClass="!w-full !h-full flex items-center justify-center"
-                                      >
-                                        <div className="relative h-full aspect-[994/652]"> {/* ← ratio slot layout 2 */}
-                                          <ImageWithFallback
-                                            src={filledSlots[activeTemplate][slotNum]}
-                                            className="absolute inset-0 w-full h-full object-contain"
-                                          />
-                                        </div>
-                                      </TransformComponent>
-                                    </TransformWrapper>
-
-                                    <button
-                                      className="absolute top-1 right-1 z-50 bg-red-500 hover:bg-red-600 text-white rounded-full w-7 h-7 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity border-2 border-white shadow-lg cursor-pointer"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setFilledSlots((prev) => {
-                                          const updated = {
-                                            ...(prev[activeTemplate] || {}),
-                                          };
-                                          delete updated[slotNum];
-                                          return {
-                                            ...prev,
-                                            [activeTemplate]: updated,
-                                          };
-                                        });
-                                        setSlotTransforms((prev) => {
-                                          const updated = {
-                                            ...(prev[activeTemplate] || {}),
-                                          };
-                                          delete updated[slotNum];
-                                          return {
-                                            ...prev,
-                                            [activeTemplate]: updated,
-                                          };
-                                        });
-                                      }}
-                                    >
-                                      ✕
-                                    </button>
-                                  </div>
-                                ) : (
-                                  <div className="h-full bg-gray-100 flex flex-col items-center justify-center text-gray-400">
-                                    <div className="text-8xl font-bold mb-2">
-                                      {slotNum}
-                                    </div>
-                                    <p className="text-xl font-bold">
-                                      {selectedPhoto
-                                        ? "Click to place"
-                                        : "Empty Slot"}
-                                    </p>
-                                  </div>
-                                )}
+                                {renderSlotContent(slotNum)}
                               </BrutalistCard>
                             </div>
                           ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* ── Layout 6 ── */}
+                    {activeLayout === "6" && (
+                      <div
+                        className="absolute inset-0 z-10"
+                        style={{
+                          paddingTop: `${(41 / 1600) * 100}%`,
+                          paddingBottom: `${((1600 - 41 - 430 * 2 - 26) / 1600) * 100}%`,
+                          paddingLeft: `${(36 / 1066) * 100}%`,
+                          paddingRight: `${(36 / 1066) * 100}%`,
+                        }}
+                      >
+                        <div
+                          className="grid grid-cols-3"
+                          style={{
+                            gap: `${(26 / 1600) * 100}% ${(26 / 1066) * 100}%`,
+                          }}
+                        >
+                          {Array.from({ length: 6 }, (_, i) => i + 1).map(
+                            (slotNum) => (
+                              <div
+                                key={slotNum}
+                                ref={slotNum === 1 ? slotRef : undefined}
+                                className="w-full"
+                                style={{ aspectRatio: "317/430" }}
+                              >
+                                <BrutalistCard
+                                  interactive
+                                  onClick={() => handleSlotClick(slotNum)}
+                                  onDrop={(e) => handleDrop(e, slotNum)}
+                                  onDragOver={allowDrop}
+                                  className={`w-full h-full p-0 overflow-hidden shadow-none border-0 ${
+                                    selectedPhoto
+                                      ? "cursor-pointer hover:scale-105 hover:border-8"
+                                      : ""
+                                  }`}
+                                >
+                                  {renderSlotContent(slotNum)}
+                                </BrutalistCard>
+                              </div>
+                            ),
+                          )}
                         </div>
                       </div>
                     )}
@@ -828,11 +592,12 @@ export function PhotoArrangement() {
           </div>
         </div>
       </div>
-      {/* ✅ Modal Preview Gambar dari Gallery */}
+
+      {/* Modal Preview Gambar dari Gallery */}
       {previewPhotoOpen && previewPhotoUrl && (
         <div
           className="fixed inset-0 bg-black/80 flex items-center justify-center z-50"
-          onClick={() => setPreviewPhotoOpen(false)} // ✅ klik background untuk tutup
+          onClick={() => setPreviewPhotoOpen(false)}
         >
           <div
             className="bg-white p-6 rounded-xl border-4 border-black max-w-3xl w-full mx-4"
@@ -841,12 +606,10 @@ export function PhotoArrangement() {
             <h2 className="text-3xl font-bold mb-4 text-center">
               Preview Gambar
             </h2>
-
             <img
               src={previewPhotoUrl}
-              className="w-full rounded-lg border-4 border-black object-contain  object-[4/6]"
+              className="w-full rounded-lg border-4 border-black object-contain"
             />
-
             <div className="flex gap-4 mt-6">
               <BrutalistButton
                 className="w-full"
@@ -858,7 +621,6 @@ export function PhotoArrangement() {
               <BrutalistButton
                 className="w-full"
                 onClick={() => {
-                  // ✅ Langsung pilih foto ini ke slot
                   handlePhotoClick({
                     thumb: previewPhotoUrl,
                     full: previewPhotoUrl,
@@ -879,12 +641,10 @@ export function PhotoArrangement() {
             <h2 className="text-3xl font-bold mb-4 text-center">
               Print Preview
             </h2>
-
             <img
               src={previewUrl}
               className="w-full rounded-lg border-4 border-black"
             />
-
             <div className="flex gap-4 mt-6">
               <BrutalistButton
                 className="w-full"
