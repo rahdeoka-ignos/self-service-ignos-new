@@ -6,14 +6,14 @@ import { useEffect } from "react";
 export function Home() {
   const navigate = useNavigate();
   useEffect(() => {
-      fetch("http://localhost:5000/api/photos")
-        .then((res) => res.json())
-        .then((data) => {
-          const photos = data.reverse().slice(0, 400);
-          sessionStorage.setItem("gallery", JSON.stringify(photos));
-        })
-        .catch((err) => console.error("Prefetch failed:", err));
-    }, []);
+    fetch("http://localhost:5000/api/photos")
+      .then((res) => res.json())
+      .then((data) => {
+        const photos = data.reverse().slice(0, 400);
+        sessionStorage.setItem("gallery", JSON.stringify(photos));
+      })
+      .catch((err) => console.error("Prefetch failed:", err));
+  }, []);
 
   const services = [
     {
@@ -43,7 +43,9 @@ export function Home() {
             <BrutalistCard
               key={service.id}
               interactive
-              onClick={() => navigate("/people-count")}
+              onClick={() =>
+                navigate("/people-count", { state: { serviceId: service.id } })
+              }
               className="flex flex-col items-center justify-center text-center p-12 min-h-[400px] hover:scale-105"
             >
               <div className="w-32 h-32 bg-black rounded-full flex items-center justify-center mb-8 border-4 border-black">

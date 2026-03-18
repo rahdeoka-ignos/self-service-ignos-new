@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 import { Minus, Plus, Users } from "lucide-react";
 import { BrutalistCard } from "../components/BrutalistCard";
 import { BrutalistButton } from "../components/BrutalistButton";
@@ -7,24 +7,24 @@ import { Navigation } from "../components/Navigation";
 
 export function PeopleCount() {
   const navigate = useNavigate();
+  const location = useLocation(); // ← tambah ini
+
+  const serviceId = location.state?.serviceId || "photo-box";
+  const maxCount = serviceId === "photo-studio" ? 15 : 8; // ← max sesuai service
+
   const [count, setCount] = useState(1);
   const minCount = 1;
-  const maxCount = 6;
 
   const handleDecrement = () => {
-    if (count > minCount) {
-      setCount(count - 1);
-    }
+    if (count > minCount) setCount(count - 1);
   };
 
   const handleIncrement = () => {
-    if (count < maxCount) {
-      setCount(count + 1);
-    }
+    if (count < maxCount) setCount(count + 1);
   };
 
   const handleContinue = () => {
-    navigate("/bonus", { state: { peopleCount: count } });
+    navigate("/bonus", { state: { peopleCount: count, serviceId } }); // ← pass serviceId
   };
 
   return (

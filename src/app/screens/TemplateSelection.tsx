@@ -197,7 +197,7 @@ export function TemplateSelection() {
                   interactive
                   selected={selectedCategory === category.id}
                   onClick={() => setSelectedCategory(category.id)}
-                  className="p-4 cursor-pointer"
+                  className="p-4 cursor-pointer !text-black"
                 >
                   <ImageWithFallback
                     src={category.image}
@@ -229,7 +229,7 @@ export function TemplateSelection() {
                         interactive
                         selected={isSelected}
                         onClick={() => handleTemplateSelect(template)}
-                        className={`p-6 cursor-pointer ${isSelected ? "scale-95" : "hover:scale-105"}`}
+                        className={`p-6 cursor-pointer !text-black ${isSelected ? "scale-95" : "hover:scale-105"}`}
                       >
                         <div className="aspect-square bg-gray-200 rounded-lg mb-4 border-4 border-black flex items-center justify-center">
                           <ImageWithFallback

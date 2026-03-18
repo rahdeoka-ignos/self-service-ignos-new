@@ -10,18 +10,24 @@ export function AddOnQuestion() {
       title: "Cetak Foto 4R",
       description: "Cetak foto ukuran 4R dengan kualitas tinggi",
       image: "/addons/4r.jpg",
+      path: "/people-count",
+      state: { serviceId: "photo-studio" },
     },
     {
       id: "keychain",
       title: "Gantungan Kunci",
       description: "Cetak foto menjadi gantungan kunci lucu",
       image: "/addons/keychain.jpg",
+      path: "/keychain",
+      state: {},
     },
     {
       id: "id-card",
       title: "ID Card",
       description: "Cetak foto menjadi kartu ID unik",
       image: "/addons/idcard.jpg",
+      path: "/id-card",
+      state: {},
     },
   ];
 
@@ -42,7 +48,7 @@ export function AddOnQuestion() {
             <BrutalistCard
               key={addon.id}
               interactive
-              onClick={() => console.log(addon.id)}
+              onClick={() => navigate(addon.path, { state: addon.state })}
               className="flex flex-col items-center text-center p-8 hover:scale-105"
             >
               {/* Image */}

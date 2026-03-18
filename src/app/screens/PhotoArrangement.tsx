@@ -48,6 +48,7 @@ export function PhotoArrangement() {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [previewPhotoUrl, setPreviewPhotoUrl] = useState<string | null>(null);
   const [previewPhotoOpen, setPreviewPhotoOpen] = useState(false);
+  const [previewPhotoIndex, setPreviewPhotoIndex] = useState<number>(0);
 
   useEffect(() => {
     const cached = sessionStorage.getItem("gallery");
@@ -86,6 +87,7 @@ export function PhotoArrangement() {
       (slotNum) => !currentSlots[slotNum],
     );
     if (emptySlot !== undefined) {
+      // Masih ada slot kosong → langsung isi, tidak perlu selectedPhoto
       setFilledSlots((prev) => ({
         ...prev,
         [activeTemplate]: {
@@ -93,8 +95,12 @@ export function PhotoArrangement() {
           [emptySlot]: photo.full,
         },
       }));
+      setSelectedPhoto(null); // ← pastikan tidak ada yang selected
     } else {
-      setSelectedPhoto(photo.full);
+      // Semua slot penuh → mode manual, highlight foto yang dipilih
+      setSelectedPhoto(
+        (prev) => (prev === photo.full ? null : photo.full), // ← toggle: klik lagi = deselect
+      );
     }
   };
 
@@ -313,11 +319,8 @@ export function PhotoArrangement() {
                       interactive
                       draggable
                       onDragStart={(e) => handleDragStart(e, photo.full)}
-                      selected={selectedPhoto === photo.full}
                       onClick={() => handlePhotoClick(photo)}
-                      className={`p-0 overflow-hidden cursor-pointer group ${
-                        selectedPhoto === photo.full ? "scale-95 border-8" : ""
-                      }`}
+                      className="p-0 overflow-hidden cursor-pointer group"
                     >
                       <ImageWithFallback
                         src={photo.thumb}
@@ -327,19 +330,11 @@ export function PhotoArrangement() {
                         className="w-full h-full object-cover"
                         style={{ imageRendering: "auto" }}
                       />
-                      {selectedPhoto === photo.full && (
-                        <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                          <Check
-                            size={64}
-                            className="text-white"
-                            strokeWidth={4}
-                          />
-                        </div>
-                      )}
                       <button
                         className="absolute top-2 right-2 z-50 bg-white text-black text-base font-bold px-5 py-2 rounded-lg border-2 border-black opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black hover:text-white cursor-pointer"
                         onClick={(e) => {
                           e.stopPropagation();
+                          setPreviewPhotoIndex(index);
                           setPreviewPhotoUrl(photo.full);
                           setPreviewPhotoOpen(true);
                         }}
@@ -406,9 +401,7 @@ export function PhotoArrangement() {
                             onDrop={(e) => handleDrop(e, 1)}
                             onDragOver={allowDrop}
                             className={`w-full h-full p-0 overflow-hidden shadow-none border-0 ${
-                              selectedPhoto
-                                ? "cursor-pointer hover:scale-105 hover:border-8"
-                                : ""
+                              selectedPhoto ? "cursor-pointer" : ""
                             }`}
                           >
                             {renderSlotContent(1)}
@@ -448,9 +441,7 @@ export function PhotoArrangement() {
                                   onDrop={(e) => handleDrop(e, slotNum)}
                                   onDragOver={allowDrop}
                                   className={`w-full h-full p-0 overflow-hidden shadow-none border-0 ${
-                                    selectedPhoto
-                                      ? "cursor-pointer hover:scale-105 hover:border-8"
-                                      : ""
+                                    selectedPhoto ? "cursor-pointer" : ""
                                   }`}
                                 >
                                   {renderSlotContent(slotNum)}
@@ -492,9 +483,7 @@ export function PhotoArrangement() {
                                 onDrop={(e) => handleDrop(e, slotNum)}
                                 onDragOver={allowDrop}
                                 className={`w-full h-full p-0 overflow-hidden shadow-none border-0 ${
-                                  selectedPhoto
-                                    ? "cursor-pointer hover:scale-105 hover:border-8"
-                                    : ""
+                                  selectedPhoto ? "cursor-pointer" : ""
                                 }`}
                               >
                                 {renderSlotContent(slotNum)}
@@ -536,9 +525,7 @@ export function PhotoArrangement() {
                                   onDrop={(e) => handleDrop(e, slotNum)}
                                   onDragOver={allowDrop}
                                   className={`w-full h-full p-0 overflow-hidden shadow-none border-0 ${
-                                    selectedPhoto
-                                      ? "cursor-pointer hover:scale-105 hover:border-8"
-                                      : ""
+                                    selectedPhoto ? "cursor-pointer " : ""
                                   }`}
                                 >
                                   {renderSlotContent(slotNum)}
@@ -604,13 +591,43 @@ export function PhotoArrangement() {
             onClick={(e) => e.stopPropagation()}
           >
             <h2 className="text-3xl font-bold mb-4 text-center">
-              Preview Gambar
+              Preview Gambar ({previewPhotoIndex + 1} / {photoGallery.length})
             </h2>
+
             <img
               src={previewPhotoUrl}
-              className="w-full rounded-lg border-4 border-black object-contain"
+              className="w-full rounded-lg border-4 border-black aspect-[4/6]"
             />
-            <div className="flex gap-4 mt-6">
+
+            {/* Prev / Next */}
+            <div className="flex gap-4 mt-4">
+              <BrutalistButton
+                className="w-full"
+                variant="outline"
+                disabled={previewPhotoIndex === 0}
+                onClick={() => {
+                  const newIndex = previewPhotoIndex - 1;
+                  setPreviewPhotoIndex(newIndex);
+                  setPreviewPhotoUrl(photoGallery[newIndex].full);
+                }}
+              >
+                ← Previous
+              </BrutalistButton>
+              <BrutalistButton
+                className="w-full"
+                variant="outline"
+                disabled={previewPhotoIndex === photoGallery.length - 1}
+                onClick={() => {
+                  const newIndex = previewPhotoIndex + 1;
+                  setPreviewPhotoIndex(newIndex);
+                  setPreviewPhotoUrl(photoGallery[newIndex].full);
+                }}
+              >
+                Next →
+              </BrutalistButton>
+            </div>
+
+            <div className="flex gap-4 mt-4">
               <BrutalistButton
                 className="w-full"
                 variant="outline"
