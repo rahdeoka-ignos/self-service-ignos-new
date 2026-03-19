@@ -71,8 +71,16 @@ export function PhotoArrangement() {
   const [previewPhotoUrl, setPreviewPhotoUrl] = useState<string | null>(null);
   const [previewPhotoOpen, setPreviewPhotoOpen] = useState(false);
   const [previewPhotoIndex, setPreviewPhotoIndex] = useState<number>(0);
-  const [countdown, setCountdown] = useState(5);
-  const [activeFilter, setActiveFilter] = useState<string>("none");
+  const [countdown, setCountdown] = useState(10);
+  const [activeFilters, setActiveFilters] = useState<{
+    [templateIndex: number]: string;
+  }>({});
+
+  // Helper untuk get filter aktif per template
+  const activeFilter = activeFilters[activeTemplate] ?? "none";
+  const setActiveFilter = (filterId: string) => {
+    setActiveFilters((prev) => ({ ...prev, [activeTemplate]: filterId }));
+  };
 
   useEffect(() => {
     const cached = sessionStorage.getItem("gallery");
@@ -107,7 +115,7 @@ export function PhotoArrangement() {
   useEffect(() => {
     if (!successOpen) return;
 
-    setCountdown(5);
+    setCountdown(10);
     const interval = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
@@ -236,7 +244,9 @@ export function PhotoArrangement() {
           transforms: slotTransforms[i],
           uiSlotW: slotSize.w,
           uiSlotH: slotSize.h,
-          filter: FILTERS.find((f) => f.id === activeFilter)?.style || "",
+          filter:
+            FILTERS.find((f) => f.id === (activeFilters[i] ?? "none"))?.style ||
+            "",
         });
       }
       setPrinted(true);
@@ -261,7 +271,10 @@ export function PhotoArrangement() {
         transforms: slotTransforms[activeTemplate],
         uiSlotW: slotSize.w,
         uiSlotH: slotSize.h,
-        filter: FILTERS.find((f) => f.id === activeFilter)?.style || "",
+        filter:
+          FILTERS.find(
+            (f) => f.id === (activeFilters[activeTemplate] ?? "none"),
+          )?.style || "",
       });
       if (url) {
         setPreviewUrl(url);
@@ -290,8 +303,12 @@ export function PhotoArrangement() {
     const slotSize = uiSlotSizes[activeTemplate];
     if (filledSlots[activeTemplate]?.[slotNum]) {
       return (
-        <div className="relative w-full h-full group">
+        <div
+          key={`${activeTemplate}-${slotNum}`}
+          className="relative w-full h-full group"
+        >
           <SlotImage
+            key={`slot-${activeTemplate}-${slotNum}-${uiSlotSizes[activeTemplate]?.w ?? 0}`}
             src={filledSlots[activeTemplate][slotNum]}
             slotW={slotSize?.w ?? 243}
             slotH={slotSize?.h ?? 328}
@@ -785,7 +802,7 @@ export function PhotoArrangement() {
                     stroke="black"
                     strokeWidth="3"
                     strokeDasharray="100"
-                    strokeDashoffset={100 - (countdown / 5) * 100}
+                    strokeDashoffset={100 - (countdown / 10) * 100}
                     strokeLinecap="round"
                     style={{ transition: "stroke-dashoffset 1s linear" }}
                   />

@@ -10,6 +10,7 @@ export function PeopleCount() {
   const location = useLocation();
 
   const serviceId = location.state?.serviceId || "photo-box";
+  const skipBonus = location.state?.skipBonus;
   const maxCount = serviceId === "photo-studio" ? 15 : 8; // ← max sesuai service
 
   const [count, setCount] = useState(1);
@@ -24,7 +25,9 @@ export function PeopleCount() {
   };
 
   const handleContinue = () => {
-    navigate("/bonus", { state: { peopleCount: count, serviceId } }); // ← pass serviceId
+    navigate("/bonus", {
+      state: { peopleCount: count, serviceId, skipBonus },
+    });
   };
 
   return (

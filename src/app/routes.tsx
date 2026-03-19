@@ -6,6 +6,7 @@ import { TemplateSelection } from "./screens/TemplateSelection";
 import { PhotoArrangement } from "./screens/PhotoArrangement";
 import { AddOnQuestion } from "./screens/AddOnQuestion";
 import { BonusGuide } from "./screens/BonusGuide";
+import { PhotoArrangementA4 } from "./screens/PhotoArrangementA4";
 
 export const router = createBrowserRouter([
   {
@@ -35,5 +36,9 @@ export const router = createBrowserRouter([
   {
     path: "/add-ons",
     Component: AddOnQuestion,
+  },
+  {
+    path: "/arrange-photos-a4",
+    Component: PhotoArrangementA4,
   },
 ]);

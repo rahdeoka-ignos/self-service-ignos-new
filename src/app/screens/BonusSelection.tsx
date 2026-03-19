@@ -2,11 +2,22 @@ import { useNavigate, useLocation } from "react-router";
 import { Gift, X } from "lucide-react";
 import { BrutalistCard } from "../components/BrutalistCard";
 import { Navigation } from "../components/Navigation";
+import { useEffect } from "react";
 
 export function BonusSelection() {
   const navigate = useNavigate();
   const location = useLocation();
   const peopleCount = location.state?.peopleCount || 1;
+  const skipBonus = location.state?.skipBonus;
+
+  useEffect(() => {
+    if (skipBonus) {
+      navigate("/templates", {
+        state: { peopleCount, joinedBonus: false },
+        replace: true,
+      });
+    }
+  }, []);
 
   const handleJoinBonus = () => {
     navigate("/bonus-guide", { state: { peopleCount } });

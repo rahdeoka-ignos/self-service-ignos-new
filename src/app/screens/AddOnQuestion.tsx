@@ -13,7 +13,7 @@ export function AddOnQuestion() {
         "Cetak foto ukuran 4R dengan hasil tajam, warna akurat, dan kertas premium.",
       image: "/addons/4r.jpg",
       path: "/people-count",
-      state: { serviceId: "photo-studio" },
+      state: { serviceId: "photo-studio", skipBonus: true },
     },
     {
       id: "10r-print",
@@ -22,7 +22,7 @@ export function AddOnQuestion() {
       description:
         "Cetak foto ukuran A4 (10R) dengan kualitas tinggi, cocok untuk dipajang atau kenang-kenangan.",
       image: "/addons/A4.jpg",
-      path: "/people-count",
+      path: "/arrange-photos-a4",
       state: { serviceId: "photo-studio" },
     },
     {
