@@ -4,7 +4,6 @@ import { BrutalistCard } from "../components/BrutalistCard";
 import { BrutalistButton } from "../components/BrutalistButton";
 import { Navigation } from "../components/Navigation";
 import { ImageWithFallback } from "../components/figma/ImageWithFallback";
-import { Check } from "lucide-react";
 import { generatePrint } from "../../utils/print4r";
 import { ButtonTemplate } from "../components/ButtonTemplate";
 import { SlotImage } from "../components/SlotImage";
@@ -14,6 +13,29 @@ type Template = {
   overlay: string;
   layout: "1" | "2" | "4" | "6";
 };
+
+const FILTERS = [
+  { id: "none", name: "Normal", style: "" },
+  { id: "bw", name: "B&W", style: "grayscale(100%)" },
+  { id: "sepia", name: "Sepia", style: "sepia(80%)" },
+  { id: "vivid", name: "Vivid", style: "saturate(180%) contrast(110%)" },
+  {
+    id: "fade",
+    name: "Fade",
+    style: "brightness(110%) saturate(70%) contrast(90%)",
+  },
+  { id: "cool", name: "Cool", style: "hue-rotate(30deg) saturate(120%)" },
+  {
+    id: "warm",
+    name: "Warm",
+    style: "sepia(30%) saturate(150%) brightness(105%)",
+  },
+  {
+    id: "dramatic",
+    name: "Dramatic",
+    style: "contrast(140%) brightness(90%) saturate(80%)",
+  },
+];
 
 export function PhotoArrangement() {
   const location = useLocation();
@@ -49,6 +71,8 @@ export function PhotoArrangement() {
   const [previewPhotoUrl, setPreviewPhotoUrl] = useState<string | null>(null);
   const [previewPhotoOpen, setPreviewPhotoOpen] = useState(false);
   const [previewPhotoIndex, setPreviewPhotoIndex] = useState<number>(0);
+  const [countdown, setCountdown] = useState(5);
+  const [activeFilter, setActiveFilter] = useState<string>("none");
 
   useEffect(() => {
     const cached = sessionStorage.getItem("gallery");
@@ -79,6 +103,25 @@ export function PhotoArrangement() {
     const img = new Image();
     img.src = src;
   };
+
+  useEffect(() => {
+    if (!successOpen) return;
+
+    setCountdown(5);
+    const interval = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          setSuccessOpen(false);
+          navigate("/add-ons");
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [successOpen]);
 
   const handlePhotoClick = (photo: { thumb: string; full: string }) => {
     preloadImage(photo.full);
@@ -193,6 +236,7 @@ export function PhotoArrangement() {
           transforms: slotTransforms[i],
           uiSlotW: slotSize.w,
           uiSlotH: slotSize.h,
+          filter: FILTERS.find((f) => f.id === activeFilter)?.style || "",
         });
       }
       setPrinted(true);
@@ -217,6 +261,7 @@ export function PhotoArrangement() {
         transforms: slotTransforms[activeTemplate],
         uiSlotW: slotSize.w,
         uiSlotH: slotSize.h,
+        filter: FILTERS.find((f) => f.id === activeFilter)?.style || "",
       });
       if (url) {
         setPreviewUrl(url);
@@ -260,6 +305,7 @@ export function PhotoArrangement() {
             onTransformChange={(t) =>
               updateTransform(activeTemplate, slotNum, t.scale, t.x, t.y)
             }
+            filter={FILTERS.find((f) => f.id === activeFilter)?.style || ""}
           />
           <button
             className="absolute top-1 right-1 z-50 bg-red-500 hover:bg-red-600 text-white rounded-full w-7 h-7 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity border-2 border-white shadow-lg cursor-pointer"
@@ -309,7 +355,7 @@ export function PhotoArrangement() {
 
           <div className="grid grid-cols-12 gap-8 flex-1 overflow-hidden mb-5">
             {/* LEFT SIDE - Photo Gallery */}
-            <div className="col-span-9 h-full">
+            <div className="col-span-8 h-full">
               <BrutalistCard className="p-6">
                 <h2 className="text-3xl font-bold mb-6">Photo Gallery</h2>
                 <div className="grid grid-cols-5 gap-4 max-h-[995px] overflow-y-auto pr-2">
@@ -576,6 +622,42 @@ export function PhotoArrangement() {
                 </div>
               </div>
             </BrutalistCard>
+            <div className="col-span-1 h-full overflow-hidden">
+              <BrutalistCard className="p-4 h-full overflow-y-auto">
+                <h2 className="text-xl font-bold mb-4">Filter</h2>
+                <div className="flex flex-col gap-3">
+                  {FILTERS.map((filter) => (
+                    <button
+                      key={filter.id}
+                      onClick={() => setActiveFilter(filter.id)}
+                      className={`w-full border-4 border-black rounded-xl overflow-hidden transition-all cursor-pointer ${
+                        activeFilter === filter.id
+                          ? "border-8 scale-95"
+                          : "hover:scale-105"
+                      }`}
+                    >
+                      {/* Preview thumbnail pakai foto pertama di gallery */}
+                      <div className="w-full aspect-square overflow-hidden">
+                        {photoGallery[0] ? (
+                          <img
+                            src={photoGallery[0].thumb}
+                            className="w-full h-full object-cover"
+                            style={{ filter: filter.style }}
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gray-200" />
+                        )}
+                      </div>
+                      <div
+                        className={`py-2 text-sm font-bold ${activeFilter === filter.id ? "bg-black text-white" : "bg-white text-black"}`}
+                      >
+                        {filter.name}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </BrutalistCard>
+            </div>
           </div>
         </div>
       </div>
@@ -682,6 +764,42 @@ export function PhotoArrangement() {
             <p className="text-xl text-gray-600 mb-6">
               Semua foto berhasil disimpan dan siap dicetak.
             </p>
+
+            {/* Countdown ring */}
+            <div className="flex items-center justify-center mb-6">
+              <div className="relative w-20 h-20">
+                <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
+                  <circle
+                    cx="18"
+                    cy="18"
+                    r="15.9"
+                    fill="none"
+                    stroke="#e5e7eb"
+                    strokeWidth="3"
+                  />
+                  <circle
+                    cx="18"
+                    cy="18"
+                    r="15.9"
+                    fill="none"
+                    stroke="black"
+                    strokeWidth="3"
+                    strokeDasharray="100"
+                    strokeDashoffset={100 - (countdown / 5) * 100}
+                    strokeLinecap="round"
+                    style={{ transition: "stroke-dashoffset 1s linear" }}
+                  />
+                </svg>
+                <div className="absolute inset-0 flex items-center justify-center text-3xl font-bold">
+                  {countdown}
+                </div>
+              </div>
+            </div>
+
+            <p className="text-lg text-gray-500 mb-4">
+              Otomatis lanjut dalam {countdown} detik...
+            </p>
+
             <BrutalistButton
               className="w-full"
               onClick={() => {

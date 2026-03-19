@@ -7,6 +7,7 @@ interface SlotImageProps {
   slotH: number;
   transform: { scale: number; x: number; y: number };
   onTransformChange: (t: { scale: number; x: number; y: number }) => void;
+  filter?: string;
 }
 
 export function SlotImage({
@@ -15,6 +16,7 @@ export function SlotImage({
   slotH,
   transform,
   onTransformChange,
+  filter = "",
 }: SlotImageProps) {
   const { scale, x, y } = transform;
   const isDragging = useRef(false);
@@ -124,6 +126,7 @@ export function SlotImage({
           style={{
             display: "block",
             objectFit: "fill",
+            filter: filter,
           }}
         />
       </div>

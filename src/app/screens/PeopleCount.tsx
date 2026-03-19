@@ -7,7 +7,7 @@ import { Navigation } from "../components/Navigation";
 
 export function PeopleCount() {
   const navigate = useNavigate();
-  const location = useLocation(); // ← tambah ini
+  const location = useLocation();
 
   const serviceId = location.state?.serviceId || "photo-box";
   const maxCount = serviceId === "photo-studio" ? 15 : 8; // ← max sesuai service

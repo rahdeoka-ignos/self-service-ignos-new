@@ -15,6 +15,7 @@ interface PrintOptions {
   transforms?: { [slotNumber: number]: SlotTransform };
   uiSlotW?: number;
   uiSlotH?: number;
+  filter?: string;
 }
 
 export async function generatePrint(
@@ -116,7 +117,9 @@ export async function generatePrint(
     ctx.beginPath();
     ctx.rect(x, y, w, h);
     ctx.clip();
+    ctx.filter = options.filter || "none"; // ← tambah ini
     ctx.drawImage(img, drawX, drawY, scaledW, scaledH);
+    ctx.filter = "none"; // ← reset setelah draw
     ctx.restore();
   };
 
