@@ -8,7 +8,7 @@ import { Navigation } from "../components/Navigation";
 export function PeopleCount() {
   const navigate = useNavigate();
   const location = useLocation();
-
+  const destination = location.state?.destination || "bonus";
   const serviceId = location.state?.serviceId || "photo-box";
   const skipBonus = location.state?.skipBonus;
   const maxCount = serviceId === "photo-studio" ? 15 : 8; // ← max sesuai service
@@ -25,9 +25,15 @@ export function PeopleCount() {
   };
 
   const handleContinue = () => {
-    navigate("/bonus", {
-      state: { peopleCount: count, serviceId, skipBonus },
-    });
+    if (skipBonus && destination) {
+      navigate(`/${destination}`, {
+        state: { peopleCount: count, serviceId },
+      });
+    } else {
+      navigate("/bonus", {
+        state: { peopleCount: count, serviceId, skipBonus },
+      });
+    }
   };
 
   return (

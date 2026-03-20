@@ -20,11 +20,14 @@ export function AddOnQuestion() {
       id: "10r-print",
       title: "Cetak Foto A4",
       price: 20000,
-      description:
-        "Cetak foto ukuran A4 (10R) dengan kualitas tinggi, cocok untuk dipajang atau kenang-kenangan.",
+      description: "Cetak foto ukuran A4 (10R) dengan kualitas tinggi...",
       image: "/addons/A4.jpg",
-      path: "/arrange-photos-a4",
-      state: { serviceId: "photo-studio" },
+      path: "/people-count",
+      state: {
+        serviceId: "photo-studio",
+        skipBonus: true,
+        destination: "arrange-photos-a4",
+      },
     },
     {
       id: "keychain",

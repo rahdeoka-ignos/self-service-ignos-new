@@ -7,6 +7,8 @@ import { PhotoArrangement } from "./screens/PhotoArrangement";
 import { AddOnQuestion } from "./screens/AddOnQuestion";
 import { BonusGuide } from "./screens/BonusGuide";
 import { PhotoArrangementA4 } from "./screens/PhotoArrangementA4";
+import { BingkaiA4Page } from "./screens/BingkaiA4Page";
+import { FlowerHotwheelsPage } from "./screens/AddOns/FlowerHotwheelsPage";
 
 export const router = createBrowserRouter([
   {
@@ -40,5 +42,33 @@ export const router = createBrowserRouter([
   {
     path: "/arrange-photos-a4",
     Component: PhotoArrangementA4,
+  },
+  {
+    path: "/bingkaiA4",
+    Component: BingkaiA4Page,
+  },
+  {
+    path: "/bingkai4R",
+    Component: BingkaiA4Page,
+  },
+  {
+    path: "/flower-hotwheels",
+    Component: FlowerHotwheelsPage,
+  },
+  {
+    path: "/cetak-bingkai3d-10r",
+    Component: FlowerHotwheelsPage,
+  },
+  {
+    path: "/cermin-foto-3d",
+    Component: FlowerHotwheelsPage,
+  },
+  {
+    path: "/boneka-tabung",
+    Component: FlowerHotwheelsPage,
+  },
+  {
+    path: "/puzzle-foto",
+    Component: FlowerHotwheelsPage,
   },
 ]);
