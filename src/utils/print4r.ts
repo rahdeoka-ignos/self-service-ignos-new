@@ -117,9 +117,9 @@ export async function generatePrint(
     ctx.beginPath();
     ctx.rect(x, y, w, h);
     ctx.clip();
-    ctx.filter = options.filter || "none"; // ← tambah ini
+    ctx.filter = options.filter || "none";
     ctx.drawImage(img, drawX, drawY, scaledW, scaledH);
-    ctx.filter = "none"; // ← reset setelah draw
+    ctx.filter = "none";
     ctx.restore();
   };
 
@@ -200,23 +200,31 @@ export async function generatePrint(
   }
 
   if (layout === "6") {
-    const scaleX = WIDTH / 1066;
-    const scaleY = HEIGHT / 1600;
-    const x0 = 36 * scaleX;
-    const y0 = 41 * scaleY;
-    const slotW = 317 * scaleX;
-    const slotH = 430 * scaleY;
-    const gapX = 26 * scaleX;
-    const gapY = 26 * scaleY;
+    // ─── Layout 6: 2 kolom × 3 baris ───────────────────────────────────
+    // Koordinat diukur langsung dari background template (1333×2000)
+    // lalu di-scale ke print canvas (2400×3600) dengan factor 1.8005 / 1.8
+    //
+    // x0=129.6, y0=315.0, slotW=939.8, slotH=743.4
+    // x1=1334.1, gapY=149.4
+    // ────────────────────────────────────────────────────────────────────
+
+    const x0    = 129.6;
+    const y0    = 315.0;
+    const slotW = 939.8;
+    const slotH = 743.4;
+    const x1    = 1334.1;  // kolom ke-2
+    const gapY  = 149.4;
+
+    const colPositions = [x0, x1];
 
     orderedSlots.slice(0, 6).forEach((slotNumber, i) => {
-      const row = Math.floor((slotNumber - 1) / 3);
-      const col = (slotNumber - 1) % 3;
+      const row = Math.floor((slotNumber - 1) / 2); // 0, 1, 2
+      const col = (slotNumber - 1) % 2;             // 0, 1
 
       drawCover(
         images[i],
         slotNumber,
-        x0 + col * (slotW + gapX),
+        colPositions[col],
         y0 + row * (slotH + gapY),
         slotW,
         slotH,

@@ -64,7 +64,8 @@ const templates = {
       preview: "/templates/grid-dua/background.png",
       layout: "2",
     },
-    { id: 6, name: "Isi Enam", preview: "/templates/kpop/6.jpg", layout: "6" },
+    { id: 6, name: "grid-enam", preview: "/templates/grid-enam/background.png", layout: "6" },
+    { id: 6, name: "ribuan-memori", preview: "/templates/ribuan-memori/background.png", layout: "6" },
     {
       id: 8,
       name: "Isi Delapan",

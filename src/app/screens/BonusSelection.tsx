@@ -50,7 +50,7 @@ export function BonusSelection() {
               </div>
               <h2 className="text-5xl font-bold mb-6">Join Bonus</h2>
               <p className="text-2xl text-gray-600">
-                Participate in our special activity and win prizes!
+                Awalnya kamu mendapatkan {peopleCount} print, jika kamu mengikuti bonus, dapat <b>{peopleCount * 2} print!</b>
               </p>
             </BrutalistCard>
 

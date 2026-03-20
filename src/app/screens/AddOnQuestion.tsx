@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router";
 import { BrutalistCard } from "../components/BrutalistCard";
+import { BrutalistButton } from "../components/BrutalistButton";
 
 export function AddOnQuestion() {
   const navigate = useNavigate();
@@ -119,7 +120,7 @@ export function AddOnQuestion() {
 
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-8">
-      <div className="container mx-auto">
+      <div className=" mx-auto">
         {/* Title */}
         <div className="text-center mb-16">
           <h1 className="text-6xl font-bold mb-4">Tambahan Cetakan</h1>
@@ -129,16 +130,16 @@ export function AddOnQuestion() {
         </div>
 
         {/* Addons Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-10 mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-6 gap-10 mx-auto items-center">
           {addons.map((addon) => (
             <BrutalistCard
               key={addon.id}
               interactive
               onClick={() => navigate(addon.path, { state: addon.state })}
-              className="flex flex-col items-center text-center p-8 hover:scale-105"
+              className="flex flex-col items-center text-center p-3 hover:scale-105"
             >
               {/* Image */}
-              <div className="w-full h-52 mb-6 overflow-hidden border-4 border-black rounded-xl">
+              <div className="w-full h-80 mb-6 overflow-hidden border-4 border-black rounded-xl">
                 <img
                   src={addon.image}
                   alt={addon.title}
@@ -154,14 +155,17 @@ export function AddOnQuestion() {
               </p>
 
               {/* Preorder badge */}
-              {addon.isPreorder && (
+              {/* {addon.isPreorder && (
                 <span className="text-sm bg-yellow-300 px-2 py-1 border-2 border-black mb-2">
                   PO
                 </span>
-              )}
+              )} */}
 
               {/* Description */}
-              <p className="text-gray-600 text-lg">{addon.description}</p>
+              {/* <p className="text-gray-600 text-lg">{addon.description}</p> */}
+              <BrutalistButton size="sm" className="cursor-pointer">
+                Tambah
+              </BrutalistButton>
             </BrutalistCard>
           ))}
         </div>

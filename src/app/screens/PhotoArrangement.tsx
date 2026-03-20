@@ -37,6 +37,19 @@ const FILTERS = [
   },
 ];
 
+// ─── Layout 6 constants (diukur dari background template, di-scale ke print canvas 2400×3600) ──
+const L6_PRINT_W = 2400;
+const L6_PRINT_H = 3600;
+const L6_X0      = 129.6;   // left edge kolom 1
+const L6_Y0      = 315.0;   // top edge baris 1
+const L6_SLOT_W  = 939.8;   // lebar slot
+const L6_SLOT_H  = 743.4;   // tinggi slot
+const L6_X1      = 1334.1;  // left edge kolom 2
+const L6_GAP_Y   = 149.4;   // gap antar baris
+
+// Posisi kolom 2 (mirror dari kanan)
+// L6_X1 = 1334.1 → slot 2 mulai di x=1334.1 dalam print canvas
+
 export function PhotoArrangement() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -138,7 +151,6 @@ export function PhotoArrangement() {
       (slotNum) => !currentSlots[slotNum],
     );
     if (emptySlot !== undefined) {
-      // Masih ada slot kosong → langsung isi, tidak perlu selectedPhoto
       setFilledSlots((prev) => ({
         ...prev,
         [activeTemplate]: {
@@ -146,11 +158,10 @@ export function PhotoArrangement() {
           [emptySlot]: photo.full,
         },
       }));
-      setSelectedPhoto(null); // ← pastikan tidak ada yang selected
+      setSelectedPhoto(null);
     } else {
-      // Semua slot penuh → mode manual, highlight foto yang dipilih
       setSelectedPhoto(
-        (prev) => (prev === photo.full ? null : photo.full), // ← toggle: klik lagi = deselect
+        (prev) => (prev === photo.full ? null : photo.full),
       );
     }
   };
@@ -411,7 +422,7 @@ export function PhotoArrangement() {
             </div>
 
             {/* RIGHT SIDE - Template Preview with Slots */}
-            <BrutalistCard className="col-span-3 h-fit pb-5 flex flex-col overflow-hidden">
+            <BrutalistCard className="col-span-3 h-fit pb-5 flex flex-col overflow-hidden h-full">
               <div className="px-6">
                 <h2 className="text-3xl font-bold my-2">Template Layout</h2>
                 <div className="flex gap-3 overflow-x-auto pb-2">
@@ -431,7 +442,7 @@ export function PhotoArrangement() {
                 </div>
               </div>
 
-              <div className="flex-1 overflow-y-auto">
+              <div className="flex-1 overflow-y-auto mt-8">
                 <div className="px-6 mt-2">
                   <div className="relative aspect-[2/3] w-full max-w-xl rounded-2xl border-4 border-black overflow-hidden">
                     {/* TEMPLATE BACKGROUND */}
@@ -557,46 +568,45 @@ export function PhotoArrangement() {
                       </div>
                     )}
 
-                    {/* ── Layout 6 ── */}
+                    {/* ── Layout 6: 2 kolom × 3 baris (absolute positioning) ── */}
                     {activeLayout === "6" && (
-                      <div
-                        className="absolute inset-0 z-10"
-                        style={{
-                          paddingTop: `${(41 / 1600) * 100}%`,
-                          paddingBottom: `${((1600 - 41 - 430 * 2 - 26) / 1600) * 100}%`,
-                          paddingLeft: `${(36 / 1066) * 100}%`,
-                          paddingRight: `${(36 / 1066) * 100}%`,
-                        }}
-                      >
-                        <div
-                          className="grid grid-cols-3"
-                          style={{
-                            gap: `${(26 / 1600) * 100}% ${(26 / 1066) * 100}%`,
-                          }}
-                        >
-                          {Array.from({ length: 6 }, (_, i) => i + 1).map(
-                            (slotNum) => (
-                              <div
-                                key={slotNum}
-                                ref={slotNum === 1 ? slotRef : undefined}
-                                className="w-full"
-                                style={{ aspectRatio: "317/430" }}
+                      <div className="absolute inset-0 z-10">
+                        {Array.from({ length: 6 }, (_, i) => i + 1).map((slotNum) => {
+                          const row = Math.floor((slotNum - 1) / 2); // 0, 1, 2
+                          const col = (slotNum - 1) % 2;             // 0, 1
+
+                          const colXs = [L6_X0, L6_X1];
+                          const leftPct   = (colXs[col] / L6_PRINT_W) * 100;
+                          const topPct    = ((L6_Y0 + row * (L6_SLOT_H + L6_GAP_Y)) / L6_PRINT_H) * 100;
+                          const widthPct  = (L6_SLOT_W / L6_PRINT_W) * 100;
+                          const heightPct = (L6_SLOT_H / L6_PRINT_H) * 100;
+
+                          return (
+                            <div
+                              key={slotNum}
+                              ref={slotNum === 1 ? slotRef : undefined}
+                              className="absolute"
+                              style={{
+                                left:   `${leftPct}%`,
+                                top:    `${topPct}%`,
+                                width:  `${widthPct}%`,
+                                height: `${heightPct}%`,
+                              }}
+                            >
+                              <BrutalistCard
+                                interactive
+                                onClick={() => handleSlotClick(slotNum)}
+                                onDrop={(e) => handleDrop(e, slotNum)}
+                                onDragOver={allowDrop}
+                                className={`w-full h-full p-0 overflow-hidden shadow-none !border-0 !border-transparent !rounded-none ${
+                                  selectedPhoto ? "cursor-pointer" : ""
+                                }`}
                               >
-                                <BrutalistCard
-                                  interactive
-                                  onClick={() => handleSlotClick(slotNum)}
-                                  onDrop={(e) => handleDrop(e, slotNum)}
-                                  onDragOver={allowDrop}
-                                  className={`w-full h-full p-0 overflow-hidden shadow-none border-0 ${
-                                    selectedPhoto ? "cursor-pointer " : ""
-                                  }`}
-                                >
-                                  {renderSlotContent(slotNum)}
-                                </BrutalistCard>
-                              </div>
-                            ),
-                          )}
-                        </div>
+                                {renderSlotContent(slotNum)}
+                              </BrutalistCard>
+                            </div>
+                          );
+                        })}
                       </div>
                     )}
 
@@ -607,7 +617,7 @@ export function PhotoArrangement() {
                     />
                   </div>
 
-                  <div className="mt-4 space-y-4">
+                  <div className="mt-12 space-y-4">
                     <div className="flex gap-x-4 w-full">
                       <BrutalistButton
                         onClick={handlePreviewPrint}
