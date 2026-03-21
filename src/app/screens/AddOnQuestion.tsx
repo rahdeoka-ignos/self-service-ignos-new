@@ -14,7 +14,11 @@ export function AddOnQuestion() {
         "Cetak foto ukuran 4R dengan hasil tajam, warna akurat, dan kertas premium.",
       image: "/addons/4r.jpg",
       path: "/people-count",
-      state: { serviceId: "photo-studio", skipBonus: true },
+      state: {
+        serviceId: "photo-studio",
+        skipBonus: true,
+        destination: "templates",
+      },
     },
     {
       id: "10r-print",

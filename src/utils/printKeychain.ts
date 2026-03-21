@@ -12,6 +12,15 @@ interface PrintKeychainOptions {
   keychainType?: string;
 }
 
+const LOVE_METAL_W = 827; // 3.5cm × 236dpi
+const LOVE_METAL_H = 756; // 3.2cm × 236dpi
+
+const OVAL_METAL_W = 599; // 2.54cm × 236dpi
+const OVAL_METAL_H = 920; // 3.9cm × 236dpi
+
+const KOTAK_METAL_W = 661; // 2.8cm × 236dpi
+const KOTAK_METAL_H = 709; // 3.0cm × 236dpi
+
 // ─────────────────────────────────────────
 // Kotak Plastik: 2.68cm x 4.33cm @ 600 DPI
 // ─────────────────────────────────────────
@@ -109,7 +118,7 @@ export async function generatePrintKeychain(
     ctx.stroke();
 
     // Teks "IGNOS STUDIO"
-    const fontSize = Math.round(textAreaH * 0.80);
+    const fontSize = Math.round(textAreaH * 0.8);
     ctx.fillStyle = "#000000";
     ctx.font = `900 ${fontSize}px Arial, sans-serif`;
     ctx.textAlign = "center";
@@ -133,6 +142,222 @@ export async function generatePrintKeychain(
 
     const formData = new FormData();
     formData.append("file", blob, `keychain-kotak-plastik-${Date.now()}.png`);
+    await fetch("http://localhost:5000/api/save-print", {
+      method: "POST",
+      body: formData,
+    });
+    return;
+  }
+
+  if (keychainType === "kotak-metal") {
+    const W = KOTAK_METAL_W;
+    const H = KOTAK_METAL_H;
+
+    const canvas = document.createElement("canvas");
+    canvas.width = W;
+    canvas.height = H;
+    const ctx = canvas.getContext("2d")!;
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
+
+    ctx.fillStyle = "white";
+    ctx.fillRect(0, 0, W, H);
+
+    const img = await loadImage(photoUrl);
+    const imgAspect = img.width / img.height;
+    const frameAspect = W / H;
+
+    let drawW: number, drawH: number;
+    if (imgAspect > frameAspect) {
+      drawH = H;
+      drawW = imgAspect * H;
+    } else {
+      drawW = W;
+      drawH = W / imgAspect;
+    }
+
+    const ratioX = options.uiSlotW ? W / options.uiSlotW : 1;
+    const ratioY = options.uiSlotH ? H / options.uiSlotH : 1;
+
+    const scaledW = drawW * transform.scale;
+    const scaledH = drawH * transform.scale;
+
+    const drawX = (W - scaledW) / 2 + transform.x * ratioX;
+    const drawY = (H - scaledH) / 2 + transform.y * ratioY;
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(0, 0, W, H);
+    ctx.clip();
+    ctx.drawImage(img, drawX, drawY, scaledW, scaledH);
+    ctx.restore();
+
+    const blob: Blob = await new Promise((resolve, reject) =>
+      canvas.toBlob(
+        (b) => {
+          if (!b) reject("Failed to generate image");
+          else resolve(b);
+        },
+        "image/png",
+        1,
+      ),
+    );
+
+    const url = URL.createObjectURL(blob);
+    if (options.preview) return url;
+
+    const formData = new FormData();
+    formData.append("file", blob, `keychain-kotak-metal-${Date.now()}.png`);
+    await fetch("http://localhost:5000/api/save-print", {
+      method: "POST",
+      body: formData,
+    });
+    return;
+  }
+
+  if (keychainType === "oval-metal") {
+    const W = OVAL_METAL_W;
+    const H = OVAL_METAL_H;
+
+    const canvas = document.createElement("canvas");
+    canvas.width = W;
+    canvas.height = H;
+    const ctx = canvas.getContext("2d")!;
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
+
+    // Background putih
+    ctx.fillStyle = "white";
+    ctx.fillRect(0, 0, W, H);
+
+    const img = await loadImage(photoUrl);
+    const imgAspect = img.width / img.height;
+    const frameAspect = W / H;
+
+    let drawW: number, drawH: number;
+    if (imgAspect > frameAspect) {
+      drawH = H;
+      drawW = imgAspect * H;
+    } else {
+      drawW = W;
+      drawH = W / imgAspect;
+    }
+
+    const ratioX = options.uiSlotW ? W / options.uiSlotW : 1;
+    const ratioY = options.uiSlotH ? H / options.uiSlotH : 1;
+
+    const scaledW = drawW * transform.scale;
+    const scaledH = drawH * transform.scale;
+
+    const drawX = (W - scaledW) / 2 + transform.x * ratioX;
+    const drawY = (H - scaledH) / 2 + transform.y * ratioY;
+
+    // ✅ Clip foto dengan corner radius 250px
+    const radius = 250;
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(radius, 0);
+    ctx.lineTo(W - radius, 0);
+    ctx.quadraticCurveTo(W, 0, W, radius);
+    ctx.lineTo(W, H - radius);
+    ctx.quadraticCurveTo(W, H, W - radius, H);
+    ctx.lineTo(radius, H);
+    ctx.quadraticCurveTo(0, H, 0, H - radius);
+    ctx.lineTo(0, radius);
+    ctx.quadraticCurveTo(0, 0, radius, 0);
+    ctx.closePath();
+    ctx.clip();
+    ctx.drawImage(img, drawX, drawY, scaledW, scaledH);
+    ctx.restore();
+    const overlay = await loadImage("/addons/oval-metal/garis-oval-metal.png");
+    ctx.drawImage(overlay, 0, 0, W, H);
+
+    const blob: Blob = await new Promise((resolve, reject) =>
+      canvas.toBlob(
+        (b) => {
+          if (!b) reject("Failed to generate image");
+          else resolve(b);
+        },
+        "image/png",
+        1,
+      ),
+    );
+
+    const url = URL.createObjectURL(blob);
+    if (options.preview) return url;
+
+    const formData = new FormData();
+    formData.append("file", blob, `keychain-oval-metal-${Date.now()}.png`);
+    await fetch("http://localhost:5000/api/save-print", {
+      method: "POST",
+      body: formData,
+    });
+    return;
+  }
+
+  if (keychainType === "love-metal") {
+    const W = LOVE_METAL_W;
+    const H = LOVE_METAL_H;
+
+    const canvas = document.createElement("canvas");
+    canvas.width = W;
+    canvas.height = H;
+    const ctx = canvas.getContext("2d")!;
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
+
+    ctx.fillStyle = "white";
+    ctx.fillRect(0, 0, W, H);
+
+    const img = await loadImage(photoUrl);
+    const imgAspect = img.width / img.height;
+    const frameAspect = W / H;
+
+    let drawW: number, drawH: number;
+    if (imgAspect > frameAspect) {
+      drawH = H;
+      drawW = imgAspect * H;
+    } else {
+      drawW = W;
+      drawH = W / imgAspect;
+    }
+
+    const ratioX = options.uiSlotW ? W / options.uiSlotW : 1;
+    const ratioY = options.uiSlotH ? H / options.uiSlotH : 1;
+
+    const scaledW = drawW * transform.scale;
+    const scaledH = drawH * transform.scale;
+
+    const drawX = (W - scaledW) / 2 + transform.x * ratioX;
+    const drawY = (H - scaledH) / 2 + transform.y * ratioY;
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(0, 0, W, H);
+    ctx.clip();
+    ctx.drawImage(img, drawX, drawY, scaledW, scaledH);
+    ctx.restore();
+
+    // Overlay garis love-metal
+    const overlay = await loadImage("/addons/love-metal/garis-love-metal.png");
+    ctx.drawImage(overlay, 0, 0, W, H);
+
+    const blob: Blob = await new Promise((resolve, reject) =>
+      canvas.toBlob(
+        (b) => {
+          if (!b) reject("Failed to generate image");
+          else resolve(b);
+        },
+        "image/png",
+        1,
+      ),
+    );
+
+    const url = URL.createObjectURL(blob);
+    if (options.preview) return url;
+
+    const formData = new FormData();
+    formData.append("file", blob, `keychain-love-metal-${Date.now()}.png`);
     await fetch("http://localhost:5000/api/save-print", {
       method: "POST",
       body: formData,

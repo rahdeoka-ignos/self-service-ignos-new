@@ -160,9 +160,15 @@ export function KeychainArrangement() {
   const getSlotAspectRatio = (orderId: string) => {
     switch (orderId) {
       case "kotak-plastik":
-        return "633/1023"; // 2.68:4.33
+        return "633/1023";
+      case "kotak-metal":
+        return "661/709";
+      case "oval-metal":
+        return "599/920";
+      case "love-metal":
+        return "827/756";
       default:
-        return "1/1"; // square untuk metal dll
+        return "1/1";
     }
   };
 
@@ -187,9 +193,7 @@ export function KeychainArrangement() {
             {/* LEFT - Gallery */}
             <div className="col-span-8 h-[80dvh] min-h-0">
               <BrutalistCard className="p-6 h-full flex flex-col overflow-y-auto">
-                <h2 className="text-3xl font-bold mb-6 ">
-                  Photo Gallery
-                </h2>
+                <h2 className="text-3xl font-bold mb-6 ">Photo Gallery</h2>
                 <div className="grid grid-cols-5 gap-4 flex-1 min-h-0 overflow-y-auto pr-2">
                   {photoGallery.map((photo, index) => (
                     <BrutalistCard
@@ -291,10 +295,22 @@ export function KeychainArrangement() {
                           aspectRatio: getSlotAspectRatio(
                             activeSlotItem.orderId,
                           ),
-                          height: "100%",
+                          height:
+                            activeSlotItem.orderId === "kotak-plastik" ||
+                            activeSlotItem.orderId === "oval-metal"
+                              ? "100%"
+                              : "",
                           maxHeight: "100%",
-                          width: "auto",
+                          border:
+                            activeSlotItem.orderId === "oval-metal"
+                              ? "none"
+                              : "",
                           maxWidth: "100%",
+                          width:
+                            activeSlotItem.orderId === "kotak-plastik" ||
+                            activeSlotItem.orderId === "oval-metal"
+                              ? "auto"
+                              : "100%",
                           containerType: "inline-size",
                         }}
                       >
@@ -334,9 +350,24 @@ export function KeychainArrangement() {
                                   }))
                                 }
                               />
+
+                              {activeSlotItem.orderId === "oval-metal" && (
+                                <img
+                                  src="/addons/oval-metal/garis-oval-metal.png"
+                                  className="absolute inset-0 w-full h-full pointer-events-none z-10"
+                                  style={{ objectFit: "fill" }}
+                                />
+                              )}
+                              {activeSlotItem.orderId === "love-metal" && (
+                                <img
+                                  src="/addons/love-metal/garis-love-metal.png"
+                                  className="absolute inset-0 w-full h-full pointer-events-none z-10"
+                                  style={{ objectFit: "fill" }}
+                                />
+                              )}
                               {/* Tombol delete */}
                               <button
-                                className="absolute top-1 right-1 z-50 bg-red-500 hover:bg-red-600 text-white rounded-full w-7 h-7 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity border-2 border-white shadow-lg cursor-pointer"
+                                className="absolute top-1 right-1 z-[999] bg-red-500 hover:bg-red-600 text-white rounded-full w-10 h-10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity border-2 border-white shadow-lg cursor-pointer"
                                 onClick={() => {
                                   setFilledSlots((prev) => {
                                     const updated = { ...prev };
