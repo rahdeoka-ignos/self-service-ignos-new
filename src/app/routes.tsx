@@ -9,6 +9,8 @@ import { BonusGuide } from "./screens/BonusGuide";
 import { PhotoArrangementA4 } from "./screens/PhotoArrangementA4";
 import { BingkaiA4Page } from "./screens/BingkaiA4Page";
 import { FlowerHotwheelsPage } from "./screens/AddOns/FlowerHotwheelsPage";
+import { KeychainOptions } from "./screens/AddOns/Keychainoptions";
+import { KeychainArrangement } from "./screens/AddOns/Keychainarrangement";
 
 export const router = createBrowserRouter([
   {
@@ -70,5 +72,13 @@ export const router = createBrowserRouter([
   {
     path: "/puzzle-foto",
     Component: FlowerHotwheelsPage,
+  },
+  {
+    path: "/keychain",
+    Component: KeychainOptions,
+  },
+  {
+    path: "/keychain-arrangement",
+    Component: KeychainArrangement,
   },
 ]);

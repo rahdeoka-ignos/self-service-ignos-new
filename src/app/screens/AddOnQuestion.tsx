@@ -112,6 +112,16 @@ export function AddOnQuestion() {
       path: "/puzzle-foto",
       state: {},
     },
+    {
+      id: "photo-calender",
+      title: "Photo Calender",
+      price: 90000,
+      isPreorder: true,
+      description: "Photo Calender cocok untuk blablabla",
+      image: "/addons/photo-calender.jpg",
+      path: "/photo-calender",
+      state: {},
+    },
   ];
 
   const formatPrice = (price: number) =>
