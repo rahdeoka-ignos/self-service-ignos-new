@@ -65,7 +65,7 @@ export async function generatePrintKeychain(
 
     // Area foto: atas, sisakan bawah untuk teks
     // Teks area = ~15% dari total tinggi
-    const textAreaH = Math.round(H * 0.15);
+    const textAreaH = Math.round(H * 0.08);
     const photoAreaH = H - textAreaH;
     const photoAreaW = W;
 
@@ -109,7 +109,7 @@ export async function generatePrintKeychain(
     ctx.stroke();
 
     // Teks "IGNOS STUDIO"
-    const fontSize = Math.round(textAreaH * 0.45);
+    const fontSize = Math.round(textAreaH * 0.80);
     ctx.fillStyle = "#000000";
     ctx.font = `900 ${fontSize}px Arial, sans-serif`;
     ctx.textAlign = "center";

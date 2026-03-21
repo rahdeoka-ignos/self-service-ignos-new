@@ -139,7 +139,7 @@ export function KeychainArrangement() {
         if (!filledSlots[slot.globalIndex]) continue;
         const isKotakPlastik = slot.orderId === "kotak-plastik";
         const effectiveSlotH = isKotakPlastik
-          ? (uiSlotSize?.h ?? 0) * 0.85
+          ? (uiSlotSize?.h ?? 0) * 0.92
           : uiSlotSize?.h;
         await generatePrintKeychain(filledSlots[slot.globalIndex], {
           transform: transforms[slot.globalIndex],
@@ -183,20 +183,20 @@ export function KeychainArrangement() {
             </p>
           </div>
 
-          <div className="grid grid-cols-12 gap-8 flex-1 overflow-hidden mb-5">
+          <div className="grid grid-cols-12 gap-8 flex-1 min-h-0 overflow-hidden mb-5">
             {/* LEFT - Gallery */}
-            <div className="col-span-8 h-full">
-              <BrutalistCard className="p-6 h-full flex flex-col overflow-hidden">
-                <h2 className="text-3xl font-bold mb-6 flex-shrink-0">
+            <div className="col-span-8 h-[80dvh] min-h-0">
+              <BrutalistCard className="p-6 h-full flex flex-col overflow-y-auto">
+                <h2 className="text-3xl font-bold mb-6 ">
                   Photo Gallery
                 </h2>
-                <div className="grid grid-cols-5 gap-4 flex-1 overflow-y-auto pr-2 min-h-0">
+                <div className="grid grid-cols-5 gap-4 flex-1 min-h-0 overflow-y-auto pr-2">
                   {photoGallery.map((photo, index) => (
                     <BrutalistCard
                       key={index}
                       interactive
                       onClick={() => handlePhotoClick(photo)}
-                      className="p-0 overflow-hidden cursor-pointer group"
+                      className="p-0 h-full cursor-pointer group"
                     >
                       <ImageWithFallback
                         src={photo.thumb}
@@ -306,7 +306,7 @@ export function KeychainArrangement() {
                               style={{
                                 height:
                                   activeSlotItem.orderId === "kotak-plastik"
-                                    ? "85%"
+                                    ? "92%"
                                     : "100%",
                                 width: "100%",
                               }}
@@ -317,7 +317,7 @@ export function KeychainArrangement() {
                                 slotW={uiSlotSize?.w || 300}
                                 slotH={
                                   activeSlotItem.orderId === "kotak-plastik"
-                                    ? (uiSlotSize?.h ?? 300) * 0.85
+                                    ? (uiSlotSize?.h ?? 300) * 0.92
                                     : uiSlotSize?.h || 300
                                 }
                                 transform={
@@ -358,7 +358,7 @@ export function KeychainArrangement() {
                             {activeSlotItem.orderId === "kotak-plastik" && (
                               <div
                                 className="flex items-center justify-center border-t-2 border-black bg-white"
-                                style={{ height: "15%" }}
+                                style={{ height: "8%" }}
                               >
                                 <span
                                   className="font-black text-black tracking-tight"
@@ -398,7 +398,7 @@ export function KeychainArrangement() {
                         const isKotakPlastik =
                           activeSlotItem.orderId === "kotak-plastik";
                         const effectiveSlotH = isKotakPlastik
-                          ? (uiSlotSize?.h ?? 0) * 0.85
+                          ? (uiSlotSize?.h ?? 0) * 0.92
                           : uiSlotSize?.h;
                         const url = await generatePrintKeychain(
                           filledSlots[activeSlotItem.globalIndex],

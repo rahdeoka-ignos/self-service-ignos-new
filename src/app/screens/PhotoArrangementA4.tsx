@@ -166,7 +166,7 @@ export function PhotoArrangementA4() {
                       key={index}
                       interactive
                       onClick={() => handlePhotoClick(photo)}
-                      className="p-0  cursor-pointer group"
+                      className="p-0 cursor-pointer group"
                     >
                       <ImageWithFallback
                         src={photo.thumb}
