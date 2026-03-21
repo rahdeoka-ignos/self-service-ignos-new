@@ -11,6 +11,8 @@ import { BingkaiA4Page } from "./screens/BingkaiA4Page";
 import { FlowerHotwheelsPage } from "./screens/AddOns/FlowerHotwheelsPage";
 import { KeychainOptions } from "./screens/AddOns/Keychainoptions";
 import { KeychainArrangement } from "./screens/AddOns/Keychainarrangement";
+import { IdCardOptions } from "./screens/AddOns/IdCardOptions";
+import { IdCardArrangement } from "./screens/AddOns/Idcardarrangement";
 
 export const router = createBrowserRouter([
   {
@@ -80,5 +82,13 @@ export const router = createBrowserRouter([
   {
     path: "/keychain-arrangement",
     Component: KeychainArrangement,
+  },
+  {
+    path: "/id-card",
+    Component: IdCardOptions,
+  },
+  {
+    path: "/idcard-arrangement",
+    Component: IdCardArrangement,
   },
 ]);
