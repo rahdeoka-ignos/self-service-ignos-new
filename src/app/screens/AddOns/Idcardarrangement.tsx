@@ -30,13 +30,13 @@ export function IdCardArrangement() {
   for (const order of orders) {
     for (let i = 0; i < order.qty; i++) {
       slots.push({
-        orderId:       order.id,
-        orderName:     order.name,
+        orderId: order.id,
+        orderName: order.name,
         orderSubtitle: order.subtitle,
-        orderImage:    order.image,
-        orientation:   order.orientation,
-        slotIndex:     i,
-        globalIndex:   globalIndex++,
+        orderImage: order.image,
+        orientation: order.orientation,
+        slotIndex: i,
+        globalIndex: globalIndex++,
       });
     }
   }
@@ -50,19 +50,31 @@ export function IdCardArrangement() {
   const [transforms, setTransforms] = useState<{
     [globalIndex: number]: { scale: number; x: number; y: number };
   }>({});
-  const [activeSlot, setActiveSlot]   = useState(0);
-  const [previewPhotoUrl, setPreviewPhotoUrl]   = useState<string | null>(null);
+  // Tambah setelah state transforms
+  const [cardFields, setCardFields] = useState<{
+    [globalIndex: number]: {
+      name: string;
+      dob: string;
+      age: string;
+      address: string;
+      date: string;
+    };
+  }>({});
+  const [activeSlot, setActiveSlot] = useState(0);
+  const [previewPhotoUrl, setPreviewPhotoUrl] = useState<string | null>(null);
   const [previewPhotoOpen, setPreviewPhotoOpen] = useState(false);
   const [previewPhotoIndex, setPreviewPhotoIndex] = useState(0);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [successOpen, setSuccessOpen] = useState(false);
-  const [printing, setPrinting]       = useState(false);
-  const [countdown, setCountdown]     = useState(10);
-  const [previewUrl, setPreviewUrl]   = useState<string | null>(null);
+  const [printing, setPrinting] = useState(false);
+  const [countdown, setCountdown] = useState(10);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
 
   const slotRef = useRef<HTMLDivElement>(null);
-  const [uiSlotSize, setUiSlotSize] = useState<{ w: number; h: number } | null>(null);
+  const [uiSlotSize, setUiSlotSize] = useState<{ w: number; h: number } | null>(
+    null,
+  );
 
   useEffect(() => {
     const cached = sessionStorage.getItem("gallery");
@@ -112,10 +124,33 @@ export function IdCardArrangement() {
     return () => clearInterval(interval);
   }, [successOpen]);
 
+  const getFields = (idx: number) =>
+    cardFields[idx] ?? { name: "", dob: "", age: "", address: "", date: "" };
+
+  const getPhotoSlotStyle = (orderId: string) => {
+    if (orderId === "landscape-blue") {
+      // Posisi relatif dalam persen terhadap canvas 1004×626
+      return {
+        position: "absolute" as const,
+        left: `${(80 / 1004) * 100}%`,
+        top: `${(155 / 626) * 100}%`,
+        width: `${(285 / 1004) * 100}%`,
+        height: `${(378 / 626) * 100}%`,
+        borderRadius: `${(40 / 285) * 100}%`,
+        overflow: "hidden" as const,
+        border: "1px solid black",
+      };
+    }
+    return null;
+  };
+
   const handlePhotoClick = (photo: { thumb: string; full: string }) => {
     const emptySlot = slots.find((s) => !filledSlots[s.globalIndex]);
     if (emptySlot !== undefined) {
-      setFilledSlots((prev) => ({ ...prev, [emptySlot.globalIndex]: photo.full }));
+      setFilledSlots((prev) => ({
+        ...prev,
+        [emptySlot.globalIndex]: photo.full,
+      }));
     } else {
       setFilledSlots((prev) => ({ ...prev, [activeSlot]: photo.full }));
       setTransforms((prev) => {
@@ -130,13 +165,13 @@ export function IdCardArrangement() {
     try {
       setPrinting(true);
       for (const slot of slots) {
-        if (!filledSlots[slot.globalIndex]) continue;
         await generatePrintIdCard(filledSlots[slot.globalIndex], {
-          transform:   transforms[slot.globalIndex],
-          uiSlotW:     uiSlotSize?.w,
-          uiSlotH:     uiSlotSize?.h,
+          transform: transforms[slot.globalIndex],
+          uiSlotW: uiSlotSize?.w,
+          uiSlotH: uiSlotSize?.h,
           orientation: slot.orientation,
-          cardId:      slot.orderId,
+          cardId: slot.orderId,
+          fields: cardFields[slot.globalIndex], // ← tambah ini
         });
       }
       setSuccessOpen(true);
@@ -150,7 +185,7 @@ export function IdCardArrangement() {
 
   // Aspect ratio sesuai orientasi ID card standar (85.6mm × 54mm)
   const getSlotAspectRatio = (orientation: "portrait" | "landscape") =>
-    orientation === "portrait" ? "54/85.6" : "85.6/54";
+    orientation === "portrait" ? "53/85" : "85/53";
 
   const canConfirm = slots.every((s) => filledSlots[s.globalIndex]);
 
@@ -275,19 +310,121 @@ export function IdCardArrangement() {
                     </div>
 
                     {/* Foto slot */}
+                    {/* Foto slot */}
                     <div className="flex-1 flex items-center justify-center overflow-hidden min-h-0">
                       <div
                         ref={slotRef}
                         className="relative border-4 border-black rounded-xl overflow-hidden bg-white shadow-lg group"
                         style={{
-                          aspectRatio: getSlotAspectRatio(activeSlotItem.orientation),
-                          height: "100%",
+                          aspectRatio: getSlotAspectRatio(
+                            activeSlotItem.orientation,
+                          ),
+                          height:
+                            activeSlotItem.orientation === "landscape"
+                              ? ""
+                              : "100%",
                           maxHeight: "100%",
-                          width: "auto",
+                          width:
+                            activeSlotItem.orientation === "landscape"
+                              ? "100%"
+                              : "auto",
                           maxWidth: "100%",
+                          containerType: "inline-size",
                         }}
                       >
-                        {filledSlots[activeSlotItem.globalIndex] ? (
+                        {activeSlotItem.orderId === "landscape-blue" ? (
+                          // ── LANDSCAPE BLUE: satu render, input overlay di dalamnya ──
+                          <>
+                            <img
+                              src="/addons/idcard/background-blue.png"
+                              className="absolute inset-0 w-full h-full"
+                              style={{ objectFit: "fill" }}
+                            />
+                            {filledSlots[activeSlotItem.globalIndex] && (
+                              <div
+                                style={
+                                  getPhotoSlotStyle(activeSlotItem.orderId)!
+                                }
+                              >
+                                <SlotImage
+                                  key={`idc-${activeSlotItem.globalIndex}-${filledSlots[activeSlotItem.globalIndex]}-${uiSlotSize?.w ?? 0}`}
+                                  src={filledSlots[activeSlotItem.globalIndex]}
+                                  slotW={(uiSlotSize?.w ?? 1004) * (285 / 1004)}
+                                  slotH={(uiSlotSize?.h ?? 626) * (378 / 626)}
+                                  transform={
+                                    transforms[activeSlotItem.globalIndex] ?? {
+                                      scale: 1,
+                                      x: 0,
+                                      y: 0,
+                                    }
+                                  }
+                                  onTransformChange={(t) =>
+                                    setTransforms((prev) => ({
+                                      ...prev,
+                                      [activeSlotItem.globalIndex]: t,
+                                    }))
+                                  }
+                                />
+                              </div>
+                            )}
+                            {/* Input overlay */}
+                            {[
+                              { key: "name", top: 195 },
+                              { key: "dob", top: 265 },
+                              { key: "age", top: 340 },
+                              { key: "address", top: 410 },
+                              { key: "date", top: 485 },
+                            ].map(({ key, top }) => (
+                              <input
+                                key={key}
+                                type="text"
+                                value={
+                                  (
+                                    getFields(activeSlotItem.globalIndex) as any
+                                  )[key]
+                                }
+                                onChange={(e) =>
+                                  setCardFields((prev) => ({
+                                    ...prev,
+                                    [activeSlotItem.globalIndex]: {
+                                      ...getFields(activeSlotItem.globalIndex),
+                                      [key]: e.target.value,
+                                    },
+                                  }))
+                                }
+                                className="absolute bg-transparent border-none outline-none text-blue-700 font-bold z-20"
+                                style={{
+                                  left: `${(400 / 1004) * 100}%`,
+                                  top: `${(top / 626) * 100}%`,
+                                  width: `${(540 / 1004) * 100}%`,
+                                  fontSize: "clamp(28px, 1.8cqw, 14px)",
+                                  transform: "translateY(-50%)",
+                                  caretColor: "#1a1aff",
+                                }}
+                              />
+                            ))}
+                            {filledSlots[activeSlotItem.globalIndex] && (
+                              <button
+                                className="absolute top-1 right-1 z-50 bg-red-500 hover:bg-red-600 text-white rounded-full w-7 h-7 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity border-2 border-white shadow-lg cursor-pointer"
+                                onClick={() => {
+                                  setFilledSlots((prev) => {
+                                    const u = { ...prev };
+                                    delete u[activeSlotItem.globalIndex];
+                                    return u;
+                                  });
+                                  setTransforms((prev) => {
+                                    const u = { ...prev };
+                                    delete u[activeSlotItem.globalIndex];
+                                    return u;
+                                  });
+                                }}
+                              >
+                                ✕
+                              </button>
+                            )}
+                          </>
+                        ) : filledSlots[activeSlotItem.globalIndex] ? (
+                          // ── FULL FOTO ──
                           <>
                             <SlotImage
                               key={`idc-${activeSlotItem.globalIndex}-${filledSlots[activeSlotItem.globalIndex]}-${uiSlotSize?.w ?? 0}`}
@@ -308,19 +445,18 @@ export function IdCardArrangement() {
                                 }))
                               }
                             />
-                            {/* Tombol delete */}
                             <button
                               className="absolute top-1 right-1 z-50 bg-red-500 hover:bg-red-600 text-white rounded-full w-7 h-7 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity border-2 border-white shadow-lg cursor-pointer"
                               onClick={() => {
                                 setFilledSlots((prev) => {
-                                  const updated = { ...prev };
-                                  delete updated[activeSlotItem.globalIndex];
-                                  return updated;
+                                  const u = { ...prev };
+                                  delete u[activeSlotItem.globalIndex];
+                                  return u;
                                 });
                                 setTransforms((prev) => {
-                                  const updated = { ...prev };
-                                  delete updated[activeSlotItem.globalIndex];
-                                  return updated;
+                                  const u = { ...prev };
+                                  delete u[activeSlotItem.globalIndex];
+                                  return u;
                                 });
                               }}
                             >
@@ -328,6 +464,7 @@ export function IdCardArrangement() {
                             </button>
                           </>
                         ) : (
+                          // ── PLACEHOLDER ──
                           <div className="w-full h-full flex flex-col items-center justify-center text-gray-400 bg-gray-50">
                             <div className="text-5xl mb-2">📷</div>
                             <p className="text-lg font-bold text-center px-4">
@@ -353,12 +490,13 @@ export function IdCardArrangement() {
                         const url = await generatePrintIdCard(
                           filledSlots[activeSlotItem.globalIndex],
                           {
-                            preview:     true,
-                            transform:   transforms[activeSlotItem.globalIndex],
-                            uiSlotW:     uiSlotSize?.w,
-                            uiSlotH:     uiSlotSize?.h,
+                            preview: true,
+                            transform: transforms[activeSlotItem.globalIndex],
+                            uiSlotW: uiSlotSize?.w,
+                            uiSlotH: uiSlotSize?.h,
                             orientation: activeSlotItem.orientation,
-                            cardId:      activeSlotItem.orderId,
+                            cardId: activeSlotItem.orderId,
+                            fields: cardFields[activeSlotItem.globalIndex], // ← tambah ini
                           },
                         );
                         if (url) {
@@ -392,7 +530,7 @@ export function IdCardArrangement() {
       {/* Modal Preview Print */}
       {previewOpen && previewUrl && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-xl border-4 border-black max-w-md w-full">
+          <div className="bg-white p-6 rounded-xl border-4 border-black h-auto">
             <h2 className="text-3xl font-bold mb-4 text-center">
               Print Preview
             </h2>
@@ -401,7 +539,10 @@ export function IdCardArrangement() {
               className="w-full rounded-lg border-4 border-black"
             />
             <div className="flex gap-4 mt-6">
-              <BrutalistButton className="w-full" onClick={() => setPreviewOpen(false)}>
+              <BrutalistButton
+                className="w-full"
+                onClick={() => setPreviewOpen(false)}
+              >
                 Close
               </BrutalistButton>
             </div>
@@ -463,7 +604,10 @@ export function IdCardArrangement() {
               <BrutalistButton
                 className="w-full"
                 onClick={() => {
-                  handlePhotoClick({ thumb: previewPhotoUrl, full: previewPhotoUrl });
+                  handlePhotoClick({
+                    thumb: previewPhotoUrl,
+                    full: previewPhotoUrl,
+                  });
                   setPreviewPhotoOpen(false);
                 }}
               >
@@ -518,9 +662,21 @@ export function IdCardArrangement() {
             <div className="flex items-center justify-center mb-6">
               <div className="relative w-20 h-20">
                 <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
-                  <circle cx="18" cy="18" r="15.9" fill="none" stroke="#e5e7eb" strokeWidth="3" />
                   <circle
-                    cx="18" cy="18" r="15.9" fill="none" stroke="black" strokeWidth="3"
+                    cx="18"
+                    cy="18"
+                    r="15.9"
+                    fill="none"
+                    stroke="#e5e7eb"
+                    strokeWidth="3"
+                  />
+                  <circle
+                    cx="18"
+                    cy="18"
+                    r="15.9"
+                    fill="none"
+                    stroke="black"
+                    strokeWidth="3"
                     strokeDasharray="100"
                     strokeDashoffset={100 - (countdown / 10) * 100}
                     strokeLinecap="round"
