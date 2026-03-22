@@ -13,6 +13,8 @@ import { KeychainOptions } from "./screens/AddOns/Keychainoptions";
 import { KeychainArrangement } from "./screens/AddOns/Keychainarrangement";
 import { IdCardOptions } from "./screens/AddOns/IdCardOptions";
 import { IdCardArrangement } from "./screens/AddOns/Idcardarrangement";
+import { StoryQuestion } from "./screens/AddOns/Storyquestion";
+import { CompletePage } from "./screens/AddOns/Completepage";
 
 export const router = createBrowserRouter([
   {
@@ -90,5 +92,13 @@ export const router = createBrowserRouter([
   {
     path: "/idcard-arrangement",
     Component: IdCardArrangement,
+  },
+  {
+    path: "/story-question",
+    Component: StoryQuestion,
+  },
+  {
+    path: "/complete",
+    Component: CompletePage,
   },
 ]);

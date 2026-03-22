@@ -25,42 +25,42 @@ function TemplateModeModal({
       onClick={onClose}
     >
       <div
-        className="bg-white border-4 border-black rounded-3xl px-14 py-12 h-[50%] w-7xl relative shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] flex flex-col justify-center"
+        className="bg-white border-4 border-black rounded-3xl px-20 py-16 h-[60%] w-7xl relative shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] flex flex-col justify-center"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close button */}
         <button
           onClick={onClose}
-          className="absolute top-5 right-5 w-12 h-12 flex items-center justify-center border-2 border-black rounded-full hover:bg-black hover:text-white transition-colors cursor-pointer"
+          className="absolute top-6 right-6 w-16 h-16 flex items-center justify-center border-2 border-black rounded-full hover:bg-black hover:text-white transition-colors cursor-pointer"
         >
-          <X size={20} strokeWidth={3} />
+          <X size={28} strokeWidth={3} />
         </button>
 
-        <div className="text-center mb-10">
-          <h2 className="text-4xl font-bold mb-3">Template Mode</h2>
-          <p className="text-gray-600 text-xl">
+        <div className="text-center mb-12">
+          <h2 className="text-6xl font-bold mb-4">Template Mode</h2>
+          <p className="text-2xl text-gray-600">
             You have{" "}
             <span className="font-bold text-black">{count} people</span>. How
             should the template be applied?
           </p>
         </div>
 
-        <div className="grid grid-cols-2 gap-6">
+        <div className="grid grid-cols-2 gap-8">
           {/* Option A — Single template for everyone */}
           <button
             onClick={() => onSelect(true)}
-            className="group flex flex-col items-start gap-5 p-8 border-4 border-black rounded-2xl bg-white hover:bg-black hover:text-white transition-all cursor-pointer shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1"
+            className="group flex flex-col items-start gap-6 p-10 border-4 border-black rounded-2xl bg-white hover:bg-black hover:text-white transition-all cursor-pointer shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1"
           >
-            <div className="w-20 h-20 rounded-full border-4 border-black group-hover:border-white flex items-center justify-center bg-yellow-300 group-hover:bg-yellow-400 transition-colors shrink-0">
-              <Layout size={38} strokeWidth={2.5} className="text-black" />
+            <div className="w-24 h-24 rounded-full border-4 border-black group-hover:border-white flex items-center justify-center bg-yellow-300 group-hover:bg-yellow-400 transition-colors shrink-0">
+              <Layout size={48} strokeWidth={2.5} className="text-black" />
             </div>
             <div className="text-left w-full flex-1">
-              <p className="font-bold text-2xl leading-tight">1 Template</p>
-              <p className="text-base mt-2 text-gray-500 group-hover:text-gray-300 transition-colors">
+              <p className="font-bold text-4xl leading-tight">1 Template</p>
+              <p className="text-xl mt-3 text-gray-500 group-hover:text-gray-300 transition-colors">
                 All {count} people share a single template layout
               </p>
             </div>
-            <span className="text-sm font-bold px-4 py-1.5 border-2 border-black group-hover:border-white rounded-full">
+            <span className="text-base font-bold px-5 py-2 border-2 border-black group-hover:border-white rounded-full">
               GROUP / COUPLE
             </span>
           </button>
@@ -68,20 +68,20 @@ function TemplateModeModal({
           {/* Option B — Template per person / pair */}
           <button
             onClick={() => onSelect(false)}
-            className="group flex flex-col items-start gap-5 p-8 border-4 border-black rounded-2xl bg-white hover:bg-black hover:text-white transition-all cursor-pointer shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1"
+            className="group flex flex-col items-start gap-6 p-10 border-4 border-black rounded-2xl bg-white hover:bg-black hover:text-white transition-all cursor-pointer shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1"
           >
-            <div className="w-20 h-20 rounded-full border-4 border-black group-hover:border-white flex items-center justify-center bg-blue-300 group-hover:bg-blue-400 transition-colors shrink-0">
-              <LayoutGrid size={38} strokeWidth={2.5} className="text-black" />
+            <div className="w-24 h-24 rounded-full border-4 border-black group-hover:border-white flex items-center justify-center bg-blue-300 group-hover:bg-blue-400 transition-colors shrink-0">
+              <LayoutGrid size={48} strokeWidth={2.5} className="text-black" />
             </div>
             <div className="text-left w-full flex-1">
-              <p className="font-bold text-2xl leading-tight">
+              <p className="font-bold text-4xl leading-tight">
                 Multiple Templates
               </p>
-              <p className="text-base mt-2 text-gray-500 group-hover:text-gray-300 transition-colors">
+              <p className="text-xl mt-3 text-gray-500 group-hover:text-gray-300 transition-colors">
                 Choose a different template per person or pair
               </p>
             </div>
-            <span className="text-sm font-bold px-4 py-1.5 border-2 border-black group-hover:border-white rounded-full">
+            <span className="text-base font-bold px-5 py-2 border-2 border-black group-hover:border-white rounded-full">
               INDIVIDUAL
             </span>
           </button>

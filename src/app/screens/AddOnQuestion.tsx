@@ -138,18 +138,18 @@ export function AddOnQuestion() {
     }).format(price);
 
   return (
-    <div className="min-h-screen bg-gray-100 p-8 pt-12 pb-16">
+    <div className="min-h-screen bg-gray-100 p-10 pt-14 pb-20">
       <div className="w-screen-3xl mx-auto">
         {/* Title */}
-        <div className="text-center mb-12">
-          <h1 className="text-6xl font-bold mb-4">Tambahan Cetakan</h1>
-          <p className="text-2xl text-gray-600">
+        <div className="text-center mb-14">
+          <h1 className="text-7xl font-bold mb-5">Tambahan Cetakan</h1>
+          <p className="text-3xl text-gray-600">
             Apakah kamu ingin menambahkan cetakan lainnya?
           </p>
         </div>
 
         {/* Addons Grid */}
-        <div className="grid grid-cols-6 gap-5">
+        <div className="grid grid-cols-6 gap-6">
           {addons.map((addon) => (
             <div
               key={addon.id}
@@ -169,22 +169,22 @@ export function AddOnQuestion() {
                   }}
                 />
                 {addon.isPreorder && (
-                  <span className="absolute top-2 left-2 text-xs font-bold bg-yellow-300 border-2 border-black px-2 py-0.5 rounded-full">
+                  <span className="absolute top-3 left-3 text-sm font-bold bg-yellow-300 border-2 border-black px-3 py-1 rounded-full">
                     PO
                   </span>
                 )}
               </div>
 
               {/* Info */}
-              <div className="p-4 flex flex-col flex-1">
-                <h2 className="text-base font-bold leading-tight mb-1">
+              <div className="p-5 flex flex-col flex-1">
+                <h2 className="text-xl font-bold leading-tight mb-2">
                   {addon.title}
                 </h2>
-                <p className="text-sm font-bold text-black mb-3">
+                <p className="text-lg font-bold text-black mb-4">
                   {formatPrice(addon.price)}
                 </p>
-                <button className="mt-auto w-full text-sm font-bold border-2 border-black py-2 rounded-lg bg-white group-hover:bg-black group-hover:text-white transition-colors flex items-center justify-center gap-1">
-                  Tambah <ArrowRight size={14} strokeWidth={3} />
+                <button className="mt-auto w-full text-base font-bold border-2 border-black py-3 rounded-lg bg-white group-hover:bg-black group-hover:text-white transition-colors flex items-center justify-center gap-2">
+                  Tambah <ArrowRight size={18} strokeWidth={3} />
                 </button>
               </div>
             </div>
@@ -192,10 +192,10 @@ export function AddOnQuestion() {
         </div>
 
         {/* Skip Button */}
-        <div className="flex justify-center mt-12">
+        <div className="flex justify-center mt-14">
           <button
-            onClick={() => navigate("/payment")}
-            className="text-xl font-bold border-4 border-black px-12 py-4 bg-white hover:bg-black hover:text-white transition-colors rounded-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1"
+            onClick={() => navigate("/story-question")}
+            className="text-2xl font-bold border-4 border-black px-16 py-5 bg-white hover:bg-black hover:text-white transition-colors rounded-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1"
           >
             Tidak, lanjutkan →
           </button>
