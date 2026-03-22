@@ -128,7 +128,7 @@ export function IdCardArrangement() {
     cardFields[idx] ?? { name: "", dob: "", age: "", address: "", date: "" };
 
   const getPhotoSlotStyle = (orderId: string) => {
-    if (orderId === "landscape-blue") {
+    if (orderId === "landscape-blue" || orderId === "landscape-red") {
       // Posisi relatif dalam persen terhadap canvas 1004×626
       return {
         position: "absolute" as const,
@@ -185,7 +185,7 @@ export function IdCardArrangement() {
 
   // Aspect ratio sesuai orientasi ID card standar (85.6mm × 54mm)
   const getSlotAspectRatio = (orientation: "portrait" | "landscape") =>
-    orientation === "portrait" ? "53/85" : "85/53";
+    orientation === "portrait" ? "53/79.6" : "85/53";
 
   const canConfirm = slots.every((s) => filledSlots[s.globalIndex]);
 
@@ -310,24 +310,16 @@ export function IdCardArrangement() {
                     </div>
 
                     {/* Foto slot */}
-                    {/* Foto slot */}
                     <div className="flex-1 flex items-center justify-center overflow-hidden min-h-0">
                       <div
                         ref={slotRef}
                         className="relative border-4 border-black rounded-xl overflow-hidden bg-white shadow-lg group"
                         style={{
-                          aspectRatio: getSlotAspectRatio(
-                            activeSlotItem.orientation,
-                          ),
-                          height:
-                            activeSlotItem.orientation === "landscape"
-                              ? ""
-                              : "100%",
+                          aspectRatio: getSlotAspectRatio(activeSlotItem.orientation),
+                          ...(activeSlotItem.orientation === "landscape"
+                            ? { width: "100%", height: "auto" }
+                            : { height: "100%", width: "auto" }),
                           maxHeight: "100%",
-                          width:
-                            activeSlotItem.orientation === "landscape"
-                              ? "100%"
-                              : "auto",
                           maxWidth: "100%",
                           containerType: "inline-size",
                         }}
@@ -400,6 +392,96 @@ export function IdCardArrangement() {
                                   fontSize: "clamp(28px, 1.8cqw, 14px)",
                                   transform: "translateY(-50%)",
                                   caretColor: "#1a1aff",
+                                }}
+                              />
+                            ))}
+                            {filledSlots[activeSlotItem.globalIndex] && (
+                              <button
+                                className="absolute top-1 right-1 z-50 bg-red-500 hover:bg-red-600 text-white rounded-full w-7 h-7 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity border-2 border-white shadow-lg cursor-pointer"
+                                onClick={() => {
+                                  setFilledSlots((prev) => {
+                                    const u = { ...prev };
+                                    delete u[activeSlotItem.globalIndex];
+                                    return u;
+                                  });
+                                  setTransforms((prev) => {
+                                    const u = { ...prev };
+                                    delete u[activeSlotItem.globalIndex];
+                                    return u;
+                                  });
+                                }}
+                              >
+                                ✕
+                              </button>
+                            )}
+                          </>
+                        ) : activeSlotItem.orderId === "landscape-red" ? (
+                          <>
+                            <img
+                              src="/addons/idcard/background-red.png"
+                              className="absolute inset-0 w-full h-full"
+                              style={{ objectFit: "fill" }}
+                            />
+                            {filledSlots[activeSlotItem.globalIndex] && (
+                              <div
+                                style={
+                                  getPhotoSlotStyle(activeSlotItem.orderId)!
+                                }
+                              >
+                                <SlotImage
+                                  key={`idc-${activeSlotItem.globalIndex}-${filledSlots[activeSlotItem.globalIndex]}-${uiSlotSize?.w ?? 0}`}
+                                  src={filledSlots[activeSlotItem.globalIndex]}
+                                  slotW={(uiSlotSize?.w ?? 1004) * (285 / 1004)}
+                                  slotH={(uiSlotSize?.h ?? 626) * (378 / 626)}
+                                  transform={
+                                    transforms[activeSlotItem.globalIndex] ?? {
+                                      scale: 1,
+                                      x: 0,
+                                      y: 0,
+                                    }
+                                  }
+                                  onTransformChange={(t) =>
+                                    setTransforms((prev) => ({
+                                      ...prev,
+                                      [activeSlotItem.globalIndex]: t,
+                                    }))
+                                  }
+                                />
+                              </div>
+                            )}
+                            {/* Input overlay */}
+                            {[
+                              { key: "name", top: 195 },
+                              { key: "dob", top: 265 },
+                              { key: "age", top: 340 },
+                              { key: "address", top: 410 },
+                              { key: "date", top: 485 },
+                            ].map(({ key, top }) => (
+                              <input
+                                key={key}
+                                type="text"
+                                value={
+                                  (
+                                    getFields(activeSlotItem.globalIndex) as any
+                                  )[key]
+                                }
+                                onChange={(e) =>
+                                  setCardFields((prev) => ({
+                                    ...prev,
+                                    [activeSlotItem.globalIndex]: {
+                                      ...getFields(activeSlotItem.globalIndex),
+                                      [key]: e.target.value,
+                                    },
+                                  }))
+                                }
+                                className="absolute bg-transparent border-none outline-none text-red-700 font-bold z-20"
+                                style={{
+                                  left: `${(400 / 1004) * 100}%`,
+                                  top: `${(top / 626) * 100}%`,
+                                  width: `${(540 / 1004) * 100}%`,
+                                  fontSize: "clamp(28px, 1.8cqw, 14px)",
+                                  transform: "translateY(-50%)",
+                                  caretColor: "#cc0000",
                                 }}
                               />
                             ))}

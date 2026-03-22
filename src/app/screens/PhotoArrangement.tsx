@@ -420,7 +420,7 @@ export function PhotoArrangement() {
             </div>
 
             {/* RIGHT SIDE - Template Preview with Slots */}
-            <BrutalistCard className="col-span-3 pb-5 flex flex-col overflow-hidden h-[72dvh]">
+            <BrutalistCard className="col-span-3 pb-5 flex flex-col overflow-hidden h-[77dvh]">
               <div className="px-6">
                 <h2 className="text-3xl font-bold my-2">Template Layout</h2>
                 <div className="flex gap-3 overflow-x-auto pb-2">
@@ -652,7 +652,7 @@ export function PhotoArrangement() {
                 </div>
               </div>
             </BrutalistCard>
-            <div className="col-span-1 h-[72dvh] overflow-hidden">
+            <div className="col-span-1 h-[77dvh] overflow-hidden">
               <BrutalistCard className="p-4 h-full overflow-y-auto">
                 <h2 className="text-xl font-bold mb-4">Filter</h2>
                 <div className="flex flex-col gap-3">

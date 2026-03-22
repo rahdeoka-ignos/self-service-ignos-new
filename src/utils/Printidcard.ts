@@ -63,9 +63,13 @@ export async function generatePrintIdCard(
   // ─────────────────────────────────────────
   // LANDSCAPE BLUE — foto di dalam kotak
   // ─────────────────────────────────────────
-  if (cardId === "landscape-blue") {
-    // 1. Draw background
-    const bg = await loadImage("/addons/idcard/background-blue.png");
+  if (cardId === "landscape-blue" || cardId === "landscape-red") {
+    const bgPath = cardId === "landscape-blue"
+    ? "/addons/idcard/background-blue.png"
+    : "/addons/idcard/background-red.png";
+    const textColor = cardId === "landscape-blue" ? "#1a1aff" : "#cc0000";
+
+    const bg = await loadImage(bgPath);
     ctx.drawImage(bg, 0, 0, W, H);
 
     // 2. Koordinat foto slot (dari Figma, relatif ke canvas 1004×626)
@@ -90,8 +94,10 @@ export async function generatePrintIdCard(
       drawH = slotW / imgAspect;
     }
 
-    const ratioX = options.uiSlotW ? slotW / options.uiSlotW : 1;
-    const ratioY = options.uiSlotH ? slotH / options.uiSlotH : 1;
+    const uiPhotoSlotW = options.uiSlotW ? options.uiSlotW * (285 / 1004) : slotW;
+    const uiPhotoSlotH = options.uiSlotH ? options.uiSlotH * (378 / 626) : slotH;
+    const ratioX = slotW / uiPhotoSlotW;
+    const ratioY = slotH / uiPhotoSlotH;
 
     const scaledW = drawW * transform.scale;
     const scaledH = drawH * transform.scale;
@@ -137,8 +143,8 @@ export async function generatePrintIdCard(
       { label: fields.date, y: 490 },
     ];
 
-    ctx.fillStyle = "#1a1aff"; // warna biru sesuai design
-    ctx.font = "bold 38px Arial, sans-serif";
+    ctx.fillStyle = textColor; // warna biru sesuai design
+    ctx.font = "normal 24px Arial, sans-serif";
     ctx.textAlign = "left";
     ctx.textBaseline = "middle";
 
