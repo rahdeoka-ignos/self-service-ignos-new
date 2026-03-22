@@ -472,7 +472,7 @@ export function PhotoArrangement() {
                             onClick={() => handleSlotClick(1)}
                             onDrop={(e) => handleDrop(e, 1)}
                             onDragOver={allowDrop}
-                            className={`w-full h-full p-0 overflow-hidden shadow-none border-0 ${
+                            className={`w-full h-full p-0 overflow-hidden shadow-none !border-0 ${
                               selectedPhoto ? "cursor-pointer" : ""
                             }`}
                           >
@@ -512,7 +512,7 @@ export function PhotoArrangement() {
                                   onClick={() => handleSlotClick(slotNum)}
                                   onDrop={(e) => handleDrop(e, slotNum)}
                                   onDragOver={allowDrop}
-                                  className={`w-full h-full p-0 overflow-hidden shadow-none border-0 ${
+                                  className={`w-full h-full p-0 overflow-hidden shadow-none !border-0 ${
                                     selectedPhoto ? "cursor-pointer" : ""
                                   }`}
                                 >
@@ -554,7 +554,7 @@ export function PhotoArrangement() {
                                 onClick={() => handleSlotClick(slotNum)}
                                 onDrop={(e) => handleDrop(e, slotNum)}
                                 onDragOver={allowDrop}
-                                className={`w-full h-full p-0 overflow-hidden shadow-none border-0 ${
+                                className={`w-full h-full p-0 overflow-hidden shadow-none !border-0 ${
                                   selectedPhoto ? "cursor-pointer" : ""
                                 }`}
                               >
