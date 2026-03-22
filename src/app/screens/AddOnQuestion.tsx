@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router";
-import { BrutalistCard } from "../components/BrutalistCard";
 import { BrutalistButton } from "../components/BrutalistButton";
+import { ArrowRight } from "lucide-react";
 
 export function AddOnQuestion() {
   const navigate = useNavigate();
@@ -18,19 +18,21 @@ export function AddOnQuestion() {
         serviceId: "photo-studio",
         skipBonus: true,
         destination: "templates",
+        disableModal: true,
       },
     },
     {
       id: "10r-print",
       title: "Cetak Foto A4",
       price: 20000,
-      description: "Cetak foto ukuran A4 (10R) dengan kualitas tinggi...",
+      description: "Cetak foto ukuran A4 (10R) dengan kualitas tinggi.",
       image: "/addons/A4.jpg",
       path: "/people-count",
       state: {
         serviceId: "photo-studio",
         skipBonus: true,
         destination: "arrange-photos-a4",
+        disableModal: true,
       },
     },
     {
@@ -120,8 +122,8 @@ export function AddOnQuestion() {
       id: "photo-calender",
       title: "Photo Calender",
       price: 90000,
-      isPreorder: true,
-      description: "Photo Calender cocok untuk blablabla",
+      isPreorder: false,
+      description: "Photo Calender cocok untuk blablabla.",
       image: "/addons/photo-calender.jpg",
       path: "/photo-calender",
       state: {},
@@ -136,64 +138,66 @@ export function AddOnQuestion() {
     }).format(price);
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-8">
-      <div className=" mx-auto">
+    <div className="min-h-screen bg-gray-100 p-8 pt-12 pb-16">
+      <div className="w-screen-3xl mx-auto">
         {/* Title */}
-        <div className="text-center mb-16">
+        <div className="text-center mb-12">
           <h1 className="text-6xl font-bold mb-4">Tambahan Cetakan</h1>
-          <p className="text-2xl text-gray-700">
+          <p className="text-2xl text-gray-600">
             Apakah kamu ingin menambahkan cetakan lainnya?
           </p>
         </div>
 
         {/* Addons Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-6 gap-10 mx-auto items-center">
+        <div className="grid grid-cols-6 gap-5">
           {addons.map((addon) => (
-            <BrutalistCard
+            <div
               key={addon.id}
-              interactive
               onClick={() => navigate(addon.path, { state: addon.state })}
-              className="flex flex-col items-center text-center p-3 hover:scale-105"
+              className="group flex flex-col bg-white border-4 border-black rounded-2xl overflow-hidden cursor-pointer shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all duration-150"
             >
               {/* Image */}
-              <div className="w-full h-80 mb-6 overflow-hidden border-4 border-black rounded-xl">
+              <div className="relative w-full aspect-square overflow-hidden border-b-4 border-black">
                 <img
                   src={addon.image}
                   alt={addon.title}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src =
+                      "https://placehold.co/400x400/e5e7eb/6b7280?text=" +
+                      encodeURIComponent(addon.title);
+                  }}
                 />
+                {addon.isPreorder && (
+                  <span className="absolute top-2 left-2 text-xs font-bold bg-yellow-300 border-2 border-black px-2 py-0.5 rounded-full">
+                    PO
+                  </span>
+                )}
               </div>
 
-              <h2 className="text-2xl font-bold mb-1">{addon.title}</h2>
-
-              {/* Price */}
-              <p className="text-xl font-semibold text-black mb-2">
-                {formatPrice(addon.price)}
-              </p>
-
-              {/* Preorder badge */}
-              {/* {addon.isPreorder && (
-                <span className="text-sm bg-yellow-300 px-2 py-1 border-2 border-black mb-2">
-                  PO
-                </span>
-              )} */}
-
-              {/* Description */}
-              {/* <p className="text-gray-600 text-lg">{addon.description}</p> */}
-              <BrutalistButton size="sm" className="cursor-pointer">
-                Tambah
-              </BrutalistButton>
-            </BrutalistCard>
+              {/* Info */}
+              <div className="p-4 flex flex-col flex-1">
+                <h2 className="text-base font-bold leading-tight mb-1">
+                  {addon.title}
+                </h2>
+                <p className="text-sm font-bold text-black mb-3">
+                  {formatPrice(addon.price)}
+                </p>
+                <button className="mt-auto w-full text-sm font-bold border-2 border-black py-2 rounded-lg bg-white group-hover:bg-black group-hover:text-white transition-colors flex items-center justify-center gap-1">
+                  Tambah <ArrowRight size={14} strokeWidth={3} />
+                </button>
+              </div>
+            </div>
           ))}
         </div>
 
         {/* Skip Button */}
-        <div className="flex justify-center mt-16">
+        <div className="flex justify-center mt-12">
           <button
             onClick={() => navigate("/payment")}
-            className="text-xl font-bold border-4 border-black px-10 py-4 bg-white hover:bg-black hover:text-white transition"
+            className="text-xl font-bold border-4 border-black px-12 py-4 bg-white hover:bg-black hover:text-white transition-colors rounded-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1"
           >
-            Tidak, lanjutkan
+            Tidak, lanjutkan →
           </button>
         </div>
       </div>

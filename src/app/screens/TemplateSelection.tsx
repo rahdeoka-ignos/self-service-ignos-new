@@ -64,8 +64,18 @@ const templates = {
       preview: "/templates/grid-dua/background.png",
       layout: "2",
     },
-    { id: 6, name: "grid-enam", preview: "/templates/grid-enam/background.png", layout: "6" },
-    { id: 6, name: "ribuan-memori", preview: "/templates/ribuan-memori/background.png", layout: "6" },
+    {
+      id: 6,
+      name: "grid-enam",
+      preview: "/templates/grid-enam/background.png",
+      layout: "6",
+    },
+    {
+      id: 6,
+      name: "ribuan-memori",
+      preview: "/templates/ribuan-memori/background.png",
+      layout: "6",
+    },
     {
       id: 8,
       name: "Isi Delapan",
@@ -124,12 +134,14 @@ export function TemplateSelection() {
   const location = useLocation();
   const peopleCount = location.state?.peopleCount || 1;
   const joinedBonus = location.state?.joinedBonus || false;
-  const totalSelections = joinedBonus
-    ? peopleCount <= 3
-      ? peopleCount * 2
-      : peopleCount + 1
-    : peopleCount;
-
+  const coupleMode = location.state?.coupleMode ?? false;
+  const totalSelections = coupleMode
+    ? 1 // ← 1 template untuk semua orang
+    : joinedBonus
+      ? peopleCount <= 3
+        ? peopleCount * 2
+        : peopleCount + 1
+      : peopleCount;
   const [selectedCategory, setSelectedCategory] = useState("kpop");
   const [userTemplates, setUserTemplates] = useState<{ [key: number]: any }>(
     {},
@@ -156,6 +168,7 @@ export function TemplateSelection() {
       state: {
         peopleCount,
         joinedBonus,
+        coupleMode,
         templates: selectedTemplates,
       },
     });
@@ -251,55 +264,60 @@ export function TemplateSelection() {
 
             {/* RIGHT PANEL - Selected Templates */}
             <div className="col-span-3 overflow-y-auto scrollbar-thin pr-2">
-              <h2 className="text-2xl font-bold mb-4">Your Selections</h2>
+              <h2 className="text-2xl font-bold mb-4">
+                {coupleMode
+                  ? "Template (berlaku untuk semua)"
+                  : "Your Selections"}
+              </h2>
               <div className="space-y-4">
-                {Array.from({ length: peopleCount }, (_, i) => i + 1).map(
-                  (userNum) => (
-                    <BrutalistCard
-                      key={userNum}
-                      className={`p-4 ${userNum === currentUser ? "border-8" : ""}`}
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-black text-white rounded-full flex items-center justify-center text-xl font-bold flex-shrink-0">
-                          {userNum}
-                        </div>
-                        <div className="flex-1">
-                          {userTemplates[userNum] ? (
-                            <div className="flex items-center gap-3 relative">
-                              <button
-                                onClick={() => handleRemoveTemplate(userNum)}
-                                className="absolute -top-2 -right-2 w-8 h-8 bg-red-500 text-white font-bold rounded-full border-2 border-black hover:scale-110"
-                              >
-                                ✕
-                              </button>
-
-                              <div className="w-16 h-16 border-4 border-black rounded-lg overflow-hidden">
-                                <ImageWithFallback
-                                  src={userTemplates[userNum].preview}
-                                  alt={userTemplates[userNum].name}
-                                  className="w-full h-full object-cover"
-                                />
-                              </div>
-
-                              <div>
-                                <p className="font-bold text-lg">
-                                  {userTemplates[userNum].name}
-                                </p>
-                                <p className="text-sm text-gray-600">
-                                  Template #{userTemplates[userNum].id}
-                                </p>
-                              </div>
-                            </div>
-                          ) : (
-                            <p className="text-gray-400 font-bold">
-                              Not selected
-                            </p>
-                          )}
-                        </div>
+                {Array.from(
+                  { length: coupleMode ? 1 : peopleCount },
+                  (_, i) => i + 1,
+                ).map((userNum) => (
+                  <BrutalistCard
+                    key={userNum}
+                    className={`p-4 ${userNum === currentUser ? "border-8" : ""}`}
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-black text-white rounded-full flex items-center justify-center text-xl font-bold flex-shrink-0">
+                        {userNum}
                       </div>
-                    </BrutalistCard>
-                  ),
-                )}
+                      <div className="flex-1">
+                        {userTemplates[userNum] ? (
+                          <div className="flex items-center gap-3 relative">
+                            <button
+                              onClick={() => handleRemoveTemplate(userNum)}
+                              className="absolute -top-2 -right-2 w-8 h-8 bg-red-500 text-white font-bold rounded-full border-2 border-black hover:scale-110"
+                            >
+                              ✕
+                            </button>
+
+                            <div className="w-16 h-16 border-4 border-black rounded-lg overflow-hidden">
+                              <ImageWithFallback
+                                src={userTemplates[userNum].preview}
+                                alt={userTemplates[userNum].name}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+
+                            <div>
+                              <p className="font-bold text-lg">
+                                {userTemplates[userNum].name}
+                              </p>
+                              <p className="text-sm text-gray-600">
+                                Template #{userTemplates[userNum].id}
+                              </p>
+                            </div>
+                          </div>
+                        ) : (
+                          <p className="text-gray-400 font-bold">
+                            Not selected
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </BrutalistCard>
+                ))}
               </div>
 
               {joinedBonus && (

@@ -9,6 +9,7 @@ export function BonusSelection() {
   const location = useLocation();
   const peopleCount = location.state?.peopleCount || 1;
   const skipBonus = location.state?.skipBonus;
+  const coupleMode = location.state?.coupleMode ?? false;
 
   useEffect(() => {
     if (skipBonus) {
@@ -23,7 +24,9 @@ export function BonusSelection() {
     navigate("/bonus-guide", { state: { peopleCount } });
   };
   const handleSkipBonus = () => {
-    navigate("/templates", { state: { peopleCount, joinedBonus: false } });
+    navigate("/templates", {
+      state: { peopleCount, joinedBonus: false, coupleMode },
+    });
   };
 
   return (
@@ -50,7 +53,8 @@ export function BonusSelection() {
               </div>
               <h2 className="text-5xl font-bold mb-6">Join Bonus</h2>
               <p className="text-2xl text-gray-600">
-                Awalnya kamu mendapatkan {peopleCount} print, jika kamu mengikuti bonus, dapat <b>{peopleCount * 2} print!</b>
+                Awalnya kamu mendapatkan {peopleCount} print, jika kamu
+                mengikuti bonus, dapat <b>{peopleCount * 2} print!</b>
               </p>
             </BrutalistCard>
 
