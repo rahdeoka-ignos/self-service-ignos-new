@@ -5,28 +5,13 @@ import { BrutalistButton } from "../../components/BrutalistButton";
 import { useLocation } from "react-router";
 
 const contentMap: {
-  [key: string]: { title: string; question: string };
+  [key: string]: { title: string; question: string; emoji: string };
 } = {
-  "/flower-hotwheels": {
-    title: "Flower Hotwheels",
-    question: "Berapa jumlah tambahan Flower Hotwheels?",
-  },
-  "/cetak-bingkai3d-10r": {
-    title: "Cetak Bingkai 3D 10R",
-    question: "Berapa jumlah tambahan Cetak Bingkai 3D 10R?",
-  },
-  "/cermin-foto-3d": {
-    title: "Cermin Foto 3D",
-    question: "Berapa jumlah tambahan Cermin Foto 3D?",
-  },
-  "/boneka-tabung": {
-    title: "Boneka Tabung",
-    question: "Berapa jumlah tambahan Boneka Tabung?",
-  },
-  "/puzzle-foto": {
-    title: "Puzzle Foto",
-    question: "Berapa jumlah tambahan Puzzle Foto?",
-  },
+  "/flower-hotwheels": { title: "Flower Hotwheels", question: "...", emoji: "🌸" },
+  "/cetak-bingkai3d-10r": { title: "Cetak Bingkai 3D 10R", question: "...", emoji: "🖼️" },
+  "/cermin-foto-3d": { title: "Cermin Foto 3D", question: "...", emoji: "🪞" },
+  "/boneka-tabung": { title: "Boneka Tabung", question: "...", emoji: "🧸" },
+  "/puzzle-foto": { title: "Puzzle Foto", question: "...", emoji: "🧩" },
 };
 
 export function FlowerHotwheelsPage() {
@@ -101,11 +86,11 @@ export function FlowerHotwheelsPage() {
           <>
             {/* Result */}
             <div className="text-center mb-12">
-              <h1 className="text-5xl font-bold mb-4">Flower Hotwheels</h1>
+              <h1 className="text-5xl font-bold mb-4">{currentContent.title}</h1>
             </div>
 
             <BrutalistCard className="p-10 text-center">
-              <div className="text-6xl mb-4">🌸</div>
+              <div className="text-6xl mb-4">{currentContent.emoji}</div>
 
               <h2 className="text-3xl font-bold mb-6">Total Tambahan</h2>
 
