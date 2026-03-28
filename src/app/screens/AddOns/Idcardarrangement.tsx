@@ -315,7 +315,9 @@ export function IdCardArrangement() {
                         ref={slotRef}
                         className="relative border-4 border-black rounded-xl overflow-hidden bg-white shadow-lg group"
                         style={{
-                          aspectRatio: getSlotAspectRatio(activeSlotItem.orientation),
+                          aspectRatio: getSlotAspectRatio(
+                            activeSlotItem.orientation,
+                          ),
                           ...(activeSlotItem.orientation === "landscape"
                             ? { width: "100%", height: "auto" }
                             : { height: "100%", width: "auto" }),
@@ -328,7 +330,7 @@ export function IdCardArrangement() {
                           // ── LANDSCAPE BLUE: satu render, input overlay di dalamnya ──
                           <>
                             <img
-                              src="/addons/idcard/background-blue.png"
+                              src="/addons/idcard/background-blue.jpg"
                               className="absolute inset-0 w-full h-full"
                               style={{ objectFit: "fill" }}
                             />
@@ -361,40 +363,110 @@ export function IdCardArrangement() {
                             )}
                             {/* Input overlay */}
                             {[
-                              { key: "name", top: 195 },
-                              { key: "dob", top: 265 },
-                              { key: "age", top: 340 },
-                              { key: "address", top: 410 },
-                              { key: "date", top: 485 },
-                            ].map(({ key, top }) => (
-                              <input
-                                key={key}
-                                type="text"
-                                value={
-                                  (
-                                    getFields(activeSlotItem.globalIndex) as any
-                                  )[key]
-                                }
-                                onChange={(e) =>
-                                  setCardFields((prev) => ({
-                                    ...prev,
-                                    [activeSlotItem.globalIndex]: {
-                                      ...getFields(activeSlotItem.globalIndex),
-                                      [key]: e.target.value,
-                                    },
-                                  }))
-                                }
-                                className="absolute bg-transparent border-none outline-none text-blue-700 font-bold z-20"
-                                style={{
-                                  left: `${(400 / 1004) * 100}%`,
-                                  top: `${(top / 626) * 100}%`,
-                                  width: `${(540 / 1004) * 100}%`,
-                                  fontSize: "clamp(28px, 1.8cqw, 14px)",
-                                  transform: "translateY(-50%)",
-                                  caretColor: "#1a1aff",
-                                }}
-                              />
-                            ))}
+                              { key: "name", top: 195, type: "text" },
+                              { key: "dob", top: 265, type: "date" },
+                              { key: "age", top: 340, type: "text" },
+                              { key: "address", top: 410, type: "text" },
+                              { key: "date", top: 485, type: "date" },
+                            ].map(({ key, top, type }) => {
+                              const value = (
+                                getFields(activeSlotItem.globalIndex) as any
+                              )[key];
+
+                              if (type === "date") {
+                                // Format tanggal untuk display: YYYY-MM-DD → DD/MM/YYYY
+                                const displayValue = value
+                                  ? value.split("-").reverse().join("/")
+                                  : "";
+
+                                return (
+                                  <div
+                                    key={key}
+                                    className="absolute z-20"
+                                    style={{
+                                      left: `${(370 / 1004) * 100}%`,
+                                      top: `${(top / 626) * 100}%`,
+                                      width: `${(540 / 1004) * 100}%`,
+                                      transform: "translateY(-50%)",
+                                      display: "flex",
+                                      alignItems: "center",
+                                    }}
+                                  >
+                                    {/* Teks tanggal di kiri */}
+                                    <span
+                                      className="text-blue-700 font-bold flex-1 text-right"
+                                      style={{
+                                        fontSize: "clamp(28px, 1.8cqw, 14px)",
+                                      }}
+                                    >
+                                      {displayValue}
+                                    </span>
+                                    {/* Input date — hanya icon kalender yang visible */}
+                                    <input
+                                      type="date"
+                                      value={value}
+                                      onChange={(e) =>
+                                        setCardFields((prev) => ({
+                                          ...prev,
+                                          [activeSlotItem.globalIndex]: {
+                                            ...getFields(
+                                              activeSlotItem.globalIndex,
+                                            ),
+                                            [key]: e.target.value,
+                                          },
+                                        }))
+                                      }
+                                      style={{
+                                        opacity: 0,
+                                        position: "absolute",
+                                        right: 0,
+                                        width: "clamp(28px, 1.8cqw, 14px)",
+                                        height: "100%",
+                                        cursor: "pointer",
+                                        colorScheme: "light",
+                                      }}
+                                    />
+                                    {/* Icon kalender manual */}
+                                    <span
+                                      className="text-blue-700 cursor-pointer"
+                                      style={{
+                                        fontSize: "clamp(28px, 1.8cqw, 14px)",
+                                      }}
+                                    >
+                                      📅
+                                    </span>
+                                  </div>
+                                );
+                              }
+
+                              return (
+                                <input
+                                  key={key}
+                                  type="text"
+                                  value={value}
+                                  onChange={(e) =>
+                                    setCardFields((prev) => ({
+                                      ...prev,
+                                      [activeSlotItem.globalIndex]: {
+                                        ...getFields(
+                                          activeSlotItem.globalIndex,
+                                        ),
+                                        [key]: e.target.value,
+                                      },
+                                    }))
+                                  }
+                                  className="absolute bg-transparent border-none outline-none text-blue-700 font-bold z-20 text-right"
+                                  style={{
+                                    left: `${(360 / 1004) * 100}%`,
+                                    top: `${(top / 626) * 100}%`,
+                                    width: `${(540 / 1004) * 100}%`,
+                                    fontSize: "clamp(28px, 1.8cqw, 14px)",
+                                    transform: "translateY(-50%)",
+                                    caretColor: "#cc0000",
+                                  }}
+                                />
+                              );
+                            })}
                             {filledSlots[activeSlotItem.globalIndex] && (
                               <button
                                 className="absolute top-1 right-1 z-50 bg-red-500 hover:bg-red-600 text-white rounded-full w-7 h-7 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity border-2 border-white shadow-lg cursor-pointer"
@@ -418,7 +490,7 @@ export function IdCardArrangement() {
                         ) : activeSlotItem.orderId === "landscape-red" ? (
                           <>
                             <img
-                              src="/addons/idcard/background-red.png"
+                              src="/addons/idcard/background-red.jpg"
                               className="absolute inset-0 w-full h-full"
                               style={{ objectFit: "fill" }}
                             />
@@ -451,40 +523,110 @@ export function IdCardArrangement() {
                             )}
                             {/* Input overlay */}
                             {[
-                              { key: "name", top: 195 },
-                              { key: "dob", top: 265 },
-                              { key: "age", top: 340 },
-                              { key: "address", top: 410 },
-                              { key: "date", top: 485 },
-                            ].map(({ key, top }) => (
-                              <input
-                                key={key}
-                                type="text"
-                                value={
-                                  (
-                                    getFields(activeSlotItem.globalIndex) as any
-                                  )[key]
-                                }
-                                onChange={(e) =>
-                                  setCardFields((prev) => ({
-                                    ...prev,
-                                    [activeSlotItem.globalIndex]: {
-                                      ...getFields(activeSlotItem.globalIndex),
-                                      [key]: e.target.value,
-                                    },
-                                  }))
-                                }
-                                className="absolute bg-transparent border-none outline-none text-red-700 font-bold z-20"
-                                style={{
-                                  left: `${(400 / 1004) * 100}%`,
-                                  top: `${(top / 626) * 100}%`,
-                                  width: `${(540 / 1004) * 100}%`,
-                                  fontSize: "clamp(28px, 1.8cqw, 14px)",
-                                  transform: "translateY(-50%)",
-                                  caretColor: "#cc0000",
-                                }}
-                              />
-                            ))}
+                              { key: "name", top: 195, type: "text" },
+                              { key: "dob", top: 265, type: "date" },
+                              { key: "age", top: 340, type: "text" },
+                              { key: "address", top: 410, type: "text" },
+                              { key: "date", top: 485, type: "date" },
+                            ].map(({ key, top, type }) => {
+                              const value = (
+                                getFields(activeSlotItem.globalIndex) as any
+                              )[key];
+
+                              if (type === "date") {
+                                // Format tanggal untuk display: YYYY-MM-DD → DD/MM/YYYY
+                                const displayValue = value
+                                  ? value.split("-").reverse().join("/")
+                                  : "";
+
+                                return (
+                                  <div
+                                    key={key}
+                                    className="absolute z-20"
+                                    style={{
+                                      left: `${(370 / 1004) * 100}%`,
+                                      top: `${(top / 626) * 100}%`,
+                                      width: `${(540 / 1004) * 100}%`,
+                                      transform: "translateY(-50%)",
+                                      display: "flex",
+                                      alignItems: "center",
+                                    }}
+                                  >
+                                    {/* Teks tanggal di kiri */}
+                                    <span
+                                      className="text-red-700 font-bold flex-1 text-right"
+                                      style={{
+                                        fontSize: "clamp(28px, 1.8cqw, 14px)",
+                                      }}
+                                    >
+                                      {displayValue}
+                                    </span>
+                                    {/* Input date — hanya icon kalender yang visible */}
+                                    <input
+                                      type="date"
+                                      value={value}
+                                      onChange={(e) =>
+                                        setCardFields((prev) => ({
+                                          ...prev,
+                                          [activeSlotItem.globalIndex]: {
+                                            ...getFields(
+                                              activeSlotItem.globalIndex,
+                                            ),
+                                            [key]: e.target.value,
+                                          },
+                                        }))
+                                      }
+                                      style={{
+                                        opacity: 0,
+                                        position: "absolute",
+                                        right: 0,
+                                        width: "clamp(28px, 1.8cqw, 14px)",
+                                        height: "100%",
+                                        cursor: "pointer",
+                                        colorScheme: "light",
+                                      }}
+                                    />
+                                    {/* Icon kalender manual */}
+                                    <span
+                                      className="text-red-700 cursor-pointer"
+                                      style={{
+                                        fontSize: "clamp(28px, 1.8cqw, 14px)",
+                                      }}
+                                    >
+                                      📅
+                                    </span>
+                                  </div>
+                                );
+                              }
+
+                              return (
+                                <input
+                                  key={key}
+                                  type="text"
+                                  value={value}
+                                  onChange={(e) =>
+                                    setCardFields((prev) => ({
+                                      ...prev,
+                                      [activeSlotItem.globalIndex]: {
+                                        ...getFields(
+                                          activeSlotItem.globalIndex,
+                                        ),
+                                        [key]: e.target.value,
+                                      },
+                                    }))
+                                  }
+                                  className="absolute bg-transparent border-none outline-none text-red-700 font-bold z-20 text-right"
+                                  style={{
+                                    left: `${(360 / 1004) * 100}%`,
+                                    top: `${(top / 626) * 100}%`,
+                                    width: `${(540 / 1004) * 100}%`,
+                                    fontSize: "clamp(28px, 1.8cqw, 14px)",
+                                    transform: "translateY(-50%)",
+                                    caretColor: "#cc0000",
+                                  }}
+                                />
+                              );
+                            })}
                             {filledSlots[activeSlotItem.globalIndex] && (
                               <button
                                 className="absolute top-1 right-1 z-50 bg-red-500 hover:bg-red-600 text-white rounded-full w-7 h-7 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity border-2 border-white shadow-lg cursor-pointer"

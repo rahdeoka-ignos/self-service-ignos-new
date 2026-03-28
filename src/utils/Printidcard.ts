@@ -64,9 +64,10 @@ export async function generatePrintIdCard(
   // LANDSCAPE BLUE — foto di dalam kotak
   // ─────────────────────────────────────────
   if (cardId === "landscape-blue" || cardId === "landscape-red") {
-    const bgPath = cardId === "landscape-blue"
-    ? "/addons/idcard/background-blue.png"
-    : "/addons/idcard/background-red.png";
+    const bgPath =
+      cardId === "landscape-blue"
+        ? "/addons/idcard/background-blue.jpg"
+        : "/addons/idcard/background-red.jpg";
     const textColor = cardId === "landscape-blue" ? "#1a1aff" : "#cc0000";
 
     const bg = await loadImage(bgPath);
@@ -94,8 +95,12 @@ export async function generatePrintIdCard(
       drawH = slotW / imgAspect;
     }
 
-    const uiPhotoSlotW = options.uiSlotW ? options.uiSlotW * (285 / 1004) : slotW;
-    const uiPhotoSlotH = options.uiSlotH ? options.uiSlotH * (378 / 626) : slotH;
+    const uiPhotoSlotW = options.uiSlotW
+      ? options.uiSlotW * (285 / 1004)
+      : slotW;
+    const uiPhotoSlotH = options.uiSlotH
+      ? options.uiSlotH * (378 / 626)
+      : slotH;
     const ratioX = slotW / uiPhotoSlotW;
     const ratioY = slotH / uiPhotoSlotH;
 
@@ -136,19 +141,19 @@ export async function generatePrintIdCard(
     };
 
     const textItems = [
-      { label: fields.name, y: 195 },
-      { label: fields.dob, y: 272 },
-      { label: fields.age, y: 340 },
-      { label: fields.address, y: 415 },
-      { label: fields.date, y: 490 },
+      { label: fields.name, y: 200 },
+      { label: fields.dob, y: 275 },
+      { label: fields.age, y: 348 },
+      { label: fields.address, y: 423 },
+      { label: fields.date, y: 496 },
     ];
 
     ctx.fillStyle = textColor; // warna biru sesuai design
-    ctx.font = "normal 24px Arial, sans-serif";
-    ctx.textAlign = "left";
+    ctx.font = "normal 20px Poppins, sans-serif";
+    ctx.textAlign = "right";
     ctx.textBaseline = "middle";
 
-    const textStartX = 400; // mulai dari kanan kotak foto
+    const textStartX = 900; // mulai dari kanan kotak foto
     const textMaxW = 540; // max width teks
 
     for (const item of textItems) {
