@@ -389,7 +389,7 @@ export function KeychainArrangement() {
                             {activeSlotItem.orderId === "kotak-plastik" && (
                               <div
                                 className="flex items-center justify-center border-t-2 border-black bg-white"
-                                style={{ height: "8%" }}
+                                style={{ height: "7%" }}
                               >
                                 <span
                                   className="font-black text-black tracking-tight"

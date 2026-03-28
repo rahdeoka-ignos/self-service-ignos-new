@@ -394,9 +394,9 @@ export function IdCardArrangement() {
                                   >
                                     {/* Teks tanggal di kiri */}
                                     <span
-                                      className="text-blue-700 font-bold flex-1 text-right"
+                                      className="text-blue-700 flex-1 text-right"
                                       style={{
-                                        fontSize: "clamp(28px, 1.8cqw, 14px)",
+                                        fontSize: "clamp(20px, 1.8cqw, 14px)",
                                       }}
                                     >
                                       {displayValue}
@@ -455,14 +455,13 @@ export function IdCardArrangement() {
                                       },
                                     }))
                                   }
-                                  className="absolute bg-transparent border-none outline-none text-blue-700 font-bold z-20 text-right"
+                                  className="absolute bg-transparent border-none outline-none text-blue-700 z-20 text-right"
                                   style={{
                                     left: `${(360 / 1004) * 100}%`,
                                     top: `${(top / 626) * 100}%`,
                                     width: `${(540 / 1004) * 100}%`,
-                                    fontSize: "clamp(28px, 1.8cqw, 14px)",
+                                    fontSize: "clamp(20px, 1.8cqw, 14px)",
                                     transform: "translateY(-50%)",
-                                    caretColor: "#cc0000",
                                   }}
                                 />
                               );
@@ -554,9 +553,9 @@ export function IdCardArrangement() {
                                   >
                                     {/* Teks tanggal di kiri */}
                                     <span
-                                      className="text-red-700 font-bold flex-1 text-right"
+                                      className="text-red-700 flex-1 text-right"
                                       style={{
-                                        fontSize: "clamp(28px, 1.8cqw, 14px)",
+                                        fontSize: "clamp(20px, 1.8cqw, 14px)",
                                       }}
                                     >
                                       {displayValue}
@@ -590,7 +589,7 @@ export function IdCardArrangement() {
                                     <span
                                       className="text-red-700 cursor-pointer"
                                       style={{
-                                        fontSize: "clamp(28px, 1.8cqw, 14px)",
+                                        fontSize: "clamp(20px, 1.8cqw, 14px)",
                                       }}
                                     >
                                       📅
@@ -615,12 +614,12 @@ export function IdCardArrangement() {
                                       },
                                     }))
                                   }
-                                  className="absolute bg-transparent border-none outline-none text-red-700 font-bold z-20 text-right"
+                                  className="absolute bg-transparent border-none outline-none text-red-700 z-20 text-right"
                                   style={{
                                     left: `${(360 / 1004) * 100}%`,
                                     top: `${(top / 626) * 100}%`,
                                     width: `${(540 / 1004) * 100}%`,
-                                    fontSize: "clamp(28px, 1.8cqw, 14px)",
+                                    fontSize: "clamp(20px, 1.8cqw, 14px)",
                                     transform: "translateY(-50%)",
                                     caretColor: "#cc0000",
                                   }}

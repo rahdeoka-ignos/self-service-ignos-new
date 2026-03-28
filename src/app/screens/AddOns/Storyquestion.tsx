@@ -17,13 +17,21 @@ export function StoryQuestion() {
   const peopleCount: number = location.state?.peopleCount ?? 1;
   const serviceId: string = location.state?.serviceId ?? "photo-box";
   const coupleMode: boolean = location.state?.coupleMode ?? false;
+  const getRequiredUsernames = (count: number): number => {
+    if (count <= 1) return 1;
+    if (count <= 3) return 2;
+    if (count <= 5) return 3;
+    if (count <= 7) return 4;
+    return 5; // 8+
+  };
 
   const [choice, setChoice] = useState<"yes" | "no" | null>(null);
+  const requiredUsernames = getRequiredUsernames(peopleCount);
   const [usernames, setUsernames] = useState<string[]>(
-    Array(peopleCount).fill(""),
+    Array(requiredUsernames).fill(""),
   );
   const [errors, setErrors] = useState<boolean[]>(
-    Array(peopleCount).fill(false),
+    Array(requiredUsernames).fill(false),
   );
 
   const setUsername = (index: number, value: string) => {
@@ -193,7 +201,7 @@ export function StoryQuestion() {
               <h3 className="text-2xl font-bold mb-5">
                 Username Instagram
                 <span className="ml-3 text-xl font-normal text-gray-500">
-                  ({peopleCount} orang)
+                  ({requiredUsernames} akun)
                 </span>
               </h3>
 
