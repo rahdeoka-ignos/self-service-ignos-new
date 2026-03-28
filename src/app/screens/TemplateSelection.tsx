@@ -71,16 +71,16 @@ const templates = {
       layout: "6",
     },
     {
-      id: 6,
+      id: 7,
       name: "ribuan-memori",
       preview: "/templates/ribuan-memori/background.png",
       layout: "6",
     },
     {
       id: 8,
-      name: "Isi Delapan",
-      preview: "/templates/kpop/8.jpg",
-      layout: "4",
+      name: "grid-delapan",
+      preview: "/templates/grid-delapan/background.png",
+      layout: "8",
     },
   ],
 

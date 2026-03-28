@@ -11,7 +11,7 @@ import { SlotImage } from "../components/SlotImage";
 type Template = {
   background: string;
   overlay: string;
-  layout: "1" | "2" | "4" | "6";
+  layout: "1" | "2" | "4" | "6" | "8";
 };
 
 const FILTERS = [
@@ -36,6 +36,16 @@ const FILTERS = [
     style: "contrast(140%) brightness(90%) saturate(80%)",
   },
 ];
+
+// ─── Layout 8 constants ───────────────────────────────
+const L8_PRINT_W = 2400;
+const L8_PRINT_H = 3600;
+const L8_X0 = 61 * 2; // = 122
+const L8_X1 = 661 * 2; // = 1322
+const L8_Y0 = 274 * 2; // = 548
+const L8_SLOT_W = 479 * 2; // = 958
+const L8_SLOT_H = 339 * 2; // = 678
+const L8_GAP_Y = 10 * 2; // = 20
 
 // ─── Layout 6 constants (diukur dari background template, di-scale ke print canvas 2400×3600) ──
 const L6_PRINT_W = 2400;
@@ -97,6 +107,8 @@ export function PhotoArrangement() {
 
   useEffect(() => {
     const cached = sessionStorage.getItem("gallery");
+    console.log(peopleCount);
+
     if (cached) {
       setPhotoGallery(JSON.parse(cached));
     } else {
@@ -118,7 +130,9 @@ export function PhotoArrangement() {
         ? 2
         : activeLayout === "4"
           ? 4
-          : 6;
+          : activeLayout === "8"
+            ? 8
+            : 6;
 
   const preloadImage = (src: string) => {
     const img = new Image();
@@ -303,7 +317,9 @@ export function PhotoArrangement() {
           ? 2
           : tpl.layout === "4"
             ? 4
-            : 6;
+            : tpl.layout === "8"
+              ? 8
+              : 6;
     return Object.keys(filledSlots[templateIndex] || {}).length === slots;
   });
 
@@ -613,6 +629,52 @@ export function PhotoArrangement() {
                       </div>
                     )}
 
+                    {/* ── Layout 8: 2 kolom × 4 baris ── */}
+                    {activeLayout === "8" && (
+                      <div className="absolute inset-0 z-10">
+                        {Array.from({ length: 8 }, (_, i) => i + 1).map(
+                          (slotNum) => {
+                            const row = Math.floor((slotNum - 1) / 2); // 0,1,2,3
+                            const col = (slotNum - 1) % 2; // 0,1
+
+                            const colXs = [L8_X0, L8_X1];
+                            const leftPct = (colXs[col] / L8_PRINT_W) * 100;
+                            const topPct =
+                              ((L8_Y0 + row * (L8_SLOT_H + L8_GAP_Y)) /
+                                L8_PRINT_H) *
+                              100;
+                            const widthPct = (L8_SLOT_W / L8_PRINT_W) * 100;
+                            const heightPct = (L8_SLOT_H / L8_PRINT_H) * 100;
+
+                            return (
+                              <div
+                                key={slotNum}
+                                ref={slotNum === 1 ? slotRef : undefined}
+                                className="absolute"
+                                style={{
+                                  left: `${leftPct}%`,
+                                  top: `${topPct}%`,
+                                  width: `${widthPct}%`,
+                                  height: `${heightPct}%`,
+                                }}
+                              >
+                                <BrutalistCard
+                                  interactive
+                                  onClick={() => handleSlotClick(slotNum)}
+                                  onDrop={(e) => handleDrop(e, slotNum)}
+                                  onDragOver={allowDrop}
+                                  className={`w-full h-full p-0 overflow-hidden shadow-none !border-0 !border-transparent !rounded-none ${
+                                    selectedPhoto ? "cursor-pointer" : ""
+                                  }`}
+                                >
+                                  {renderSlotContent(slotNum)}
+                                </BrutalistCard>
+                              </div>
+                            );
+                          },
+                        )}
+                      </div>
+                    )}
                     {/* TEMPLATE OVERLAY */}
                     <img
                       src={templates[activeTemplate]?.overlay}
@@ -834,7 +896,9 @@ export function PhotoArrangement() {
               className="w-full"
               onClick={() => {
                 setSuccessOpen(false);
-                navigate("/add-ons");
+                navigate("/add-ons", {
+                  state: { peopleCount },
+                });
               }}
             >
               Next →

@@ -7,7 +7,7 @@ type SlotTransform = {
 };
 
 interface PrintOptions {
-  layout?: "1" | "2" | "4" | "6";
+  layout?: "1" | "2" | "4" | "6" | "8";
   background?: string;
   frameOverlay?: string;
   watermark?: string;
@@ -208,18 +208,45 @@ export async function generatePrint(
     // x1=1334.1, gapY=149.4
     // ────────────────────────────────────────────────────────────────────
 
-    const x0    = 129.6;
-    const y0    = 315.0;
+    const x0 = 129.6;
+    const y0 = 315.0;
     const slotW = 939.8;
     const slotH = 743.4;
-    const x1    = 1334.1;  // kolom ke-2
-    const gapY  = 149.4;
+    const x1 = 1334.1; // kolom ke-2
+    const gapY = 149.4;
 
     const colPositions = [x0, x1];
 
     orderedSlots.slice(0, 6).forEach((slotNumber, i) => {
       const row = Math.floor((slotNumber - 1) / 2); // 0, 1, 2
-      const col = (slotNumber - 1) % 2;             // 0, 1
+      const col = (slotNumber - 1) % 2; // 0, 1
+
+      drawCover(
+        images[i],
+        slotNumber,
+        colPositions[col],
+        y0 + row * (slotH + gapY),
+        slotW,
+        slotH,
+        options.uiSlotW,
+        options.uiSlotH,
+      );
+    });
+  }
+
+  if (layout === "8") {
+    const x0 = 61 * 2; // = 122
+    const y0 = 274 * 2; // = 548
+    const slotW = 479 * 2; // = 958
+    const slotH = 339 * 2; // = 678
+    const x1 = 661 * 2; // = 1322
+    const gapY = 10 * 2; // = 20
+
+    const colPositions = [x0, x1];
+
+    orderedSlots.slice(0, 8).forEach((slotNumber, i) => {
+      const row = Math.floor((slotNumber - 1) / 2); // 0,1,2,3
+      const col = (slotNumber - 1) % 2; // 0,1
 
       drawCover(
         images[i],

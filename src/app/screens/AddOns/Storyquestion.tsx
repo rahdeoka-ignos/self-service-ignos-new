@@ -22,7 +22,7 @@ export function StoryQuestion() {
     if (count <= 3) return 2;
     if (count <= 5) return 3;
     if (count <= 7) return 4;
-    return 5; // 8+
+    return 5;
   };
 
   const [choice, setChoice] = useState<"yes" | "no" | null>(null);

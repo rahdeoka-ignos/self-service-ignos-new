@@ -1,8 +1,10 @@
-import { useNavigate } from "react-router";
-import { BrutalistButton } from "../components/BrutalistButton";
+import { useLocation, useNavigate } from "react-router";
 import { ArrowRight } from "lucide-react";
 
 export function AddOnQuestion() {
+  const location = useLocation();
+  const peopleCount = location.state?.peopleCount || 1;
+
   const navigate = useNavigate();
 
   const addons = [
@@ -194,7 +196,11 @@ export function AddOnQuestion() {
         {/* Skip Button */}
         <div className="flex justify-center mt-14">
           <button
-            onClick={() => navigate("/story-question")}
+            onClick={() =>
+              navigate("/story-question", {
+                state: { peopleCount },
+              })
+            }
             className="text-2xl font-bold border-4 border-black px-16 py-5 bg-white hover:bg-black hover:text-white transition-colors rounded-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1"
           >
             Tidak, lanjutkan →
