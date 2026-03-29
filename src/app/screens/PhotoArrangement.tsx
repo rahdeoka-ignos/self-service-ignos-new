@@ -11,7 +11,7 @@ import { SlotImage } from "../components/SlotImage";
 type Template = {
   background: string;
   overlay: string;
-  layout: "1" | "2" | "4" | "6" | "8";
+  layout: "1" | "2" | "4" | "6" | "8" | "newspaper";
 };
 
 const FILTERS = [
@@ -132,7 +132,9 @@ export function PhotoArrangement() {
           ? 4
           : activeLayout === "8"
             ? 8
-            : 6;
+            : activeLayout === "newspaper"
+              ? 1
+              : 6;
 
   const preloadImage = (src: string) => {
     const img = new Image();
@@ -319,7 +321,9 @@ export function PhotoArrangement() {
             ? 4
             : tpl.layout === "8"
               ? 8
-              : 6;
+              : tpl.layout === "newspaper"
+                ? 1
+                : 6;
     return Object.keys(filledSlots[templateIndex] || {}).length === slots;
   });
 
@@ -663,7 +667,7 @@ export function PhotoArrangement() {
                                   onClick={() => handleSlotClick(slotNum)}
                                   onDrop={(e) => handleDrop(e, slotNum)}
                                   onDragOver={allowDrop}
-                                  className={`w-full h-full p-0 overflow-hidden shadow-none !border-0 !border-transparent !rounded-none ${
+                                  className={`w-full h-full p-0 overflow-hidden shadow-none !border-0 !border-transparent !rounded-none transition-all! hover:translate-x-0! hover:translate-y-0! active:translate-x-0! active:translate-y-0! ${
                                     selectedPhoto ? "cursor-pointer" : ""
                                   }`}
                                 >
@@ -673,6 +677,32 @@ export function PhotoArrangement() {
                             );
                           },
                         )}
+                      </div>
+                    )}
+
+                    {/* ── Layout Newspaper: 1 slot landscape ── */}
+                    {activeLayout === "newspaper" && (
+                      <div
+                        className="absolute z-10"
+                        ref={slotRef}
+                        style={{
+                          left: `${(82 / 2400) * 100}%`,
+                          top: `${(874 / 3600) * 100}%`,
+                          width: `${(2238 / 2400) * 100}%`,
+                          height: `${(1136 / 3600) * 100}%`,
+                        }}
+                      >
+                        <BrutalistCard
+                          interactive
+                          onClick={() => handleSlotClick(1)}
+                          onDrop={(e) => handleDrop(e, 1)}
+                          onDragOver={allowDrop}
+                          className={`w-full h-full p-0 overflow-hidden shadow-none !border-0 !rounded-none ${
+                            selectedPhoto ? "cursor-pointer" : ""
+                          }`}
+                        >
+                          {renderSlotContent(1)}
+                        </BrutalistCard>
                       </div>
                     )}
                     {/* TEMPLATE OVERLAY */}

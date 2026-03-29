@@ -7,7 +7,7 @@ type SlotTransform = {
 };
 
 interface PrintOptions {
-  layout?: "1" | "2" | "4" | "6" | "8";
+  layout?: "1" | "2" | "4" | "6" | "8" | "newspaper";
   background?: string;
   frameOverlay?: string;
   watermark?: string;
@@ -259,6 +259,25 @@ export async function generatePrint(
         options.uiSlotH,
       );
     });
+  }
+
+  // Tambah setelah blok layout "8", sebelum // FRAME OVERLAY LAYER
+  if (layout === "newspaper") {
+    const x = 82;
+    const y = 874;
+    const slotW = 2238;
+    const slotH = 1136;
+
+    drawCover(
+      images[0],
+      orderedSlots[0],
+      x,
+      y,
+      slotW,
+      slotH,
+      options.uiSlotW,
+      options.uiSlotH,
+    );
   }
 
   // FRAME OVERLAY LAYER
