@@ -1,0 +1,25 @@
+{
+  "navigation": {
+    "back": "Back"
+  },
+  "peopleCount": {
+    "title": "How many people?",
+    "subtitle": "Select the number of people in your group",
+    "continue": "Continue"
+  },
+  "templateModal": {
+    "title": "Template Mode",
+    "subtitle": "You have",
+    "subtitlePeople": "people. How should the template be applied?",
+    "singleTemplate": {
+      "title": "1 Template",
+      "description": "All {{count}} people share a single template layout",
+      "badge": "GROUP / COUPLE"
+    },
+    "multipleTemplate": {
+      "title": "Multiple Templates",
+      "description": "Choose a different template per person or pair",
+      "badge": "INDIVIDUAL"
+    }
+  }
+}

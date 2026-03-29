@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router";
 import { ArrowLeft } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { BrutalistButton } from "./BrutalistButton";
 
 interface NavigationProps {
@@ -14,6 +15,11 @@ export function Navigation({
   showBack = true,
 }: NavigationProps) {
   const navigate = useNavigate();
+  const { i18n } = useTranslation();
+
+  const toggleLanguage = () => {
+    i18n.changeLanguage(i18n.language === "id" ? "en" : "id");
+  };
 
   return (
     <div className="fixed top-0 left-0 right-0 bg-white border-b-4 border-black z-50">
@@ -47,7 +53,17 @@ export function Navigation({
           ))}
         </div>
 
-        <div className="w-40 flex items-center justify-end">
+        <div className="w-40 flex items-center justify-end gap-3">
+          {/* Language Switcher */}
+          <BrutalistButton
+            size="sm"
+            variant="outline"
+            onClick={toggleLanguage}
+            className="flex items-center gap-1 font-black tracking-widest"
+          >
+            {i18n.language === "id" ? "🇮🇩 ID" : "🇬🇧 EN"}
+          </BrutalistButton>
+
           <span className="text-2xl font-black tracking-widest">
             IGNOS STUDIO
           </span>

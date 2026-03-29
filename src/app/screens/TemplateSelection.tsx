@@ -163,7 +163,7 @@ export function TemplateSelection() {
 
       <div className="pt-32 pb-8 px-8 flex-1 overflow-hidden">
         <div className="max-w-[1800px] mx-auto h-full flex flex-col">
-          <h1 className="text-6xl font-bold mb-8 text-center">
+          <h1 className="text-6xl font-bold mb-8 mt-10 text-center">
             Select Templates
           </h1>
           <p className="text-2xl text-center mb-8 text-gray-700">

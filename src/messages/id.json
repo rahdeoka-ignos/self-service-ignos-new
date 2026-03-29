@@ -1,0 +1,25 @@
+{
+  "navigation": {
+    "back": "Kembali"
+  },
+  "peopleCount": {
+    "title": "Berapa banyak orang?",
+    "subtitle": "Pilih jumlah orang dalam grup kamu",
+    "continue": "Lanjutkan"
+  },
+  "templateModal": {
+    "title": "Mode Template",
+    "subtitle": "Kamu memiliki",
+    "subtitlePeople": "orang. Bagaimana template akan diterapkan?",
+    "singleTemplate": {
+      "title": "1 Template",
+      "description": "Semua {{count}} orang menggunakan satu template yang sama",
+      "badge": "GRUP / PASANGAN"
+    },
+    "multipleTemplate": {
+      "title": "Beberapa Template",
+      "description": "Pilih template berbeda untuk setiap orang atau pasangan",
+      "badge": "INDIVIDU"
+    }
+  }
+}

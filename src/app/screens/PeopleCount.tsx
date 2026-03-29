@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router";
 import { Minus, Plus, Users, X, Layout, LayoutGrid } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { BrutalistCard } from "../components/BrutalistCard";
 import { BrutalistButton } from "../components/BrutalistButton";
 import { Navigation } from "../components/Navigation";
@@ -18,6 +19,8 @@ function TemplateModeModal({
   onSelect,
   onClose,
 }: TemplateModeModalProps) {
+  const { t } = useTranslation();
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-6"
@@ -37,11 +40,13 @@ function TemplateModeModal({
         </button>
 
         <div className="text-center mb-12">
-          <h2 className="text-6xl font-bold mb-4">Template Mode</h2>
+          <h2 className="text-6xl font-bold mb-4">
+            {t("templateModal.title")}
+          </h2>
           <p className="text-2xl text-gray-600">
-            You have{" "}
-            <span className="font-bold text-black">{count} people</span>. How
-            should the template be applied?
+            {t("templateModal.subtitle")}{" "}
+            <span className="font-bold text-black">{count}</span>{" "}
+            {t("templateModal.subtitlePeople")}
           </p>
         </div>
 
@@ -55,13 +60,15 @@ function TemplateModeModal({
               <Layout size={48} strokeWidth={2.5} className="text-black" />
             </div>
             <div className="text-left w-full flex-1">
-              <p className="font-bold text-4xl leading-tight">1 Template</p>
+              <p className="font-bold text-4xl leading-tight">
+                {t("templateModal.singleTemplate.title")}
+              </p>
               <p className="text-xl mt-3 text-gray-500 group-hover:text-gray-300 transition-colors">
-                All {count} people share a single template layout
+                {t("templateModal.singleTemplate.description", { count })}
               </p>
             </div>
             <span className="text-base font-bold px-5 py-2 border-2 border-black group-hover:border-white rounded-full">
-              GROUP / COUPLE
+              {t("templateModal.singleTemplate.badge")}
             </span>
           </button>
 
@@ -75,14 +82,14 @@ function TemplateModeModal({
             </div>
             <div className="text-left w-full flex-1">
               <p className="font-bold text-4xl leading-tight">
-                Multiple Templates
+                {t("templateModal.multipleTemplate.title")}
               </p>
               <p className="text-xl mt-3 text-gray-500 group-hover:text-gray-300 transition-colors">
-                Choose a different template per person or pair
+                {t("templateModal.multipleTemplate.description")}
               </p>
             </div>
             <span className="text-base font-bold px-5 py-2 border-2 border-black group-hover:border-white rounded-full">
-              INDIVIDUAL
+              {t("templateModal.multipleTemplate.badge")}
             </span>
           </button>
         </div>
@@ -96,6 +103,8 @@ function TemplateModeModal({
 export function PeopleCount() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useTranslation();
+
   const destination = location.state?.destination || "bonus";
   const serviceId = location.state?.serviceId || "photo-box";
   const skipBonus = location.state?.skipBonus;
@@ -114,7 +123,6 @@ export function PeopleCount() {
     if (count < maxCount) setCount(count + 1);
   };
 
-  // Klik Continue → tampilkan modal dulu
   const handleContinue = () => {
     if (disableModal) {
       navigate(`/${destination}`, {
@@ -123,7 +131,6 @@ export function PeopleCount() {
       return;
     }
     if (count === 1) {
-      // Count 1 → langsung ke bonus, tidak perlu pilih mode
       const sharedState = { peopleCount: count, serviceId, coupleMode: true };
       if (skipBonus && destination) {
         navigate(`/${destination}`, { state: sharedState });
@@ -135,14 +142,13 @@ export function PeopleCount() {
     }
   };
 
-  // Setelah user pilih mode template
   const handleTemplateModeSelect = (isCoupleMode: boolean) => {
     setShowModal(false);
 
     const sharedState = {
       peopleCount: count,
       serviceId,
-      coupleMode: isCoupleMode, // ← diteruskan ke halaman berikutnya
+      coupleMode: isCoupleMode,
     };
 
     if (skipBonus && destination) {
@@ -171,9 +177,11 @@ export function PeopleCount() {
               <div className="w-24 h-24 bg-black rounded-full flex items-center justify-center mx-auto mb-6 border-4 border-black">
                 <Users size={48} className="text-white" strokeWidth={3} />
               </div>
-              <h1 className="text-5xl font-bold mb-4">How many people?</h1>
+              <h1 className="text-5xl font-bold mb-4">
+                {t("peopleCount.title")}
+              </h1>
               <p className="text-2xl text-gray-600">
-                Select the number of people in your group
+                {t("peopleCount.subtitle")}
               </p>
             </div>
 
@@ -207,7 +215,7 @@ export function PeopleCount() {
 
             <div className="mt-12">
               <BrutalistButton onClick={handleContinue} className="w-full">
-                Continue
+                {t("peopleCount.continue")}
               </BrutalistButton>
             </div>
           </div>
