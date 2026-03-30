@@ -104,12 +104,17 @@ export function TemplateSelection() {
   const peopleCount = location.state?.peopleCount || 1;
   const joinedBonus = location.state?.joinedBonus || false;
   const coupleMode = location.state?.coupleMode ?? false;
-  const totalSelections = coupleMode
-    ? 1 // ← 1 template untuk semua orang
-    : joinedBonus
-      ? peopleCount <= 3
+  console.log(joinedBonus);
+
+  // SESUDAH
+  const totalSelections = joinedBonus
+    ? coupleMode
+      ? 2 // coupleMode + bonus → 1 template utama + 1 bonus
+      : peopleCount <= 3
         ? peopleCount * 2
         : peopleCount + 1
+    : coupleMode
+      ? 1
       : peopleCount;
   const [selectedCategory, setSelectedCategory] = useState("basic");
   const [userTemplates, setUserTemplates] = useState<{ [key: number]: any }>(
@@ -245,12 +250,15 @@ export function TemplateSelection() {
             </div>
 
             {/* RIGHT PANEL - Selected Templates */}
+            {/* RIGHT PANEL - Selected Templates */}
             <div className="col-span-3 overflow-y-auto scrollbar-thin pr-2">
               <h2 className="text-2xl font-bold mb-4">
                 {coupleMode
                   ? "Template (berlaku untuk semua)"
                   : "Your Selections"}
               </h2>
+
+              {/* Your Selections */}
               <div className="space-y-4">
                 {Array.from(
                   { length: coupleMode ? 1 : peopleCount },
@@ -273,7 +281,6 @@ export function TemplateSelection() {
                             >
                               ✕
                             </button>
-
                             <div className="w-16 h-16 border-4 border-black rounded-lg overflow-hidden">
                               <ImageWithFallback
                                 src={userTemplates[userNum].previewTemplate}
@@ -281,7 +288,6 @@ export function TemplateSelection() {
                                 className="w-full h-full object-cover"
                               />
                             </div>
-
                             <div>
                               <p className="font-bold text-lg">
                                 {userTemplates[userNum].name}
@@ -302,41 +308,42 @@ export function TemplateSelection() {
                 ))}
               </div>
 
+              {/* Your Bonus */}
               {joinedBonus && (
                 <h2 className="text-2xl font-bold my-4">Your Bonus</h2>
               )}
-
               <div className="space-y-4">
                 {joinedBonus &&
                   Array.from(
-                    { length: totalSelections - peopleCount },
-                    (_, i) => peopleCount + i + 1,
+                    {
+                      length: totalSelections - (coupleMode ? 1 : peopleCount),
+                    },
+                    (_, i) => (coupleMode ? 1 : peopleCount) + i + 1,
                   ).map((slotNum) => (
-                    <BrutalistCard key={slotNum} className="p-4">
+                    <BrutalistCard
+                      key={slotNum}
+                      className={`p-4 ${slotNum === currentUser ? "border-8" : ""}`}
+                    >
                       <div className="flex items-center gap-4">
                         <div className="w-12 h-12 bg-pink-500 text-white rounded-full flex items-center justify-center text-xl font-bold">
                           🎁
                         </div>
-
                         <div className="flex-1">
                           {userTemplates[slotNum] ? (
                             <div className="flex items-center gap-3 relative">
-                              {/* tombol batal */}
                               <button
                                 onClick={() => handleRemoveTemplate(slotNum)}
                                 className="absolute -top-2 -right-2 w-8 h-8 bg-red-500 text-white font-bold rounded-full border-2 border-black hover:scale-110"
                               >
                                 ✕
                               </button>
-
                               <div className="w-16 h-16 border-4 border-black rounded-lg overflow-hidden">
                                 <ImageWithFallback
-                                  src={userTemplates[slotNum].preview}
+                                  src={userTemplates[slotNum].previewTemplate}
                                   alt={userTemplates[slotNum].name}
                                   className="w-full h-full object-cover"
                                 />
                               </div>
-
                               <div>
                                 <p className="font-bold text-lg">
                                   {userTemplates[slotNum].name}

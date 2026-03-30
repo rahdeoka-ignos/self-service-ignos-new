@@ -21,7 +21,7 @@ export function BonusSelection() {
   }, []);
 
   const handleJoinBonus = () => {
-    navigate("/bonus-guide", { state: { peopleCount } });
+    navigate("/bonus-guide", { state: { peopleCount, coupleMode } });
   };
   const handleSkipBonus = () => {
     navigate("/templates", {

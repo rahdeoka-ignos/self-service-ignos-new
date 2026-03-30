@@ -10,10 +10,11 @@ export function BonusGuide() {
   const location = useLocation();
   const peopleCount = location.state?.peopleCount || 1;
   const reviewLink = "https://share.google/M0a3bc8DtyZzDmaBx";
+  const coupleMode = location.state?.coupleMode ?? false;
 
   const handleContinue = () => {
     navigate("/templates", {
-      state: { peopleCount, joinedBonus: true },
+      state: { peopleCount, joinedBonus: true, coupleMode },
     });
   };
 
