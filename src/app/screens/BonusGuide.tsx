@@ -4,6 +4,7 @@ import { BrutalistCard } from "../components/BrutalistCard";
 import { BrutalistButton } from "../components/BrutalistButton";
 import { Navigation } from "../components/Navigation";
 import { QRCodeSVG } from "qrcode.react";
+import { useTranslation } from "react-i18next";
 
 export function BonusGuide() {
   const navigate = useNavigate();
@@ -11,6 +12,7 @@ export function BonusGuide() {
   const peopleCount = location.state?.peopleCount || 1;
   const reviewLink = "https://share.google/M0a3bc8DtyZzDmaBx";
   const coupleMode = location.state?.coupleMode ?? false;
+  const { t } = useTranslation();
 
   const handleContinue = () => {
     navigate("/templates", {
@@ -24,10 +26,10 @@ export function BonusGuide() {
 
       <div className="pt-32 pb-12 px-8">
         <div className="max-w-6xl mx-auto text-center">
-          <h1 className="text-6xl font-bold mb-6">Get Your Bonus 🎁</h1>
+          <h1 className="text-6xl font-bold mb-6">{t("bonusGuide.title")}</h1>
 
           <p className="text-3xl text-gray-700 mb-12">
-            Leave us a review on Google Maps to receive a bonus!
+            {t("bonusGuide.subtitle")}
           </p>
 
           <BrutalistCard className="p-12 mb-12">
@@ -38,7 +40,9 @@ export function BonusGuide() {
                   <QRCodeSVG value={reviewLink} size={220} />
                 </div>
 
-                <p className="text-2xl font-bold mt-6">Scan this QR Code</p>
+                <p className="text-2xl font-bold mt-6">
+                  {t("bonusGuide.scan")}
+                </p>
               </div>
 
               {/* Steps */}
@@ -46,21 +50,21 @@ export function BonusGuide() {
                 <div className="flex items-start gap-4">
                   <MapPin size={36} />
                   <p className="text-2xl font-bold">
-                    1. Scan the QR code to open Ignos on Google Maps
+                    {t("bonusGuide.steps.step1")}
                   </p>
                 </div>
 
                 <div className="flex items-start gap-4">
                   <Star size={36} />
                   <p className="text-2xl font-bold">
-                    2. Give us a rating and write a short review
+                    {t("bonusGuide.steps.step2")}
                   </p>
                 </div>
 
                 <div className="flex items-start gap-4">
                   <TabletSmartphone size={36} />
                   <p className="text-2xl font-bold">
-                    3. Show your review to our staff to claim your bonus
+                    {t("bonusGuide.steps.step3")}
                   </p>
                 </div>
               </div>
@@ -71,7 +75,7 @@ export function BonusGuide() {
             onClick={handleContinue}
             className="text-3xl px-16 py-6"
           >
-            Continue
+            {t("bonusGuide.continue")}
           </BrutalistButton>
         </div>
       </div>

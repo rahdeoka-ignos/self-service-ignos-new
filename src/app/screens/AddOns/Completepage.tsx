@@ -1,10 +1,12 @@
 import { useLocation, useNavigate } from "react-router";
 import { Navigation } from "../../components/Navigation";
 import { CheckCircle, MapPin, ArrowRight, Instagram } from "lucide-react";
+import { Trans, useTranslation } from "react-i18next";
 
 export function CompletePage() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const makeStory: boolean = location.state?.makeStory ?? false;
   const instagramUsernames: string[] = location.state?.instagramUsernames ?? [];
@@ -36,12 +38,15 @@ export function CompletePage() {
             </div>
 
             <h1 className="text-7xl font-bold mb-5 leading-tight">
-              Proses Selesai!
+              {t("complete.title")}
             </h1>
             <p className="text-3xl text-gray-600 leading-relaxed">
-              Foto kamu sudah siap dicetak. Silakan menuju ke{" "}
-              <span className="font-bold text-black">kasir</span> untuk
-              menyelesaikan pembayaran.
+              <Trans
+                i18nKey="complete.subtitle"
+                components={{
+                  1: <span className="font-bold text-black" />,
+                }}
+              />
             </p>
           </div>
 
@@ -53,10 +58,11 @@ export function CompletePage() {
                 <MapPin size={40} strokeWidth={2.5} className="text-black" />
               </div>
               <div className="flex-1">
-                <p className="text-3xl font-bold mb-1">Menuju Kasir</p>
+                <p className="text-3xl font-bold mb-1">
+                  {t("complete.cashier.title")}
+                </p>
                 <p className="text-xl text-gray-300 leading-relaxed">
-                  Tunjukkan halaman ini kepada petugas kasir untuk menyelesaikan
-                  transaksi kamu.
+                  {t("complete.cashier.description")}
                 </p>
               </div>
               <ArrowRight
@@ -78,9 +84,11 @@ export function CompletePage() {
                     />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold">Softcopy Gratis 🎉</p>
+                    <p className="text-2xl font-bold">
+                      {t("complete.story.title")}
+                    </p>
                     <p className="text-xl text-gray-500">
-                      Jangan lupa posting story &amp; mention kami ya!
+                      {t("complete.story.description")}
                     </p>
                   </div>
                 </div>
@@ -108,10 +116,10 @@ export function CompletePage() {
               <div className="bg-white border-4 border-black rounded-2xl p-8 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex items-center justify-between">
                 <div>
                   <p className="text-2xl font-bold mb-1">
-                    Biaya Tambahan Softcopy
+                    {t("complete.extraCharge.title")}
                   </p>
                   <p className="text-xl text-gray-500">
-                    Akan ditambahkan ke total tagihan di kasir
+                    {t("complete.extraCharge.description")}
                   </p>
                 </div>
                 <p className="text-4xl font-bold">{formatPrice(extraCharge)}</p>
@@ -125,7 +133,7 @@ export function CompletePage() {
               onClick={() => navigate("/")}
               className="text-2xl font-bold border-4 border-black px-16 py-5 bg-white hover:bg-black hover:text-white transition-colors rounded-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1"
             >
-              Kembali ke Halaman Utama
+              {t("complete.actions.backHome")}
             </button>
           </div>
         </div>

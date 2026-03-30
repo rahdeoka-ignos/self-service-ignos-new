@@ -9,10 +9,12 @@ import {
   AtSign,
 } from "lucide-react";
 import { BrutalistButton } from "../../components/BrutalistButton";
+import { Trans, useTranslation } from "react-i18next";
 
 export function StoryQuestion() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useTranslation();
 
   const peopleCount: number = location.state?.peopleCount ?? 1;
   const serviceId: string = location.state?.serviceId ?? "photo-box";
@@ -80,7 +82,7 @@ export function StoryQuestion() {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <Navigation currentStep={3} totalSteps={5} />
+      <Navigation currentStep={5} totalSteps={5} />
 
       <div className="flex items-center justify-center min-h-screen p-12 pt-36 pb-20">
         <div className="max-w-6xl w-full">
@@ -89,11 +91,14 @@ export function StoryQuestion() {
             <div className="w-28 h-28 bg-black rounded-full flex items-center justify-center mx-auto mb-8 border-4 border-black">
               <Instagram size={56} className="text-white" strokeWidth={2} />
             </div>
-            <h1 className="text-7xl font-bold mb-5">Buat Story Instagram?</h1>
+            <h1 className="text-7xl font-bold mb-5">{t("story.title")}</h1>
             <p className="text-3xl text-gray-600 leading-relaxed">
-              Dapatkan{" "}
-              <span className="font-bold text-black">softcopy gratis</span>{" "}
-              dengan membuat story &amp; mention kami di Instagram!
+              <Trans
+                i18nKey="story.subtitle"
+                components={{
+                  1: <span className="font-bold text-black" />,
+                }}
+              />
             </p>
           </div>
 
@@ -123,13 +128,17 @@ export function StoryQuestion() {
               </div>
               <div>
                 <p className="font-bold text-4xl leading-tight mb-2">
-                  Ya, buat story!
+                  {t("story.choices.yes.title")}
                 </p>
                 <p
                   className={`text-xl leading-relaxed transition-colors ${choice === "yes" ? "text-gray-300" : "text-gray-500 group-hover:text-gray-300"}`}
                 >
-                  Follow &amp; mention kami di Instagram, softcopy{" "}
-                  <span className="font-bold">GRATIS</span>
+                  <Trans
+                    i18nKey="story.choices.yes.description"
+                    components={{
+                      1: <span className="font-bold" />,
+                    }}
+                  />
                 </p>
               </div>
               <span
@@ -159,11 +168,18 @@ export function StoryQuestion() {
                 <XCircle size={40} strokeWidth={2.5} className="text-black" />
               </div>
               <div>
-                <p className="font-bold text-4xl leading-tight mb-2">Tidak</p>
+                <p className="font-bold text-4xl leading-tight mb-2">
+                  {t("story.choices.no.title")}
+                </p>
                 <p
                   className={`text-xl leading-relaxed transition-colors ${choice === "no" ? "text-gray-300" : "text-gray-500 group-hover:text-gray-300"}`}
                 >
-                  Lewati langkah ini, softcopy dikenakan biaya tambahan
+                  <Trans
+                    i18nKey="story.choices.no.description"
+                    components={{
+                      1: <span className="font-bold" />,
+                    }}
+                  />
                 </p>
               </div>
               <span
@@ -187,21 +203,21 @@ export function StoryQuestion() {
                 />
                 <p className="text-xl text-yellow-800 leading-relaxed">
                   <span className="font-bold">
-                    Cara mendapatkan softcopy gratis:
+                    {t("story.instructions.title")}
                   </span>
                   <br />
-                  1. Follow akun Instagram kami
+                  1. {t("story.instructions.steps.0")}
                   <br />
-                  2. Posting story &amp; mention username kami
+                  2. {t("story.instructions.steps.1")}
                   <br />
-                  3. Masukkan username Instagram kamu di bawah
+                  3. {t("story.instructions.steps.2")}
                 </p>
               </div>
 
               <h3 className="text-2xl font-bold mb-5">
-                Username Instagram
+                {t("story.username.title")}
                 <span className="ml-3 text-xl font-normal text-gray-500">
-                  ({requiredUsernames} akun)
+                  {t("story.username.accounts", { count: requiredUsernames })}
                 </span>
               </h3>
 
@@ -228,13 +244,15 @@ export function StoryQuestion() {
                         type="text"
                         value={username}
                         onChange={(e) => setUsername(i, e.target.value)}
-                        placeholder={`username orang ke-${i + 1}`}
+                        placeholder={t("story.username.placeholder", {
+                          number: i + 1,
+                        })}
                         className="flex-1 px-5 py-4 text-xl font-medium outline-none bg-white placeholder:text-gray-400"
                       />
                     </div>
                     {errors[i] && (
                       <p className="text-red-500 text-base font-bold shrink-0">
-                        Wajib diisi
+                        {errors[i] && <p>{t("story.username.required")}</p>}
                       </p>
                     )}
                   </div>
@@ -248,9 +266,11 @@ export function StoryQuestion() {
             <div className="bg-white border-4 border-black rounded-2xl p-8 mb-10 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="font-bold text-2xl">Biaya Softcopy</p>
+                  <p className="font-bold text-2xl">
+                    {t("story.extraCharge.title")}
+                  </p>
                   <p className="text-gray-500 text-xl">
-                    Ditambahkan ke total pembayaran
+                    {t("story.extraCharge.description")}
                   </p>
                 </div>
                 <p className="text-4xl font-bold">{formatPrice(25000)}</p>
@@ -264,7 +284,7 @@ export function StoryQuestion() {
               onClick={() => navigate(-1)}
               className="flex-1 text-2xl font-bold border-4 border-black px-10 py-5 bg-white hover:bg-black hover:text-white transition-colors rounded-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1"
             >
-              ← Kembali
+              {t("story.actions.back")}
             </button>
             <BrutalistButton
               onClick={handleContinue}
@@ -272,7 +292,7 @@ export function StoryQuestion() {
               className="flex-2 min-w-[240px]"
               size="md"
             >
-              Lanjutkan{" "}
+              {t("story.actions.continue")}
               <ChevronRight size={24} strokeWidth={3} className="inline ml-1" />
             </BrutalistButton>
           </div>

@@ -7,6 +7,7 @@ import { ImageWithFallback } from "../components/figma/ImageWithFallback";
 import { generatePrint } from "../../utils/print4r";
 import { ButtonTemplate } from "../components/ButtonTemplate";
 import { SlotImage } from "../components/SlotImage";
+import { useTranslation } from "react-i18next";
 
 type Template = {
   background: string;
@@ -66,6 +67,7 @@ export function PhotoArrangement() {
 
   const peopleCount = location.state?.peopleCount || 1;
   const joinedBonus = location.state?.joinedBonus || false;
+  const { t } = useTranslation();
 
   let totalPrint = peopleCount;
   if (joinedBonus) {
@@ -392,10 +394,10 @@ export function PhotoArrangement() {
         <div className="w-full mx-auto h-full flex flex-col">
           <div className="my-5">
             <h1 className="text-6xl font-bold mb-4 text-center">
-              Arrange Your Photos
+              {t("photoArrange.title")}
             </h1>
             <p className="text-2xl text-center mb-8 text-gray-700">
-              Select a photo from the gallery and click on a slot to place it
+              {t("photoArrange.subtitle")}
             </p>
           </div>
 
@@ -403,7 +405,9 @@ export function PhotoArrangement() {
             {/* LEFT SIDE - Photo Gallery */}
             <div className="col-span-8 h-full">
               <BrutalistCard className="p-6">
-                <h2 className="text-3xl font-bold mb-6">Photo Gallery</h2>
+                <h2 className="text-3xl font-bold mb-6">
+                  {t("photoArrange.gallery")}
+                </h2>
                 <div className="grid grid-cols-5 gap-4 max-h-[995px] overflow-y-auto pr-2">
                   {photoGallery.map((photo, index) => (
                     <BrutalistCard
@@ -442,7 +446,9 @@ export function PhotoArrangement() {
             {/* RIGHT SIDE - Template Preview with Slots */}
             <BrutalistCard className="col-span-3 pb-5 flex flex-col overflow-hidden h-[77dvh]">
               <div className="px-6">
-                <h2 className="text-3xl font-bold my-2">Template Layout</h2>
+                <h2 className="text-3xl font-bold my-2">
+                  {t("photoArrange.templateLayout")}
+                </h2>
                 <div className="flex gap-3 overflow-x-auto pb-2">
                   {templates.map((tpl, index) => {
                     const isActive = activeTemplate === index;
@@ -721,7 +727,7 @@ export function PhotoArrangement() {
                         variant="outline"
                         className="w-full"
                       >
-                        Lihat Preview Cetak
+                        {t("photoArrange.actions.previewPrint")}
                       </BrutalistButton>
                       <BrutalistButton
                         onClick={
@@ -734,10 +740,10 @@ export function PhotoArrangement() {
                         className="w-full"
                       >
                         {printing
-                          ? "Generating Print..."
+                          ? t("photoArrange.actions.generating")
                           : printed
-                            ? "Next →"
-                            : "Selesaikan dan Cetak!"}
+                            ? t("photoArrange.actions.next")
+                            : t("photoArrange.actions.finishPrint")}
                       </BrutalistButton>
                     </div>
                   </div>
@@ -746,7 +752,9 @@ export function PhotoArrangement() {
             </BrutalistCard>
             <div className="col-span-1 h-[77dvh] overflow-hidden">
               <BrutalistCard className="p-4 h-full overflow-y-auto">
-                <h2 className="text-xl font-bold mb-4">Filter</h2>
+                <h2 className="text-xl font-bold mb-4">
+                  {t("photoArrange.filter")}
+                </h2>
                 <div className="flex flex-col gap-3">
                   {FILTERS.map((filter) => (
                     <button
@@ -860,7 +868,7 @@ export function PhotoArrangement() {
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-xl border-4 border-black max-w-2xl w-full">
             <h2 className="text-3xl font-bold mb-4 text-center">
-              Print Preview
+              {t("photoArrange.printPreview.title")}
             </h2>
             <img
               src={previewUrl}
@@ -871,7 +879,7 @@ export function PhotoArrangement() {
                 className="w-full"
                 onClick={() => setPreviewOpen(false)}
               >
-                Close
+                {t("photoArrange.printPreview.close")}
               </BrutalistButton>
             </div>
           </div>
@@ -882,9 +890,11 @@ export function PhotoArrangement() {
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-xl border-4 border-black max-w-md w-full text-center">
             <div className="text-6xl mb-4">🎉</div>
-            <h2 className="text-3xl font-bold mb-2">Print Berhasil!</h2>
+            <h2 className="text-3xl font-bold mb-2">
+              {t("photoArrange.success.title")}
+            </h2>
             <p className="text-xl text-gray-600 mb-6">
-              Semua foto berhasil disimpan dan siap dicetak.
+              {t("photoArrange.success.description")}
             </p>
 
             {/* Countdown ring */}
@@ -919,7 +929,10 @@ export function PhotoArrangement() {
             </div>
 
             <p className="text-lg text-gray-500 mb-4">
-              Otomatis lanjut dalam {countdown} detik...
+              {t("photoArrange.success.autoNext").replace(
+                "{{count}}",
+                countdown.toString(),
+              )}
             </p>
 
             <BrutalistButton
@@ -941,11 +954,10 @@ export function PhotoArrangement() {
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-xl border-4 border-black max-w-3xl w-full">
             <h2 className="text-3xl font-bold mb-2 text-center">
-              Konfirmasi Cetak
+              {t("photoArrange.confirm.title")}
             </h2>
             <p className="text-xl text-gray-600 mb-6 text-center">
-              Apakah kamu sudah yakin dengan susunan foto ini? Foto akan
-              langsung dicetak.
+              {t("photoArrange.confirm.description")}
             </p>
             <div className="flex gap-4">
               <BrutalistButton
@@ -953,7 +965,7 @@ export function PhotoArrangement() {
                 variant="outline"
                 onClick={() => setConfirmOpen(false)}
               >
-                Belum, kembali
+                {t("photoArrange.confirm.cancel")}
               </BrutalistButton>
               <BrutalistButton
                 className="w-full"
@@ -962,7 +974,7 @@ export function PhotoArrangement() {
                   handlePrint();
                 }}
               >
-                Yakin, Cetak!
+                {t("photoArrange.confirm.confirm")}
               </BrutalistButton>
             </div>
           </div>

@@ -21,5 +21,215 @@
       "description": "Choose a different template per person or pair",
       "badge": "INDIVIDUAL"
     }
+  },
+  "bonusSelection": {
+    "title": "Bonus Activity",
+    "subtitle": "Would you like to join our special bonus activity?",
+    "join": {
+      "title": "Join Bonus",
+      "description": "You currently get {{count}} prints, if you join the bonus, you get <b>{{double}} prints!</b>"
+    },
+    "skip": {
+      "title": "Skip Bonus",
+      "description": "Continue directly to template selection"
+    }
+  },
+  "bonusGuide": {
+    "title": "Get Your Bonus 🎁",
+    "subtitle": "Leave us a review on Google Maps to receive a bonus!",
+    "scan": "Scan this QR Code",
+    "steps": {
+      "step1": "Scan the QR code to open Ignos on Google Maps",
+      "step2": "Give us a rating and write a short review",
+      "step3": "Show your review to our staff to claim your bonus"
+    },
+    "continue": "Continue"
+  },
+  "templateSelection": {
+    "title": "Select Templates",
+    "selectingFor": "Selecting for:",
+    "user": "User {{current}} of {{total}}",
+    "categories": "Categories",
+    "templates": "Templates",
+    "comingSoon": "🚧 Coming Soon",
+    "comingSoonDesc": "Templates for this category are under development",
+    "rightPanel": {
+      "allTemplate": "Template (applies to all)",
+      "yourSelections": "Your Selections",
+      "notSelected": "Not selected"
+    },
+    "bonus": {
+      "title": "Your Bonus",
+      "bonusTemplate": "Bonus Template #{{id}}",
+      "notSelected": "Bonus not selected"
+    },
+    "continue": "Continue"
+  },
+  "photoArrange": {
+    "title": "Arrange Your Photos",
+    "subtitle": "Select a photo from the gallery and click on a slot to place it",
+    "gallery": "Photo Gallery",
+    "preview": "Preview",
+    "templateLayout": "Template Layout",
+    "template": "Template {{number}}",
+    "filter": "Filter",
+
+    "actions": {
+      "previewPrint": "View Print Preview",
+      "generating": "Generating Print...",
+      "next": "Next →",
+      "finishPrint": "Finish and Print!"
+    },
+
+    "previewModal": {
+      "title": "Photo Preview ({{current}} / {{total}})",
+      "previous": "← Previous",
+      "next": "Next →",
+      "close": "Close",
+      "select": "Use This Photo"
+    },
+
+    "printPreview": {
+      "title": "Print Preview",
+      "close": "Close"
+    },
+
+    "success": {
+      "title": "Print Successful!",
+      "description": "All photos have been saved and are ready to print.",
+      "autoNext": "Automatically continuing in {{count}} seconds..."
+    },
+
+    "confirm": {
+      "title": "Print Confirmation",
+      "description": "Are you sure with this photo arrangement? The photos will be printed immediately.",
+      "cancel": "Not yet, go back",
+      "confirm": "Yes, Print!"
+    }
+  },
+  "addons": {
+    "title": "Additional Prints",
+    "subtitle": "Would you like to add more prints?",
+    "addButton": "Add",
+    "skip": "No, continue →",
+    "preorder": "PO",
+
+    "items": {
+      "4r-print": {
+        "title": "4R Photo Print",
+        "description": "Print 4R photos with sharp results, accurate colors, and premium paper."
+      },
+      "10r-print": {
+        "title": "A4 Photo Print",
+        "description": "Print A4 (10R) photos with high quality."
+      },
+      "keychain": {
+        "title": "Keychain",
+        "description": "Turn your favorite photo into a cute custom keychain."
+      },
+      "id-card": {
+        "title": "ID Card",
+        "description": "Print your photo as a custom ID card with attractive design."
+      },
+      "bingkai-4r": {
+        "title": "4R Frame",
+        "description": "Enhance your 4R photo with an aesthetic ready-to-display frame."
+      },
+      "bingkai-a4": {
+        "title": "A4 Frame",
+        "description": "Elegant frame for A4 photos, perfect for decoration."
+      },
+      "flower-hotwheels": {
+        "title": "Flower Hotwheels",
+        "description": "Unique decoration with flowers/miniatures, perfect for special gifts."
+      },
+      "cetak-bingkai3d-10r": {
+        "title": "3D Frame Print 10R",
+        "description": "10R photo with premium 3D frame effect."
+      },
+      "cermin-foto-3d": {
+        "title": "3D Photo Mirror",
+        "description": "Custom mirror with aesthetic 3D photo effect."
+      },
+      "boneka-tabung": {
+        "title": "Custom Doll",
+        "description": "Custom doll with your photo, perfect as a gift."
+      },
+      "puzzle-foto": {
+        "title": "Photo Puzzle",
+        "description": "Turn your photo into a fun puzzle, perfect as a unique gift (pre-order)."
+      },
+      "photo-calender": {
+        "title": "Photo Calendar",
+        "description": "A personalized photo calendar for your memories."
+      }
+    }
+  },
+  "story": {
+    "title": "Create Instagram Story?",
+    "subtitle": "Get a <1>free softcopy</1> by creating a story & mentioning us on Instagram!",
+
+    "choices": {
+      "yes": {
+        "title": "Yes, create a story!",
+        "description": "Follow & mention us on Instagram, get softcopy <1>FREE</1>",
+        "price": "+ Rp 0"
+      },
+      "no": {
+        "title": "No, i'll skip",
+        "description": "Skip this step, softcopy will have an extra charge",
+        "price": "+ {{price}}"
+      }
+    },
+
+    "instructions": {
+      "title": "How to get free softcopy:",
+      "steps": [
+        "Follow our Instagram account",
+        "Post a story & mention our username",
+        "Enter your Instagram username below"
+      ]
+    },
+
+    "username": {
+      "title": "Instagram Username",
+      "accounts": "({{count}} accounts)",
+      "placeholder": "username for person {{number}}",
+      "required": "Required"
+    },
+
+    "extraCharge": {
+      "title": "Softcopy Fee",
+      "description": "Added to total payment"
+    },
+
+    "actions": {
+      "back": "← Back",
+      "continue": "Continue"
+    }
+  },
+  "complete": {
+    "title": "Process Completed!",
+    "subtitle": "Your photos are ready to print. Please proceed to the <1>cashier</1> to complete your payment.",
+
+    "cashier": {
+      "title": "Go to Cashier",
+      "description": "Show this page to the cashier staff to complete your transaction."
+    },
+
+    "story": {
+      "title": "Free Softcopy 🎉",
+      "description": "Don't forget to post a story & mention us!"
+    },
+
+    "extraCharge": {
+      "title": "Additional Softcopy Fee",
+      "description": "Will be added to your total bill at the cashier"
+    },
+
+    "actions": {
+      "backHome": "Back to Home"
+    }
   }
+  
 }

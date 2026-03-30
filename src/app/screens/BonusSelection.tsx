@@ -1,5 +1,6 @@
 import { useNavigate, useLocation } from "react-router";
 import { Gift, X } from "lucide-react";
+import { useTranslation, Trans } from "react-i18next";
 import { BrutalistCard } from "../components/BrutalistCard";
 import { Navigation } from "../components/Navigation";
 import { useEffect } from "react";
@@ -7,6 +8,8 @@ import { useEffect } from "react";
 export function BonusSelection() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useTranslation();
+
   const peopleCount = location.state?.peopleCount || 1;
   const skipBonus = location.state?.skipBonus;
   const coupleMode = location.state?.coupleMode ?? false;
@@ -23,6 +26,7 @@ export function BonusSelection() {
   const handleJoinBonus = () => {
     navigate("/bonus-guide", { state: { peopleCount, coupleMode } });
   };
+
   const handleSkipBonus = () => {
     navigate("/templates", {
       state: { peopleCount, joinedBonus: false, coupleMode },
@@ -36,9 +40,11 @@ export function BonusSelection() {
       <div className="flex items-center justify-center min-h-screen p-8 pt-32">
         <div className="max-w-7xl w-full">
           <div className="text-center mb-16">
-            <h1 className="text-6xl font-bold mb-6">Bonus Activity</h1>
+            <h1 className="text-6xl font-bold mb-6">
+              {t("bonusSelection.title")}
+            </h1>
             <p className="text-3xl text-gray-700">
-              Would you like to join our special bonus activity?
+              {t("bonusSelection.subtitle")}
             </p>
           </div>
 
@@ -51,10 +57,16 @@ export function BonusSelection() {
               <div className="w-32 h-32 bg-black rounded-full flex items-center justify-center mb-8 border-4 border-black">
                 <Gift size={64} className="text-white" strokeWidth={3} />
               </div>
-              <h2 className="text-5xl font-bold mb-6">Join Bonus</h2>
+              <h2 className="text-5xl font-bold mb-6">
+                {t("bonusSelection.join.title")}
+              </h2>
               <p className="text-2xl text-gray-600">
-                Awalnya kamu mendapatkan {peopleCount} print, jika kamu
-                mengikuti bonus, dapat <b>{peopleCount * 2} print!</b>
+                {/* Trans dipakai karena ada tag <b> di dalam teks */}
+                <Trans
+                  i18nKey="bonusSelection.join.description"
+                  values={{ count: peopleCount, double: peopleCount * 2 }}
+                  components={{ b: <b /> }}
+                />
               </p>
             </BrutalistCard>
 
@@ -66,9 +78,11 @@ export function BonusSelection() {
               <div className="w-32 h-32 bg-white border-4 border-black rounded-full flex items-center justify-center mb-8">
                 <X size={64} className="text-black" strokeWidth={3} />
               </div>
-              <h2 className="text-5xl font-bold mb-6">Skip Bonus</h2>
+              <h2 className="text-5xl font-bold mb-6">
+                {t("bonusSelection.skip.title")}
+              </h2>
               <p className="text-2xl text-gray-600">
-                Continue directly to template selection
+                {t("bonusSelection.skip.description")}
               </p>
             </BrutalistCard>
           </div>

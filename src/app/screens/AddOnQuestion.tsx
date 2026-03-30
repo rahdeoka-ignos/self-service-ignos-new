@@ -1,9 +1,11 @@
 import { useLocation, useNavigate } from "react-router";
 import { ArrowRight } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export function AddOnQuestion() {
   const location = useLocation();
   const peopleCount = location.state?.peopleCount || 1;
+  const { t } = useTranslation();
 
   const navigate = useNavigate();
 
@@ -144,10 +146,8 @@ export function AddOnQuestion() {
       <div className="w-screen-3xl mx-auto">
         {/* Title */}
         <div className="text-center mb-14">
-          <h1 className="text-7xl font-bold mb-5">Tambahan Cetakan</h1>
-          <p className="text-3xl text-gray-600">
-            Apakah kamu ingin menambahkan cetakan lainnya?
-          </p>
+          <h1 className="text-7xl font-bold mb-5">{t("addons.title")}</h1>
+          <p className="text-3xl text-gray-600">{t("addons.subtitle")}</p>
         </div>
 
         {/* Addons Grid */}
@@ -180,13 +180,14 @@ export function AddOnQuestion() {
               {/* Info */}
               <div className="p-5 flex flex-col flex-1">
                 <h2 className="text-xl font-bold leading-tight mb-2">
-                  {addon.title}
+                  {t(`addons.items.${addon.id}.title`)}
                 </h2>
                 <p className="text-lg font-bold text-black mb-4">
                   {formatPrice(addon.price)}
                 </p>
                 <button className="mt-auto w-full text-base font-bold border-2 border-black py-3 rounded-lg bg-white group-hover:bg-black group-hover:text-white transition-colors flex items-center justify-center gap-2">
-                  Tambah <ArrowRight size={18} strokeWidth={3} />
+                  {t("addons.addButton")}{" "}
+                  <ArrowRight size={18} strokeWidth={3} />
                 </button>
               </div>
             </div>
@@ -203,7 +204,7 @@ export function AddOnQuestion() {
             }
             className="text-2xl font-bold border-4 border-black px-16 py-5 bg-white hover:bg-black hover:text-white transition-colors rounded-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1"
           >
-            Tidak, lanjutkan →
+            {t("addons.skip")}
           </button>
         </div>
       </div>

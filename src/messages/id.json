@@ -21,5 +21,214 @@
       "description": "Pilih template berbeda untuk setiap orang atau pasangan",
       "badge": "INDIVIDU"
     }
+  },
+  "bonusSelection": {
+    "title": "Aktivitas Bonus",
+    "subtitle": "Apakah kamu ingin mengikuti aktivitas bonus spesial kami?",
+    "join": {
+      "title": "Ikuti Bonus",
+      "description": "Awalnya kamu mendapatkan {{count}} print, jika kamu mengikuti bonus, dapat <b>{{double}} print!</b>"
+    },
+    "skip": {
+      "title": "Lewati Bonus",
+      "description": "Lanjutkan langsung ke pemilihan template"
+    }
+  },
+  "bonusGuide": {
+    "title": "Dapatkan Bonus Anda 🎁",
+    "subtitle": "Berikan ulasan di Google Maps untuk mendapatkan bonus!",
+    "scan": "Pindai Kode QR ini",
+    "steps": {
+      "step1": "Pindai kode QR untuk membuka Ignos di Google Maps",
+      "step2": "Berikan penilaian dan tulis ulasan singkat",
+      "step3": "Tunjukkan ulasan Anda kepada staf kami untuk mendapatkan bonus"
+    },
+    "continue": "Lanjutkan"
+  },
+  "templateSelection": {
+    "title": "Pilih Template",
+    "selectingFor": "Memilih untuk:",
+    "user": "Pengguna {{current}} dari {{total}}",
+    "categories": "Kategori",
+    "templates": "Template",
+    "comingSoon": "🚧 Segera Hadir",
+    "comingSoonDesc": "Template untuk kategori ini sedang dalam pengembangan",
+    "rightPanel": {
+      "allTemplate": "Template (berlaku untuk semua)",
+      "yourSelections": "Pilihan Anda",
+      "notSelected": "Belum dipilih"
+    },
+    "bonus": {
+      "title": "Bonus Anda",
+      "bonusTemplate": "Template Bonus #{{id}}",
+      "notSelected": "Bonus belum dipilih"
+    },
+    "continue": "Lanjutkan"
+  },
+  "photoArrange": {
+    "title": "Atur Foto Anda",
+    "subtitle": "Pilih foto dari galeri lalu klik slot untuk menempatkannya",
+    "gallery": "Galeri Foto Anda",
+    "preview": "Preview",
+    "templateLayout": "Layout Template",
+    "template": "Template {{number}}",
+    "filter": "Filter",
+
+    "actions": {
+      "previewPrint": "Lihat Preview Cetak",
+      "generating": "Sedang membuat cetakan...",
+      "next": "Selanjutnya →",
+      "finishPrint": "Selesaikan dan Cetak!"
+    },
+
+    "previewModal": {
+      "title": "Preview Gambar ({{current}} / {{total}})",
+      "previous": "← Sebelumnya",
+      "next": "Selanjutnya →",
+      "close": "Tutup",
+      "select": "Gunakan Foto Ini"
+    },
+
+    "printPreview": {
+      "title": "Preview Cetak",
+      "close": "Tutup"
+    },
+
+    "success": {
+      "title": "Cetak Berhasil!",
+      "description": "Semua foto berhasil disimpan dan siap dicetak.",
+      "autoNext": "Otomatis lanjut dalam {{count}} detik..."
+    },
+
+    "confirm": {
+      "title": "Konfirmasi Cetak",
+      "description": "Apakah kamu sudah yakin dengan susunan foto ini? Foto akan langsung dicetak.",
+      "cancel": "Belum, kembali",
+      "confirm": "Yakin, Cetak!"
+    }
+  },
+  "addons": {
+    "title": "Tambahan Cetakan",
+    "subtitle": "Apakah kamu ingin menambahkan cetakan lainnya?",
+    "addButton": "Tambah",
+    "skip": "Tidak, lanjutkan →",
+    "preorder": "PO",
+
+    "items": {
+      "4r-print": {
+        "title": "Cetak Foto 4R",
+        "description": "Cetak foto ukuran 4R dengan hasil tajam, warna akurat, dan kertas premium."
+      },
+      "10r-print": {
+        "title": "Cetak Foto A4",
+        "description": "Cetak foto ukuran A4 (10R) dengan kualitas tinggi."
+      },
+      "keychain": {
+        "title": "Gantungan Kunci",
+        "description": "Ubah foto favoritmu jadi gantungan kunci unik dan lucu."
+      },
+      "id-card": {
+        "title": "ID Card",
+        "description": "Cetak foto menjadi ID card custom dengan desain menarik."
+      },
+      "bingkai-4r": {
+        "title": "Bingkai 4R",
+        "description": "Percantik foto 4R dengan bingkai estetik siap pajang."
+      },
+      "bingkai-a4": {
+        "title": "Bingkai A4",
+        "description": "Bingkai elegan untuk foto A4, cocok untuk dekorasi."
+      },
+      "flower-hotwheels": {
+        "title": "Flower Hotwheels",
+        "description": "Dekorasi unik dengan bunga / miniatur, cocok untuk hadiah spesial."
+      },
+      "cetak-bingkai3d-10r": {
+        "title": "Cetak Bingkai 3D 10R",
+        "description": "Foto 10R dengan efek bingkai 3D premium."
+      },
+      "cermin-foto-3d": {
+        "title": "Cermin Foto 3D",
+        "description": "Cermin custom dengan efek foto 3D yang estetik."
+      },
+      "boneka-tabung": {
+        "title": "Boneka Tabung",
+        "description": "Boneka custom dengan foto pilihan, cocok untuk kado."
+      },
+      "puzzle-foto": {
+        "title": "Puzzle Foto",
+        "description": "Foto jadi puzzle seru, cocok untuk hadiah unik (PO)."
+      },
+      "photo-calender": {
+        "title": "Photo Calendar",
+        "description": "Photo calendar untuk menyimpan momen spesialmu."
+      }
+    }
+  },
+  "story": {
+    "title": "Buat Story Instagram?",
+    "subtitle": "Dapatkan <1>softcopy gratis</1> dengan membuat story & mention kami di Instagram!",
+
+    "choices": {
+      "yes": {
+        "title": "Ya, buat story!",
+        "description": "Follow & mention kami di Instagram, softcopy <1>GRATIS</1>",
+        "price": "+ Rp 0"
+      },
+      "no": {
+        "title": "Tidak",
+        "description": "Lewati langkah ini, softcopy dikenakan biaya tambahan",
+        "price": "+ {{price}}"
+      }
+    },
+
+    "instructions": {
+      "title": "Cara mendapatkan softcopy gratis:",
+      "steps": [
+        "Follow akun Instagram kami",
+        "Posting story & mention username kami",
+        "Masukkan username Instagram kamu di bawah"
+      ]
+    },
+
+    "username": {
+      "title": "Username Instagram",
+      "accounts": "({{count}} akun)",
+      "placeholder": "username orang ke-{{number}}",
+      "required": "Wajib diisi"
+    },
+
+    "extraCharge": {
+      "title": "Biaya Softcopy",
+      "description": "Ditambahkan ke total pembayaran"
+    },
+
+    "actions": {
+      "back": "← Kembali",
+      "continue": "Lanjutkan"
+    }
+  },
+  "complete": {
+    "title": "Proses Selesai!",
+    "subtitle": "Foto kamu sudah siap dicetak. Silakan menuju ke <1>kasir</1> untuk menyelesaikan pembayaran.",
+
+    "cashier": {
+      "title": "Menuju Kasir",
+      "description": "Tunjukkan halaman ini kepada petugas kasir untuk menyelesaikan transaksi kamu."
+    },
+
+    "story": {
+      "title": "Softcopy Gratis 🎉",
+      "description": "Jangan lupa posting story & mention kami ya!"
+    },
+
+    "extraCharge": {
+      "title": "Biaya Tambahan Softcopy",
+      "description": "Akan ditambahkan ke total tagihan di kasir"
+    },
+
+    "actions": {
+      "backHome": "Kembali ke Halaman Utama"
+    }
   }
 }

@@ -4,6 +4,7 @@ import { BrutalistCard } from "../components/BrutalistCard";
 import { BrutalistButton } from "../components/BrutalistButton";
 import { Navigation } from "../components/Navigation";
 import { ImageWithFallback } from "../components/figma/ImageWithFallback";
+import { useTranslation } from "react-i18next";
 
 const categories = [
   {
@@ -104,7 +105,7 @@ export function TemplateSelection() {
   const peopleCount = location.state?.peopleCount || 1;
   const joinedBonus = location.state?.joinedBonus || false;
   const coupleMode = location.state?.coupleMode ?? false;
-  console.log(joinedBonus);
+  const { t } = useTranslation();
 
   // SESUDAH
   const totalSelections = joinedBonus
@@ -169,17 +170,20 @@ export function TemplateSelection() {
       <div className="pt-32 pb-8 px-8 flex-1 overflow-hidden">
         <div className="max-w-[1800px] mx-auto h-full flex flex-col">
           <h1 className="text-6xl font-bold mb-8 mt-10 text-center">
-            Select Templates
+            {t("templateSelection.title")}
           </h1>
           <p className="text-2xl text-center mb-8 text-gray-700">
-            Selecting for: <span className="font-bold">User {currentUser}</span>{" "}
-            of {totalSelections}
+            {t("templateSelection.selectingFor")}{" "}
+            <span className="font-bold">User {currentUser}</span> of{" "}
+            {totalSelections}
           </p>
 
           <div className="grid grid-cols-12 gap-6 flex-1 overflow-hidden">
             {/* LEFT PANEL - Categories */}
             <div className="col-span-1 space-y-4 overflow-y-auto pr-2">
-              <h2 className="text-2xl font-bold mb-4">Categories</h2>
+              <h2 className="text-2xl font-bold mb-4">
+                {t("templateSelection.categories")}
+              </h2>
               {categories.map((category) => (
                 <BrutalistCard
                   key={category.id}
@@ -204,14 +208,16 @@ export function TemplateSelection() {
             <div className="col-span-8 overflow-y-auto pr-2">
               <h2 className="text-2xl font-bold mb-4">
                 {categories.find((c) => c.id === selectedCategory)?.name}{" "}
-                Templates
+                {t("templateSelection.templates")}
               </h2>
               {isComingSoon ? (
                 <div className="flex items-center justify-center h-[400px] w-full border-4 border-dashed border-black rounded-2xl">
                   <div className="text-center">
-                    <p className="text-3xl font-bold mb-2">🚧 Coming Soon</p>
+                    <p className="text-3xl font-bold mb-2">
+                      🚧 {t("templateSelection.comingSoon")}
+                    </p>
                     <p className="text-gray-600">
-                      Template untuk kategori ini sedang dalam pengembangan
+                      {t("templateSelection.comingSoonDesc")}
                     </p>
                   </div>
                 </div>
@@ -254,8 +260,8 @@ export function TemplateSelection() {
             <div className="col-span-3 overflow-y-auto scrollbar-thin pr-2">
               <h2 className="text-2xl font-bold mb-4">
                 {coupleMode
-                  ? "Template (berlaku untuk semua)"
-                  : "Your Selections"}
+                  ? t("templateSelection.rightPanel.allTemplate")
+                  : t("templateSelection.rightPanel.yourSelections")}
               </h2>
 
               {/* Your Selections */}
@@ -299,7 +305,7 @@ export function TemplateSelection() {
                           </div>
                         ) : (
                           <p className="text-gray-400 font-bold">
-                            Not selected
+                            {t("templateSelection.rightPanel.notSelected")}
                           </p>
                         )}
                       </div>
@@ -310,7 +316,9 @@ export function TemplateSelection() {
 
               {/* Your Bonus */}
               {joinedBonus && (
-                <h2 className="text-2xl font-bold my-4">Your Bonus</h2>
+                <h2 className="text-2xl font-bold my-4">
+                  {t("templateSelection.bonus.title")}
+                </h2>
               )}
               <div className="space-y-4">
                 {joinedBonus &&
@@ -349,13 +357,15 @@ export function TemplateSelection() {
                                   {userTemplates[slotNum].name}
                                 </p>
                                 <p className="text-sm text-gray-600">
-                                  Bonus Template #{userTemplates[slotNum].id}
+                                  {t("templateSelection.bonus.bonusTemplate", {
+                                    id: userTemplates[slotNum].id,
+                                  })}
                                 </p>
                               </div>
                             </div>
                           ) : (
                             <p className="text-gray-400 font-bold">
-                              Bonus not selected
+                              {t("templateSelection.bonus.notSelected")}
                             </p>
                           )}
                         </div>
