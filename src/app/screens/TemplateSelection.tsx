@@ -79,7 +79,7 @@ const templates = {
       id: 10,
       name: "wannabeyours-1975",
       preview: "/templates/wannabeyours-1975/background.png",
-      layout: "newspaper",
+      layout: "wannabeyours",
       previewTemplate: "/templates/wannabeyours-1975/preview.png",
     },
     {
@@ -93,7 +93,7 @@ const templates = {
       id: 12,
       name: "300days-1975",
       preview: "/templates/300days-1975/background.png",
-      layout: "newspaper",
+      layout: "300days",
       previewTemplate: "/templates/300days-1975/preview.png",
     },
   ],

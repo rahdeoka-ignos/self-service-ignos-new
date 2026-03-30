@@ -7,7 +7,15 @@ type SlotTransform = {
 };
 
 interface PrintOptions {
-  layout?: "1" | "2" | "4" | "6" | "8" | "newspaper";
+  layout?:
+    | "1"
+    | "2"
+    | "4"
+    | "6"
+    | "8"
+    | "newspaper"
+    | "wannabeyours"
+    | "300days";
   background?: string;
   frameOverlay?: string;
   watermark?: string;
@@ -261,12 +269,47 @@ export async function generatePrint(
     });
   }
 
-  // Tambah setelah blok layout "8", sebelum // FRAME OVERLAY LAYER
   if (layout === "newspaper") {
     const x = 82;
     const y = 874;
     const slotW = 2238;
     const slotH = 1136;
+
+    drawCover(
+      images[0],
+      orderedSlots[0],
+      x,
+      y,
+      slotW,
+      slotH,
+      options.uiSlotW,
+      options.uiSlotH,
+    );
+  }
+
+  if (layout === "wannabeyours") {
+    const x = 426 * 2;
+    const y = 425 * 2;
+    const slotW = 754 * 2;
+    const slotH = 760 * 2;
+
+    drawCover(
+      images[0],
+      orderedSlots[0],
+      x,
+      y,
+      slotW,
+      slotH,
+      options.uiSlotW,
+      options.uiSlotH,
+    );
+  }
+
+  if (layout === "300days") {
+    const x = 20 * 2;
+    const y = 684 * 2;
+    const slotW = 1160 * 2;
+    const slotH = 488 * 2;
 
     drawCover(
       images[0],

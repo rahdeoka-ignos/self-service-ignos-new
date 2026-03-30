@@ -12,7 +12,15 @@ import { useTranslation } from "react-i18next";
 type Template = {
   background: string;
   overlay: string;
-  layout: "1" | "2" | "4" | "6" | "8" | "newspaper";
+  layout:
+    | "1"
+    | "2"
+    | "4"
+    | "6"
+    | "8"
+    | "newspaper"
+    | "wannabeyours"
+    | "300days";
 };
 
 const FILTERS = [
@@ -136,7 +144,11 @@ export function PhotoArrangement() {
             ? 8
             : activeLayout === "newspaper"
               ? 1
-              : 6;
+              : activeLayout === "wannabeyours"
+                ? 1
+                : activeLayout === "300days"
+                  ? 1
+                  : 6;
 
   const preloadImage = (src: string) => {
     const img = new Image();
@@ -325,7 +337,11 @@ export function PhotoArrangement() {
               ? 8
               : tpl.layout === "newspaper"
                 ? 1
-                : 6;
+                : tpl.layout === "wannabeyours"
+                  ? 1
+                  : tpl.layout === "300days"
+                    ? 1
+                    : 6;
     return Object.keys(filledSlots[templateIndex] || {}).length === slots;
   });
 
@@ -696,6 +712,56 @@ export function PhotoArrangement() {
                           top: `${(874 / 3600) * 100}%`,
                           width: `${(2238 / 2400) * 100}%`,
                           height: `${(1136 / 3600) * 100}%`,
+                        }}
+                      >
+                        <BrutalistCard
+                          interactive
+                          onClick={() => handleSlotClick(1)}
+                          onDrop={(e) => handleDrop(e, 1)}
+                          onDragOver={allowDrop}
+                          className={`w-full h-full p-0 overflow-hidden shadow-none !border-0 !rounded-none ${
+                            selectedPhoto ? "cursor-pointer" : ""
+                          }`}
+                        >
+                          {renderSlotContent(1)}
+                        </BrutalistCard>
+                      </div>
+                    )}
+
+                    {activeLayout === "wannabeyours" && (
+                      <div
+                        className="absolute z-10"
+                        ref={slotRef}
+                        style={{
+                          left: `${((426 * 2) / 2400) * 100}%`,
+                          top: `${((425 * 2) / 3600) * 100}%`,
+                          width: `${(1508 / 2400) * 100}%`,
+                          height: `${(1520 / 3600) * 100}%`,
+                        }}
+                      >
+                        <BrutalistCard
+                          interactive
+                          onClick={() => handleSlotClick(1)}
+                          onDrop={(e) => handleDrop(e, 1)}
+                          onDragOver={allowDrop}
+                          className={`w-full h-full p-0 overflow-hidden shadow-none !border-0 !rounded-none ${
+                            selectedPhoto ? "cursor-pointer" : ""
+                          }`}
+                        >
+                          {renderSlotContent(1)}
+                        </BrutalistCard>
+                      </div>
+                    )}
+
+                    {activeLayout === "300days" && (
+                      <div
+                        className="absolute z-10"
+                        ref={slotRef}
+                        style={{
+                          left: `${((20 * 2) / 2400) * 100}%`,
+                          top: `${((684 * 2) / 3600) * 100}%`,
+                          width: `${((1160 * 2) / 2400) * 100}%`,
+                          height: `${((488 * 2) / 3600) * 100}%`,
                         }}
                       >
                         <BrutalistCard

@@ -6,8 +6,9 @@ export function AddOnQuestion() {
   const location = useLocation();
   const peopleCount = location.state?.peopleCount || 1;
   const { t } = useTranslation();
-
   const navigate = useNavigate();
+  const isVideo = (src: string) =>
+    src.endsWith(".mp4") || src.endsWith(".webm");
 
   const addons = [
     {
@@ -16,7 +17,7 @@ export function AddOnQuestion() {
       price: 10000,
       description:
         "Cetak foto ukuran 4R dengan hasil tajam, warna akurat, dan kertas premium.",
-      image: "/addons/4r.jpg",
+      image: "/addons/cetak-4r.mp4",
       path: "/people-count",
       state: {
         serviceId: "photo-studio",
@@ -30,7 +31,7 @@ export function AddOnQuestion() {
       title: "Cetak Foto A4",
       price: 20000,
       description: "Cetak foto ukuran A4 (10R) dengan kualitas tinggi.",
-      image: "/addons/A4.jpg",
+      image: "/addons/cetak-a4.mp4",
       path: "/people-count",
       state: {
         serviceId: "photo-studio",
@@ -44,7 +45,7 @@ export function AddOnQuestion() {
       title: "Gantungan Kunci",
       price: 25000,
       description: "Ubah foto favoritmu jadi gantungan kunci unik dan lucu.",
-      image: "/addons/keychain.jpg",
+      image: "/addons/keychain.mp4",
       path: "/keychain",
       state: {},
     },
@@ -53,7 +54,7 @@ export function AddOnQuestion() {
       title: "ID Card",
       price: 15000,
       description: "Cetak foto menjadi ID card custom dengan desain menarik.",
-      image: "/addons/idcard.jpg",
+      image: "/addons/idcard.mp4",
       path: "/id-card",
       state: {},
     },
@@ -62,7 +63,7 @@ export function AddOnQuestion() {
       title: "Bingkai 4R",
       price: 30000,
       description: "Percantik foto 4R dengan bingkai estetik siap pajang.",
-      image: "/addons/bingkai4r.jpg",
+      image: "/addons/bingkai-4r.mp4",
       path: "/bingkai4r",
       state: {},
     },
@@ -71,7 +72,7 @@ export function AddOnQuestion() {
       title: "Bingkai A4",
       price: 40000,
       description: "Bingkai elegan untuk foto A4, cocok untuk dekorasi.",
-      image: "/addons/bingkaiA4.jpg",
+      image: "/addons/bingkai-a4.mp4",
       path: "/bingkaiA4",
       state: {},
     },
@@ -90,7 +91,7 @@ export function AddOnQuestion() {
       title: "Cetak Bingkai 3D 10R",
       price: 90000,
       description: "Foto 10R dengan efek bingkai 3D premium.",
-      image: "/addons/cetak-bingkai3d-10r.jpg",
+      image: "/addons/bingkai-3d.mp4",
       path: "/cetak-bingkai3d-10r",
       state: {},
     },
@@ -160,16 +161,27 @@ export function AddOnQuestion() {
             >
               {/* Image */}
               <div className="relative w-full aspect-square overflow-hidden border-b-4 border-black">
-                <img
-                  src={addon.image}
-                  alt={addon.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src =
-                      "https://placehold.co/400x400/e5e7eb/6b7280?text=" +
-                      encodeURIComponent(addon.title);
-                  }}
-                />
+                {isVideo(addon.image) ? (
+                  <video
+                    src={addon.image}
+                    className="w-full h-full object-cover"
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                  />
+                ) : (
+                  <img
+                    src={addon.image}
+                    alt={addon.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src =
+                        "https://placehold.co/400x400/e5e7eb/6b7280?text=" +
+                        encodeURIComponent(addon.title);
+                    }}
+                  />
+                )}
                 {addon.isPreorder && (
                   <span className="absolute top-3 left-3 text-sm font-bold bg-yellow-300 border-2 border-black px-3 py-1 rounded-full">
                     PO
