@@ -78,6 +78,9 @@ export function PhotoArrangement() {
 
   const peopleCount = location.state?.peopleCount || 1;
   const joinedBonus = location.state?.joinedBonus || false;
+  const coupleMode = location.state?.coupleMode ?? false;
+  const regularCount = coupleMode ? 1 : peopleCount;
+
   const { t } = useTranslation();
 
   let totalPrint = peopleCount;
@@ -292,6 +295,15 @@ export function PhotoArrangement() {
       setPrinting(true);
       for (let i = 0; i < templates.length; i++) {
         const slotSize = uiSlotSizes[i] || { w: 0, h: 0 };
+
+        // Tentukan label berdasarkan index
+        const isBonus = joinedBonus && i >= regularCount;
+        const labelIndex = isBonus ? i - regularCount + 1 : i + 1;
+        const printLabel = isBonus
+          ? `bonus-${labelIndex}`
+          : `cetak-${labelIndex}`;
+        // console.log("PRINTING TEMPLATE", i, "LABEL:", printLabel);
+
         await generatePrint(filledSlots[i], {
           layout: templates[i].layout,
           background: templates[i].background,
@@ -303,6 +315,7 @@ export function PhotoArrangement() {
           filter:
             FILTERS.find((f) => f.id === (activeFilters[i] ?? "none"))?.style ||
             "",
+          printLabel, // ← tambah ini
         });
       }
       setPrinted(true);
@@ -498,15 +511,27 @@ export function PhotoArrangement() {
                 </h2>
                 <div className="flex gap-3 overflow-x-auto pb-2">
                   {templates.map((tpl, index) => {
+                    const isBonus = joinedBonus && index >= regularCount;
+                    const bonusIndex = index - regularCount + 1;
                     const isActive = activeTemplate === index;
                     return (
                       <ButtonTemplate
                         key={index}
                         onClick={() => setActiveTemplate(index)}
                         className={`text-lg px-4 py-2 whitespace-nowrap border-4 border-black transition-all cursor-pointer
-                          ${isActive ? "bg-black text-white border-8" : "bg-transparent !text-black hover:bg-black hover:!text-white"}`}
+        ${
+          isActive
+            ? isBonus
+              ? "bg-yellow-300 text-black border-8 border-yellow-400"
+              : "bg-black text-white border-8"
+            : isBonus
+              ? "bg-yellow-100 !text-black border-yellow-400 hover:bg-yellow-300"
+              : "bg-transparent !text-black hover:bg-black hover:!text-white"
+        }`}
                       >
-                        Cetak {index + 1}
+                        {isBonus
+                          ? `🎁 Bonus ${bonusIndex}`
+                          : `Cetak ${index + 1}`}
                       </ButtonTemplate>
                     );
                   })}

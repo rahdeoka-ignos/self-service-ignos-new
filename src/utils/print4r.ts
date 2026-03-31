@@ -24,6 +24,7 @@ interface PrintOptions {
   uiSlotW?: number;
   uiSlotH?: number;
   filter?: string;
+  printLabel?: string;
 }
 
 export async function generatePrint(
@@ -348,9 +349,14 @@ export async function generatePrint(
   }
 
   const formData = new FormData();
-  formData.append("file", blob, `print-${Date.now()}.png`);
+  const filename = options.printLabel
+    ? `${options.printLabel}-${Date.now()}.png`
+    : `${options.printLabel}-${Date.now()}.png`;
+  // console.log(filename);
+  formData.append("file", blob, filename);
 
-  await fetch("http://localhost:5000/api/save-print", {
+  const label = options.printLabel;
+  await fetch(`http://localhost:5000/api/save-print?label=${label}`, {
     method: "POST",
     body: formData,
   });

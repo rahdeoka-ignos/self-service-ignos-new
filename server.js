@@ -31,7 +31,11 @@ const storage = multer.diskStorage({
     cb(null, PHOTOS_DIR);
   },
   filename: function (req, file, cb) {
-    cb(null, `print-${Date.now()}.png`);
+    const label = req.query.label.toString();
+    console.log(label);
+
+    const ext = path.extname(file.originalname) || ".png";
+    cb(null, `${label}-${Date.now()}${ext}`);
   },
 });
 
