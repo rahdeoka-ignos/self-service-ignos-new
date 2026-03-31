@@ -43,7 +43,7 @@ export function AddOnQuestion() {
     {
       id: "keychain",
       title: "Gantungan Kunci",
-      price: 25000,
+      price: 15000,
       description: "Ubah foto favoritmu jadi gantungan kunci unik dan lucu.",
       image: "/addons/keychain.mp4",
       path: "/keychain",
@@ -142,14 +142,20 @@ export function AddOnQuestion() {
       maximumFractionDigits: 0,
     }).format(price);
 
+  const joinedBonus = location.state?.joinedBonus ?? false;
+  const coupleMode = location.state?.coupleMode ?? false;
+  const totalPrint = location.state?.totalPrint ?? peopleCount;
+  const templates = location.state?.templates ?? [];
+  const keychainOrder = location.state?.orders ?? [];
+
   return (
     <div className="min-h-screen bg-gray-100 p-10 pt-14 pb-20">
       <div className="w-screen-3xl mx-auto">
         {/* Title */}
-        <div className="text-center mb-14">
-          <h1 className="text-7xl font-bold mb-5">{t("addons.title")}</h1>
-          <p className="text-3xl text-gray-600">{t("addons.subtitle")}</p>
-        </div>
+        <div className="text-center mb-7">
+          <h1 className="text-6xl font-bold mb-5">{t("addons.title")}</h1>
+          {/* <p className="text-3xl text-gray-600">{t("addons.subtitle")}</p> */}
+        </div>  
 
         {/* Addons Grid */}
         <div className="grid grid-cols-6 gap-6">
@@ -207,11 +213,18 @@ export function AddOnQuestion() {
         </div>
 
         {/* Skip Button */}
-        <div className="flex justify-center mt-14">
+        <div className="flex justify-center mt-7">
           <button
             onClick={() =>
               navigate("/story-question", {
-                state: { peopleCount },
+                state: {
+                  peopleCount,
+                  joinedBonus,
+                  coupleMode,
+                  totalPrint,
+                  templates,
+                  keychainOrder
+                },
               })
             }
             className="text-2xl font-bold border-4 border-black px-16 py-5 bg-white hover:bg-black hover:text-white transition-colors rounded-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1"

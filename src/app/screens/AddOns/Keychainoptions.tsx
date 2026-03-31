@@ -9,30 +9,30 @@ const KEYCHAIN_OPTIONS = [
   {
     id: "kotak-plastik",
     name: "Kotak Plastik",
-    price: 20000,
+    price: 15000,
     description: "Full Foto",
-    image: "/addons/keychain-kotak-plastik.jpg",
+    image: "/addons/keychain-kotak-plastik.png",
   },
   {
     id: "kotak-metal",
     name: "Kotak Metal",
     price: 30000,
     description: "Full Foto",
-    image: "/addons/keychain-kotak-metal.jpg",
+    image: "/addons/keychain-kotak-metal.png",
   },
   {
     id: "oval-metal",
     name: "Oval Metal",
     price: 30000,
     description: "Full Foto",
-    image: "/addons/keychain-oval-metal.jpg",
+    image: "/addons/keychain-oval-metal.png",
   },
   {
     id: "love-metal",
     name: "Love Metal",
     price: 30000,
     description: "Full Foto",
-    image: "/addons/keychain-love-metal.jpg",
+    image: "/addons/keychain-love-metal.png",
   },
 ];
 
@@ -123,7 +123,7 @@ export function KeychainOptions() {
                       <img
                         src={opt.image}
                         alt={opt.name}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover object-center"
                         onError={(e) => {
                           (e.target as HTMLImageElement).src =
                             "https://placehold.co/400x400/e5e7eb/6b7280?text=" +

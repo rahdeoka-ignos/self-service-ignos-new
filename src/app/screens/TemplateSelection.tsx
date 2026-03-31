@@ -346,9 +346,12 @@ export function TemplateSelection() {
 
                 {/* Your Bonus */}
                 {joinedBonus && (
-                  <h2 className="text-2xl font-bold my-4">
-                    {t("templateSelection.bonus.title")}
-                  </h2>
+                  <div className="my-4">
+                    <h2 className="text-2xl font-bold">
+                      {t("templateSelection.bonus.title")}
+                    </h2>
+                    <p>Bonus ini akan dicetak sebanyak {peopleCount} print!</p>
+                  </div>
                 )}
                 <div className="space-y-4">
                   {joinedBonus &&

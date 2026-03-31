@@ -173,7 +173,15 @@ export function PhotoArrangement() {
         if (prev <= 1) {
           clearInterval(interval);
           setSuccessOpen(false);
-          navigate("/add-ons");
+          navigate("/add-ons", {
+            state: {
+              peopleCount,
+              joinedBonus,
+              coupleMode: location.state?.coupleMode ?? false,
+              totalPrint,
+              templates: templates.map((tpl) => ({ layout: tpl.layout })),
+            },
+          });
           return 0;
         }
         return prev - 1;
@@ -498,7 +506,7 @@ export function PhotoArrangement() {
                         className={`text-lg px-4 py-2 whitespace-nowrap border-4 border-black transition-all cursor-pointer
                           ${isActive ? "bg-black text-white border-8" : "bg-transparent !text-black hover:bg-black hover:!text-white"}`}
                       >
-                        Template {index + 1}
+                        Cetak {index + 1}
                       </ButtonTemplate>
                     );
                   })}
@@ -1029,7 +1037,13 @@ export function PhotoArrangement() {
               onClick={() => {
                 setSuccessOpen(false);
                 navigate("/add-ons", {
-                  state: { peopleCount },
+                  state: {
+                    peopleCount,
+                    joinedBonus,
+                    coupleMode: location.state?.coupleMode ?? false,
+                    totalPrint,
+                    templates: templates.map((tpl) => ({ layout: tpl.layout })),
+                  },
                 });
               }}
             >

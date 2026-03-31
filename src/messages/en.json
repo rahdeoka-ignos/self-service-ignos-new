@@ -41,7 +41,8 @@
     "steps": {
       "step1": "Scan the QR code to open Ignos on Google Maps",
       "step2": "Give us a rating and write a short review",
-      "step3": "Show your review to our staff to claim your bonus"
+      "step3": "Show your review to our staff to claim your bonus",
+      "step4": "Follow Instagram @ignos.studio to claim your bonus"
     },
     "continue": "Continue"
   },

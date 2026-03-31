@@ -19,6 +19,9 @@ export function StoryQuestion() {
   const peopleCount: number = location.state?.peopleCount ?? 1;
   const serviceId: string = location.state?.serviceId ?? "photo-box";
   const coupleMode: boolean = location.state?.coupleMode ?? false;
+  const keychainOrders: string[] = location.state?.keychainOrder ?? [];
+  console.log(keychainOrders);
+  
   const getRequiredUsernames = (count: number): number => {
     if (count <= 1) return 1;
     if (count <= 3) return 2;
@@ -62,6 +65,8 @@ export function StoryQuestion() {
 
     navigate("/complete", {
       state: {
+        ...location.state,
+        keychainOrders,
         peopleCount,
         serviceId,
         coupleMode,

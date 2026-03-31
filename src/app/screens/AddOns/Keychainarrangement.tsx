@@ -23,6 +23,8 @@ export function KeychainArrangement() {
   const navigate = useNavigate();
 
   const orders: KeychainOrder[] = location.state?.orders || [];
+  console.log(orders);
+  
 
   // Flatten semua slot
   const slots: SlotItem[] = [];
@@ -104,7 +106,7 @@ export function KeychainArrangement() {
         if (prev <= 1) {
           clearInterval(interval);
           setSuccessOpen(false);
-          navigate("/add-ons");
+          navigate("/add-ons", {state: { orders }});
           return 0;
         }
         return prev - 1;
@@ -636,7 +638,7 @@ export function KeychainArrangement() {
               className="w-full"
               onClick={() => {
                 setSuccessOpen(false);
-                navigate("/add-ons");
+                navigate("/add-ons", {state: { orders }});
               }}
             >
               Next →

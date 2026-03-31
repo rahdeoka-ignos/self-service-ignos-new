@@ -11,7 +11,7 @@ const IDCARD_OPTIONS = [
     name: "ID Card Portrait",
     subtitle: "Full Foto",
     price: 35000,
-    image: "/addons/idcard-portrait-full.jpg",
+    image: "/addons/idcard-portrait-full.png",
     orientation: "portrait" as const,
   },
   {
@@ -19,7 +19,7 @@ const IDCARD_OPTIONS = [
     name: "ID Card Landscape",
     subtitle: "Full Foto",
     price: 35000,
-    image: "/addons/idcard-landscape-full.jpg",
+    image: "/addons/idcard-landscape-full.png",
     orientation: "landscape" as const,
   },
   {
@@ -27,7 +27,7 @@ const IDCARD_OPTIONS = [
     name: "ID Card Landscape",
     subtitle: "Design Biru",
     price: 35000,
-    image: "/addons/idcard-landscape-blue.jpg",
+    image: "/addons/idcard-blue.png",
     orientation: "landscape" as const,
   },
   {
@@ -35,7 +35,7 @@ const IDCARD_OPTIONS = [
     name: "ID Card Landscape",
     subtitle: "Design Merah",
     price: 35000,
-    image: "/addons/idcard-landscape-red.jpg",
+    image: "/addons/idcard-red.png",
     orientation: "landscape" as const,
   },
 ];

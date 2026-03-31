@@ -4,27 +4,27 @@
   },
   "peopleCount": {
     "title": "Berapa banyak orang?",
-    "subtitle": "Pilih jumlah orang dalam grup kamu",
+    "subtitle": "Masukkan jumlah orang dalam sesi kamu",
     "continue": "Lanjutkan"
   },
   "templateModal": {
-    "title": "Mode Template",
-    "subtitle": "Kamu memiliki",
-    "subtitlePeople": "orang. Bagaimana template akan diterapkan?",
+    "title": "Konsep Cetak Mau Kaya Gimana?",
+    "subtitle": "Kamu mendapatkan",
+    "subtitlePeople": "print. Templatenya mau sama-an atau beda-beda tiap orang?",
     "singleTemplate": {
-      "title": "1 Template",
-      "description": "Semua {{count}} orang menggunakan satu template yang sama",
-      "badge": "GRUP / PASANGAN"
+      "title": "Sama-an",
+      "description": "{{count}} orang menggunakan satu template yang sama",
+      "badge": "COUPLE"
     },
     "multipleTemplate": {
-      "title": "Beberapa Template",
-      "description": "Pilih template berbeda untuk setiap orang atau pasangan",
-      "badge": "INDIVIDU"
+      "title": "Beda-beda Tiap Orang",
+      "description": "Pilih template yang berbeda untuk setiap orang",
+      "badge": "BEDA-BEDA"
     }
   },
   "bonusSelection": {
-    "title": "Aktivitas Bonus",
-    "subtitle": "Apakah kamu ingin mengikuti aktivitas bonus spesial kami?",
+    "title": "Ikut Bonus Yuk!",
+    "subtitle": "Apakah kamu ingin mengikuti bonus spesial dari kami?",
     "join": {
       "title": "Ikuti Bonus",
       "description": "Awalnya kamu mendapatkan {{count}} print, jika kamu mengikuti bonus, dapat <b>{{double}} print!</b>"
@@ -36,12 +36,13 @@
   },
   "bonusGuide": {
     "title": "Dapatkan Bonus Anda 🎁",
-    "subtitle": "Berikan ulasan di Google Maps untuk mendapatkan bonus!",
+    "subtitle": "Tiap orang wajib memberikan ulasan di Google Maps untuk mendapatkan bonus!",
     "scan": "Pindai Kode QR ini",
     "steps": {
       "step1": "Pindai kode QR untuk membuka Ignos di Google Maps",
-      "step2": "Berikan penilaian dan tulis ulasan singkat",
-      "step3": "Tunjukkan ulasan Anda kepada staf kami untuk mendapatkan bonus"
+      "step2": "Berikan penilaian dan tulis ulasan yang menarik",
+      "step3": "Tunjukkan bukti sudah follow dan memberikan ulasan untuk mendapatkan bonus kepada staff",
+      "step4": "Follow Instagram @ignos.studio untuk mendapatkan bonus"
     },
     "continue": "Lanjutkan"
   },
@@ -108,7 +109,7 @@
     }
   },
   "addons": {
-    "title": "Tambahan Cetakan",
+    "title": "Ada Tambahan Lagi? Kita Punya Banyak Pilihan Tambahan yang Menarik🤩✨",
     "subtitle": "Apakah kamu ingin menambahkan cetakan lainnya?",
     "addButton": "Tambah",
     "skip": "Tidak, lanjutkan →",
@@ -166,7 +167,7 @@
     }
   },
   "story": {
-    "title": "Buat Story Instagram?",
+    "title": "Mau softcopy secara gratis?",
     "subtitle": "Dapatkan <1>softcopy gratis</1> dengan membuat story & mention kami di Instagram!",
 
     "choices": {
@@ -185,7 +186,7 @@
     "instructions": {
       "title": "Cara mendapatkan softcopy gratis:",
       "steps": [
-        "Follow akun Instagram kami",
+        "Follow akun Instagram kami @ignos.studio",
         "Posting story & mention username kami",
         "Masukkan username Instagram kamu di bawah"
       ]
