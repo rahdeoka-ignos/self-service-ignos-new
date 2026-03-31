@@ -15,6 +15,7 @@ export function BonusSelection() {
   const skipBonus = location.state?.skipBonus;
   const coupleMode = location.state?.coupleMode ?? false;
   const [showTimerModal, setShowTimerModal] = useState(false);
+  const [duration, setDuration] = useState(20 * 60);
 
   useEffect(() => {
     if (skipBonus) {
@@ -29,14 +30,20 @@ export function BonusSelection() {
     navigate("/bonus-guide", { state: { peopleCount, coupleMode } });
   };
 
-    const handleContinue = () => {
-      setShowTimerModal(true);
-    };
+  const handleContinue = () => {
+    setShowTimerModal(true);
+  };
 
   const handleSkipBonus = () => {
-    setShowTimerModal(false)
+    sessionStorage.removeItem("session_timer_end");
+    setShowTimerModal(false);
     navigate("/templates", {
-      state: { peopleCount, joinedBonus: false, coupleMode },
+      state: {
+        peopleCount,
+        joinedBonus: false,
+        coupleMode,
+        timerDuration: duration,
+      },
     });
   };
 
@@ -96,7 +103,6 @@ export function BonusSelection() {
         </div>
       </div>
 
-
       {/* Timer Modal */}
       {showTimerModal && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
@@ -112,9 +118,11 @@ export function BonusSelection() {
               Kamu memiliki waktu untuk menyelesaikan sesi foto ini
             </p>
 
-            {/* Timer display */}
+            {/* Timer display — dinamis seperti BonusGuide */}
             <div className="border-4 border-black rounded-2xl p-8 mb-8 bg-gray-50">
-              <p className="text-8xl font-bold tracking-tight">20:00</p>
+              <p className="text-8xl font-bold tracking-tight">
+                {String(Math.floor(duration / 60)).padStart(2, "0")}:00
+              </p>
               <p className="text-2xl font-bold text-gray-500 mt-2">menit</p>
             </div>
 
@@ -124,7 +132,26 @@ export function BonusSelection() {
               Gunakan waktu dengan bijak!
             </p>
 
-            {/* Actions */}
+            {/* Duration selector — sama persis dengan BonusGuide */}
+            <div className="flex items-center justify-center gap-4 mb-6">
+              <p className="text-lg font-bold text-gray-600">Durasi Sesi:</p>
+              {[10, 15, 20, 30].map((min) => (
+                <button
+                  key={min}
+                  onClick={() => setDuration(min * 60)}
+                  className={`border-4 border-black px-4 py-2 rounded-xl font-bold text-lg transition-all
+        ${
+          duration === min * 60
+            ? "bg-black text-white shadow-none translate-x-1 translate-y-1"
+            : "bg-white text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1"
+        }`}
+                >
+                  {min}m
+                </button>
+              ))}
+            </div>
+
+            {/* Actions — sama */}
             <div className="flex gap-4">
               <button
                 onClick={() => setShowTimerModal(false)}

@@ -14,17 +14,23 @@ export function BonusGuide() {
   const reviewLink = "https://share.google/M0a3bc8DtyZzDmaBx";
   const coupleMode = location.state?.coupleMode ?? false;
   const { t } = useTranslation();
-
   const [showTimerModal, setShowTimerModal] = useState(false);
+  const [duration, setDuration] = useState(20 * 60);
 
   const handleContinue = () => {
     setShowTimerModal(true);
   };
 
   const handleStartSession = () => {
+    sessionStorage.removeItem("session_timer_end");
     setShowTimerModal(false);
     navigate("/templates", {
-      state: { peopleCount, joinedBonus: true, coupleMode },
+      state: {
+        peopleCount,
+        joinedBonus: true,
+        coupleMode,
+        timerDuration: duration,
+      },
     });
   };
 
@@ -111,6 +117,24 @@ export function BonusGuide() {
               Timer akan mulai berjalan setelah kamu menekan tombol di bawah.
               Gunakan waktu dengan bijak!
             </p>
+
+            <div className="flex items-center justify-center gap-4 mb-6">
+              <p className="text-lg font-bold text-gray-600">Durasi Sesi:</p>
+              {[10, 15, 20, 30].map((min) => (
+                <button
+                  key={min}
+                  onClick={() => setDuration(min * 60)}
+                  className={`border-4 border-black px-4 py-2 rounded-xl font-bold text-lg transition-all
+        ${
+          duration === min * 60
+            ? "bg-black text-white shadow-none translate-x-1 translate-y-1"
+            : "bg-white text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1"
+        }`}
+                >
+                  {min}m
+                </button>
+              ))}
+            </div>
 
             {/* Actions */}
             <div className="flex gap-4">

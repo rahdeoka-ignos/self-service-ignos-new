@@ -8,6 +8,9 @@ import { generatePrint } from "../../utils/print4r";
 import { ButtonTemplate } from "../components/ButtonTemplate";
 import { SlotImage } from "../components/SlotImage";
 import { useTranslation } from "react-i18next";
+import { useCountdownTimer } from "../../hooks/useCountdownTimer";
+import { TimerExpiredModal } from "../components/TimerExpiredModal";
+import { TimerBar } from "../components/TimerBar";
 
 type Template = {
   background: string;
@@ -108,6 +111,12 @@ export function PhotoArrangement() {
   const [activeFilters, setActiveFilters] = useState<{
     [templateIndex: number]: string;
   }>({});
+  const timerDuration = location.state?.timerDuration ?? 20 * 60;
+  const timer = useCountdownTimer(timerDuration);
+
+  useEffect(() => {
+    timer.start();
+  }, []);
 
   // Helper untuk get filter aktif per template
   const activeFilter = activeFilters[activeTemplate] ?? "none";
@@ -404,6 +413,20 @@ export function PhotoArrangement() {
 
   return (
     <div className="h-[100dvh] overflow-hidden bg-gray-100 flex flex-col">
+      <TimerBar
+        minutes={timer.minutes}
+        seconds={timer.seconds}
+        timeLeft={timer.timeLeft}
+      />
+
+      {timer.isExpired && (
+        <TimerExpiredModal
+          onContinue={() => {
+            // optional: auto-confirm print jika canConfirm
+            setConfirmOpen(true);
+          }}
+        />
+      )}
       <Navigation currentStep={4} totalSteps={5} />
 
       <div className="pt-32 px-8 flex-1 overflow-hidden">
