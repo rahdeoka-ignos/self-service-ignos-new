@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { useNavigate, useLocation } from "react-router";
-import { Star, MapPin, TabletSmartphone } from "lucide-react";
+import { Star, MapPin, TabletSmartphone, Timer } from "lucide-react";
 import { BrutalistCard } from "../components/BrutalistCard";
 import { BrutalistButton } from "../components/BrutalistButton";
 import { Navigation } from "../components/Navigation";
@@ -14,7 +15,14 @@ export function BonusGuide() {
   const coupleMode = location.state?.coupleMode ?? false;
   const { t } = useTranslation();
 
+  const [showTimerModal, setShowTimerModal] = useState(false);
+
   const handleContinue = () => {
+    setShowTimerModal(true);
+  };
+
+  const handleStartSession = () => {
+    setShowTimerModal(false);
     navigate("/templates", {
       state: { peopleCount, joinedBonus: true, coupleMode },
     });
@@ -39,7 +47,6 @@ export function BonusGuide() {
                 <div className="bg-white p-6 border-4 border-black">
                   <QRCodeSVG value={reviewLink} size={220} />
                 </div>
-
                 <p className="text-2xl font-bold mt-6">
                   {t("bonusGuide.scan")}
                 </p>
@@ -53,14 +60,12 @@ export function BonusGuide() {
                     {t("bonusGuide.steps.step1")}
                   </p>
                 </div>
-
                 <div className="flex items-start gap-4">
                   <Star size={36} />
                   <p className="text-2xl font-bold">
                     {t("bonusGuide.steps.step2")}
                   </p>
                 </div>
-
                 <div className="flex items-start gap-4">
                   <TabletSmartphone size={36} />
                   <p className="text-2xl font-bold">
@@ -79,6 +84,53 @@ export function BonusGuide() {
           </BrutalistButton>
         </div>
       </div>
+
+      {/* Timer Modal */}
+      {showTimerModal && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
+          <div className="bg-white border-4 border-black rounded-2xl p-10 max-w-lg w-full mx-4 text-center shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+            {/* Icon */}
+            <div className="w-24 h-24 bg-black rounded-full flex items-center justify-center mx-auto mb-6">
+              <Timer size={48} className="text-white" strokeWidth={2} />
+            </div>
+
+            {/* Title */}
+            <h2 className="text-4xl font-bold mb-3">Sesi Dimulai!</h2>
+            <p className="text-xl text-gray-600 mb-8">
+              Kamu memiliki waktu untuk menyelesaikan sesi foto ini
+            </p>
+
+            {/* Timer display */}
+            <div className="border-4 border-black rounded-2xl p-8 mb-8 bg-gray-50">
+              <p className="text-8xl font-bold tracking-tight">20:00</p>
+              <p className="text-2xl font-bold text-gray-500 mt-2">menit</p>
+            </div>
+
+            {/* Info */}
+            <p className="text-lg text-gray-500 mb-8 leading-relaxed">
+              Timer akan mulai berjalan setelah kamu menekan tombol di bawah.
+              Gunakan waktu dengan bijak!
+            </p>
+
+            {/* Actions */}
+            <div className="flex gap-4">
+              <button
+                onClick={() => setShowTimerModal(false)}
+                className="flex-1 text-xl font-bold border-4 border-black px-6 py-4 bg-white hover:bg-black hover:text-white transition-colors rounded-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1"
+              >
+                Kembali
+              </button>
+              <BrutalistButton
+                onClick={handleStartSession}
+                className="flex-1 text-xl"
+                size="md"
+              >
+                Mulai Sekarang →
+              </BrutalistButton>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
