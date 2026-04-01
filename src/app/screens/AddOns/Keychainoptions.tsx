@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 import { BrutalistCard } from "../../components/BrutalistCard";
 import { BrutalistButton } from "../../components/BrutalistButton";
 import { Navigation } from "../../components/Navigation";
@@ -46,6 +46,7 @@ export type KeychainOrder = {
 
 export function KeychainOptions() {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [quantities, setQuantities] = useState<{ [id: string]: number }>(
     Object.fromEntries(KEYCHAIN_OPTIONS.map((o) => [o.id, 0])),
@@ -80,7 +81,12 @@ export function KeychainOptions() {
       image: opt.image,
     }));
 
-    navigate("/keychain-arrangement", { state: { orders } });
+    navigate("/keychain-arrangement", {
+      state: {
+        ...location.state, // ← tambah ini: bawa semua state lama
+        orders,
+      },
+    });
   };
 
   return (

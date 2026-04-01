@@ -11,8 +11,11 @@ export function PhotoArrangementA4() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const peopleCount = location.state?.peopleCount || 1;
-
+  const peopleCount = location.state?.a4PeopleCount || 1;
+  const returnState = (() => {
+    const { a4PeopleCount, serviceId, ...rest } = location.state ?? {};
+    return rest;
+  })();
   const [photoGallery, setPhotoGallery] = useState<
     { thumb: string; full: string }[]
   >([]);
@@ -72,7 +75,12 @@ export function PhotoArrangementA4() {
         if (prev <= 1) {
           clearInterval(interval);
           setSuccessOpen(false);
-          navigate("/add-ons");
+          navigate("/add-ons", {
+            state: {
+              ...returnState,
+              a4Count: (returnState.a4Count ?? 0) + peopleCount, // akumulasi jika beli lagi
+            },
+          });
           return 0;
         }
         return prev - 1;
@@ -449,7 +457,12 @@ export function PhotoArrangementA4() {
               className="w-full"
               onClick={() => {
                 setSuccessOpen(false);
-                navigate("/add-ons");
+                navigate("/add-ons", {
+                  state: {
+                    ...returnState,
+                    a4Count: (returnState.a4Count ?? 0) + peopleCount, // akumulasi jika beli lagi
+                  },
+                });
               }}
             >
               Next →

@@ -178,6 +178,7 @@ export function PhotoArrangement() {
           setSuccessOpen(false);
           navigate("/add-ons", {
             state: {
+              ...location.state?.returnState, // ← spread state lama dari add-ons
               peopleCount,
               joinedBonus,
               coupleMode: location.state?.coupleMode ?? false,
@@ -854,7 +855,20 @@ export function PhotoArrangement() {
                       <BrutalistButton
                         onClick={
                           printed
-                            ? () => navigate("/add-ons")
+                            ? () =>
+                                navigate("/add-ons", {
+                                  state: {
+                                    ...location.state?.returnState,
+                                    peopleCount,
+                                    joinedBonus,
+                                    coupleMode:
+                                      location.state?.coupleMode ?? false,
+                                    totalPrint,
+                                    templates: templates.map((tpl) => ({
+                                      layout: tpl.layout,
+                                    })),
+                                  },
+                                })
                             : () => setConfirmOpen(true)
                         }
                         disabled={!canConfirm || printing}
@@ -1063,11 +1077,12 @@ export function PhotoArrangement() {
                 setSuccessOpen(false);
                 navigate("/add-ons", {
                   state: {
+                    ...location.state?.returnState, // untuk flow addon (4R dari add-ons)
                     peopleCount,
                     joinedBonus,
                     coupleMode: location.state?.coupleMode ?? false,
                     totalPrint,
-                    templates: templates.map((tpl) => ({ layout: tpl.layout })),
+                    templates: templates.map((tpl) => ({ layout: tpl.layout })), // selalu pakai yang fresh
                   },
                 });
               }}

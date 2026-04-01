@@ -24,7 +24,6 @@ export function KeychainArrangement() {
 
   const orders: KeychainOrder[] = location.state?.orders || [];
   console.log(orders);
-  
 
   // Flatten semua slot
   const slots: SlotItem[] = [];
@@ -106,7 +105,7 @@ export function KeychainArrangement() {
         if (prev <= 1) {
           clearInterval(interval);
           setSuccessOpen(false);
-          navigate("/add-ons", {state: { orders }});
+          navigate("/add-ons", { state: { ...location.state, orders } });
           return 0;
         }
         return prev - 1;
@@ -115,6 +114,10 @@ export function KeychainArrangement() {
     return () => clearInterval(interval);
   }, [successOpen]);
 
+  useEffect(() => {
+    console.log("LOCATION STATE:", location.state);
+  }, [location.state]);
+  
   const handlePhotoClick = (photo: { thumb: string; full: string }) => {
     // Cari slot kosong pertama
     const emptySlot = slots.find((s) => !filledSlots[s.globalIndex]);
@@ -638,7 +641,7 @@ export function KeychainArrangement() {
               className="w-full"
               onClick={() => {
                 setSuccessOpen(false);
-                navigate("/add-ons", {state: { orders }});
+                navigate("/add-ons", { state: { ...location.state, orders } });
               }}
             >
               Next →

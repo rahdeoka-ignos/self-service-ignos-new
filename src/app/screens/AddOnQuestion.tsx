@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 export function AddOnQuestion() {
   const location = useLocation();
   const peopleCount = location.state?.peopleCount || 1;
+  const a4Count: number = location.state?.a4Count ?? 0;
   const { t } = useTranslation();
   const navigate = useNavigate();
   const isVideo = (src: string) =>
@@ -146,7 +147,8 @@ export function AddOnQuestion() {
   const coupleMode = location.state?.coupleMode ?? false;
   const totalPrint = location.state?.totalPrint ?? peopleCount;
   const templates = location.state?.templates ?? [];
-  const keychainOrder = location.state?.orders ?? [];
+  // const orders = location.state?.orders ?? [];
+  const orders = location.state?.orders ?? location.state?.keychainOrders ?? [];
 
   return (
     <div className="min-h-screen bg-gray-100 p-10 pt-14 pb-20">
@@ -155,14 +157,42 @@ export function AddOnQuestion() {
         <div className="text-center mb-7">
           <h1 className="text-6xl font-bold mb-5">{t("addons.title")}</h1>
           {/* <p className="text-3xl text-gray-600">{t("addons.subtitle")}</p> */}
-        </div>  
+        </div>
 
         {/* Addons Grid */}
         <div className="grid grid-cols-6 gap-6">
           {addons.map((addon) => (
             <div
               key={addon.id}
-              onClick={() => navigate(addon.path, { state: addon.state })}
+              onClick={() => {
+                const baseState = {
+                  peopleCount,
+                  joinedBonus,
+                  coupleMode,
+                  totalPrint,
+                  templates,
+                  orders,
+                  a4Count,
+                };
+
+                // Untuk addon yang butuh people-count, forward state lama
+                if (addon.id === "4r-print" || addon.id === "10r-print") {
+                  navigate(addon.path, {
+                    state: {
+                      ...addon.state,
+                      // State lama disimpan di returnState, untuk dikembalikan setelah selesai
+                      returnState: baseState,
+                    },
+                  });
+                } else {
+                  navigate(addon.path, {
+                    state: {
+                      ...addon.state,
+                      ...baseState,
+                    },
+                  });
+                }
+              }}
               className="group flex flex-col bg-white border-4 border-black rounded-2xl overflow-hidden cursor-pointer shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all duration-150"
             >
               {/* Image */}
@@ -218,12 +248,14 @@ export function AddOnQuestion() {
             onClick={() =>
               navigate("/story-question", {
                 state: {
+                  ...location.state,
                   peopleCount,
                   joinedBonus,
                   coupleMode,
                   totalPrint,
                   templates,
-                  keychainOrder
+                  orders,
+                  a4Count,
                 },
               })
             }

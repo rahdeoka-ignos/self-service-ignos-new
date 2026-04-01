@@ -110,6 +110,7 @@ export function PeopleCount() {
   const skipBonus = location.state?.skipBonus;
   const disableModal = location.state?.disableModal;
   const maxCount = serviceId === "photo-studio" ? 15 : 8;
+  const returnState = location.state?.returnState;
 
   const [count, setCount] = useState(1);
   const [showModal, setShowModal] = useState(false);
@@ -124,14 +125,27 @@ export function PeopleCount() {
   };
 
   const handleContinue = () => {
+    const isA4 = destination === "arrange-photos-a4";
+
     if (disableModal) {
       navigate(`/${destination}`, {
-        state: { peopleCount: count, serviceId },
+        state: {
+          ...(returnState ?? {}),
+          // A4 pakai key sendiri agar tidak override peopleCount sesi utama
+          ...(isA4 ? { a4PeopleCount: count } : { peopleCount: count }),
+          serviceId,
+        },
       });
       return;
     }
+
     if (count === 1) {
-      const sharedState = { peopleCount: count, serviceId, coupleMode: true };
+      const sharedState = {
+        ...(returnState ?? {}),
+        peopleCount: count,
+        serviceId,
+        coupleMode: true,
+      };
       if (skipBonus && destination) {
         navigate(`/${destination}`, { state: sharedState });
       } else {
@@ -146,6 +160,7 @@ export function PeopleCount() {
     setShowModal(false);
 
     const sharedState = {
+      ...(returnState ?? {}), // ← tambah ini
       peopleCount: count,
       serviceId,
       coupleMode: isCoupleMode,
