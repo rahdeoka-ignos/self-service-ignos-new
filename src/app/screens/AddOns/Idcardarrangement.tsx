@@ -115,7 +115,20 @@ export function IdCardArrangement() {
         if (prev <= 1) {
           clearInterval(interval);
           setSuccessOpen(false);
-          navigate("/add-ons");
+          const idCardItems = orders.map((o) => ({
+            name: `${o.name} - ${o.subtitle}`,
+            qty: o.qty,
+          }));
+          navigate("/add-ons", {
+            state: {
+              ...location.state,
+              orders: location.state?.orders ?? [],
+              miscAddons: [
+                ...(location.state?.miscAddons ?? []),
+                ...idCardItems,
+              ],
+            },
+          });
           return 0;
         }
         return prev - 1;
@@ -918,7 +931,20 @@ export function IdCardArrangement() {
               className="w-full"
               onClick={() => {
                 setSuccessOpen(false);
-                navigate("/add-ons");
+                const idCardItems = orders.map((o) => ({
+                  name: `${o.name} - ${o.subtitle}`,
+                  qty: o.qty,
+                }));
+                navigate("/add-ons", {
+                  state: {
+                    ...location.state,
+                    orders: location.state?.orders ?? [],
+                    miscAddons: [
+                      ...(location.state?.miscAddons ?? []),
+                      ...idCardItems,
+                    ],
+                  },
+                });
               }}
             >
               Next →

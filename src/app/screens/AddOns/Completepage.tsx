@@ -11,6 +11,7 @@ import {
   Scissors,
   LayoutTemplate,
   Key,
+  ShoppingBag,
 } from "lucide-react";
 import { Trans, useTranslation } from "react-i18next";
 
@@ -35,6 +36,8 @@ export function CompletePage() {
   const templates: { layout: string }[] = location.state?.templates ?? [];
   const keychainOrder: KeychainOrder[] = location.state?.orders ?? [];
   const a4Count: number = location.state?.a4Count ?? 0;
+  const miscAddons: { name: string; qty: number }[] =
+    location.state?.miscAddons ?? [];
   console.log(coupleMode);
 
   const layoutLabels: { [key: string]: string } = {
@@ -270,6 +273,25 @@ export function CompletePage() {
                     label="Cetak A4"
                   />
                   <Row label="Cetak Foto A4" value={`${a4Count} lembar`} />
+                </>
+              )}
+
+              {miscAddons.length > 0 && (
+                <>
+                  <Divider />
+                  <SectionHeader
+                    icon={
+                      <ShoppingBag
+                        size={16}
+                        strokeWidth={2.5}
+                        className="text-gray-400"
+                      />
+                    }
+                    label="Addon Lainnya"
+                  />
+                  {miscAddons.map((addon, i) => (
+                    <Row key={i} label={addon.name} value={`${addon.qty}x`} />
+                  ))}
                 </>
               )}
 

@@ -140,7 +140,29 @@ export function BingkaiA4Page() {
 
             <BrutalistButton
               className="w-full"
-              onClick={() => navigate("/add-ons")}
+              onClick={() => {
+                const addonName =
+                  location.pathname === "/bingkai4r"
+                    ? "Bingkai 4R"
+                    : "Bingkai A4";
+
+                const bingkaiItems = colors
+                  .filter((c) => quantities[c.id] > 0)
+                  .map((c) => ({
+                    name: `${addonName} - ${c.name}`,
+                    qty: quantities[c.id],
+                  }));
+
+                navigate("/add-ons", {
+                  state: {
+                    ...location.state,
+                    miscAddons: [
+                      ...(location.state?.miscAddons ?? []),
+                      ...bingkaiItems,
+                    ],
+                  },
+                });
+              }}
             >
               Kembali ke Add-ons
             </BrutalistButton>

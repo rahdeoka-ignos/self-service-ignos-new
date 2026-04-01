@@ -173,6 +173,7 @@ export function AddOnQuestion() {
                   templates,
                   orders,
                   a4Count,
+                  miscAddons: location.state?.miscAddons ?? [],
                 };
 
                 // Untuk addon yang butuh people-count, forward state lama

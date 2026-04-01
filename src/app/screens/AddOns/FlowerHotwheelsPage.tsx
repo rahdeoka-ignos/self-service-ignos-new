@@ -7,8 +7,16 @@ import { useLocation } from "react-router";
 const contentMap: {
   [key: string]: { title: string; question: string; emoji: string };
 } = {
-  "/flower-hotwheels": { title: "Flower Hotwheels", question: "...", emoji: "🌸" },
-  "/cetak-bingkai3d-10r": { title: "Cetak Bingkai 3D 10R", question: "...", emoji: "🖼️" },
+  "/flower-hotwheels": {
+    title: "Flower Hotwheels",
+    question: "...",
+    emoji: "🌸",
+  },
+  "/cetak-bingkai3d-10r": {
+    title: "Cetak Bingkai 3D 10R",
+    question: "...",
+    emoji: "🖼️",
+  },
   "/cermin-foto-3d": { title: "Cermin Foto 3D", question: "...", emoji: "🪞" },
   "/boneka-tabung": { title: "Boneka Tabung", question: "...", emoji: "🧸" },
   "/puzzle-foto": { title: "Puzzle Foto", question: "...", emoji: "🧩" },
@@ -86,7 +94,9 @@ export function FlowerHotwheelsPage() {
           <>
             {/* Result */}
             <div className="text-center mb-12">
-              <h1 className="text-5xl font-bold mb-4">{currentContent.title}</h1>
+              <h1 className="text-5xl font-bold mb-4">
+                {currentContent.title}
+              </h1>
             </div>
 
             <BrutalistCard className="p-10 text-center">
@@ -102,7 +112,17 @@ export function FlowerHotwheelsPage() {
 
               <BrutalistButton
                 className="w-full"
-                onClick={() => navigate("/add-ons")}
+                onClick={() =>
+                  navigate("/add-ons", {
+                    state: {
+                      ...location.state,
+                      miscAddons: [
+                        ...(location.state?.miscAddons ?? []),
+                        { name: currentContent.title, qty: quantity },
+                      ],
+                    },
+                  })
+                }
               >
                 Kembali ke Add-ons
               </BrutalistButton>

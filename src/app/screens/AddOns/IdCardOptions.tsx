@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 import { BrutalistCard } from "../../components/BrutalistCard";
 import { BrutalistButton } from "../../components/BrutalistButton";
 import { Navigation } from "../../components/Navigation";
@@ -52,6 +52,7 @@ export type IdCardOrder = {
 
 export function IdCardOptions() {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [quantities, setQuantities] = useState<{ [id: string]: number }>(
     Object.fromEntries(IDCARD_OPTIONS.map((o) => [o.id, 0])),
@@ -88,7 +89,12 @@ export function IdCardOptions() {
       orientation: opt.orientation,
     }));
 
-    navigate("/idcard-arrangement", { state: { orders } });
+    navigate("/idcard-arrangement", {
+      state: {
+        ...location.state,
+        orders,
+      },
+    });
   };
 
   return (
