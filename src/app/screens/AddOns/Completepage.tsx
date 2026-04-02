@@ -36,16 +36,18 @@ export function CompletePage() {
   const templates: { layout: string }[] = location.state?.templates ?? [];
   const keychainOrder: KeychainOrder[] = location.state?.orders ?? [];
   const a4Count: number = location.state?.a4Count ?? 0;
-  const miscAddons: { name: string; qty: number }[] =
-    location.state?.miscAddons ?? [];
+  const miscAddons: { name: string; qty: number }[] = [
+    ...keychainOrder.map((o) => ({ name: o.name, qty: o.qty })),
+    ...(location.state?.miscAddons ?? []),
+  ];
   console.log(coupleMode);
 
   const layoutLabels: { [key: string]: string } = {
-    "1": "1 Foto",
-    "2": "2 Foto",
-    "4": "4 Foto",
-    "6": "6 Foto",
-    "8": "8 Foto",
+    "1": "1 Slot",
+    "2": "2 Slot",
+    "4": "4 Slot",
+    "6": "6 Slot",
+    "8": "8 Slot",
     newspaper: "Newspaper",
     wannabeyours: "Wanna Be Yours",
     "300days": "300 Days",
@@ -202,29 +204,6 @@ export function CompletePage() {
 
               <Divider />
 
-              {/* ── KEYCHAIN ── */}
-              <SectionHeader
-                icon={
-                  <Key size={16} strokeWidth={2.5} className="text-gray-400" />
-                }
-                label="Gantungan Kunci"
-              />
-              {keychainOrder.length > 0 ? (
-                <>
-                  {keychainOrder.map((order, i) => (
-                    <Row key={i} label={order.name} value={`${order.qty}x`} />
-                  ))}
-                  <div className="pt-1">
-                    <Row
-                      label="Total keychain"
-                      value={`${keychainOrder.reduce((sum, o) => sum + o.qty, 0)} pcs`}
-                      highlight
-                    />
-                  </div>
-                </>
-              ) : (
-                <Row label="Gantungan kunci" value="❌ Tidak" />
-              )}
               {/* ── PRINT ── */}
               <SectionHeader
                 icon={
@@ -386,7 +365,7 @@ export function CompletePage() {
           </div>
 
           {/* Back home */}
-          <div className="flex justify-center">
+          {/* <div className="flex justify-center">
             <button
               onClick={() => {
                 sessionStorage.removeItem("session_timer_end");
@@ -396,7 +375,7 @@ export function CompletePage() {
             >
               {t("complete.actions.backHome")}
             </button>
-          </div>
+          </div> */}
         </div>
       </div>
     </div>

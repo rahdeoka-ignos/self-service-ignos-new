@@ -105,12 +105,14 @@ const templates = {
 export function TemplateSelection() {
   const navigate = useNavigate();
   const location = useLocation();
-  const peopleCount = location.state?.peopleCount || 1;
+  const peopleCount =
+    location.state?.print4rPeopleCount ?? location.state?.peopleCount ?? 1;
   const joinedBonus = location.state?.joinedBonus || false;
   const coupleMode = location.state?.coupleMode ?? false;
   const { t } = useTranslation();
   const timerDuration = location.state?.timerDuration ?? 20 * 60;
   const timer = useCountdownTimer(timerDuration);
+  const returnState = location.state?.returnState;
 
   useEffect(() => {
     timer.start();
@@ -155,6 +157,7 @@ export function TemplateSelection() {
         joinedBonus,
         coupleMode,
         templates: selectedTemplates,
+        returnState,
         // timerDuration,
       },
     });

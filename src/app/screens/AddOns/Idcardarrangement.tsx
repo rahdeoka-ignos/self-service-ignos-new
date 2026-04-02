@@ -22,7 +22,7 @@ export function IdCardArrangement() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const orders: IdCardOrder[] = location.state?.orders || [];
+  const orders: IdCardOrder[] = location.state?.idCardOrders || [];
 
   // Flatten semua slot
   const slots: SlotItem[] = [];
@@ -122,7 +122,7 @@ export function IdCardArrangement() {
           navigate("/add-ons", {
             state: {
               ...location.state,
-              orders: location.state?.orders ?? [],
+              idCardOrders: undefined, // bersihkan
               miscAddons: [
                 ...(location.state?.miscAddons ?? []),
                 ...idCardItems,
@@ -938,7 +938,7 @@ export function IdCardArrangement() {
                 navigate("/add-ons", {
                   state: {
                     ...location.state,
-                    orders: location.state?.orders ?? [],
+                    idCardOrders: undefined,
                     miscAddons: [
                       ...(location.state?.miscAddons ?? []),
                       ...idCardItems,

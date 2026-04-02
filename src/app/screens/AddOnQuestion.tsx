@@ -257,6 +257,7 @@ export function AddOnQuestion() {
                   templates,
                   orders,
                   a4Count,
+                  miscAddons: location.state?.miscAddons ?? [],
                 },
               })
             }

@@ -21,6 +21,9 @@ export function StoryQuestion() {
   const coupleMode: boolean = location.state?.coupleMode ?? false;
   const keychainOrders = location.state?.orders ?? [];
 
+  console.log("StoryQuestion peopleCount:", peopleCount);
+  console.log("Full state:", location.state);
+
   const getRequiredUsernames = (count: number): number => {
     if (count <= 1) return 1;
     if (count <= 3) return 2;

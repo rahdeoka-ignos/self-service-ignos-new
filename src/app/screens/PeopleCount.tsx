@@ -126,14 +126,23 @@ export function PeopleCount() {
 
   const handleContinue = () => {
     const isA4 = destination === "arrange-photos-a4";
+    const is4R = destination === "templates";
 
     if (disableModal) {
       navigate(`/${destination}`, {
         state: {
           ...(returnState ?? {}),
-          // A4 pakai key sendiri agar tidak override peopleCount sesi utama
-          ...(isA4 ? { a4PeopleCount: count } : { peopleCount: count }),
+          ...(isA4
+            ? { a4PeopleCount: count }
+            : is4R
+              ? {
+                  print4rPeopleCount: count,
+                  joinedBonus: false,
+                  coupleMode: false,
+                } // ← pakai key baru, jangan timpa peopleCount
+              : { peopleCount: count }),
           serviceId,
+          returnState: returnState ?? {},
         },
       });
       return;

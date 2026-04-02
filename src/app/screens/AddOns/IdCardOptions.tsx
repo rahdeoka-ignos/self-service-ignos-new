@@ -92,7 +92,7 @@ export function IdCardOptions() {
     navigate("/idcard-arrangement", {
       state: {
         ...location.state,
-        orders,
+        idCardOrders: orders,
       },
     });
   };

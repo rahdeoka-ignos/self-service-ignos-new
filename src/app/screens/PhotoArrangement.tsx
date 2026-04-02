@@ -116,6 +116,7 @@ export function PhotoArrangement() {
   }>({});
   const timerDuration = location.state?.timerDuration ?? 20 * 60;
   const timer = useCountdownTimer(timerDuration);
+  const navigatedRef = useRef(false);
 
   useEffect(() => {
     timer.start();
@@ -167,25 +168,51 @@ export function PhotoArrangement() {
     img.src = src;
   };
 
+  const navigateBackToAddons = () => {
+    if (navigatedRef.current) return;
+    navigatedRef.current = true;
+
+    const isAddonFlow = !!location.state?.returnState; // ← cek apakah ini dari addon
+    const base = location.state?.returnState ?? {};
+
+    if (isAddonFlow) {
+      // Alur addon 4R — kembalikan ke add-ons dengan returnState
+      navigate("/add-ons", {
+        state: {
+          ...base,
+          print4rCount: (base.print4rCount ?? 0) + templates.length,
+          miscAddons: [
+            ...(base.miscAddons ?? []),
+            { name: "Cetak Foto 4R", qty: templates.length },
+          ],
+        },
+      });
+    } else {
+      // Alur sesi utama — kirim state lengkap
+      navigate("/add-ons", {
+        state: {
+          ...location.state,
+          peopleCount,
+          joinedBonus,
+          coupleMode,
+          totalPrint,
+          templates: templates.map((tpl) => ({ layout: tpl.layout })),
+        },
+      });
+    }
+  };
+
   useEffect(() => {
     if (!successOpen) return;
 
+    navigatedRef.current = false;
     setCountdown(10);
     const interval = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
           clearInterval(interval);
           setSuccessOpen(false);
-          navigate("/add-ons", {
-            state: {
-              ...location.state?.returnState, // ← spread state lama dari add-ons
-              peopleCount,
-              joinedBonus,
-              coupleMode: location.state?.coupleMode ?? false,
-              totalPrint,
-              templates: templates.map((tpl) => ({ layout: tpl.layout })),
-            },
-          });
+          navigateBackToAddons();
           return 0;
         }
         return prev - 1;
@@ -855,20 +882,7 @@ export function PhotoArrangement() {
                       <BrutalistButton
                         onClick={
                           printed
-                            ? () =>
-                                navigate("/add-ons", {
-                                  state: {
-                                    ...location.state?.returnState,
-                                    peopleCount,
-                                    joinedBonus,
-                                    coupleMode:
-                                      location.state?.coupleMode ?? false,
-                                    totalPrint,
-                                    templates: templates.map((tpl) => ({
-                                      layout: tpl.layout,
-                                    })),
-                                  },
-                                })
+                            ? () => navigateBackToAddons()
                             : () => setConfirmOpen(true)
                         }
                         disabled={!canConfirm || printing}
@@ -1075,16 +1089,7 @@ export function PhotoArrangement() {
               className="w-full"
               onClick={() => {
                 setSuccessOpen(false);
-                navigate("/add-ons", {
-                  state: {
-                    ...location.state?.returnState, // untuk flow addon (4R dari add-ons)
-                    peopleCount,
-                    joinedBonus,
-                    coupleMode: location.state?.coupleMode ?? false,
-                    totalPrint,
-                    templates: templates.map((tpl) => ({ layout: tpl.layout })), // selalu pakai yang fresh
-                  },
-                });
+                navigateBackToAddons();
               }}
             >
               Next →
