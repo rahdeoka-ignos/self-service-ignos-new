@@ -11,6 +11,7 @@ import { useTranslation } from "react-i18next";
 import { useCountdownTimer } from "../../hooks/useCountdownTimer";
 import { TimerExpiredModal } from "../components/TimerExpiredModal";
 import { TimerBar } from "../components/TimerBar";
+import { PhotoArrangementTutorial } from "../components/PhotoArrangementTutorial";
 
 type Template = {
   background: string;
@@ -30,18 +31,18 @@ const FILTERS = [
   { id: "none", name: "Normal", style: "" },
   { id: "bw", name: "B&W", style: "grayscale(100%)" },
   { id: "sepia", name: "Sepia", style: "sepia(80%)" },
-  { id: "vivid", name: "Vivid", style: "saturate(180%) contrast(110%)" },
+  // { id: "vivid", name: "Vivid", style: "saturate(180%) contrast(110%)" },
   {
     id: "fade",
     name: "Fade",
     style: "brightness(110%) saturate(70%) contrast(90%)",
   },
   { id: "cool", name: "Cool", style: "hue-rotate(30deg) saturate(120%)" },
-  {
-    id: "warm",
-    name: "Warm",
-    style: "sepia(30%) saturate(150%) brightness(105%)",
-  },
+  // {
+  //   id: "warm",
+  //   name: "Warm",
+  //   style: "sepia(30%) saturate(150%) brightness(105%)",
+  // },
   {
     id: "dramatic",
     name: "Dramatic",
@@ -117,6 +118,8 @@ export function PhotoArrangement() {
   const timerDuration = location.state?.timerDuration ?? 20 * 60;
   const timer = useCountdownTimer(timerDuration);
   const navigatedRef = useRef(false);
+  const [showTutorial, setShowTutorial] = useState(true);
+  const [timerDismissed, setTimerDismissed] = useState(false);
 
   useEffect(() => {
     timer.start();
@@ -468,10 +471,10 @@ export function PhotoArrangement() {
         timeLeft={timer.timeLeft}
       />
 
-      {timer.isExpired && (
+      {timer.isExpired && !timerDismissed && (
         <TimerExpiredModal
           onContinue={() => {
-            // optional: auto-confirm print jika canConfirm
+            setTimerDismissed(true);
             setConfirmOpen(true);
           }}
         />
@@ -1127,6 +1130,10 @@ export function PhotoArrangement() {
             </div>
           </div>
         </div>
+      )}
+
+      {showTutorial && (
+        <PhotoArrangementTutorial onDone={() => setShowTutorial(false)} />
       )}
     </div>
   );

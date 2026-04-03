@@ -79,7 +79,7 @@
       "previewPrint": "Lihat Preview Cetak",
       "generating": "Sedang membuat cetakan...",
       "next": "Selanjutnya →",
-      "finishPrint": "Selesaikan dan Cetak!"
+      "finishPrint": "Lanjutkan"
     },
 
     "previewModal": {
@@ -103,9 +103,9 @@
 
     "confirm": {
       "title": "Konfirmasi Cetak",
-      "description": "Apakah kamu sudah yakin dengan susunan foto ini? Foto akan langsung dicetak.",
+      "description": "Apakah kamu sudah yakin dengan susunan foto ini? foto tidak akan bisa diubah lagi setelah ini.",
       "cancel": "Belum, kembali",
-      "confirm": "Yakin, Cetak!"
+      "confirm": "Yakin banget!"
     }
   },
   "addons": {

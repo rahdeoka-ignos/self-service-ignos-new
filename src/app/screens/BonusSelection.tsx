@@ -83,6 +83,9 @@ export function BonusSelection() {
                   components={{ b: <b /> }}
                 />
               </p>
+              <BrutalistButton className="mt-8 cursor-pointer" size="lg">
+                Yuk Ikutan Bonus! →
+              </BrutalistButton>
             </BrutalistCard>
 
             <BrutalistCard
@@ -99,6 +102,9 @@ export function BonusSelection() {
               <p className="text-2xl text-gray-600">
                 {t("bonusSelection.skip.description")}
               </p>
+              <BrutalistButton className="mt-16 cursor-pointer" size="lg">
+                Lewati Bonus →
+              </BrutalistButton>
             </BrutalistCard>
           </div>
         </div>
