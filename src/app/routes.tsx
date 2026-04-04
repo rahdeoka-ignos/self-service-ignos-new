@@ -15,6 +15,7 @@ import { IdCardOptions } from "./screens/AddOns/IdCardOptions";
 import { IdCardArrangement } from "./screens/AddOns/Idcardarrangement";
 import { StoryQuestion } from "./screens/AddOns/Storyquestion";
 import { CompletePage } from "./screens/AddOns/Completepage";
+import { LoyaltyCard } from "./screens/LoyaltyCard";
 
 export const router = createBrowserRouter([
   {
@@ -100,5 +101,9 @@ export const router = createBrowserRouter([
   {
     path: "/complete",
     Component: CompletePage,
+  },
+  {
+    path: "/loyalty",
+    Component: LoyaltyCard,
   },
 ]);
