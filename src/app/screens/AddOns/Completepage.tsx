@@ -384,31 +384,6 @@ export function CompletePage() {
 
               <Divider />
 
-              {/* ── TEMPLATE ── */}
-              <SectionHeader
-                icon={
-                  <LayoutTemplate
-                    size={16}
-                    strokeWidth={2.5}
-                    className="text-gray-400"
-                  />
-                }
-                label="Template"
-              />
-              {templates.length > 0 ? (
-                templates.map((tpl, i) => (
-                  <Row
-                    key={i}
-                    label={`Template ${i + 1}`}
-                    value={layoutLabels[tpl.layout] ?? tpl.layout}
-                  />
-                ))
-              ) : (
-                <Row label="Template" value="-" />
-              )}
-
-              <Divider />
-
               {/* ── PRINT ── */}
               <SectionHeader
                 icon={
@@ -527,6 +502,30 @@ export function CompletePage() {
                     </div>
                   ))}
                 </div>
+              )}
+              <Divider />
+
+              {/* ── TEMPLATE ── */}
+              <SectionHeader
+                icon={
+                  <LayoutTemplate
+                    size={16}
+                    strokeWidth={2.5}
+                    className="text-gray-400"
+                  />
+                }
+                label="Template"
+              />
+              {templates.length > 0 ? (
+                templates.map((tpl, i) => (
+                  <Row
+                    key={i}
+                    label={`Template ${i + 1}`}
+                    value={layoutLabels[tpl.layout] ?? tpl.layout}
+                  />
+                ))
+              ) : (
+                <Row label="Template" value="-" />
               )}
             </div>
 
