@@ -111,7 +111,7 @@ export function PhotoArrangement() {
   const [previewPhotoUrl, setPreviewPhotoUrl] = useState<string | null>(null);
   const [previewPhotoOpen, setPreviewPhotoOpen] = useState(false);
   const [previewPhotoIndex, setPreviewPhotoIndex] = useState<number>(0);
-  const [countdown, setCountdown] = useState(10);
+  const [countdown, setCountdown] = useState(5);
   const [activeFilters, setActiveFilters] = useState<{
     [templateIndex: number]: string;
   }>({});
@@ -209,7 +209,7 @@ export function PhotoArrangement() {
     if (!successOpen) return;
 
     navigatedRef.current = false;
-    setCountdown(10);
+    setCountdown(5);
     const interval = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
@@ -1070,7 +1070,7 @@ export function PhotoArrangement() {
                     stroke="black"
                     strokeWidth="3"
                     strokeDasharray="100"
-                    strokeDashoffset={100 - (countdown / 10) * 100}
+                    strokeDashoffset={100 - (countdown / 5) * 100}
                     strokeLinecap="round"
                     style={{ transition: "stroke-dashoffset 1s linear" }}
                   />

@@ -15,7 +15,7 @@ export function BonusGuide() {
   const coupleMode = location.state?.coupleMode ?? false;
   const { t } = useTranslation();
   const [showTimerModal, setShowTimerModal] = useState(false);
-  const [duration, setDuration] = useState(30 * 60);
+  const [duration, setDuration] = useState(25 * 60);
   const [showDuration, setShowDuration] = useState(false);
 
   const handleContinue = () => {
@@ -113,11 +113,12 @@ export function BonusGuide() {
             {/* Title */}
             <h2 className="text-4xl font-bold mb-3">Sesi Dimulai!</h2>
             <p className="text-xl text-gray-600 mb-8">
-              Kamu memiliki waktu untuk menyusun foto yang akan kamu cetak selama:
+              Kamu memiliki waktu untuk menyusun foto yang akan kamu cetak
+              selama:
             </p>
 
             <div className="border-4 border-black rounded-2xl p-8 mb-8 bg-gray-50">
-              <p className="text-8xl font-bold tracking-tight">30:00</p>
+              <p className="text-8xl font-bold tracking-tight">25:00</p>
               <p className="text-2xl font-bold text-gray-500 mt-2">menit</p>
             </div>
 

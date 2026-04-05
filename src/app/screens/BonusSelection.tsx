@@ -15,7 +15,7 @@ export function BonusSelection() {
   const skipBonus = location.state?.skipBonus;
   const coupleMode = location.state?.coupleMode ?? false;
   const [showTimerModal, setShowTimerModal] = useState(false);
-  const [duration, setDuration] = useState(30 * 60);
+  const [duration, setDuration] = useState(25 * 60);
   const [showDuration, setShowDuration] = useState(false);
 
   useEffect(() => {
