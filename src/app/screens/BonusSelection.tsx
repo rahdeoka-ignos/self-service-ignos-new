@@ -15,7 +15,10 @@ export function BonusSelection() {
   const skipBonus = location.state?.skipBonus;
   const coupleMode = location.state?.coupleMode ?? false;
   const [showTimerModal, setShowTimerModal] = useState(false);
-  const [duration, setDuration] = useState(25 * 60);
+  const [duration, setDuration] = useState(() => {
+    const saved = sessionStorage.getItem("session_timer_duration");
+    return saved ? parseInt(saved) : 25 * 60;
+  });
   const [showDuration, setShowDuration] = useState(false);
 
   useEffect(() => {
@@ -37,6 +40,7 @@ export function BonusSelection() {
 
   const handleSkipBonus = () => {
     sessionStorage.removeItem("session_timer_end");
+    sessionStorage.setItem("session_timer_duration", String(duration));
     setShowTimerModal(false);
     navigate("/templates", {
       state: {

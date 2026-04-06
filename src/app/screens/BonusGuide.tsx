@@ -15,7 +15,10 @@ export function BonusGuide() {
   const coupleMode = location.state?.coupleMode ?? false;
   const { t } = useTranslation();
   const [showTimerModal, setShowTimerModal] = useState(false);
-  const [duration, setDuration] = useState(25 * 60);
+  const [duration, setDuration] = useState(() => {
+    const saved = sessionStorage.getItem("session_timer_duration");
+    return saved ? parseInt(saved) : 25 * 60;
+  });
   const [showDuration, setShowDuration] = useState(false);
 
   const handleContinue = () => {
@@ -24,6 +27,7 @@ export function BonusGuide() {
 
   const handleStartSession = () => {
     sessionStorage.removeItem("session_timer_end");
+    sessionStorage.setItem("session_timer_duration", String(duration));
     setShowTimerModal(false);
     navigate("/templates", {
       state: {
@@ -118,7 +122,9 @@ export function BonusGuide() {
             </p>
 
             <div className="border-4 border-black rounded-2xl p-8 mb-8 bg-gray-50">
-              <p className="text-8xl font-bold tracking-tight">25:00</p>
+              <p className="text-8xl font-bold tracking-tight">
+                {String(Math.floor(duration / 60)).padStart(2, "0")}:00
+              </p>
               <p className="text-2xl font-bold text-gray-500 mt-2">menit</p>
             </div>
 

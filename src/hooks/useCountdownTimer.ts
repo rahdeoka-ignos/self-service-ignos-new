@@ -1,15 +1,22 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 
 const STORAGE_KEY = "session_timer_end"; // timestamp kapan timer habis
+const DURATION_KEY = "session_timer_duration";
 
 export function useCountdownTimer(initialSeconds: number) {
+  // Baca durasi tersimpan, fallback ke initialSeconds
+  const getSavedDuration = () => {
+    const saved = sessionStorage.getItem(DURATION_KEY);
+    return saved ? parseInt(saved) : initialSeconds;
+  };
+
   const getTimeLeft = () => {
     const endTime = sessionStorage.getItem(STORAGE_KEY);
     if (endTime) {
       const remaining = Math.round((parseInt(endTime) - Date.now()) / 1000);
       return remaining > 0 ? remaining : 0;
     }
-    return initialSeconds;
+    return getSavedDuration(); // ← pakai durasi tersimpan
   };
 
   const [timeLeft, setTimeLeft] = useState(getTimeLeft);
@@ -17,13 +24,12 @@ export function useCountdownTimer(initialSeconds: number) {
   const [isExpired, setIsExpired] = useState(() => getTimeLeft() === 0);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Start — simpan end timestamp ke sessionStorage
   const start = useCallback(
     (seconds?: number) => {
       const existing = sessionStorage.getItem(STORAGE_KEY);
       if (!existing) {
-        // Belum ada timer → buat baru
-        const endTime = Date.now() + (seconds ?? initialSeconds) * 1000;
+        const dur = seconds ?? getSavedDuration(); // ← pakai durasi tersimpan
+        const endTime = Date.now() + dur * 1000;
         sessionStorage.setItem(STORAGE_KEY, endTime.toString());
       }
       setIsRunning(true);
@@ -36,7 +42,7 @@ export function useCountdownTimer(initialSeconds: number) {
   const reset = useCallback(
     (seconds?: number) => {
       sessionStorage.removeItem(STORAGE_KEY);
-      const dur = seconds ?? initialSeconds;
+      const dur = seconds ?? getSavedDuration(); // ← pakai durasi tersimpan
       setTimeLeft(dur);
       setIsRunning(false);
       setIsExpired(false);
