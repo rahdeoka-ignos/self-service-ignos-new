@@ -1,29 +1,32 @@
 import { useRef, useState } from "react";
-import { Download, Star, Sparkles } from "lucide-react";
+import { Download, Check } from "lucide-react";
 
 const CARD_W = 1004;
 const CARD_H = 626;
 
-const TIERS = [
-  { name: "Silver", min: 0, color: "#C0C0C0", accent: "#888", stars: 1 },
-  { name: "Gold", min: 3, color: "#FFD700", accent: "#B8860B", stars: 2 },
-  { name: "Platinum", min: 10, color: "#E5E4E2", accent: "#333", stars: 3 },
+const REWARDS = [
+  { id: 1, label: "Booking\nPertama", isFirst: true },
+  { id: 2, label: "Gratis 2\nCetak 4R" },
+  { id: 3, label: "Gratis 2\nKeychain\nPlastik" },
+  { id: 4, label: "Gratis\nWaktu\n10 Menit" },
+  { id: 5, label: "Gratis 2\nFrame 4R" },
+  { id: 6, label: "Gratis\nFoto 1\nSesi", isFinal: true },
 ];
 
 export function LoyaltyCard() {
-  const [name, setName] = useState("");
-  const [visits, setVisits] = useState(0);
+  const [names, setNames] = useState("");
   const [downloading, setDownloading] = useState(false);
-  const cardRef = useRef<HTMLDivElement>(null);
+  const [checkedRewards, setCheckedRewards] = useState<number[]>([1]);
 
-  const tier = [...TIERS].reverse().find((t) => visits >= t.min) ?? TIERS[0];
-  const nextTier = TIERS[TIERS.findIndex((t) => t.name === tier.name) + 1];
-  const progressToNext = nextTier
-    ? Math.min(((visits - tier.min) / (nextTier.min - tier.min)) * 100, 100)
-    : 100;
+  const toggleReward = (id: number) => {
+    if (id === 1) return;
+    setCheckedRewards((prev) =>
+      prev.includes(id) ? prev.filter((r) => r !== id) : [...prev, id],
+    );
+  };
 
   const handleDownload = async () => {
-    if (!name.trim()) return;
+    if (!names.trim()) return;
     setDownloading(true);
 
     try {
@@ -32,155 +35,217 @@ export function LoyaltyCard() {
       canvas.height = CARD_H;
       const ctx = canvas.getContext("2d")!;
 
-      // Background
-      const bg = ctx.createLinearGradient(0, 0, CARD_W, CARD_H);
-      if (tier.name === "Gold") {
-        bg.addColorStop(0, "#1a1200");
-        bg.addColorStop(0.5, "#2d1f00");
-        bg.addColorStop(1, "#1a1200");
-      } else if (tier.name === "Platinum") {
-        bg.addColorStop(0, "#0a0a0a");
-        bg.addColorStop(0.5, "#1a1a1a");
-        bg.addColorStop(1, "#0a0a0a");
-      } else {
-        bg.addColorStop(0, "#0a0a14");
-        bg.addColorStop(0.5, "#0f0f20");
-        bg.addColorStop(1, "#0a0a14");
-      }
-      ctx.fillStyle = bg;
-      ctx.roundRect(0, 0, CARD_W, CARD_H, 32);
-      ctx.fill();
+      // White background
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, CARD_W, CARD_H);
 
-      // Border
-      ctx.strokeStyle = tier.color;
-      ctx.lineWidth = 6;
-      ctx.roundRect(3, 3, CARD_W - 6, CARD_H - 6, 30);
-      ctx.stroke();
-
-      // Decorative circles
-      ctx.globalAlpha = 0.08;
-      ctx.fillStyle = tier.color;
-      ctx.beginPath();
-      ctx.arc(CARD_W - 80, 80, 180, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.beginPath();
-      ctx.arc(60, CARD_H - 60, 120, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.globalAlpha = 1;
-
-      // Corner accent lines
-      ctx.strokeStyle = tier.color;
+      // Outer border
+      ctx.strokeStyle = "#000000";
       ctx.lineWidth = 3;
-      ctx.globalAlpha = 0.4;
-      // Top left corner
-      ctx.beginPath();
-      ctx.moveTo(50, 30);
-      ctx.lineTo(50, 80);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(30, 50);
-      ctx.lineTo(80, 50);
-      ctx.stroke();
-      // Bottom right corner
-      ctx.beginPath();
-      ctx.moveTo(CARD_W - 50, CARD_H - 30);
-      ctx.lineTo(CARD_W - 50, CARD_H - 80);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(CARD_W - 30, CARD_H - 50);
-      ctx.lineTo(CARD_W - 80, CARD_H - 50);
-      ctx.stroke();
-      ctx.globalAlpha = 1;
+      ctx.strokeRect(14, 14, CARD_W - 28, CARD_H - 28);
 
-      // Studio name
-      ctx.fillStyle = tier.color;
-      ctx.font = "bold 28px Arial";
-      ctx.letterSpacing = "8px";
-      ctx.fillText("IGNOS STUDIO", 60, 90);
+      // 4-pointed star helper
+      const draw4Star = (cx: number, cy: number, size: number) => {
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.fillStyle = "#000";
+        ctx.beginPath();
+        ctx.moveTo(0, -size);
+        ctx.bezierCurveTo(
+          size * 0.15,
+          -size * 0.15,
+          size * 0.15,
+          -size * 0.15,
+          size,
+          0,
+        );
+        ctx.bezierCurveTo(
+          size * 0.15,
+          size * 0.15,
+          size * 0.15,
+          size * 0.15,
+          0,
+          size,
+        );
+        ctx.bezierCurveTo(
+          -size * 0.15,
+          size * 0.15,
+          -size * 0.15,
+          size * 0.15,
+          -size,
+          0,
+        );
+        ctx.bezierCurveTo(
+          -size * 0.15,
+          -size * 0.15,
+          -size * 0.15,
+          -size * 0.15,
+          0,
+          -size,
+        );
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+      };
 
-      // Loyalty badge
-      ctx.fillStyle = tier.color;
-      ctx.globalAlpha = 0.15;
-      ctx.fillRect(60, 110, 220, 40);
-      ctx.globalAlpha = 1;
-      ctx.strokeStyle = tier.color;
-      ctx.lineWidth = 2;
-      ctx.strokeRect(60, 110, 220, 40);
-      ctx.fillStyle = tier.color;
-      ctx.font = "bold 16px Arial";
-      ctx.letterSpacing = "4px";
-      ctx.fillText("LOYALTY CARD", 80, 136);
+      draw4Star(65, 48, 16);
+      draw4Star(90, 32, 10);
+      draw4Star(CARD_W - 65, 48, 16);
+      draw4Star(CARD_W - 90, 32, 10);
 
-      // Tier badge
-      ctx.fillStyle = tier.color;
-      ctx.globalAlpha = 0.9;
-      ctx.roundRect(CARD_W - 220, 50, 160, 50, 8);
-      ctx.fill();
-      ctx.globalAlpha = 1;
+      // ── TITLE ──
+      ctx.fillStyle = "#000000";
+      ctx.font = "bold 78px 'Times New Roman', Georgia, serif";
+      ctx.textAlign = "center";
+      ctx.fillText("LOYALTY CARD", CARD_W / 2, 102);
+
+      // Underline
+      ctx.strokeStyle = "#000";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(CARD_W / 2 - 210, 114);
+      ctx.lineTo(CARD_W / 2 + 210, 114);
+      ctx.stroke();
+
+      // Subtitle
+      ctx.fillStyle = "#555";
+      ctx.font = "italic 21px 'Times New Roman', Georgia, serif";
+      ctx.textAlign = "center";
+      ctx.fillText(
+        "loyalty card bisa digunakan jika fotoan kembali dengan :",
+        CARD_W / 2,
+        148,
+      );
+
+      // Names
       ctx.fillStyle = "#000";
-      ctx.font = "bold 22px Arial";
-      ctx.letterSpacing = "3px";
-      ctx.fillText(tier.name.toUpperCase(), CARD_W - 200, 82);
+      ctx.font = "bold 26px 'Times New Roman', Georgia, serif";
+      ctx.textAlign = "center";
+      ctx.fillText(names || "Nama Member", CARD_W / 2, 180);
 
-      // Member name
-      ctx.fillStyle = "#ffffff";
-      ctx.font = "300 22px Arial";
-      ctx.letterSpacing = "2px";
-      ctx.fillText("MEMBER NAME", 60, 240);
+      // ── CIRCLES ──
+      const circleR = 70;
+      const cols = 3;
+      const startX = CARD_W / 2 - 210;
+      const startY = 278;
+      const gapX = 210;
+      const gapY = 162;
 
-      ctx.fillStyle = "#ffffff";
-      ctx.font = "bold 52px Arial";
-      ctx.letterSpacing = "1px";
-      ctx.fillText(name.toUpperCase(), 60, 310);
+      REWARDS.forEach((reward, idx) => {
+        const col = idx % cols;
+        const row = Math.floor(idx / cols);
+        const cx = startX + col * gapX;
+        const cy = startY + row * gapY;
+        const isChecked = checkedRewards.includes(reward.id);
+        const isFinal = !!reward.isFinal;
 
-      // Divider line
-      ctx.strokeStyle = tier.color;
-      ctx.lineWidth = 2;
-      ctx.globalAlpha = 0.5;
+        // Fill
+        if (isChecked) {
+          ctx.fillStyle = "#f8f8f8";
+          ctx.beginPath();
+          ctx.arc(cx, cy, circleR - 1, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        if (isFinal) {
+          // Triple ring for final
+          [circleR + 10, circleR, circleR - 9].forEach((r, i) => {
+            ctx.strokeStyle = "#000";
+            ctx.lineWidth = i === 1 ? 2.5 : 1;
+            ctx.beginPath();
+            ctx.arc(cx, cy, r, 0, Math.PI * 2);
+            ctx.stroke();
+          });
+          // Dots between outer rings
+          for (let a = 0; a < 360; a += 45) {
+            const rad = (a * Math.PI) / 180;
+            const dr = circleR + 5;
+            ctx.fillStyle = "#000";
+            ctx.beginPath();
+            ctx.arc(
+              cx + dr * Math.cos(rad),
+              cy + dr * Math.sin(rad),
+              2.5,
+              0,
+              Math.PI * 2,
+            );
+            ctx.fill();
+          }
+        } else {
+          // Double ring
+          ctx.strokeStyle = "#000";
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.arc(cx, cy, circleR, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.arc(cx, cy, circleR - 8, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+
+        // Content inside circle
+        // Selalu render teks dulu
+        const lines = reward.label.split("\n");
+        const fs = isFinal ? 18 : 16;
+        ctx.fillStyle = "#000";
+        ctx.font = `${isFinal ? "bold" : "normal"} ${fs}px Arial, sans-serif`;
+        ctx.textAlign = "center";
+        const lineH = fs + 5;
+        const totalH = (lines.length - 1) * lineH;
+        lines.forEach((line, li) => {
+          ctx.fillText(
+            line.toUpperCase(),
+            cx,
+            cy - totalH / 2 + li * lineH + fs / 3,
+          );
+        });
+
+        // Overlay semi-transparan + checkmark di atasnya jika checked
+        if (isChecked) {
+          ctx.fillStyle = "rgba(0,0,0,0.18)";
+          ctx.beginPath();
+          ctx.arc(cx, cy, circleR - 1, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Checkmark
+          ctx.strokeStyle = "#000000";
+          ctx.lineWidth = 5;
+          ctx.lineCap = "round";
+          ctx.lineJoin = "round";
+          ctx.beginPath();
+          ctx.moveTo(cx - 20, cy + 2);
+          ctx.lineTo(cx - 4, cy + 18);
+          ctx.lineTo(cx + 24, cy - 16);
+          ctx.stroke();
+        }
+      });
+
+      // ── FOOTER ──
+      const footerY = CARD_H - 70;
+      ctx.strokeStyle = "#ddd";
+      ctx.lineWidth = 1;
       ctx.beginPath();
-      ctx.moveTo(60, 330);
-      ctx.lineTo(CARD_W - 60, 330);
+      ctx.moveTo(40, footerY);
+      ctx.lineTo(CARD_W - 40, footerY);
       ctx.stroke();
-      ctx.globalAlpha = 1;
-
-      // Visits
-      ctx.fillStyle = tier.color;
-      ctx.font = "300 18px Arial";
-      ctx.letterSpacing = "2px";
-      ctx.fillText("TOTAL KUNJUNGAN", 60, 380);
-
-      ctx.fillStyle = "#ffffff";
-      ctx.font = "bold 64px Arial";
-      ctx.fillText(`${visits}x`, 60, 460);
-
-      // Stars
-      const starX = CARD_W - 200;
-      const starY = 380;
-      for (let s = 0; s < tier.stars; s++) {
-        ctx.fillStyle = tier.color;
-        ctx.font = "40px Arial";
-        ctx.fillText("★", starX + s * 52, starY + 50);
-      }
-
-      // Bottom strip
-      ctx.fillStyle = tier.color;
-      ctx.globalAlpha = 0.9;
-      ctx.fillRect(0, CARD_H - 70, CARD_W, 70);
-      ctx.globalAlpha = 1;
 
       ctx.fillStyle = "#000";
-      ctx.font = "bold 18px Arial";
-      ctx.letterSpacing = "6px";
-      ctx.fillText("FOTO STUDIO BALI", 60, CARD_H - 35);
+      ctx.font = "bold 28px 'Times New Roman', Georgia, serif";
+      ctx.textAlign = "center";
+      ctx.fillText("IGNOS STUDIO", CARD_W / 2, footerY + 26);
 
-      ctx.fillStyle = "#000";
-      ctx.font = "16px Arial";
-      ctx.letterSpacing = "1px";
-      ctx.fillText("www.ignos.studio", CARD_W - 260, CARD_H - 35);
+      ctx.fillStyle = "#777";
+      ctx.font = "15px Arial, sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText(
+        "instagram : @ignos.studio  |  tiktok : @ignosstudio  |  website : ignosstudio.com",
+        CARD_W / 2,
+        footerY + 50,
+      );
 
-      // Download
       const link = document.createElement("a");
-      link.download = `loyalty-card-${name.toLowerCase().replace(/\s+/g, "-")}.png`;
+      link.download = `loyalty-card-${names.toLowerCase().replace(/\s+/g, "-") || "member"}.png`;
       link.href = canvas.toDataURL("image/png");
       link.click();
     } finally {
@@ -191,285 +256,224 @@ export function LoyaltyCard() {
   return (
     <div className="min-h-screen bg-gray-100 p-8 pt-20">
       <div className="max-w-5xl mx-auto">
-        {/* Title */}
         <div className="text-center mb-10">
           <h1 className="text-6xl font-bold mb-3">Loyalty Card</h1>
           <p className="text-2xl text-gray-600">
-            Buat kartu loyalitas eksklusif kamu
+            Buat loyalty card untuk pelanggan
           </p>
         </div>
 
-        <div className="grid grid-cols-2 gap-8">
-          {/* Left — Input */}
-          <div className="space-y-6">
-            <div className="bg-white border-4 border-black rounded-2xl p-8 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-              <h2 className="text-2xl font-bold mb-6">Detail Member</h2>
+        <div className="grid grid-cols-5 gap-8">
+          {/* ── LEFT INPUT ── */}
+          <div className="col-span-2 space-y-5">
+            <div className="bg-white border-4 border-black rounded-2xl p-7 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+              <h2 className="text-2xl font-bold mb-5">Detail Member</h2>
 
-              {/* Name */}
-              <div className="mb-6">
+              <div className="mb-5">
                 <label className="block text-base font-bold mb-2 text-gray-700">
                   Nama Member
                 </label>
                 <input
                   type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Masukkan nama..."
-                  className="w-full border-4 border-black rounded-xl px-5 py-4 text-xl font-medium outline-none focus:bg-gray-50 transition-colors"
+                  value={names}
+                  onChange={(e) => setNames(e.target.value)}
+                  placeholder="Contoh: Adi, Kiara"
+                  className="w-full border-4 border-black rounded-xl px-4 py-3 text-lg font-medium outline-none focus:bg-gray-50 transition-colors"
                 />
+                <p className="text-sm text-gray-400 mt-1">
+                  Pisahkan koma jika lebih dari 1 orang
+                </p>
               </div>
 
-              {/* Visits */}
-              <div className="mb-8">
-                <label className="block text-base font-bold mb-2 text-gray-700">
-                  Jumlah Kunjungan
+              <div className="mb-6">
+                <label className="block text-base font-bold mb-3 text-gray-700">
+                  Reward yang Sudah Didapat
                 </label>
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={() => setVisits((v) => Math.max(0, v - 1))}
-                    className="w-14 h-14 border-4 border-black rounded-xl font-bold text-2xl hover:bg-black hover:text-white transition-colors flex items-center justify-center"
-                  >
-                    −
-                  </button>
-                  <div className="flex-1 border-4 border-black rounded-xl py-3 text-center text-3xl font-bold bg-gray-50">
-                    {visits}
-                  </div>
-                  <button
-                    onClick={() => setVisits((v) => v + 1)}
-                    className="w-14 h-14 border-4 border-black rounded-xl font-bold text-2xl hover:bg-black hover:text-white transition-colors flex items-center justify-center"
-                  >
-                    +
-                  </button>
-                </div>
-              </div>
-
-              {/* Tier info */}
-              <div className="border-4 border-black rounded-xl p-5 mb-6 bg-gray-50">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="font-bold text-lg">Tier Saat Ini</span>
-                  <span
-                    className="font-black text-lg px-4 py-1 rounded-full border-2 border-black"
-                    style={{ backgroundColor: tier.color, color: "#000" }}
-                  >
-                    {tier.name}
-                  </span>
-                </div>
-                {nextTier && (
-                  <>
-                    <div className="flex justify-between text-sm text-gray-500 mb-2">
-                      <span>{tier.name}</span>
-                      <span>
-                        {nextTier.min - visits} kunjungan lagi ke{" "}
-                        {nextTier.name}
-                      </span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-3 border-2 border-black overflow-hidden">
+                <div className="space-y-2">
+                  {REWARDS.map((r) => (
+                    <button
+                      key={r.id}
+                      onClick={() => toggleReward(r.id)}
+                      disabled={r.id === 1}
+                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border-2 transition-all text-left ${
+                        checkedRewards.includes(r.id)
+                          ? "border-black bg-black text-white"
+                          : "border-gray-300 bg-white text-gray-700 hover:border-black"
+                      } ${r.id === 1 ? "opacity-60 cursor-default" : "cursor-pointer"}`}
+                    >
                       <div
-                        className="h-full rounded-full transition-all duration-500"
-                        style={{
-                          width: `${progressToNext}%`,
-                          backgroundColor: tier.color,
-                        }}
-                      />
-                    </div>
-                  </>
-                )}
-                {!nextTier && (
-                  <p className="text-sm font-bold text-gray-600">
-                    ✦ Tier tertinggi — Platinum Member
-                  </p>
-                )}
+                        className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                          checkedRewards.includes(r.id)
+                            ? "border-white"
+                            : "border-gray-400"
+                        }`}
+                      >
+                        {checkedRewards.includes(r.id) && (
+                          <Check size={12} strokeWidth={3} />
+                        )}
+                      </div>
+                      <span className="font-medium text-sm">
+                        {r.label.replace(/\n/g, " ")}
+                      </span>
+                    </button>
+                  ))}
+                </div>
               </div>
 
-              {/* Download button */}
               <button
                 onClick={handleDownload}
-                disabled={!name.trim() || downloading}
-                className="w-full text-xl font-bold border-4 border-black px-8 py-5 bg-black text-white hover:bg-white hover:text-black transition-colors rounded-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-3"
+                disabled={!names.trim() || downloading}
+                className="w-full text-lg font-bold border-4 border-black px-6 py-4 bg-black text-white hover:bg-white hover:text-black transition-colors rounded-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
-                <Download size={24} strokeWidth={2.5} />
-                {downloading ? "Membuat kartu..." : "Download Loyalty Card"}
+                <Download size={20} strokeWidth={2.5} />
+                {downloading ? "Membuat..." : "Download PNG"}
               </button>
-            </div>
-
-            {/* Tier guide */}
-            <div className="bg-white border-4 border-black rounded-2xl p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-              <h3 className="text-xl font-bold mb-4">Panduan Tier</h3>
-              <div className="space-y-3">
-                {TIERS.map((t) => (
-                  <div
-                    key={t.name}
-                    className="flex items-center gap-4 p-3 rounded-xl border-2 border-black"
-                    style={{
-                      backgroundColor:
-                        tier.name === t.name ? t.color + "22" : "transparent",
-                    }}
-                  >
-                    <div
-                      className="w-10 h-10 rounded-full border-2 border-black flex items-center justify-center font-bold"
-                      style={{ backgroundColor: t.color }}
-                    >
-                      {"★".repeat(t.stars)}
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-bold">{t.name}</p>
-                      <p className="text-sm text-gray-500">
-                        {t.min}+ kunjungan
-                      </p>
-                    </div>
-                    {tier.name === t.name && (
-                      <span className="text-sm font-bold bg-black text-white px-3 py-1 rounded-full">
-                        Tier kamu
-                      </span>
-                    )}
-                  </div>
-                ))}
-              </div>
             </div>
           </div>
 
-          {/* Right — Card Preview */}
-          <div>
-            <div className="bg-white border-4 border-black rounded-2xl p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-              <h2 className="text-2xl font-bold mb-4">Preview Kartu</h2>
+          {/* ── RIGHT PREVIEW ── */}
+          <div className="col-span-3">
+            <div className="bg-white border-4 border-black rounded-2xl p-5 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+              <h2 className="text-xl font-bold mb-4">Preview Kartu</h2>
 
               {/* Card preview */}
               <div
-                ref={cardRef}
-                className="relative w-full rounded-2xl overflow-hidden border-4 border-black"
+                className="relative w-full bg-white overflow-hidden"
                 style={{
                   aspectRatio: `${CARD_W}/${CARD_H}`,
-                  background:
-                    tier.name === "Gold"
-                      ? "linear-gradient(135deg, #1a1200, #2d1f00, #1a1200)"
-                      : tier.name === "Platinum"
-                        ? "linear-gradient(135deg, #0a0a0a, #1a1a1a, #0a0a0a)"
-                        : "linear-gradient(135deg, #0a0a14, #0f0f20, #0a0a14)",
+                  border: "2px solid #e5e5e5",
+                  fontFamily: "'Times New Roman', Georgia, serif",
                 }}
               >
-                {/* Border glow */}
-                <div
-                  className="absolute inset-0 rounded-xl"
-                  style={{
-                    border: `3px solid ${tier.color}`,
-                    opacity: 0.8,
-                  }}
-                />
+                {/* Inner border */}
+                <div className="absolute inset-2 border border-black pointer-events-none z-10" />
 
-                {/* Decorative circles */}
-                <div
-                  className="absolute rounded-full"
-                  style={{
-                    width: "45%",
-                    height: "145%",
-                    right: "-15%",
-                    top: "-20%",
-                    backgroundColor: tier.color,
-                    opacity: 0.06,
-                  }}
-                />
-                <div
-                  className="absolute rounded-full"
-                  style={{
-                    width: "30%",
-                    height: "96%",
-                    left: "-8%",
-                    bottom: "-20%",
-                    backgroundColor: tier.color,
-                    opacity: 0.06,
-                  }}
-                />
-
-                {/* Content */}
-                <div className="absolute inset-0 p-6 flex flex-col">
-                  {/* Top row */}
-                  <div className="flex items-start justify-between mb-2">
-                    <div>
-                      <p
-                        className="text-xs font-black tracking-[0.3em] mb-1"
-                        style={{ color: tier.color }}
-                      >
-                        IGNOS STUDIO
-                      </p>
-                      <div
-                        className="inline-block px-3 py-1 text-xs font-bold tracking-widest border"
-                        style={{
-                          borderColor: tier.color,
-                          color: tier.color,
-                          backgroundColor: tier.color + "20",
-                        }}
-                      >
-                        LOYALTY CARD
-                      </div>
-                    </div>
-                    <div
-                      className="px-4 py-1 rounded font-black text-sm tracking-widest"
-                      style={{ backgroundColor: tier.color, color: "#000" }}
-                    >
-                      {tier.name.toUpperCase()}
-                    </div>
+                {/* Stars */}
+                {[
+                  { top: "6%", left: "6%", size: 14 },
+                  { top: "3%", left: "9%", size: 9 },
+                  { top: "6%", right: "6%", size: 14 },
+                  { top: "3%", right: "9%", size: 9 },
+                ].map((s, i) => (
+                  <div
+                    key={i}
+                    className="absolute text-black select-none"
+                    style={{ ...s, fontSize: s.size, lineHeight: 1 }}
+                  >
+                    ✦
                   </div>
+                ))}
 
-                  {/* Name */}
-                  <div className="flex-1 flex flex-col justify-center">
-                    <p
-                      className="text-xs font-light tracking-[0.2em] mb-1"
-                      style={{ color: tier.color + "aa" }}
+                <div className="absolute inset-0 flex flex-col items-center">
+                  {/* Header */}
+                  <div className="text-center mt-5 mb-1 px-4">
+                    <h2
+                      className="font-black text-black leading-none tracking-tight"
+                      style={{ fontSize: "clamp(18px, 4.5vw, 38px)" }}
                     >
-                      MEMBER NAME
-                    </p>
-                    <p className="text-3xl font-black text-white tracking-wide truncate">
-                      {name || "NAMA MEMBER"}
-                    </p>
+                      LOYALTY CARD
+                    </h2>
                     <div
-                      className="mt-2 h-0.5 w-full"
-                      style={{ backgroundColor: tier.color, opacity: 0.4 }}
+                      className="w-36 mx-auto my-1"
+                      style={{ height: 1, backgroundColor: "#000" }}
                     />
+                    <p
+                      className="text-gray-500 italic"
+                      style={{ fontSize: "clamp(7px, 1.1vw, 11px)" }}
+                    >
+                      loyalty card bisa digunakan jika fotoan kembali dengan :
+                    </p>
+                    <p
+                      className="font-bold text-black"
+                      style={{ fontSize: "clamp(8px, 1.3vw, 13px)" }}
+                    >
+                      {names || "Nama Member"}
+                    </p>
                   </div>
 
-                  {/* Bottom row */}
-                  <div className="flex items-end justify-between">
-                    <div>
-                      <p
-                        className="text-xs tracking-widest mb-1"
-                        style={{ color: tier.color + "99" }}
-                      >
-                        TOTAL KUNJUNGAN
-                      </p>
-                      <p className="text-5xl font-black text-white">
-                        {visits}
-                        <span className="text-2xl ml-1 font-bold">x</span>
-                      </p>
-                    </div>
-                    <div className="flex gap-1">
-                      {Array.from({ length: tier.stars }).map((_, i) => (
-                        <Star
-                          key={i}
-                          size={24}
-                          fill={tier.color}
-                          stroke="none"
-                        />
-                      ))}
-                    </div>
-                  </div>
-                </div>
+                  {/* Circles */}
+                  <div className="grid grid-cols-3 gap-x-3 gap-y-1 flex-1 items-center w-full px-6">
+                    {REWARDS.map((reward) => {
+                      const isChecked = checkedRewards.includes(reward.id);
+                      const isFinal = !!reward.isFinal;
+                      const sz = "clamp(52px, 9vw, 80px)";
 
-                {/* Bottom strip */}
-                <div
-                  className="absolute bottom-0 left-0 right-0 px-6 py-2 flex items-center justify-between"
-                  style={{ backgroundColor: tier.color }}
-                >
-                  <span className="text-xs font-black tracking-widest text-black">
-                    FOTO STUDIO BALI
-                  </span>
-                  <span className="text-xs font-medium text-black opacity-70">
-                    www.ignos.studio
-                  </span>
+                      return (
+                        <div key={reward.id} className="flex justify-center">
+                          <div
+                            className="relative flex items-center justify-center rounded-full"
+                            style={{
+                              width: sz,
+                              height: sz,
+                              backgroundColor: isChecked ? "#f8f8f8" : "#fff",
+                              border: `${isFinal ? 2.5 : 1.5}px solid #000`,
+                              boxShadow: isFinal
+                                ? "0 0 0 3px #fff, 0 0 0 5px #000, 0 0 0 8px #fff, 0 0 0 9.5px #000"
+                                : "0 0 0 3px #fff, 0 0 0 4.5px #000",
+                            }}
+                          >
+                            {/* Teks reward selalu tampil */}
+                            <div className="text-center px-1">
+                              {reward.label.split("\n").map((line, li) => (
+                                <div
+                                  key={li}
+                                  className={`leading-tight text-black ${isFinal ? "font-bold" : ""}`}
+                                  style={{
+                                    fontSize: "clamp(5px, 0.8vw, 8px)",
+                                    letterSpacing: "0.04em",
+                                  }}
+                                >
+                                  {line.toUpperCase()}
+                                </div>
+                              ))}
+                            </div>
+
+                            {/* Overlay checklist di atas teks */}
+                            {isChecked && (
+                              <div
+                                className="absolute inset-0 rounded-full flex items-center justify-center"
+                                style={{ backgroundColor: "rgba(0,0,0,0.18)" }}
+                              >
+                                <Check
+                                  strokeWidth={3.5}
+                                  className="text-black"
+                                  style={{ width: "40%", height: "40%" }}
+                                />
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Footer */}
+                  <div
+                    className="w-full text-center py-2 px-4"
+                    style={{ borderTop: "1px solid #e5e5e5" }}
+                  >
+                    <p
+                      className="font-black text-black"
+                      style={{ fontSize: "clamp(9px, 1.6vw, 15px)" }}
+                    >
+                      IGNOS STUDIO
+                    </p>
+                    <p
+                      className="text-gray-500"
+                      style={{
+                        fontSize: "clamp(5px, 0.8vw, 8px)",
+                        fontFamily: "Arial, sans-serif",
+                      }}
+                    >
+                      instagram : @ignos.studio | tiktok : @ignosstudio |
+                      website : ignosstudio.com
+                    </p>
+                  </div>
                 </div>
               </div>
 
-              <p className="text-sm text-gray-500 mt-3 text-center font-medium">
-                Preview — ukuran asli {CARD_W}×{CARD_H}px saat didownload
+              <p className="text-xs text-gray-400 mt-2 text-center">
+                Toggle reward di panel kiri untuk update preview
               </p>
             </div>
           </div>
