@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Copy, Check, MessageCircle, Sparkles, User, Link } from "lucide-react";
 
 const getSapaan = () => {
@@ -12,15 +12,15 @@ const getSapaan = () => {
 const generateMessage = (
   name: string,
   driveLink: string,
-) => `Halo Kakak ${name} ${getSapaan()}\u2728
-Berikut kami kirimkan link G-Drive softcopy foto hari ini, silahkan dicek ya kak
+) => `Halo Kakak ${name} ${getSapaan()}.
+Berikut kami kirimkan link G-Drive softcopy foto hari ini, silahkan dicek ya kak.
 
 ${driveLink}
 
-Jangan lupa tag kami ya kak @ignos.studio\u2728
-Kami meminta izin kedepanya jika kita posting\u{1F64F}\u263A\uFE0F
-Mohon segera disimpan dikarenakan link akan expired dalam waktu 7 hari
-Terima kasih kak, ditunggu kedatangannya yang selanjutnya\u{1F64F}\u263A\uFE0F`;
+Jangan lupa tag kami yaa kak @ignos.studio
+Kami meminta izin kedepanya jika kita posting.
+Mohon segera disimpan dikarenakan link akan expired dalam waktu 7 hari.
+Terima kasih kak, ditunggu kedatangannya yang selanjutnya.`;
 
 export function AdminMessagePage() {
   const [name, setName] = useState("");
@@ -46,7 +46,11 @@ export function AdminMessagePage() {
 
   const handleGenerate = () => {
     if (!validate()) return;
-    setMessage(generateMessage(name.trim(), driveLink.trim()));
+
+    const msg = generateMessage(name.trim(), driveLink.trim());
+
+    // 🔥 normalize unicode
+    setMessage(msg.normalize("NFC"));
   };
 
   const handleCopy = async () => {
@@ -56,11 +60,17 @@ export function AdminMessagePage() {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  console.log("TEST EMOJI:", "✨🙏☺️");
+
   const handleWhatsApp = () => {
-    if (!message) return;
+    if (!message || !phone) return;
+
+    const cleanNumber = phone.replace(/^0/, "");
+    const number = `62${cleanNumber}`;
     const encoded = encodeURIComponent(message);
-    const number = `62${phone.replace(/^0/, "")}`;
-    window.open(`https://wa.me/${number}?text=${encoded}`, "_blank");
+
+    const url = `https://wa.me/${number}?text=${encoded}`;
+    window.open(url, "_blank");
   };
 
   return (
