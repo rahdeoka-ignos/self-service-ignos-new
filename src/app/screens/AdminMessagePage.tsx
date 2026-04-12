@@ -12,15 +12,15 @@ const getSapaan = () => {
 const generateMessage = (
   name: string,
   driveLink: string,
-) => `Halo Kakak ${name} ${getSapaan()}✨
+) => `Halo Kakak ${name} ${getSapaan()}\u2728
 Berikut kami kirimkan link G-Drive softcopy foto hari ini, silahkan dicek ya kak
 
 ${driveLink}
 
-Jangan lupa tag kami ya kak @ignos.studio✨
-Kami meminta izin kedepanya jika kita posting😊🙏
+Jangan lupa tag kami ya kak @ignos.studio\u2728
+Kami meminta izin kedepanya jika kita posting\u{1F64F}\u263A\uFE0F
 Mohon segera disimpan dikarenakan link akan expired dalam waktu 7 hari
-Terima kasih kak, ditunggu kedatangannya yang selanjutnya😊🙏`;
+Terima kasih kak, ditunggu kedatangannya yang selanjutnya\u{1F64F}\u263A\uFE0F`;
 
 export function AdminMessagePage() {
   const [name, setName] = useState("");
