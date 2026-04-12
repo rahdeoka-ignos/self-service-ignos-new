@@ -12,15 +12,15 @@ const getSapaan = () => {
 const generateMessage = (
   name: string,
   driveLink: string,
-) => `Halo Kakak ${name} ${getSapaan()}.
+) => `Halo Kakak ${name} ${getSapaan()}✨
 Berikut kami kirimkan link G-Drive softcopy foto hari ini, silahkan dicek ya kak.
 
 ${driveLink}
 
 Jangan lupa tag kami yaa kak @ignos.studio
-Kami meminta izin kedepanya jika kita posting.
-Mohon segera disimpan dikarenakan link akan expired dalam waktu 7 hari.
-Terima kasih kak, ditunggu kedatangannya yang selanjutnya.`;
+Kami meminta izin kedepanya jika kita posting foto kakak yaa🙏😊
+Mohon segera disimpan dikarenakan link akan expired dalam waktu 7 hari
+Terima kasih kak, ditunggu kedatangannya yang selanjutnya🙏😊`;
 
 export function AdminMessagePage() {
   const [name, setName] = useState("");
@@ -60,17 +60,17 @@ export function AdminMessagePage() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  console.log("TEST EMOJI:", "✨🙏☺️");
-
-  const handleWhatsApp = () => {
+  const handleWhatsApp = async () => {
     if (!message || !phone) return;
 
     const cleanNumber = phone.replace(/^0/, "");
     const number = `62${cleanNumber}`;
-    const encoded = encodeURIComponent(message);
 
-    const url = `https://wa.me/${number}?text=${encoded}`;
-    window.open(url, "_blank");
+    // Copy ke clipboard dulu
+    await navigator.clipboard.writeText(message);
+
+    // Buka WhatsApp tanpa ?text parameter
+    window.open(`https://wa.me/${number}`, "_blank");
   };
 
   return (
@@ -224,9 +224,14 @@ export function AdminMessagePage() {
                   className="flex-1 text-base font-bold border-4 border-black px-4 py-3 bg-green-500 text-white hover:bg-green-600 transition-colors rounded-xl shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-0.5 hover:translate-y-0.5 flex items-center justify-center gap-2"
                 >
                   <MessageCircle size={18} strokeWidth={2.5} />
-                  WhatsApp
+                  Buka WhatsApp
                 </button>
               </div>
+            )}
+            {message && (
+              <p className="text-xs text-orange-500 font-bold mt-2 text-center">
+                ⚡ Pesan otomatis ter-copy — langsung Ctrl+V di WhatsApp
+              </p>
             )}
           </div>
 
