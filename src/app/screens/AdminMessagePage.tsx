@@ -18,9 +18,9 @@ Berikut kami kirimkan link G-Drive softcopy foto hari ini, silahkan dicek ya kak
 ${driveLink}
 
 Jangan lupa tag kami ya kak @ignos.studio✨
-Kami meminta izin kedepanya jika kita posting🙏☺️
+Kami meminta izin kedepanya jika kita posting😊🙏
 Mohon segera disimpan dikarenakan link akan expired dalam waktu 7 hari
-Terima kasih kak, ditunggu kedatangannya yang selanjutnya😊🙏🏻`;
+Terima kasih kak, ditunggu kedatangannya yang selanjutnya😊🙏`;
 
 export function AdminMessagePage() {
   const [name, setName] = useState("");
