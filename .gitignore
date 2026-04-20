@@ -1,8 +1,6 @@
 # dependencies
 node_modules/
 
-public/photos
-public/thumbnails
 
 # production build
 dist/

@@ -24,17 +24,40 @@ export function SlotImage({
   const [imgSize, setImgSize] = useState<{ w: number; h: number } | null>(null);
 
   // Ukuran foto setelah fit-width (object-cover behavior)
-  const coverW = slotW;
-  const coverH = imgSize ? (slotW / imgSize.w) * imgSize.h : slotH;
+  const imgAspect = imgSize ? imgSize.w / imgSize.h : 1;
+  const frameAspect = slotW / slotH;
+  let coverW: number, coverH: number;
+  if (imgSize && imgAspect > frameAspect) {
+    coverH = slotH;
+    coverW = imgAspect * slotH;
+  } else {
+    coverW = slotW;
+    coverH = imgSize ? slotW / imgAspect : slotH;
+  }
 
   const clamp = useCallback(
     (newScale: number, newX: number, newY: number) => {
-      const scaledW = coverW * newScale;
-      const scaledH = coverH * newScale;
+      if (!imgSize) return { scale: newScale, x: newX, y: newY };
 
-      // Batas X: foto tidak keluar slot horizontal
+      const imgAspect = imgSize.w / imgSize.h;
+      const frameAspect = slotW / slotH;
+
+      // Object-cover: sama persis seperti CSS object-cover
+      let baseW: number, baseH: number;
+      if (imgAspect > frameAspect) {
+        // foto lebih lebar → fit height
+        baseH = slotH;
+        baseW = imgAspect * slotH;
+      } else {
+        // foto lebih tinggi → fit width
+        baseW = slotW;
+        baseH = slotW / imgAspect;
+      }
+
+      const scaledW = baseW * newScale;
+      const scaledH = baseH * newScale;
+
       const maxX = Math.max(0, (scaledW - slotW) / 2);
-      // Batas Y: foto boleh geser sampai batas foto asli (atas & bawah)
       const maxY = Math.max(0, (scaledH - slotH) / 2);
 
       return {
@@ -43,7 +66,7 @@ export function SlotImage({
         y: Math.min(maxY, Math.max(-maxY, newY)),
       };
     },
-    [coverW, coverH, slotW, slotH],
+    [imgSize, slotW, slotH],
   );
 
   // Re-clamp saat imgSize berubah

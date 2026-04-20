@@ -89,7 +89,7 @@ const templates = {
       id: 11,
       name: "aboutU-1975",
       preview: "/templates/aboutU-1975/background.png",
-      layout: "newspaper",
+      layout: "aboutu-v2",
       previewTemplate: "/templates/aboutU-1975/preview.png",
     },
     {

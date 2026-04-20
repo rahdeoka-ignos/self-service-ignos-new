@@ -15,7 +15,8 @@ interface PrintOptions {
     | "8"
     | "newspaper"
     | "wannabeyours"
-    | "300days";
+    | "300days"
+    | "aboutu-v2";
   background?: string;
   frameOverlay?: string;
   watermark?: string;
@@ -322,6 +323,62 @@ export async function generatePrint(
       options.uiSlotW,
       options.uiSlotH,
     );
+  }
+
+  if (layout === "aboutu-v2") {
+    const slots = [
+      { x: 224 * 2, y: 370 * 2, slotNum: 0 },
+      { x: 328 * 2, y: 939 * 2, slotNum: 1 },
+    ];
+    const slotW = 654.63 * 2;
+    const slotH = 578.47 * 2;
+    const angle = -10.39 * (Math.PI / 180);
+
+    for (const slot of slots) {
+      const img = images[slot.slotNum];
+      if (!img) continue;
+
+      const cx = slot.x + slotW / 2;
+      const cy = slot.y + slotH / 2;
+
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(angle);
+      ctx.translate(-cx, -cy);
+
+      ctx.beginPath();
+      ctx.rect(slot.x, slot.y, slotW, slotH);
+      ctx.clip();
+
+      const transform = transforms[slot.slotNum + 1] || {
+        scale: 1,
+        x: 0,
+        y: 0,
+      };
+      const imgAspect = img.width / img.height;
+      const frameAspect = slotW / slotH;
+
+      let drawW: number, drawH: number;
+      if (imgAspect > frameAspect) {
+        drawH = slotH;
+        drawW = imgAspect * slotH;
+      } else {
+        drawW = slotW;
+        drawH = slotW / imgAspect;
+      }
+
+      const scaledW = drawW * transform.scale;
+      const scaledH = drawH * transform.scale;
+      const ratioX = options.uiSlotW ? slotW / options.uiSlotW : 1;
+      const ratioY = options.uiSlotH ? slotH / options.uiSlotH : 1;
+      const drawX = slot.x + (slotW - scaledW) / 2 + transform.x * ratioX;
+      const drawY = slot.y + (slotH - scaledH) / 2 + transform.y * ratioY;
+
+      ctx.filter = options.filter || "none";
+      ctx.drawImage(img, drawX, drawY, scaledW, scaledH);
+      ctx.filter = "none";
+      ctx.restore();
+    }
   }
 
   // FRAME OVERLAY LAYER

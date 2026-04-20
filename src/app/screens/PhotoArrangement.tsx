@@ -24,7 +24,8 @@ type Template = {
     | "8"
     | "newspaper"
     | "wannabeyours"
-    | "300days";
+    | "300days"
+    | "aboutu-v2";
 };
 
 const FILTERS = [
@@ -164,7 +165,9 @@ export function PhotoArrangement() {
                 ? 1
                 : activeLayout === "300days"
                   ? 1
-                  : 6;
+                  : activeLayout === "aboutu-v2"
+                    ? 2
+                    : 6;
 
   const preloadImage = (src: string) => {
     const img = new Image();
@@ -402,7 +405,9 @@ export function PhotoArrangement() {
                   ? 1
                   : tpl.layout === "300days"
                     ? 1
-                    : 6;
+                    : tpl.layout === "aboutu-v2"
+                      ? 2
+                      : 6;
     return Object.keys(filledSlots[templateIndex] || {}).length === slots;
   });
 
@@ -863,6 +868,59 @@ export function PhotoArrangement() {
                           {renderSlotContent(1)}
                         </BrutalistCard>
                       </div>
+                    )}
+
+                    {activeLayout === "aboutu-v2" && (
+                      <>
+                        {/* Slot 1 */}
+                        <div
+                          ref={slotRef}
+                          className="absolute z-10"
+                          style={{
+                            left: `${(224 / 1200) * 100}%`,
+                            top: `${(370 / 1800) * 100}%`,
+                            width: `${(654.63 / 1200) * 100}%`,
+                            height: `${(578.47 / 1800) * 100}%`,
+                            transform: "rotate(-10.39deg)",
+                            transformOrigin: "center center",
+                            overflow: "hidden",
+                          }}
+                        >
+                          <BrutalistCard
+                            interactive
+                            onClick={() => handleSlotClick(1)}
+                            onDrop={(e) => handleDrop(e, 1)}
+                            onDragOver={allowDrop}
+                            className={`w-full h-full p-0 overflow-hidden shadow-none !border-0 !rounded-none hover:translate-x-0! hover:translate-y-0! active:translate-x-0! active:translate-y-0! ${selectedPhoto ? "cursor-pointer" : ""}`}
+                          >
+                            {renderSlotContent(1)}
+                          </BrutalistCard>
+                        </div>
+
+                        {/* Slot 2 */}
+                        <div
+                          className="absolute z-10"
+                          style={{
+                            left: `${(328 / 1200) * 100}%`,
+                            top: `${(939 / 1800) * 100}%`,
+                            width: `${(654.63 / 1200) * 100}%`,
+                            height: `${(578.47 / 1800) * 100}%`,
+                            transform: "rotate(-10.39deg)",
+                            transformOrigin: "center center",
+                            overflow: "hidden",
+                          }}
+                        >
+                          <BrutalistCard
+                            interactive
+                            onClick={() => handleSlotClick(2)}
+                            onDrop={(e) => handleDrop(e, 2)}
+                            onDragOver={allowDrop}
+                            className={`w-full h-full p-0 overflow-hidden shadow-none !border-0 !rounded-none hover:translate-x-0! hover:translate-y-0! active:translate-x-0! active:translate-y-0! ${selectedPhoto ? "cursor-pointer" : ""}`}
+                          >
+                            {renderSlotContent(2)}
+                          </BrutalistCard>
+                        </div>
+                      </>
                     )}
                     {/* TEMPLATE OVERLAY */}
                     <img
