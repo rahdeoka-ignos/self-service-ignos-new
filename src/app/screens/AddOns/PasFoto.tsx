@@ -16,6 +16,15 @@ const RATIO_OPTIONS = [
     badge: "Paling Umum",
   },
   {
+    id: "2x3",
+    label: "2 × 3",
+    desc: "Pas foto kecil / dompet",
+    canvasW: 2000,
+    canvasH: 3000,
+    aspect: 2 / 3,
+    badge: null,
+  },
+  {
     id: "1x1",
     label: "1 × 1",
     desc: "Pas foto kotak / visa",
@@ -31,6 +40,15 @@ const RATIO_OPTIONS = [
     canvasW: 4000,
     canvasH: 6000,
     aspect: 4 / 6,
+    badge: null,
+  },
+  {
+    id: "5xt",
+    label: "5 × 5",
+    desc: "Pas foto ukuran 5R / tanda tangan",
+    canvasW: 5000,
+    canvasH: 7000,
+    aspect: 5 / 7,
     badge: null,
   },
 ];
@@ -332,7 +350,7 @@ export function PasFotoPage() {
               </p>
             </div>
 
-            <div className="grid grid-cols-3 gap-6">
+            <div className="grid grid-cols-4 gap-6">
               {RATIO_OPTIONS.map((opt) => (
                 <button
                   key={opt.id}
