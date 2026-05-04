@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import { Download, Check } from "lucide-react";
-import { usePageTitle } from "../../hooks/usePageTitle";
 
 const CARD_W = 1004;
 const CARD_H = 626;
@@ -31,12 +30,6 @@ const MONTHS_ID = [
 
 function formatId(n) {
   return "IGNOS/CUST-" + String(n).padStart(3, "0");
-}
-
-function getExpiryLabel() {
-  const now = new Date();
-  const exp = new Date(now.getFullYear(), now.getMonth() + 6, 1);
-  return MONTHS_ID[exp.getMonth()] + " " + exp.getFullYear();
 }
 
 function draw4Star(ctx, cx, cy, size) {
@@ -82,33 +75,28 @@ function draw4Star(ctx, cx, cy, size) {
   ctx.restore();
 }
 
-function drawCardToCanvas(canvas, { counter, checkedRewards, expiry }) {
+function drawCardToCanvas(canvas, { counter, checkedRewards, rewardDates }) {
   canvas.width = CARD_W;
   canvas.height = CARD_H;
   const ctx = canvas.getContext("2d");
 
-  // Background
   ctx.fillStyle = "#ffffff";
   ctx.fillRect(0, 0, CARD_W, CARD_H);
 
-  // Outer border
   ctx.strokeStyle = "#000000";
   ctx.lineWidth = 3;
   ctx.strokeRect(14, 14, CARD_W - 28, CARD_H - 28);
 
-  // Stars
   draw4Star(ctx, 65, 48, 16);
   draw4Star(ctx, 90, 32, 10);
   draw4Star(ctx, CARD_W - 65, 48, 16);
   draw4Star(ctx, CARD_W - 90, 32, 10);
 
-  // Title
   ctx.fillStyle = "#000000";
   ctx.font = "bold 78px 'Times New Roman', Georgia, serif";
   ctx.textAlign = "center";
   ctx.fillText("LOYALTY CARD", CARD_W / 2, 102);
 
-  // Underline
   ctx.strokeStyle = "#000";
   ctx.lineWidth = 1.5;
   ctx.beginPath();
@@ -116,23 +104,16 @@ function drawCardToCanvas(canvas, { counter, checkedRewards, expiry }) {
   ctx.lineTo(CARD_W / 2 + 210, 114);
   ctx.stroke();
 
-  // Subtitle with expiry
   ctx.fillStyle = "#555";
   ctx.font = "italic 21px 'Times New Roman', Georgia, serif";
   ctx.textAlign = "center";
-  ctx.fillText(
-    "loyalty card hanya berlaku sampai bulan : " + expiry,
-    CARD_W / 2,
-    148,
-  );
+  ctx.fillText("loyalty card hanya berlaku selama 3 bulan", CARD_W / 2, 148);
 
-  // Member ID
   ctx.fillStyle = "#000";
   ctx.font = "bold 26px 'Times New Roman', Georgia, serif";
   ctx.textAlign = "center";
   ctx.fillText(formatId(counter), CARD_W / 2, 180);
 
-  // Circles
   const circleR = 70;
   const cols = 3;
   const startX = CARD_W / 2 - 210;
@@ -147,8 +128,8 @@ function drawCardToCanvas(canvas, { counter, checkedRewards, expiry }) {
     const cy = startY + row * gapY;
     const isChecked = checkedRewards.includes(reward.id);
     const isFinal = !!reward.isFinal;
+    const dateStr = rewardDates[reward.id] || "";
 
-    // Circle fill if checked
     if (isChecked) {
       ctx.fillStyle = "#f8f8f8";
       ctx.beginPath();
@@ -157,7 +138,6 @@ function drawCardToCanvas(canvas, { counter, checkedRewards, expiry }) {
     }
 
     if (isFinal) {
-      // Triple ring
       [circleR + 10, circleR, circleR - 9].forEach((r, i) => {
         ctx.strokeStyle = "#000";
         ctx.lineWidth = i === 1 ? 2.5 : 1;
@@ -165,7 +145,6 @@ function drawCardToCanvas(canvas, { counter, checkedRewards, expiry }) {
         ctx.arc(cx, cy, r, 0, Math.PI * 2);
         ctx.stroke();
       });
-      // Dots between outer rings
       for (let a = 0; a < 360; a += 45) {
         const rad = (a * Math.PI) / 180;
         const dr = circleR + 5;
@@ -181,7 +160,6 @@ function drawCardToCanvas(canvas, { counter, checkedRewards, expiry }) {
         ctx.fill();
       }
     } else {
-      // Double ring
       ctx.strokeStyle = "#000";
       ctx.lineWidth = 1.5;
       ctx.beginPath();
@@ -193,7 +171,6 @@ function drawCardToCanvas(canvas, { counter, checkedRewards, expiry }) {
       ctx.stroke();
     }
 
-    // Label text
     const lines = reward.label.split("\n");
     const fs = isFinal ? 18 : 16;
     ctx.fillStyle = "#000";
@@ -209,7 +186,6 @@ function drawCardToCanvas(canvas, { counter, checkedRewards, expiry }) {
       );
     });
 
-    // Overlay + checkmark if checked
     if (isChecked) {
       ctx.fillStyle = "rgba(0,0,0,0.18)";
       ctx.beginPath();
@@ -226,9 +202,16 @@ function drawCardToCanvas(canvas, { counter, checkedRewards, expiry }) {
       ctx.lineTo(cx + 24, cy - 16);
       ctx.stroke();
     }
+
+    if (dateStr) {
+      const dateY = cy + circleR + (isFinal ? 22 : 18);
+      ctx.fillStyle = "#333";
+      ctx.font = "italic 13px Arial, sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText(dateStr, cx, dateY);
+    }
   });
 
-  // Footer
   const footerY = CARD_H - 70;
   ctx.strokeStyle = "#ddd";
   ctx.lineWidth = 1;
@@ -252,54 +235,94 @@ function drawCardToCanvas(canvas, { counter, checkedRewards, expiry }) {
   );
 }
 
+// ─── Helper storage (window.storage dengan fallback ke localStorage) ───────
+const STORAGE_KEY = "ignos_card_counter";
+
+async function loadCounterFromStorage() {
+  try {
+    if (window.storage) {
+      const result = await window.storage.get(STORAGE_KEY);
+      if (result && result.value) return parseInt(result.value) || 1;
+      return 1;
+    }
+  } catch (_) {}
+  // fallback localStorage
+  const saved = localStorage.getItem(STORAGE_KEY);
+  return parseInt(saved) || 1;
+}
+
+async function saveCounterToStorage(n) {
+  try {
+    if (window.storage) {
+      await window.storage.set(STORAGE_KEY, String(n));
+      return;
+    }
+  } catch (_) {}
+  // fallback localStorage
+  localStorage.setItem(STORAGE_KEY, String(n));
+}
+
+// ─── Komponen Utama ────────────────────────────────────────────────────────
 export function LoyaltyCard() {
-  usePageTitle("Kartu Loyalty");
   const [counter, setCounter] = useState(1);
   const [downloading, setDownloading] = useState(false);
   const [checkedRewards, setCheckedRewards] = useState([1]);
+  const [rewardDates, setRewardDates] = useState({ 1: "" });
+  const [storageReady, setStorageReady] = useState(false);
   const previewRef = useRef(null);
 
-  // Load counter from localStorage on mount
+  // Load counter dari storage saat mount
   useEffect(() => {
-    const saved = localStorage.getItem("ignos_card_counter");
-    if (saved) setCounter(parseInt(saved) || 1);
+    loadCounterFromStorage().then((saved) => {
+      setCounter(saved);
+      setStorageReady(true);
+    });
   }, []);
 
-  // Re-render preview whenever counter or checkedRewards changes
+  // Re-render preview setiap state berubah
   useEffect(() => {
     if (!previewRef.current) return;
     drawCardToCanvas(previewRef.current, {
       counter,
       checkedRewards,
-      expiry: getExpiryLabel(),
+      rewardDates,
     });
-  }, [counter, checkedRewards]);
+  }, [counter, checkedRewards, rewardDates]);
 
   const toggleReward = (id) => {
     if (id === 1) return;
-    setCheckedRewards((prev) =>
-      prev.includes(id) ? prev.filter((r) => r !== id) : [...prev, id],
-    );
+    setCheckedRewards((prev) => {
+      const isNowChecked = !prev.includes(id);
+      if (!isNowChecked) {
+        setRewardDates((dates) => {
+          const next = { ...dates };
+          delete next[id];
+          return next;
+        });
+      }
+      return isNowChecked ? [...prev, id] : prev.filter((r) => r !== id);
+    });
+  };
+
+  const setDate = (id, value) => {
+    setRewardDates((prev) => ({ ...prev, [id]: value }));
   };
 
   const handleDownload = async () => {
     setDownloading(true);
     try {
-      const expiry = getExpiryLabel(); // capture at click time
       const currentId = formatId(counter);
-
       const canvas = document.createElement("canvas");
-      drawCardToCanvas(canvas, { counter, checkedRewards, expiry });
+      drawCardToCanvas(canvas, { counter, checkedRewards, rewardDates });
 
       const link = document.createElement("a");
       link.download = `loyalty-card-${currentId.replace(/\//g, "-")}.png`;
       link.href = canvas.toDataURL("image/png");
       link.click();
 
-      // Increment counter and persist
       const next = counter + 1;
       setCounter(next);
-      localStorage.setItem("ignos_card_counter", String(next));
+      await saveCounterToStorage(next); // ← pakai storage baru
     } finally {
       setDownloading(false);
     }
@@ -321,7 +344,6 @@ export function LoyaltyCard() {
             <div className="bg-white border-4 border-black rounded-2xl p-7 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
               <h2 className="text-2xl font-bold mb-5">Detail Member</h2>
 
-              {/* ID Display */}
               <div className="mb-5">
                 <label className="block text-base font-bold mb-2 text-gray-700">
                   ID Member
@@ -332,54 +354,75 @@ export function LoyaltyCard() {
                   </span>
                 </div>
                 <p className="text-sm text-gray-400 mt-1">
-                  ID otomatis naik setiap kali download
+                  {storageReady
+                    ? "ID otomatis naik setiap kali download · tersinkron antar device"
+                    : "Memuat dari storage..."}
                 </p>
               </div>
 
-              {/* Reward Toggles */}
               <div className="mb-6">
                 <label className="block text-base font-bold mb-3 text-gray-700">
                   Reward yang Sudah Didapat
                 </label>
                 <div className="space-y-2">
-                  {REWARDS.map((r) => (
-                    <button
-                      key={r.id}
-                      onClick={() => toggleReward(r.id)}
-                      disabled={r.id === 1}
-                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border-2 transition-all text-left ${
-                        checkedRewards.includes(r.id)
-                          ? "border-black bg-black text-white"
-                          : "border-gray-300 bg-white text-gray-700 hover:border-black"
-                      } ${r.id === 1 ? "opacity-60 cursor-default" : "cursor-pointer"}`}
-                    >
-                      <div
-                        className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                          checkedRewards.includes(r.id)
-                            ? "border-white"
-                            : "border-gray-400"
-                        }`}
-                      >
-                        {checkedRewards.includes(r.id) && (
-                          <Check size={12} strokeWidth={3} />
+                  {REWARDS.map((r) => {
+                    const isChecked = checkedRewards.includes(r.id);
+                    const isLocked = r.id === 1;
+                    return (
+                      <div key={r.id} className="flex flex-col gap-1">
+                        <button
+                          onClick={() => toggleReward(r.id)}
+                          disabled={isLocked}
+                          className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border-2 transition-all text-left ${
+                            isChecked
+                              ? "border-black bg-black text-white"
+                              : "border-gray-300 bg-white text-gray-700 hover:border-black"
+                          } ${isLocked ? "opacity-60 cursor-default" : "cursor-pointer"}`}
+                        >
+                          <div
+                            className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                              isChecked ? "border-white" : "border-gray-400"
+                            }`}
+                          >
+                            {isChecked && <Check size={12} strokeWidth={3} />}
+                          </div>
+                          <span className="font-medium text-sm flex-1">
+                            {r.label.replace(/\n/g, " ")}
+                          </span>
+                        </button>
+
+                        {isChecked && (
+                          <div className="flex items-center gap-2 px-1 pb-1">
+                            <span className="text-xs text-gray-400 whitespace-nowrap">
+                              Tgl kunjungan:
+                            </span>
+                            <input
+                              type="text"
+                              placeholder="cth: 10/05/25"
+                              value={rewardDates[r.id] || ""}
+                              onChange={(e) => setDate(r.id, e.target.value)}
+                              maxLength={10}
+                              className="flex-1 border-2 border-gray-200 rounded-lg px-3 py-1.5 text-sm font-mono focus:outline-none focus:border-black transition-colors bg-gray-50 placeholder-gray-300"
+                            />
+                          </div>
                         )}
                       </div>
-                      <span className="font-medium text-sm">
-                        {r.label.replace(/\n/g, " ")}
-                      </span>
-                    </button>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
 
-              {/* Download Button */}
               <button
                 onClick={handleDownload}
-                disabled={downloading}
+                disabled={downloading || !storageReady}
                 className="w-full text-lg font-bold border-4 border-black px-6 py-4 bg-black text-white hover:bg-white hover:text-black transition-colors rounded-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 <Download size={20} strokeWidth={2.5} />
-                {downloading ? "Membuat..." : "Download PNG"}
+                {downloading
+                  ? "Membuat..."
+                  : !storageReady
+                    ? "Memuat..."
+                    : "Download PNG"}
               </button>
             </div>
           </div>
@@ -401,7 +444,7 @@ export function LoyaltyCard() {
                 />
               </div>
               <p className="text-xs text-gray-400 mt-2 text-center">
-                Toggle reward di panel kiri untuk update preview
+                Toggle reward & isi tanggal di panel kiri untuk update preview
               </p>
             </div>
           </div>
