@@ -17,6 +17,7 @@ import { StoryQuestion } from "./screens/AddOns/Storyquestion";
 import { CompletePage } from "./screens/AddOns/Completepage";
 import { LoyaltyCard } from "./screens/LoyaltyCard";
 import { AdminMessagePage } from "./screens/AdminMessagePage";
+import { PasFotoPage } from "./screens/AddOns/PasFoto";
 
 export const router = createBrowserRouter([
   {
@@ -110,5 +111,9 @@ export const router = createBrowserRouter([
   {
     path: "/admin/message",
     Component: AdminMessagePage,
+  },
+  {
+    path: "/pasfoto",
+    Component: PasFotoPage,
   },
 ]);
