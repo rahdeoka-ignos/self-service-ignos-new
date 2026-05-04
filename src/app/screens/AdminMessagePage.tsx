@@ -81,10 +81,10 @@ export function AdminMessagePage() {
           <div className="w-20 h-20 bg-black rounded-full flex items-center justify-center mx-auto mb-6 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,0.3)]">
             <MessageCircle size={40} className="text-white" strokeWidth={2} />
           </div>
-          <h1 className="text-5xl font-bold mb-3">Ne Anggo Pang Enggal</h1>
+          {/* <h1 className="text-5xl font-bold mb-3">Ne Anggo Pang Enggal</h1>
           <p className="text-xl text-gray-600">
             Pecik gen cepok, suud be gae e
-          </p>
+          </p> */}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
