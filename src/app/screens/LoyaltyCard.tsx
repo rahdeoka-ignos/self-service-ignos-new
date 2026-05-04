@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Download, Check } from "lucide-react";
+import { usePageTitle } from "../../hooks/usePageTitle";
 
 const CARD_W = 1004;
 const CARD_H = 626;
@@ -252,6 +253,7 @@ function drawCardToCanvas(canvas, { counter, checkedRewards, expiry }) {
 }
 
 export function LoyaltyCard() {
+  usePageTitle("Kartu Loyalty");
   const [counter, setCounter] = useState(1);
   const [downloading, setDownloading] = useState(false);
   const [checkedRewards, setCheckedRewards] = useState([1]);

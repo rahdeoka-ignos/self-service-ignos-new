@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Copy, Check, MessageCircle, Sparkles, User, Link } from "lucide-react";
+import { usePageTitle } from "../../hooks/usePageTitle";
 
 const getSapaan = () => {
   const hour = new Date().getHours();
@@ -23,6 +24,7 @@ Mohon segera disimpan dikarenakan link akan expired dalam waktu 7 hari
 Terima kasih kak, ditunggu kedatangannya yang selanjutnya🙏😊`;
 
 export function AdminMessagePage() {
+  usePageTitle("Kirim Softcopy");
   const [name, setName] = useState("");
   const [driveLink, setDriveLink] = useState("");
   const [message, setMessage] = useState("");
