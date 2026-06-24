@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Layers, Pencil, Plus, Trash2 } from "lucide-react";
+import { Copy, Layers, Pencil, Plus, Trash2 } from "lucide-react";
 import { BrutalistButton } from "../components/BrutalistButton";
 import { BrutalistCard } from "../components/BrutalistCard";
 import { ImageWithFallback } from "../components/figma/ImageWithFallback";
@@ -130,9 +130,24 @@ function CustomSlotEditor({
       width: snapEnabled ? snap(800) : 800,
       height: snapEnabled ? snap(600) : 600,
       rotation: 0,
+      borderRadius: 0,
     };
     onChange([...slots, newSlot]);
     setSelectedSlot(slots.length);
+  };
+
+  const duplicateSlot = (index: number) => {
+    const s = slots[index];
+    const next = slots.length + 1;
+    const newSlot: SlotEditorSlot = {
+      ...s,
+      slotNumber: next,
+      x: Math.min(PRINT_W - s.width, s.x + 100),
+      y: Math.min(PRINT_H - s.height, s.y + 100),
+    };
+    const updated = [...slots, newSlot];
+    onChange(updated);
+    setSelectedSlot(updated.length - 1);
   };
 
   const removeSlot = (index: number) => {
@@ -148,10 +163,11 @@ function CustomSlotEditor({
       slots.map((s, i) => {
         if (i !== index) return s;
         let v = Math.round(rawValue);
-        if (field === "x")      v = Math.max(0, Math.min(PRINT_W - s.width, v));
-        if (field === "y")      v = Math.max(0, Math.min(PRINT_H - s.height, v));
-        if (field === "width")  v = Math.max(MIN_SLOT_SIZE, Math.min(PRINT_W - s.x, v));
-        if (field === "height") v = Math.max(MIN_SLOT_SIZE, Math.min(PRINT_H - s.y, v));
+        if (field === "x")            v = Math.max(0, Math.min(PRINT_W - s.width, v));
+        if (field === "y")            v = Math.max(0, Math.min(PRINT_H - s.height, v));
+        if (field === "width")        v = Math.max(MIN_SLOT_SIZE, Math.min(PRINT_W - s.x, v));
+        if (field === "height")       v = Math.max(MIN_SLOT_SIZE, Math.min(PRINT_H - s.y, v));
+        if (field === "borderRadius") v = Math.max(0, Math.min(Math.floor(Math.min(s.width, s.height) / 2), v));
         return { ...s, [field]: v };
       }),
     );
@@ -405,6 +421,7 @@ function CustomSlotEditor({
                     transform: s.rotation !== 0 ? `rotate(${s.rotation}deg)` : undefined,
                     transformOrigin: "center center",
                     cursor: "move",
+                    borderRadius: (s.borderRadius ?? 0) > 0 ? (s.borderRadius ?? 0) * SCALE_X : undefined,
                   }}
                   onClick={(e) => { e.stopPropagation(); setSelectedSlot(i); }}
                   onMouseDown={(e) => onMouseDownMove(e, i)}
@@ -480,13 +497,24 @@ function CustomSlotEditor({
                   </span>
                   Slot {s.slotNumber}
                 </span>
-                <button
-                  type="button"
-                  onClick={(e) => { e.stopPropagation(); removeSlot(i); }}
-                  className="text-red-500 text-xs font-bold hover:underline"
-                >
-                  Hapus
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); duplicateSlot(i); }}
+                    className="flex items-center gap-1 text-blue-600 text-xs font-bold hover:underline"
+                    title="Duplikat slot ini"
+                  >
+                    <Copy size={11} strokeWidth={2.5} />
+                    Duplikat
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); removeSlot(i); }}
+                    className="text-red-500 text-xs font-bold hover:underline"
+                  >
+                    Hapus
+                  </button>
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-1.5">
@@ -514,6 +542,53 @@ function CustomSlotEditor({
                     />
                   </label>
                 ))}
+              </div>
+
+              {/* Border Radius */}
+              <div className="mt-2.5 border-t border-gray-200 pt-2.5">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-[10px] font-bold text-gray-500 uppercase">
+                    Border Radius
+                  </span>
+                  <span className="text-[10px] font-mono text-gray-700 bg-gray-100 px-1.5 py-0.5 rounded">
+                    {s.borderRadius ?? 0} px
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min={0}
+                  max={Math.floor(Math.min(s.width, s.height) / 2)}
+                  value={s.borderRadius ?? 0}
+                  onChange={(e) => updateField(i, "borderRadius", Number(e.target.value))}
+                  className="w-full accent-black"
+                  onClick={(e) => e.stopPropagation()}
+                />
+                <div className="flex gap-1 mt-1.5 flex-wrap">
+                  <span className="text-[10px] text-gray-400 self-center mr-0.5">Preset:</span>
+                  {([
+                    { label: "0", r: 0 },
+                    { label: "50", r: 50 },
+                    { label: "100", r: 100 },
+                    { label: "200", r: 200 },
+                    { label: "Pill", r: Math.floor(Math.min(s.width, s.height) / 2) },
+                  ] as const).map((p) => (
+                    <button
+                      key={p.label}
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        updateField(i, "borderRadius", p.r);
+                      }}
+                      className={`text-[10px] px-1.5 py-0.5 border rounded transition-colors font-bold ${
+                        (s.borderRadius ?? 0) === p.r
+                          ? "bg-black text-white border-black"
+                          : "border-gray-400 hover:border-black hover:bg-gray-100"
+                      }`}
+                    >
+                      {p.label}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               {/* Quick size presets */}

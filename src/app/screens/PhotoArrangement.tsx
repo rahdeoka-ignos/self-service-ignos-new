@@ -946,6 +946,9 @@ export function PhotoArrangement() {
                             transform: slotDef.rotation !== 0 ? `rotate(${slotDef.rotation}deg)` : undefined,
                             transformOrigin: "center center",
                             overflow: "hidden",
+                            borderRadius: (slotDef.borderRadius ?? 0) > 0
+                              ? `${((slotDef.borderRadius ?? 0) / slotDef.width * 100).toFixed(1)}%`
+                              : undefined,
                           }}
                         >
                           <BrutalistCard

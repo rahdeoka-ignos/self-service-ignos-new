@@ -17,6 +17,7 @@ export interface CustomSlotDef {
   width: number;
   height: number;
   rotation: number;
+  borderRadius?: number;
 }
 
 export interface TemplateEntry {

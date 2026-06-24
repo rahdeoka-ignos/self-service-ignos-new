@@ -397,22 +397,35 @@ export async function generatePrint(
   }
 
   if (layout === "custom" && options.customSlots && options.customSlots.length > 0) {
+    // Helper: clip a rect with optional rounded corners (roundRect added in Chrome 99+)
+    const clipSlot = (x: number, y: number, w: number, h: number, r: number) => {
+      ctx.beginPath();
+      if (r > 0 && "roundRect" in ctx) {
+        (ctx as CanvasRenderingContext2D & { roundRect: (x: number, y: number, w: number, h: number, r: number) => void }).roundRect(x, y, w, h, r);
+      } else {
+        ctx.rect(x, y, w, h);
+      }
+      ctx.clip();
+    };
+
     for (const slotDef of options.customSlots) {
       const img = images[slotDef.slotNumber - 1];
       if (!img) continue;
 
-      if (slotDef.rotation !== 0) {
+      const br = slotDef.borderRadius ?? 0;
+
+      if (slotDef.rotation !== 0 || br > 0) {
         const angle = slotDef.rotation * (Math.PI / 180);
         const cx = slotDef.x + slotDef.width / 2;
         const cy = slotDef.y + slotDef.height / 2;
 
         ctx.save();
-        ctx.translate(cx, cy);
-        ctx.rotate(angle);
-        ctx.translate(-cx, -cy);
-        ctx.beginPath();
-        ctx.rect(slotDef.x, slotDef.y, slotDef.width, slotDef.height);
-        ctx.clip();
+        if (slotDef.rotation !== 0) {
+          ctx.translate(cx, cy);
+          ctx.rotate(angle);
+          ctx.translate(-cx, -cy);
+        }
+        clipSlot(slotDef.x, slotDef.y, slotDef.width, slotDef.height, br);
 
         const transform = transforms[slotDef.slotNumber] || { scale: 1, x: 0, y: 0 };
         const imgAspect = img.width / img.height;
