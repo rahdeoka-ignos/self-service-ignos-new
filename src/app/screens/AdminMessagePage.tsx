@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Copy, Check, MessageCircle, Sparkles, User, Link } from "lucide-react";
 import { usePageTitle } from "../../hooks/usePageTitle";
+import { AdminLayout } from "../components/AdminLayout";
 
 const getSapaan = () => {
   const hour = new Date().getHours();
@@ -76,18 +77,13 @@ export function AdminMessagePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-8 pt-20">
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-10">
-          <div className="w-20 h-20 bg-black rounded-full flex items-center justify-center mx-auto mb-6 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,0.3)]">
-            <MessageCircle size={40} className="text-white" strokeWidth={2} />
-          </div>
-          {/* <h1 className="text-5xl font-bold mb-3">Ne Anggo Pang Enggal</h1>
-          <p className="text-xl text-gray-600">
-            Pecik gen cepok, suud be gae e
-          </p> */}
-        </div>
+    <AdminLayout>
+    <div className="p-8">
+      <div className="mb-8">
+        <h1 className="text-4xl font-black leading-tight">Kirim Softcopy</h1>
+        <p className="text-gray-500 font-medium mt-1">Generate pesan WhatsApp untuk customer</p>
+      </div>
+      <div className="max-w-4xl">
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* ── FORM ── */}
@@ -312,5 +308,6 @@ export function AdminMessagePage() {
         </div>
       </div>
     </div>
+    </AdminLayout>
   );
 }
