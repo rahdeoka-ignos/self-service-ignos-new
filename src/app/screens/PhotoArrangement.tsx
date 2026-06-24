@@ -12,6 +12,7 @@ import { useCountdownTimer } from "../../hooks/useCountdownTimer";
 import { TimerExpiredModal } from "../components/TimerExpiredModal";
 import { TimerBar } from "../components/TimerBar";
 import { PhotoArrangementTutorial } from "../components/PhotoArrangementTutorial";
+import type { CustomSlotDef } from "../../types/template";
 
 type Template = {
   background: string;
@@ -25,7 +26,9 @@ type Template = {
     | "newspaper"
     | "wannabeyours"
     | "300days"
-    | "aboutu-v2";
+    | "aboutu-v2"
+    | "custom";
+  customSlots?: CustomSlotDef[] | null;
 };
 
 const FILTERS = [
@@ -167,7 +170,9 @@ export function PhotoArrangement() {
                   ? 1
                   : activeLayout === "aboutu-v2"
                     ? 2
-                    : 6;
+                    : activeLayout === "custom"
+                      ? (templates[activeTemplate]?.customSlots?.length ?? 0)
+                      : 6;
 
   const preloadImage = (src: string) => {
     const img = new Image();
@@ -349,7 +354,8 @@ export function PhotoArrangement() {
           filter:
             FILTERS.find((f) => f.id === (activeFilters[i] ?? "none"))?.style ||
             "",
-          printLabel, // ← tambah ini
+          printLabel,
+          customSlots: templates[i].customSlots ?? undefined,
         });
       }
       setPrinted(true);
@@ -378,6 +384,7 @@ export function PhotoArrangement() {
           FILTERS.find(
             (f) => f.id === (activeFilters[activeTemplate] ?? "none"),
           )?.style || "",
+        customSlots: templates[activeTemplate].customSlots ?? undefined,
       });
       if (url) {
         setPreviewUrl(url);
@@ -407,7 +414,9 @@ export function PhotoArrangement() {
                     ? 1
                     : tpl.layout === "aboutu-v2"
                       ? 2
-                      : 6;
+                      : tpl.layout === "custom"
+                        ? (tpl.customSlots?.length ?? 0)
+                        : 6;
     return Object.keys(filledSlots[templateIndex] || {}).length === slots;
   });
 
@@ -922,6 +931,35 @@ export function PhotoArrangement() {
                         </div>
                       </>
                     )}
+                    {/* ── Layout Custom: slot dari templates.json ── */}
+                    {activeLayout === "custom" &&
+                      templates[activeTemplate]?.customSlots?.map((slotDef) => (
+                        <div
+                          key={slotDef.slotNumber}
+                          ref={slotDef.slotNumber === 1 ? slotRef : undefined}
+                          className="absolute z-10"
+                          style={{
+                            left: `${(slotDef.x / 2400) * 100}%`,
+                            top: `${(slotDef.y / 3600) * 100}%`,
+                            width: `${(slotDef.width / 2400) * 100}%`,
+                            height: `${(slotDef.height / 3600) * 100}%`,
+                            transform: slotDef.rotation !== 0 ? `rotate(${slotDef.rotation}deg)` : undefined,
+                            transformOrigin: "center center",
+                            overflow: "hidden",
+                          }}
+                        >
+                          <BrutalistCard
+                            interactive
+                            onClick={() => handleSlotClick(slotDef.slotNumber)}
+                            onDrop={(e) => handleDrop(e, slotDef.slotNumber)}
+                            onDragOver={allowDrop}
+                            className={`w-full h-full p-0 overflow-hidden shadow-none !border-0 !rounded-none ${selectedPhoto ? "cursor-pointer" : ""}`}
+                          >
+                            {renderSlotContent(slotDef.slotNumber)}
+                          </BrutalistCard>
+                        </div>
+                      ))}
+
                     {/* TEMPLATE OVERLAY */}
                     <img
                       src={templates[activeTemplate]?.overlay}

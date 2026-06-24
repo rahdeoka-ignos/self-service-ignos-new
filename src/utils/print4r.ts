@@ -1,3 +1,5 @@
+import type { CustomSlotDef } from "../types/template";
+
 type Slots = { [key: number]: string };
 
 type SlotTransform = {
@@ -16,7 +18,8 @@ interface PrintOptions {
     | "newspaper"
     | "wannabeyours"
     | "300days"
-    | "aboutu-v2";
+    | "aboutu-v2"
+    | "custom";
   background?: string;
   frameOverlay?: string;
   watermark?: string;
@@ -26,6 +29,7 @@ interface PrintOptions {
   uiSlotH?: number;
   filter?: string;
   printLabel?: string;
+  customSlots?: CustomSlotDef[];
 }
 
 export async function generatePrint(
@@ -378,6 +382,60 @@ export async function generatePrint(
       ctx.drawImage(img, drawX, drawY, scaledW, scaledH);
       ctx.filter = "none";
       ctx.restore();
+    }
+  }
+
+  if (layout === "custom" && options.customSlots && options.customSlots.length > 0) {
+    for (const slotDef of options.customSlots) {
+      const img = images[slotDef.slotNumber - 1];
+      if (!img) continue;
+
+      if (slotDef.rotation !== 0) {
+        const angle = slotDef.rotation * (Math.PI / 180);
+        const cx = slotDef.x + slotDef.width / 2;
+        const cy = slotDef.y + slotDef.height / 2;
+
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(angle);
+        ctx.translate(-cx, -cy);
+        ctx.beginPath();
+        ctx.rect(slotDef.x, slotDef.y, slotDef.width, slotDef.height);
+        ctx.clip();
+
+        const transform = transforms[slotDef.slotNumber] || { scale: 1, x: 0, y: 0 };
+        const imgAspect = img.width / img.height;
+        const frameAspect = slotDef.width / slotDef.height;
+        let drawW: number, drawH: number;
+        if (imgAspect > frameAspect) {
+          drawH = slotDef.height;
+          drawW = imgAspect * slotDef.height;
+        } else {
+          drawW = slotDef.width;
+          drawH = slotDef.width / imgAspect;
+        }
+        const scaledW = drawW * transform.scale;
+        const scaledH = drawH * transform.scale;
+        const ratioX = options.uiSlotW ? slotDef.width / options.uiSlotW : 1;
+        const ratioY = options.uiSlotH ? slotDef.height / options.uiSlotH : 1;
+        const drawX = slotDef.x + (slotDef.width - scaledW) / 2 + transform.x * ratioX;
+        const drawY = slotDef.y + (slotDef.height - scaledH) / 2 + transform.y * ratioY;
+        ctx.filter = options.filter || "none";
+        ctx.drawImage(img, drawX, drawY, scaledW, scaledH);
+        ctx.filter = "none";
+        ctx.restore();
+      } else {
+        drawCover(
+          img,
+          slotDef.slotNumber,
+          slotDef.x,
+          slotDef.y,
+          slotDef.width,
+          slotDef.height,
+          options.uiSlotW,
+          options.uiSlotH,
+        );
+      }
     }
   }
 

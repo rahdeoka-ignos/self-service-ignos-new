@@ -1,0 +1,217 @@
+{
+  "version": 1,
+  "categories": [
+    {
+      "id": "basic",
+      "name": "Basic",
+      "image": "https://i.pinimg.com/736x/38/9f/f8/389ff84e41cf3ebe424716ee3547b9f9.jpg"
+    },
+    {
+      "id": "aboutU",
+      "name": "About U",
+      "image": "https://i.pinimg.com/1200x/61/9e/bf/619ebf1684c5cca88d2450e4003a8ad6.jpg"
+    }
+  ],
+  "templates": {
+    "basic": [
+      {
+        "id": 1,
+        "name": "grid-satu",
+        "preview": "/templates/grid-satu/background.png",
+        "layout": "1",
+        "previewTemplate": "/templates/grid-satu/preview.png",
+        "slots": null
+      },
+      {
+        "id": 2,
+        "name": "grid-empat",
+        "preview": "/templates/grid-empat/background.png",
+        "layout": "4",
+        "previewTemplate": "/templates/grid-empat/preview.png",
+        "slots": null
+      },
+      {
+        "id": 4,
+        "name": "grid-dua",
+        "preview": "/templates/grid-dua/background.png",
+        "layout": "2",
+        "previewTemplate": "/templates/grid-dua/preview.png",
+        "slots": null
+      },
+      {
+        "id": 6,
+        "name": "grid-enam",
+        "preview": "/templates/grid-enam/background.png",
+        "layout": "6",
+        "previewTemplate": "/templates/grid-enam/preview.png",
+        "slots": null
+      },
+      {
+        "id": 7,
+        "name": "ribuan-memori",
+        "preview": "/templates/ribuan-memori/background.png",
+        "layout": "6",
+        "previewTemplate": "/templates/ribuan-memori/preview.png",
+        "slots": null
+      },
+      {
+        "id": 8,
+        "name": "grid-delapan",
+        "preview": "/templates/grid-delapan/background.png",
+        "layout": "8",
+        "previewTemplate": "/templates/grid-delapan/preview.png",
+        "slots": null
+      },
+      {
+        "id": 1782238514416,
+        "name": "tes",
+        "preview": "/templates/tes/background.png",
+        "layout": "custom",
+        "previewTemplate": "/templates/tes/preview.png",
+        "slots": [
+          {
+            "slotNumber": 1,
+            "x": 80,
+            "y": 315,
+            "width": 990,
+            "height": 990,
+            "rotation": 0
+          },
+          {
+            "slotNumber": 2,
+            "x": 1255,
+            "y": 325,
+            "width": 1010,
+            "height": 990,
+            "rotation": 0
+          },
+          {
+            "slotNumber": 3,
+            "x": 65,
+            "y": 1330,
+            "width": 1015,
+            "height": 1000,
+            "rotation": 0
+          },
+          {
+            "slotNumber": 4,
+            "x": 1255,
+            "y": 1325,
+            "width": 1010,
+            "height": 1000,
+            "rotation": 0
+          },
+          {
+            "slotNumber": 5,
+            "x": 80,
+            "y": 2355,
+            "width": 990,
+            "height": 975,
+            "rotation": 0
+          },
+          {
+            "slotNumber": 6,
+            "x": 1275,
+            "y": 2350,
+            "width": 985,
+            "height": 965,
+            "rotation": 0
+          }
+        ]
+      },
+      {
+        "id": 1782238579371,
+        "name": "tes2",
+        "preview": "/templates/tes2/background.png",
+        "layout": "custom",
+        "previewTemplate": "/templates/tes2/preview.png",
+        "slots": [
+          {
+            "slotNumber": 1,
+            "x": 70,
+            "y": 320,
+            "width": 1000,
+            "height": 985,
+            "rotation": 0
+          },
+          {
+            "slotNumber": 2,
+            "x": 1265,
+            "y": 310,
+            "width": 1005,
+            "height": 1000,
+            "rotation": 0
+          }
+        ]
+      },
+      {
+        "id": 1782239017576,
+        "name": "dsd",
+        "preview": "/templates/dsd/background.png",
+        "layout": "custom",
+        "previewTemplate": "/templates/dsd/preview.png",
+        "slots": [
+          {
+            "slotNumber": 1,
+            "x": 80,
+            "y": 320,
+            "width": 980,
+            "height": 985,
+            "rotation": 0
+          }
+        ]
+      },
+      {
+        "id": 1782239966001,
+        "name": "sadasdadas",
+        "preview": "/templates/sadasdadas/background.png",
+        "layout": "custom",
+        "previewTemplate": "/templates/sadasdadas/preview.png",
+        "slots": [
+          {
+            "slotNumber": 1,
+            "x": 80,
+            "y": 325,
+            "width": 1015,
+            "height": 1000,
+            "rotation": 0
+          }
+        ]
+      }
+    ],
+    "aboutU": [
+      {
+        "id": 9,
+        "name": "newspaper-1975",
+        "preview": "/templates/newspaper-1975/background.png",
+        "layout": "newspaper",
+        "previewTemplate": "/templates/newspaper-1975/preview.png",
+        "slots": null
+      },
+      {
+        "id": 10,
+        "name": "wannabeyours-1975",
+        "preview": "/templates/wannabeyours-1975/background.png",
+        "layout": "wannabeyours",
+        "previewTemplate": "/templates/wannabeyours-1975/preview.png",
+        "slots": null
+      },
+      {
+        "id": 11,
+        "name": "aboutU-1975",
+        "preview": "/templates/aboutU-1975/background.png",
+        "layout": "aboutu-v2",
+        "previewTemplate": "/templates/aboutU-1975/preview.png",
+        "slots": null
+      },
+      {
+        "id": 12,
+        "name": "300days-1975",
+        "preview": "/templates/300days-1975/background.png",
+        "layout": "300days",
+        "previewTemplate": "/templates/300days-1975/preview.png",
+        "slots": null
+      }
+    ]
+  }
+}

@@ -8,99 +8,7 @@ import { useTranslation } from "react-i18next";
 import { useCountdownTimer } from "../../hooks/useCountdownTimer";
 import { TimerBar } from "../components/TimerBar";
 import { TimerExpiredModal } from "../components/TimerExpiredModal";
-
-const categories = [
-  {
-    id: "basic",
-    name: "Basic",
-    image:
-      "https://i.pinimg.com/736x/38/9f/f8/389ff84e41cf3ebe424716ee3547b9f9.jpg",
-  },
-  {
-    id: "aboutU",
-    name: "About U",
-    image:
-      "https://i.pinimg.com/1200x/61/9e/bf/619ebf1684c5cca88d2450e4003a8ad6.jpg",
-  },
-];
-
-const templates = {
-  basic: [
-    {
-      id: 1,
-      name: "grid-satu",
-      preview: "/templates/grid-satu/background.png",
-      layout: "1",
-      previewTemplate: "/templates/grid-satu/preview.png",
-    },
-    {
-      id: 2,
-      name: "grid-empat",
-      preview: "/templates/grid-empat/background.png",
-      layout: "4",
-      previewTemplate: "/templates/grid-empat/preview.png",
-    },
-    {
-      id: 4,
-      name: "grid-dua",
-      preview: "/templates/grid-dua/background.png",
-      layout: "2",
-      previewTemplate: "/templates/grid-dua/preview.png",
-    },
-    {
-      id: 6,
-      name: "grid-enam",
-      preview: "/templates/grid-enam/background.png",
-      layout: "6",
-      previewTemplate: "/templates/grid-enam/preview.png",
-    },
-    {
-      id: 7,
-      name: "ribuan-memori",
-      preview: "/templates/ribuan-memori/background.png",
-      layout: "6",
-      previewTemplate: "/templates/ribuan-memori/preview.png",
-    },
-    {
-      id: 8,
-      name: "grid-delapan",
-      preview: "/templates/grid-delapan/background.png",
-      layout: "8",
-      previewTemplate: "/templates/grid-delapan/preview.png",
-    },
-  ],
-
-  aboutU: [
-    {
-      id: 9,
-      name: "newspaper-1975",
-      preview: "/templates/newspaper-1975/background.png",
-      layout: "newspaper",
-      previewTemplate: "/templates/newspaper-1975/preview.png",
-    },
-    {
-      id: 10,
-      name: "wannabeyours-1975",
-      preview: "/templates/wannabeyours-1975/background.png",
-      layout: "wannabeyours",
-      previewTemplate: "/templates/wannabeyours-1975/preview.png",
-    },
-    {
-      id: 11,
-      name: "aboutU-1975",
-      preview: "/templates/aboutU-1975/background.png",
-      layout: "aboutu-v2",
-      previewTemplate: "/templates/aboutU-1975/preview.png",
-    },
-    {
-      id: 12,
-      name: "300days-1975",
-      preview: "/templates/300days-1975/background.png",
-      layout: "300days",
-      previewTemplate: "/templates/300days-1975/preview.png",
-    },
-  ],
-};
+import type { TemplateCategory, TemplateEntry, TemplatesData } from "../../types/template";
 
 export function TemplateSelection() {
   const navigate = useNavigate();
@@ -128,8 +36,23 @@ export function TemplateSelection() {
     : coupleMode
       ? 1
       : peopleCount;
+  const [categories, setCategories] = useState<TemplateCategory[]>([]);
+  const [templates, setTemplates] = useState<Record<string, TemplateEntry[]>>({});
+  const [loadingTemplates, setLoadingTemplates] = useState(true);
+
+  useEffect(() => {
+    fetch("http://localhost:5000/api/templates")
+      .then((res) => res.json())
+      .then((data: TemplatesData) => {
+        setCategories(data.categories);
+        setTemplates(data.templates);
+      })
+      .catch(() => {})
+      .finally(() => setLoadingTemplates(false));
+  }, []);
+
   const [selectedCategory, setSelectedCategory] = useState("basic");
-  const [userTemplates, setUserTemplates] = useState<{ [key: number]: any }>(
+  const [userTemplates, setUserTemplates] = useState<{ [key: number]: TemplateEntry }>(
     {},
   );
   const [currentUser, setCurrentUser] = useState(1);
@@ -145,10 +68,11 @@ export function TemplateSelection() {
   };
 
   const handleContinue = () => {
-    const selectedTemplates = Object.values(userTemplates).map((tpl: any) => ({
+    const selectedTemplates = Object.values(userTemplates).map((tpl) => ({
       background: `/templates/${tpl.name}/background.png`,
       overlay: `/templates/${tpl.name}/overlay.png`,
       layout: tpl.layout,
+      customSlots: tpl.slots,
     }));
 
     navigate("/arrange-photos", {
@@ -243,7 +167,11 @@ export function TemplateSelection() {
                   {categories.find((c) => c.id === selectedCategory)?.name}{" "}
                   {t("templateSelection.templates")}
                 </h2>
-                {isComingSoon ? (
+                {loadingTemplates ? (
+                  <div className="flex items-center justify-center h-[400px]">
+                    <p className="text-2xl font-bold text-gray-400">Loading templates...</p>
+                  </div>
+                ) : isComingSoon ? (
                   <div className="flex items-center justify-center h-[400px] w-full border-4 border-dashed border-black rounded-2xl">
                     <div className="text-center">
                       <p className="text-3xl font-bold mb-2">
