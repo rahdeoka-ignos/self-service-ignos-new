@@ -555,7 +555,7 @@ export function PhotoArrangement() {
                   {t("photoArrange.templateLayout")}
                 </h2>
                 <div className="flex gap-3 overflow-x-auto pb-2">
-                  {templates.map((tpl, index) => {
+                  {templates.map((_, index) => {
                     const isBonus = joinedBonus && index >= regularCount;
                     const bonusIndex = index - regularCount + 1;
                     const isActive = activeTemplate === index;
@@ -961,10 +961,12 @@ export function PhotoArrangement() {
                       ))}
 
                     {/* TEMPLATE OVERLAY */}
-                    <img
-                      src={templates[activeTemplate]?.overlay}
-                      className="absolute inset-0 w-full h-full object-cover z-20 pointer-events-none"
-                    />
+                    {templates[activeTemplate]?.overlay && (
+                      <img
+                        src={templates[activeTemplate].overlay}
+                        className="absolute inset-0 w-full h-full object-cover z-20 pointer-events-none"
+                      />
+                    )}
                   </div>
 
                   <div className="mt-12 space-y-4">

@@ -57,13 +57,24 @@ export async function generatePrint(
       img.referrerPolicy = "no-referrer";
       img.src = src;
       img.onload = () => resolve(img);
-      img.onerror = reject;
+      img.onerror = () => reject(new Error(`Failed to load image: ${src}`));
+    });
+
+  // Graceful loader — returns null instead of throwing (for optional assets)
+  const tryLoadImage = (src: string): Promise<HTMLImageElement | null> =>
+    new Promise((resolve) => {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.referrerPolicy = "no-referrer";
+      img.src = src;
+      img.onload = () => resolve(img);
+      img.onerror = () => resolve(null);
     });
 
   // BACKGROUND LAYER
   if (options.background) {
-    const bg = await loadImage(options.background);
-    ctx.drawImage(bg, 0, 0, WIDTH, HEIGHT);
+    const bg = await tryLoadImage(options.background);
+    if (bg) ctx.drawImage(bg, 0, 0, WIDTH, HEIGHT);
   } else {
     ctx.fillStyle = "white";
     ctx.fillRect(0, 0, WIDTH, HEIGHT);
@@ -441,8 +452,8 @@ export async function generatePrint(
 
   // FRAME OVERLAY LAYER
   if (options.frameOverlay) {
-    const overlay = await loadImage(options.frameOverlay);
-    ctx.drawImage(overlay, 0, 0, WIDTH, HEIGHT);
+    const overlay = await tryLoadImage(options.frameOverlay);
+    if (overlay) ctx.drawImage(overlay, 0, 0, WIDTH, HEIGHT);
   }
 
   const blob: Blob = await new Promise((resolve, reject) =>

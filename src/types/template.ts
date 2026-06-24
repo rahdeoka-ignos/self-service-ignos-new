@@ -23,6 +23,7 @@ export interface TemplateEntry {
   id: number;
   name: string;
   preview: string;
+  overlay?: string | null;
   layout: LayoutType;
   previewTemplate: string;
   slots: CustomSlotDef[] | null;

@@ -154,6 +154,7 @@ app.post("/api/templates", (req, res) => {
     id: Date.now(),
     name,
     preview: `/templates/${name}/background.png`,
+    overlay: null,
     layout,
     previewTemplate: `/templates/${name}/preview.png`,
     slots: slots || null,
@@ -219,6 +220,9 @@ app.post(
       if (tpl) {
         tpl.preview = `/templates/${templateName}/background.png`;
         tpl.previewTemplate = `/templates/${templateName}/preview.png`;
+        if (req.files?.overlay) {
+          tpl.overlay = `/templates/${templateName}/overlay.png`;
+        }
         updated = true;
         break;
       }

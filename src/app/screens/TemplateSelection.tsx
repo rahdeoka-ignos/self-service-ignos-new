@@ -70,7 +70,7 @@ export function TemplateSelection() {
   const handleContinue = () => {
     const selectedTemplates = Object.values(userTemplates).map((tpl) => ({
       background: `/templates/${tpl.name}/background.png`,
-      overlay: `/templates/${tpl.name}/overlay.png`,
+      overlay: tpl.overlay || undefined,
       layout: tpl.layout,
       customSlots: tpl.slots,
     }));
