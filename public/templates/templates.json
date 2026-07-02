@@ -125,6 +125,70 @@
             "rotation": 0
           }
         ]
+      },
+      {
+        "id": 1782982381485,
+        "name": "shape of my heart",
+        "preview": "/templates/shape of my heart/background.png",
+        "overlay": "/templates/shape of my heart/overlay.png",
+        "layout": "custom",
+        "previewTemplate": "/templates/shape of my heart/preview.png",
+        "slots": [
+          {
+            "slotNumber": 1,
+            "x": 1220,
+            "y": 365,
+            "width": 1075,
+            "height": 745,
+            "rotation": 0,
+            "borderRadius": 77
+          },
+          {
+            "slotNumber": 2,
+            "x": 100,
+            "y": 870,
+            "width": 1075,
+            "height": 745,
+            "rotation": 0,
+            "borderRadius": 77
+          },
+          {
+            "slotNumber": 3,
+            "x": 100,
+            "y": 1680,
+            "width": 1075,
+            "height": 745,
+            "rotation": 0,
+            "borderRadius": 77
+          },
+          {
+            "slotNumber": 4,
+            "x": 100,
+            "y": 2500,
+            "width": 1075,
+            "height": 745,
+            "rotation": 0,
+            "borderRadius": 77
+          },
+          {
+            "slotNumber": 5,
+            "x": 1230,
+            "y": 1185,
+            "width": 1075,
+            "height": 745,
+            "rotation": 0,
+            "borderRadius": 77
+          },
+          {
+            "slotNumber": 6,
+            "x": 1230,
+            "y": 1995,
+            "width": 1075,
+            "height": 745,
+            "rotation": 0,
+            "borderRadius": 77
+          }
+        ]
       }
     ],
     "aboutU": [

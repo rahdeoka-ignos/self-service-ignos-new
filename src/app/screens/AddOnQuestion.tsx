@@ -62,7 +62,7 @@ export function AddOnQuestion() {
     {
       id: "bingkai-4r",
       title: "Bingkai 4R",
-      price: 30000,
+      price: 25000,
       description: "Percantik foto 4R dengan bingkai estetik siap pajang.",
       image: "/addons/bingkai4r.mp4",
       path: "/bingkai4r",
