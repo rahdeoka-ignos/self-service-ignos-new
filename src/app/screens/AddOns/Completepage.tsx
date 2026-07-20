@@ -37,7 +37,7 @@ export function CompletePage() {
   const templates: { layout: string }[] = location.state?.templates ?? [];
   const keychainOrder: KeychainOrder[] = location.state?.orders ?? [];
   const a4Count: number = location.state?.a4Count ?? 0;
-  const miscAddons: { name: string; qty: number }[] = [
+  const miscAddons: { name: string; qty: number; photoUrl?: string; photoThumb?: string }[] = [
     ...keychainOrder.map((o) => ({ name: o.name, qty: o.qty })),
     ...(location.state?.miscAddons ?? []),
   ];
@@ -192,7 +192,27 @@ export function CompletePage() {
       if (miscAddons.length > 0) {
         drawDivider();
         drawSectionHeader("Addon Lainnya");
-        miscAddons.forEach((addon) => drawRow(addon.name, `${addon.qty}x`));
+        const loadImage = (src: string): Promise<HTMLImageElement> =>
+          new Promise((resolve, reject) => {
+            const img = new Image();
+            img.crossOrigin = "anonymous";
+            img.src = src;
+            img.onload = () => resolve(img);
+            img.onerror = () => reject(new Error(`Failed to load image: ${src}`));
+          });
+
+        for (const addon of miscAddons) {
+          drawRow(addon.name, `${addon.qty}x`);
+          if (addon.photoUrl) {
+            try {
+              const img = await loadImage(addon.photoUrl);
+              pdf.addImage(img, "PNG", W - margin - 16, y - 9, 16, 24);
+              y += 16;
+            } catch (err) {
+              console.error("Failed to add image to PDF:", err);
+            }
+          }
+        }
         y += 2;
       }
 
@@ -470,7 +490,18 @@ export function CompletePage() {
                     label="Addon Lainnya"
                   />
                   {miscAddons.map((addon, i) => (
-                    <Row key={i} label={addon.name} value={`${addon.qty}x`} />
+                    <div key={i} className="mb-2">
+                      <Row label={addon.name} value={`${addon.qty}x`} />
+                      {addon.photoThumb && (
+                        <div className="mt-1 flex justify-start pl-2">
+                          <img
+                            src={addon.photoThumb}
+                            alt="Frame Content"
+                            className="w-16 h-24 object-cover border-4 border-black rounded-lg shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+                          />
+                        </div>
+                      )}
+                    </div>
                   ))}
                 </>
               )}
