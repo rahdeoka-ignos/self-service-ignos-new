@@ -80,15 +80,28 @@ export function IdCardArrangement() {
     const cached = sessionStorage.getItem("gallery");
     if (cached) {
       setPhotoGallery(JSON.parse(cached));
-    } else {
+    }
+
+    const fetchPhotos = () => {
       fetch("http://localhost:5000/api/photos")
         .then((res) => res.json())
         .then((data) => {
           const photos = data.reverse().slice(0, 200);
           sessionStorage.setItem("gallery", JSON.stringify(photos));
-          setPhotoGallery(photos);
-        });
-    }
+          setPhotoGallery((prev) => {
+            if (JSON.stringify(prev) !== JSON.stringify(photos)) {
+              return photos;
+            }
+            return prev;
+          });
+        })
+        .catch((err) => console.error("Fetch photos failed:", err));
+    };
+
+    fetchPhotos();
+    const interval = setInterval(fetchPhotos, 3000);
+
+    return () => clearInterval(interval);
   }, []);
 
   const activeSlotItem = slots[activeSlot];
