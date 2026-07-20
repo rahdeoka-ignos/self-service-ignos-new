@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router";
 import { Navigation } from "../../components/Navigation";
 import {
@@ -44,205 +44,226 @@ export function CompletePage() {
   // Di dalam komponen, tambah ref:
   const receiptRef = useRef<HTMLDivElement>(null);
 
-  const handleDownloadPDF = async () => {
-    const { jsPDF } = await import("jspdf");
+  const autoUploadReceipt = async () => {
+    try {
+      const { jsPDF } = await import("jspdf");
 
-    const pdf = new jsPDF({
-      orientation: "portrait",
-      unit: "mm",
-      format: "a4",
-    });
-
-    const W = 210; // A4 width mm
-    const margin = 20;
-    const contentW = W - margin * 2;
-    let y = 20;
-
-    const addText = (
-      text: string,
-      x: number,
-      yPos: number,
-      opts: {
-        fontSize?: number;
-        fontStyle?: "normal" | "bold";
-        color?: [number, number, number];
-        align?: "left" | "center" | "right";
-      } = {},
-    ) => {
-      const {
-        fontSize = 11,
-        fontStyle = "normal",
-        color = [30, 30, 30],
-        align = "left",
-      } = opts;
-      pdf.setFontSize(fontSize);
-      pdf.setFont("helvetica", fontStyle);
-      pdf.setTextColor(...color);
-      pdf.text(text, x, yPos, { align });
-    };
-
-    // ── HEADER ──
-    pdf.setFillColor(0, 0, 0);
-    pdf.roundedRect(margin, y, contentW, 28, 4, 4, "F");
-    addText("IGNOS STUDIO", W / 2, y + 10, {
-      fontSize: 18,
-      fontStyle: "bold",
-      color: [255, 255, 255],
-      align: "center",
-    });
-    addText("SESSION SUMMARY", W / 2, y + 20, {
-      fontSize: 9,
-      color: [180, 180, 180],
-      align: "center",
-    });
-    y += 36;
-
-    // ── DIVIDER ──
-    const drawDivider = () => {
-      pdf.setDrawColor(210, 210, 210);
-      pdf.setLineDashPattern([2, 2], 0);
-      pdf.line(margin, y, W - margin, y);
-      pdf.setLineDashPattern([], 0);
-      y += 6;
-    };
-
-    // ── SECTION HEADER ──
-    const drawSectionHeader = (label: string) => {
-      addText(label.toUpperCase(), margin, y, {
-        fontSize: 8,
-        color: [150, 150, 150],
-        fontStyle: "bold",
+      const pdf = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: "a4",
       });
-      y += 6;
-    };
 
-    // ── ROW ──
-    const drawRow = (label: string, value: string, highlight = false) => {
-      if (highlight) {
-        pdf.setFillColor(0, 0, 0);
-        pdf.rect(margin, y - 5, contentW, 10, "F");
-        addText(label, margin + 3, y + 1, {
-          fontSize: 11,
+      const W = 210; // A4 width mm
+      const margin = 20;
+      const contentW = W - margin * 2;
+      let y = 20;
+
+      const addText = (
+        text: string,
+        x: number,
+        yPos: number,
+        opts: {
+          fontSize?: number;
+          fontStyle?: "normal" | "bold";
+          color?: [number, number, number];
+          align?: "left" | "center" | "right";
+        } = {},
+      ) => {
+        const {
+          fontSize = 11,
+          fontStyle = "normal",
+          color = [30, 30, 30],
+          align = "left",
+        } = opts;
+        pdf.setFontSize(fontSize);
+        pdf.setFont("helvetica", fontStyle);
+        pdf.setTextColor(...color);
+        pdf.text(text, x, yPos, { align });
+      };
+
+      // ── HEADER ──
+      pdf.setFillColor(0, 0, 0);
+      pdf.roundedRect(margin, y, contentW, 28, 4, 4, "F");
+      addText("IGNOS STUDIO", W / 2, y + 10, {
+        fontSize: 18,
+        fontStyle: "bold",
+        color: [255, 255, 255],
+        align: "center",
+      });
+      addText("SESSION SUMMARY", W / 2, y + 20, {
+        fontSize: 9,
+        color: [180, 180, 180],
+        align: "center",
+      });
+      y += 36;
+
+      // ── DIVIDER ──
+      const drawDivider = () => {
+        pdf.setDrawColor(210, 210, 210);
+        pdf.setLineDashPattern([2, 2], 0);
+        pdf.line(margin, y, W - margin, y);
+        pdf.setLineDashPattern([], 0);
+        y += 6;
+      };
+
+      // ── SECTION HEADER ──
+      const drawSectionHeader = (label: string) => {
+        addText(label.toUpperCase(), margin, y, {
+          fontSize: 8,
+          color: [150, 150, 150],
           fontStyle: "bold",
-          color: [255, 255, 255],
         });
-        addText(value, W - margin - 3, y + 1, {
-          fontSize: 11,
-          fontStyle: "bold",
-          color: [255, 204, 0],
-          align: "right",
+        y += 6;
+      };
+
+      // ── ROW ──
+      const drawRow = (label: string, value: string, highlight = false) => {
+        if (highlight) {
+          pdf.setFillColor(0, 0, 0);
+          pdf.rect(margin, y - 5, contentW, 10, "F");
+          addText(label, margin + 3, y + 1, {
+            fontSize: 11,
+            fontStyle: "bold",
+            color: [255, 255, 255],
+          });
+          addText(value, W - margin - 3, y + 1, {
+            fontSize: 11,
+            fontStyle: "bold",
+            color: [255, 204, 0],
+            align: "right",
+          });
+        } else {
+          addText(label, margin, y + 1, {
+            fontSize: 11,
+            fontStyle: "bold",
+            color: [60, 60, 60],
+          });
+          addText(value, W - margin, y + 1, {
+            fontSize: 11,
+            fontStyle: "bold",
+            align: "right",
+          });
+        }
+        y += 10;
+      };
+
+      // ── SESI ──
+      drawSectionHeader("Sesi");
+      drawRow(
+        coupleMode ? "Couple Mode" : "Regular",
+        coupleMode ? "1 pasang" : `${peopleCount} orang`,
+      );
+      y += 2;
+      drawDivider();
+
+      // ── TEMPLATE ──
+      drawSectionHeader("Template");
+      if (templates.length > 0) {
+        templates.forEach((tpl, i) => {
+          drawRow(`Template ${i + 1}`, layoutLabels[tpl.layout] ?? tpl.layout);
         });
       } else {
-        addText(label, margin, y + 1, {
-          fontSize: 11,
-          fontStyle: "bold",
-          color: [60, 60, 60],
-        });
-        addText(value, W - margin, y + 1, {
-          fontSize: 11,
-          fontStyle: "bold",
-          align: "right",
+        drawRow("Template", "-");
+      }
+      y += 2;
+      drawDivider();
+
+      // ── PRINT ──
+      drawSectionHeader("Print");
+      drawRow(
+        coupleMode ? `Print reguler (${peopleCount} orang)` : "Print reguler",
+        `${regularPrint}x`,
+      );
+      if (joinedBonus) drawRow("Bonus print", `+${bonusPrint}x`);
+      y += 1;
+      drawRow("Total print", `${totalPrint} lembar`, true);
+      y += 2;
+
+      // ── CETAK A4 ──
+      if (a4Count > 0) {
+        drawDivider();
+        drawSectionHeader("Cetak A4");
+        drawRow("Cetak Foto A4", `${a4Count} lembar`);
+        y += 2;
+      }
+
+      // ── ADDON LAINNYA ──
+      if (miscAddons.length > 0) {
+        drawDivider();
+        drawSectionHeader("Addon Lainnya");
+        miscAddons.forEach((addon) => drawRow(addon.name, `${addon.qty}x`));
+        y += 2;
+      }
+
+      drawDivider();
+
+      // ── BONUS ──
+      drawSectionHeader("Bonus");
+      drawRow("Program bonus", joinedBonus ? "✓ Ikut" : "✗ Tidak");
+      y += 2;
+      drawDivider();
+
+      // ── ADD-ONS ──
+      drawSectionHeader("Instagram Story");
+      drawRow("Instagram Story", makeStory ? "✓ Ya" : "✗ Tidak");
+      if (makeStory && instagramUsernames.length > 0) {
+        instagramUsernames.forEach((username, i) => {
+          addText(`  ${i + 1}. @${username}`, margin, y + 1, {
+            fontSize: 10,
+            color: [80, 80, 80],
+          });
+          y += 8;
         });
       }
-      y += 10;
-    };
-
-    // ── SESI ──
-    drawSectionHeader("Sesi");
-    drawRow(
-      coupleMode ? "Couple Mode" : "Regular",
-      coupleMode ? "1 pasang" : `${peopleCount} orang`,
-    );
-    y += 2;
-    drawDivider();
-
-    // ── TEMPLATE ──
-    drawSectionHeader("Template");
-    if (templates.length > 0) {
-      templates.forEach((tpl, i) => {
-        drawRow(`Template ${i + 1}`, layoutLabels[tpl.layout] ?? tpl.layout);
-      });
-    } else {
-      drawRow("Template", "-");
-    }
-    y += 2;
-    drawDivider();
-
-    // ── PRINT ──
-    drawSectionHeader("Print");
-    drawRow(
-      coupleMode ? `Print reguler (${peopleCount} orang)` : "Print reguler",
-      `${regularPrint}x`,
-    );
-    if (joinedBonus) drawRow("Bonus print", `+${bonusPrint}x`);
-    y += 1;
-    drawRow("Total print", `${totalPrint} lembar`, true);
-    y += 2;
-
-    // ── CETAK A4 ──
-    if (a4Count > 0) {
-      drawDivider();
-      drawSectionHeader("Cetak A4");
-      drawRow("Cetak Foto A4", `${a4Count} lembar`);
       y += 2;
-    }
-
-    // ── ADDON LAINNYA ──
-    if (miscAddons.length > 0) {
       drawDivider();
-      drawSectionHeader("Addon Lainnya");
-      miscAddons.forEach((addon) => drawRow(addon.name, `${addon.qty}x`));
-      y += 2;
-    }
 
-    drawDivider();
+      const now = new Date();
+      const timeStr = `${now.getDate().toString().padStart(2, "0")}-${(now.getMonth() + 1).toString().padStart(2, "0")}-${now.getFullYear()} ${now.getHours().toString().padStart(2, "0")}.${now.getMinutes().toString().padStart(2, "0")}`;
+      const filename =
+        makeStory && instagramUsernames.length > 0
+          ? `struk-tambahan-${instagramUsernames[0]}.pdf`
+          : `struk-tambahan-sesi ${timeStr}.pdf`;
 
-    // ── BONUS ──
-    drawSectionHeader("Bonus");
-    drawRow("Program bonus", joinedBonus ? "✓ Ikut" : "✗ Tidak");
-    y += 2;
-    drawDivider();
-
-    // ── ADD-ONS ──
-    drawSectionHeader("Instagram Story");
-    drawRow("Instagram Story", makeStory ? "✓ Ya" : "✗ Tidak");
-    if (makeStory && instagramUsernames.length > 0) {
-      instagramUsernames.forEach((username, i) => {
-        addText(`  ${i + 1}. @${username}`, margin, y + 1, {
-          fontSize: 10,
-          color: [80, 80, 80],
-        });
-        y += 8;
+      // ── FOOTER ──
+      y += 4;
+      pdf.setFillColor(0, 0, 0);
+      pdf.roundedRect(margin, y, contentW, 18, 4, 4, "F");
+      addText("Terima kasih sudah datang ke Ignos Studio", W / 2, y + 7, {
+        fontSize: 10,
+        fontStyle: "bold",
+        color: [255, 255, 255],
+        align: "center",
       });
+      addText("jangan lupa datang kembali ya!", W / 2, y + 14, {
+        fontSize: 9,
+        color: [180, 180, 180],
+        align: "center",
+      });
+
+      // Get PDF as blob and upload to api/save-print
+      const blob = pdf.output("blob");
+      const formData = new FormData();
+      formData.append("file", blob, filename);
+
+      await fetch("http://localhost:5000/api/save-print?label=struk", {
+        method: "POST",
+        body: formData,
+      });
+      console.log("Receipt saved to server successfully.");
+    } catch (err) {
+      console.error("Failed to generate/upload receipt PDF:", err);
     }
-    y += 2;
-    drawDivider();
-
-    const now = new Date();
-    const timeStr = `${now.getDate().toString().padStart(2, "0")}-${(now.getMonth() + 1).toString().padStart(2, "0")}-${now.getFullYear()} ${now.getHours().toString().padStart(2, "0")}.${now.getMinutes().toString().padStart(2, "0")}`;
-    const filename =
-      makeStory && instagramUsernames.length > 0
-        ? `struk-tambahan-${instagramUsernames[0]}.pdf`
-        : `struk-tambahan-sesi ${timeStr}.pdf`;
-
-    // ── FOOTER ──
-    y += 4;
-    pdf.setFillColor(0, 0, 0);
-    pdf.roundedRect(margin, y, contentW, 18, 4, 4, "F");
-    addText("Terima kasih sudah datang ke Ignos Studio", W / 2, y + 7, {
-      fontSize: 10,
-      fontStyle: "bold",
-      color: [255, 255, 255],
-      align: "center",
-    });
-    addText("jangan lupa datang kembali ya!", W / 2, y + 14, {
-      fontSize: 9,
-      color: [180, 180, 180],
-      align: "center",
-    });
-
-    pdf.save(filename);
   };
+
+  const uploadStarted = useRef(false);
+
+  useEffect(() => {
+    if (uploadStarted.current) return;
+    uploadStarted.current = true;
+    autoUploadReceipt();
+  }, []);
 
   const layoutLabels: { [key: string]: string } = {
     "1": "1 Slot",
@@ -571,7 +592,7 @@ export function CompletePage() {
           {/* Back home */}
           <div className="flex justify-center">
             <button
-              onClick={handleDownloadPDF}
+              onClick={() => navigate("/")}
               className="text-2xl font-bold border-4 border-black px-16 py-5 bg-white hover:bg-black hover:text-white transition-colors rounded-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1"
             >
               {t("complete.actions.backHome")}
