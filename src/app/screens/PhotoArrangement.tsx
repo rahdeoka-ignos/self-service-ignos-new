@@ -527,7 +527,6 @@ export function PhotoArrangement() {
                   {photoGallery.map((photo, index) => (
                     <BrutalistCard
                       key={index}
-                      interactive
                       draggable
                       onDragStart={(e) => handleDragStart(e, photo.full)}
                       onClick={() => handlePhotoClick(photo)}
@@ -621,7 +620,6 @@ export function PhotoArrangement() {
                           ref={slotRef}
                         >
                           <BrutalistCard
-                            interactive
                             onClick={() => handleSlotClick(1)}
                             onDrop={(e) => handleDrop(e, 1)}
                             onDragOver={allowDrop}
@@ -661,7 +659,6 @@ export function PhotoArrangement() {
                                 style={{ aspectRatio: "484/652" }}
                               >
                                 <BrutalistCard
-                                  interactive
                                   onClick={() => handleSlotClick(slotNum)}
                                   onDrop={(e) => handleDrop(e, slotNum)}
                                   onDragOver={allowDrop}
@@ -703,7 +700,6 @@ export function PhotoArrangement() {
                               style={{ aspectRatio: "994/652" }}
                             >
                               <BrutalistCard
-                                interactive
                                 onClick={() => handleSlotClick(slotNum)}
                                 onDrop={(e) => handleDrop(e, slotNum)}
                                 onDragOver={allowDrop}
@@ -749,7 +745,6 @@ export function PhotoArrangement() {
                                 }}
                               >
                                 <BrutalistCard
-                                  interactive
                                   onClick={() => handleSlotClick(slotNum)}
                                   onDrop={(e) => handleDrop(e, slotNum)}
                                   onDragOver={allowDrop}
@@ -796,11 +791,10 @@ export function PhotoArrangement() {
                                 }}
                               >
                                 <BrutalistCard
-                                  interactive
                                   onClick={() => handleSlotClick(slotNum)}
                                   onDrop={(e) => handleDrop(e, slotNum)}
                                   onDragOver={allowDrop}
-                                  className={`w-full h-full p-0 overflow-hidden shadow-none !border-0 !border-transparent !rounded-none transition-all! hover:translate-x-0! hover:translate-y-0! active:translate-x-0! active:translate-y-0! ${
+                                  className={`w-full h-full p-0 overflow-hidden shadow-none !border-0 !border-transparent !rounded-none ${
                                     selectedPhoto ? "cursor-pointer" : ""
                                   }`}
                                 >
@@ -826,7 +820,6 @@ export function PhotoArrangement() {
                         }}
                       >
                         <BrutalistCard
-                          interactive
                           onClick={() => handleSlotClick(1)}
                           onDrop={(e) => handleDrop(e, 1)}
                           onDragOver={allowDrop}
@@ -851,7 +844,6 @@ export function PhotoArrangement() {
                         }}
                       >
                         <BrutalistCard
-                          interactive
                           onClick={() => handleSlotClick(1)}
                           onDrop={(e) => handleDrop(e, 1)}
                           onDragOver={allowDrop}
@@ -876,7 +868,6 @@ export function PhotoArrangement() {
                         }}
                       >
                         <BrutalistCard
-                          interactive
                           onClick={() => handleSlotClick(1)}
                           onDrop={(e) => handleDrop(e, 1)}
                           onDragOver={allowDrop}
@@ -906,11 +897,10 @@ export function PhotoArrangement() {
                           }}
                         >
                           <BrutalistCard
-                            interactive
                             onClick={() => handleSlotClick(1)}
                             onDrop={(e) => handleDrop(e, 1)}
                             onDragOver={allowDrop}
-                            className={`w-full h-full p-0 overflow-hidden shadow-none !border-0 !rounded-none hover:translate-x-0! hover:translate-y-0! active:translate-x-0! active:translate-y-0! ${selectedPhoto ? "cursor-pointer" : ""}`}
+                            className={`w-full h-full p-0 overflow-hidden shadow-none !border-0 !rounded-none ${selectedPhoto ? "cursor-pointer" : ""}`}
                           >
                             {renderSlotContent(1)}
                           </BrutalistCard>
@@ -930,11 +920,10 @@ export function PhotoArrangement() {
                           }}
                         >
                           <BrutalistCard
-                            interactive
                             onClick={() => handleSlotClick(2)}
                             onDrop={(e) => handleDrop(e, 2)}
                             onDragOver={allowDrop}
-                            className={`w-full h-full p-0 overflow-hidden shadow-none !border-0 !rounded-none hover:translate-x-0! hover:translate-y-0! active:translate-x-0! active:translate-y-0! ${selectedPhoto ? "cursor-pointer" : ""}`}
+                            className={`w-full h-full p-0 overflow-hidden shadow-none !border-0 !rounded-none ${selectedPhoto ? "cursor-pointer" : ""}`}
                           >
                             {renderSlotContent(2)}
                           </BrutalistCard>
@@ -962,7 +951,6 @@ export function PhotoArrangement() {
                           }}
                         >
                           <BrutalistCard
-                            interactive
                             onClick={() => handleSlotClick(slotDef.slotNumber)}
                             onDrop={(e) => handleDrop(e, slotDef.slotNumber)}
                             onDragOver={allowDrop}
@@ -1027,7 +1015,7 @@ export function PhotoArrangement() {
                       className={`w-full border-4 border-black rounded-xl overflow-hidden transition-all cursor-pointer ${
                         activeFilter === filter.id
                           ? "border-8 scale-95"
-                          : "hover:scale-105"
+                          : ""
                       }`}
                     >
                       {/* Preview thumbnail pakai foto pertama di gallery */}

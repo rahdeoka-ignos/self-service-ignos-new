@@ -67,64 +67,6 @@
         "layout": "8",
         "previewTemplate": "/templates/grid-delapan/preview.png",
         "slots": null
-      },
-      {
-        "id": 1782238514416,
-        "name": "tes",
-        "preview": "/templates/tes/background.png",
-        "overlay": null,
-        "layout": "custom",
-        "previewTemplate": "/templates/tes/preview.png",
-        "slots": [
-          {
-            "slotNumber": 1,
-            "x": 90,
-            "y": 325,
-            "width": 990,
-            "height": 990,
-            "rotation": 0
-          },
-          {
-            "slotNumber": 2,
-            "x": 1285,
-            "y": 325,
-            "width": 1010,
-            "height": 990,
-            "rotation": 0
-          },
-          {
-            "slotNumber": 3,
-            "x": 80,
-            "y": 1330,
-            "width": 1015,
-            "height": 1000,
-            "rotation": 0
-          },
-          {
-            "slotNumber": 4,
-            "x": 1290,
-            "y": 1345,
-            "width": 1000,
-            "height": 1000,
-            "rotation": 0
-          },
-          {
-            "slotNumber": 5,
-            "x": 90,
-            "y": 2375,
-            "width": 995,
-            "height": 980,
-            "rotation": 0
-          },
-          {
-            "slotNumber": 6,
-            "x": 1305,
-            "y": 2370,
-            "width": 985,
-            "height": 1005,
-            "rotation": 0
-          }
-        ]
       }
     ],
     "aboutU": [
