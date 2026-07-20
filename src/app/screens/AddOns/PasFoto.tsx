@@ -239,8 +239,9 @@ export function PasFotoPage() {
   useEffect(() => {
     const timeout = setTimeout(() => {
       if (slotRef.current) {
-        const rect = slotRef.current.getBoundingClientRect();
-        setSlotSize({ w: rect.width, h: rect.height });
+        const w = slotRef.current.offsetWidth;
+        const h = slotRef.current.offsetHeight;
+        setSlotSize({ w, h });
       }
     }, 100);
     return () => clearTimeout(timeout);

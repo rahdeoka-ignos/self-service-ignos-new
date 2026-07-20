@@ -282,21 +282,20 @@ export function PhotoArrangement() {
   const [uiSlotSizes, setUiSlotSizes] = useState<{
     [templateIndex: number]: { w: number; h: number };
   }>({});
-
   // Ukur slot setiap kali layout atau template aktif berubah
   useEffect(() => {
     const timeout = setTimeout(() => {
       if (slotRef.current) {
-        const rect = slotRef.current.getBoundingClientRect();
+        const w = slotRef.current.offsetWidth;
+        const h = slotRef.current.offsetHeight;
         setUiSlotSizes((prev) => ({
           ...prev,
-          [activeTemplate]: { w: rect.width, h: rect.height },
+          [activeTemplate]: { w, h },
         }));
       }
     }, 100);
     return () => clearTimeout(timeout);
   }, [activeTemplate, activeLayout, filledSlots]);
-
   const handleDragStart = (e: React.DragEvent, photoUrl: string) => {
     e.dataTransfer.setData("photoUrl", photoUrl);
   };

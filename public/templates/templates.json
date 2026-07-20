@@ -147,15 +147,6 @@
         "slots": null
       },
       {
-        "id": 11,
-        "name": "aboutU-1975",
-        "preview": "/templates/aboutU-1975/background.png",
-        "overlay": "/templates/aboutU-1975/overlay.png",
-        "layout": "aboutu-v2",
-        "previewTemplate": "/templates/aboutU-1975/preview.png",
-        "slots": null
-      },
-      {
         "id": 12,
         "name": "300days-1975",
         "preview": "/templates/300days-1975/background.png",
@@ -163,6 +154,34 @@
         "layout": "300days",
         "previewTemplate": "/templates/300days-1975/preview.png",
         "slots": null
+      },
+      {
+        "id": 1784517745270,
+        "name": "AbouU-1975",
+        "preview": "/templates/AbouU-1975/background.png",
+        "overlay": null,
+        "layout": "custom",
+        "previewTemplate": "/templates/AbouU-1975/preview.png",
+        "slots": [
+          {
+            "slotNumber": 1,
+            "x": 445,
+            "y": 735,
+            "width": 1320,
+            "height": 1235,
+            "rotation": -11,
+            "borderRadius": 0
+          },
+          {
+            "slotNumber": 2,
+            "x": 680,
+            "y": 1940,
+            "width": 1320,
+            "height": 1235,
+            "rotation": -11,
+            "borderRadius": 0
+          }
+        ]
       }
     ]
   }

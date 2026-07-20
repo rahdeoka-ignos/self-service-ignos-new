@@ -109,9 +109,10 @@ export function IdCardArrangement() {
   useLayoutEffect(() => {
     const measure = () => {
       if (slotRef.current) {
-        const rect = slotRef.current.getBoundingClientRect();
-        if (rect.width > 0 && rect.height > 0) {
-          setUiSlotSize({ w: rect.width, h: rect.height });
+        const w = slotRef.current.offsetWidth;
+        const h = slotRef.current.offsetHeight;
+        if (w > 0 && h > 0) {
+          setUiSlotSize({ w, h });
         }
       }
     };
