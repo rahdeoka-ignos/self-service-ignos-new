@@ -67,6 +67,116 @@
         "layout": "8",
         "previewTemplate": "/templates/grid-delapan/preview.png",
         "slots": null
+      },
+      {
+        "id": 1784626039623,
+        "name": "Special-DAY",
+        "preview": "/templates/Special-DAY/background.png",
+        "overlay": null,
+        "layout": "custom",
+        "previewTemplate": "/templates/Special-DAY/preview.png",
+        "slots": [
+          {
+            "slotNumber": 1,
+            "x": 135,
+            "y": 585,
+            "width": 935,
+            "height": 720,
+            "rotation": 0,
+            "borderRadius": 0
+          },
+          {
+            "slotNumber": 2,
+            "x": 135,
+            "y": 1325,
+            "width": 935,
+            "height": 720,
+            "rotation": 0,
+            "borderRadius": 0
+          },
+          {
+            "slotNumber": 3,
+            "x": 135,
+            "y": 2065,
+            "width": 935,
+            "height": 720,
+            "rotation": 0,
+            "borderRadius": 0
+          },
+          {
+            "slotNumber": 4,
+            "x": 1325,
+            "y": 844,
+            "width": 935,
+            "height": 720,
+            "rotation": 0,
+            "borderRadius": 0
+          },
+          {
+            "slotNumber": 5,
+            "x": 1325,
+            "y": 1592,
+            "width": 935,
+            "height": 720,
+            "rotation": 0,
+            "borderRadius": 0
+          },
+          {
+            "slotNumber": 6,
+            "x": 1325,
+            "y": 2340,
+            "width": 935,
+            "height": 720,
+            "rotation": 0,
+            "borderRadius": 0
+          }
+        ]
+      },
+      {
+        "id": 1784631579409,
+        "name": "DisneY",
+        "preview": "/templates/DisneY/background.png",
+        "overlay": null,
+        "layout": "custom",
+        "previewTemplate": "/templates/DisneY/preview.png",
+        "slots": [
+          {
+            "slotNumber": 1,
+            "x": 210,
+            "y": 565,
+            "width": 970,
+            "height": 870,
+            "rotation": 0,
+            "borderRadius": 0
+          },
+          {
+            "slotNumber": 2,
+            "x": 1225,
+            "y": 565,
+            "width": 970,
+            "height": 870,
+            "rotation": 0,
+            "borderRadius": 0
+          },
+          {
+            "slotNumber": 3,
+            "x": 1225,
+            "y": 1460,
+            "width": 970,
+            "height": 870,
+            "rotation": 0,
+            "borderRadius": 0
+          },
+          {
+            "slotNumber": 4,
+            "x": 210,
+            "y": 1460,
+            "width": 970,
+            "height": 870,
+            "rotation": 0,
+            "borderRadius": 0
+          }
+        ]
       }
     ],
     "aboutU": [
@@ -121,6 +231,25 @@
             "width": 1320,
             "height": 1235,
             "rotation": -11,
+            "borderRadius": 0
+          }
+        ]
+      },
+      {
+        "id": 1784627348513,
+        "name": "Birthday-1945",
+        "preview": "/templates/Birthday-1945/background.png",
+        "overlay": null,
+        "layout": "custom",
+        "previewTemplate": "/templates/Birthday-1945/preview.png",
+        "slots": [
+          {
+            "slotNumber": 1,
+            "x": 280,
+            "y": 1420,
+            "width": 1820,
+            "height": 1810,
+            "rotation": 0,
             "borderRadius": 0
           }
         ]
