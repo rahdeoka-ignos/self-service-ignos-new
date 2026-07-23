@@ -194,25 +194,36 @@ export function PasFotoPage() {
   const navigate = useNavigate();
   const [printQty, setPrintQty] = useState<number | null>(null);
   const [tempQty, setTempQty] = useState<number>(1);
-  const [selectedRatios, setSelectedRatios] = useState<Record<number, string>>({});
+  const [selectedRatios, setSelectedRatios] = useState<Record<number, string>>(
+    {},
+  );
   const [ratiosSelected, setRatiosSelected] = useState<boolean>(false);
   const [ratioSelectIndex, setRatioSelectIndex] = useState<number>(0);
   const [photoGallery, setPhotoGallery] = useState<
     { thumb: string; full: string }[]
   >([]);
-  const [filledSlots, setFilledSlots] = useState<Record<number, string | null>>({});
-  const [transforms, setTransforms] = useState<Record<number, { scale: number; x: number; y: number }>>({});
+  const [filledSlots, setFilledSlots] = useState<Record<number, string | null>>(
+    {},
+  );
+  const [transforms, setTransforms] = useState<
+    Record<number, { scale: number; x: number; y: number }>
+  >({});
   const [activeArrangeIndex, setActiveArrangeIndex] = useState<number>(0);
-  const [slotSizes, setSlotSizes] = useState<Record<number, { w: number; h: number }>>({});
+  const [slotSizes, setSlotSizes] = useState<
+    Record<number, { w: number; h: number }>
+  >({});
   const [printing, setPrinting] = useState(false);
   const [successOpen, setSuccessOpen] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
   const slotRef = useRef<HTMLDivElement>(null);
 
-  const ratio = RATIO_OPTIONS.find((r) => r.id === selectedRatios[activeArrangeIndex]);
+  const ratio = RATIO_OPTIONS.find(
+    (r) => r.id === selectedRatios[activeArrangeIndex],
+  );
   const slotSize = slotSizes[activeArrangeIndex] || null;
-  const canPrint = printQty !== null &&
+  const canPrint =
+    printQty !== null &&
     Array.from({ length: printQty }, (_, i) => i).every((i) => filledSlots[i]);
 
   useEffect(() => {
@@ -263,7 +274,10 @@ export function PasFotoPage() {
       img.onerror = reject;
     });
 
-  const generateCanvas = async (preview = false, index = 0): Promise<string | void> => {
+  const generateCanvas = async (
+    preview = false,
+    index = 0,
+  ): Promise<string | void> => {
     const fSlot = filledSlots[index];
     const rId = selectedRatios[index];
     const ratioOpt = RATIO_OPTIONS.find((r) => r.id === rId);
@@ -370,7 +384,7 @@ export function PasFotoPage() {
     return (
       <div className="min-h-screen bg-gray-100 flex flex-col justify-between">
         <Navigation currentStep={1} totalSteps={3} />
-        
+
         <div className="flex-1 flex items-center justify-center pt-32 pb-8 px-8">
           <div className="max-w-2xl w-full bg-white border-4 border-black rounded-3xl p-16 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
             <div className="text-center">
@@ -378,7 +392,9 @@ export function PasFotoPage() {
                 <div className="w-24 h-24 bg-black rounded-full flex items-center justify-center mx-auto mb-6 border-4 border-black">
                   <Printer size={48} className="text-white" strokeWidth={3} />
                 </div>
-                <h1 className="text-5xl font-bold mb-4">Jumlah Cetak Pas Foto</h1>
+                <h1 className="text-5xl font-bold mb-4">
+                  Jumlah Cetak Pas Foto
+                </h1>
                 <p className="text-2xl text-gray-600">
                   Tentukan jumlah lembar pas foto yang ingin dicetak
                 </p>
@@ -417,12 +433,15 @@ export function PasFotoPage() {
               </div>
 
               <div className="mt-12 flex flex-col gap-4">
-                <BrutalistButton onClick={() => {
-                  setPrintQty(tempQty);
-                  setSelectedRatios({});
-                  setRatioSelectIndex(0);
-                  setRatiosSelected(false);
-                }} className="w-full">
+                <BrutalistButton
+                  onClick={() => {
+                    setPrintQty(tempQty);
+                    setSelectedRatios({});
+                    setRatioSelectIndex(0);
+                    setRatiosSelected(false);
+                  }}
+                  className="w-full"
+                >
                   Lanjutkan ke Pilih Ukuran →
                 </BrutalistButton>
                 <button
@@ -441,13 +460,16 @@ export function PasFotoPage() {
 
   // ── Step 2: Pilih Rasio ────────────────────────────────────
   if (!ratiosSelected) {
-    const allRatiosSelected = printQty !== null &&
-      Array.from({ length: printQty }, (_, i) => i).every((i) => selectedRatios[i]);
+    const allRatiosSelected =
+      printQty !== null &&
+      Array.from({ length: printQty }, (_, i) => i).every(
+        (i) => selectedRatios[i],
+      );
 
     return (
       <div className="h-[100dvh] overflow-hidden bg-gray-100 flex flex-col">
         <Navigation currentStep={2} totalSteps={3} />
-        
+
         <div className="pt-32 pb-8 px-8 flex-1 overflow-hidden">
           <div className="max-w-[1600px] mx-auto h-full flex flex-col">
             <div className="text-center mb-8">
@@ -462,7 +484,8 @@ export function PasFotoPage() {
               <div className="col-span-8 overflow-y-auto pr-2 pb-10">
                 <div className="grid grid-cols-3 gap-6">
                   {RATIO_OPTIONS.map((opt) => {
-                    const isCurrentSelected = selectedRatios[ratioSelectIndex] === opt.id;
+                    const isCurrentSelected =
+                      selectedRatios[ratioSelectIndex] === opt.id;
                     return (
                       <button
                         key={opt.id}
@@ -496,9 +519,13 @@ export function PasFotoPage() {
                             className="bg-gray-900 border-4 border-black group-hover:bg-black transition-colors"
                             style={{
                               width:
-                                opt.aspect >= 1 ? 80 : Math.round(80 * opt.aspect),
+                                opt.aspect >= 1
+                                  ? 80
+                                  : Math.round(80 * opt.aspect),
                               height:
-                                opt.aspect >= 1 ? Math.round(80 / opt.aspect) : 80,
+                                opt.aspect >= 1
+                                  ? Math.round(80 / opt.aspect)
+                                  : 80,
                               maxHeight: 100,
                               maxWidth: 100,
                             }}
@@ -536,14 +563,18 @@ export function PasFotoPage() {
 
               {/* RIGHT COLUMN: Selection Summary */}
               <div className="col-span-4 bg-white border-4 border-black rounded-2xl p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] overflow-y-auto flex flex-col h-[70vh]">
-                <h2 className="text-2xl font-bold mb-6 border-b-4 border-black pb-3">Daftar Pilihan Cetak</h2>
-                
+                <h2 className="text-2xl font-bold mb-6 border-b-4 border-black pb-3">
+                  Daftar Pilihan Cetak
+                </h2>
+
                 <div className="space-y-4 flex-1">
                   {Array.from({ length: printQty || 1 }, (_, idx) => {
                     const selectedRatioId = selectedRatios[idx];
-                    const ratioOpt = RATIO_OPTIONS.find((r) => r.id === selectedRatioId);
+                    const ratioOpt = RATIO_OPTIONS.find(
+                      (r) => r.id === selectedRatioId,
+                    );
                     const isActive = ratioSelectIndex === idx;
-                    
+
                     return (
                       <div
                         key={idx}
@@ -554,14 +585,20 @@ export function PasFotoPage() {
                           ${isActive ? "bg-black text-white" : "bg-white text-black hover:bg-gray-50"}
                           ${selectedRatioId ? "shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]" : "border-dashed border-gray-300 shadow-none opacity-50"}`}
                       >
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg border-2 border-black
-                          ${isActive ? "bg-white text-black" : "bg-black text-white"}`}>
+                        <div
+                          className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg border-2 border-black
+                          ${isActive ? "bg-white text-black" : "bg-black text-white"}`}
+                        >
                           {idx + 1}
                         </div>
                         <div className="flex-1">
                           <p className="font-bold text-lg">Cetak {idx + 1}</p>
-                          <p className={`text-sm ${isActive ? "text-gray-300" : "text-gray-500"}`}>
-                            {ratioOpt ? `${ratioOpt.label} — ${ratioOpt.desc}` : "Belum dipilih"}
+                          <p
+                            className={`text-sm ${isActive ? "text-gray-300" : "text-gray-500"}`}
+                          >
+                            {ratioOpt
+                              ? `${ratioOpt.label} — ${ratioOpt.desc}`
+                              : "Belum dipilih"}
                           </p>
                         </div>
                         {selectedRatioId && (
@@ -622,9 +659,10 @@ export function PasFotoPage() {
                     key={idx}
                     onClick={() => setActiveArrangeIndex(idx)}
                     className={`text-lg px-6 py-3 font-bold border-4 border-black rounded-xl transition-all cursor-pointer shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none relative
-                      ${isActive
-                        ? "bg-black text-white translate-x-0.5 translate-y-0.5 shadow-none"
-                        : "bg-white text-black hover:bg-gray-100"
+                      ${
+                        isActive
+                          ? "bg-black text-white translate-x-0.5 translate-y-0.5 shadow-none"
+                          : "bg-white text-black hover:bg-gray-100"
                       }`}
                   >
                     {hasPhoto && (
@@ -639,19 +677,23 @@ export function PasFotoPage() {
             </div>
           )}
 
-          <div className="grid grid-cols-12 gap-8 flex-1 overflow-hidden mb-5">
+          <div className="grid grid-cols-12 gap-8 flex-1 overflow-hidden mb-5 max-h-[80dvh]">
             {/* LEFT — Gallery */}
             <div className="col-span-8 h-full">
-              <div className="bg-white border-4 border-black rounded-2xl p-6 h-full shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+              <div className="bg-white border-4 border-black rounded-2xl p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
                 <h2 className="text-2xl font-bold mb-4">Pilih Foto</h2>
-                <div className="grid grid-cols-5 gap-3 max-h-[850px] overflow-y-auto pr-2">
+                <div className="grid grid-cols-5 gap-3 max-h-[900px] overflow-y-auto pr-2">
                   {photoGallery.map((photo, i) => {
-                    const isSelected = filledSlots[activeArrangeIndex] === photo.full;
+                    const isSelected =
+                      filledSlots[activeArrangeIndex] === photo.full;
                     return (
                       <div
                         key={i}
                         onClick={() => {
-                          setFilledSlots((prev) => ({ ...prev, [activeArrangeIndex]: photo.full }));
+                          setFilledSlots((prev) => ({
+                            ...prev,
+                            [activeArrangeIndex]: photo.full,
+                          }));
                           setTransforms((prev) => ({
                             ...prev,
                             [activeArrangeIndex]: { scale: 1, x: 0, y: 0 },
@@ -721,9 +763,18 @@ export function PasFotoPage() {
                           src={filledSlots[activeArrangeIndex]!}
                           slotW={slotSize.w}
                           slotH={slotSize.h}
-                          transform={transforms[activeArrangeIndex] || { scale: 1, x: 0, y: 0 }}
+                          transform={
+                            transforms[activeArrangeIndex] || {
+                              scale: 1,
+                              x: 0,
+                              y: 0,
+                            }
+                          }
                           onTransformChange={(newT) =>
-                            setTransforms((prev) => ({ ...prev, [activeArrangeIndex]: newT }))
+                            setTransforms((prev) => ({
+                              ...prev,
+                              [activeArrangeIndex]: newT,
+                            }))
                           }
                         />
                         {/* Tombol hapus */}
@@ -731,7 +782,10 @@ export function PasFotoPage() {
                           className="absolute top-2 right-2 z-50 w-10 h-10 bg-red-500 hover:bg-red-600 text-white rounded-full border-2 border-white shadow-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
                           onClick={(e) => {
                             e.stopPropagation();
-                            setFilledSlots((prev) => ({ ...prev, [activeArrangeIndex]: null }));
+                            setFilledSlots((prev) => ({
+                              ...prev,
+                              [activeArrangeIndex]: null,
+                            }));
                             setTransforms((prev) => ({
                               ...prev,
                               [activeArrangeIndex]: { scale: 1, x: 0, y: 0 },
@@ -794,17 +848,13 @@ export function PasFotoPage() {
                     <p className="text-sm font-bold text-gray-500 mb-1">
                       Ukuran Output
                     </p>
-                    <p className="text-xl font-black">
-                      {ratio?.label}
-                    </p>
+                    <p className="text-xl font-black">{ratio?.label}</p>
                   </div>
                   <div>
                     <p className="text-sm font-bold text-gray-500 mb-1">
                       Jumlah Cetak
                     </p>
-                    <p className="text-xl font-black">
-                      {printQty} Lembar
-                    </p>
+                    <p className="text-xl font-black">{printQty} Lembar</p>
                   </div>
                 </div>
                 <p className="text-xs text-gray-400 mt-2 font-mono">
