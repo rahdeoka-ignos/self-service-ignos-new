@@ -97,7 +97,8 @@ app.get("/api/photos", async (req, res) => {
 
     for (const file of files) {
       if (file.match(/\.(jpg|jpeg|png|webp)$/i)) {
-        await generateThumbnail(file);
+        // Run in the background without blocking the API response
+        generateThumbnail(file);
 
         images.push({
           thumb: `http://localhost:5000/thumbs/${file}`,
@@ -242,6 +243,28 @@ app.post(
 
 // ─────────────────────────────────────────────────────────────
 
+// Watch PHOTOS_DIR for new files and generate thumbnails immediately
+function startFileWatcher() {
+  console.log(`Watching for new photos in ${PHOTOS_DIR}...`);
+  try {
+    fs.watch(PHOTOS_DIR, async (eventType, filename) => {
+      if (eventType === "rename" && filename) {
+        const filePath = path.join(PHOTOS_DIR, filename);
+        // Wait a bit to ensure the file is fully written and unlocked
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        
+        if (fs.existsSync(filePath) && filename.match(/\.(jpg|jpeg|png|webp)$/i)) {
+          console.log(`New photo detected: ${filename}. Generating thumbnail...`);
+          await generateThumbnail(filename);
+        }
+      }
+    });
+  } catch (err) {
+    console.error("Failed to start file watcher:", err);
+  }
+}
+
 app.listen(5000, () => {
   console.log("Photo API running on http://localhost:5000");
+  startFileWatcher();
 });

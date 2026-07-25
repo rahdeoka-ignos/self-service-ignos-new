@@ -51,10 +51,12 @@ export function preloadPhoto(photo: Photo, totalCount: number): Promise<void> {
   }
 
   if (loadingThumbnails.has(url)) {
-    // If it's already loading, resolve once it's done
+    // If it's already loading, resolve once it's done or on timeout
     return new Promise((resolve) => {
+      let elapsed = 0;
       const checkInterval = setInterval(() => {
-        if (loadedThumbnails.has(url) || failedThumbnails.has(url)) {
+        elapsed += 100;
+        if (loadedThumbnails.has(url) || failedThumbnails.has(url) || elapsed > 10000) {
           clearInterval(checkInterval);
           resolve();
         }
@@ -66,17 +68,27 @@ export function preloadPhoto(photo: Photo, totalCount: number): Promise<void> {
 
   return new Promise((resolve) => {
     const img = new Image();
-    img.src = url;
+    
+    // Safety timeout of 10 seconds
+    const timeoutId = setTimeout(() => {
+      failedThumbnails.add(url);
+      notifyListeners(totalCount);
+      resolve();
+    }, 10000);
+
     img.onload = () => {
+      clearTimeout(timeoutId);
       loadedThumbnails.add(url);
       notifyListeners(totalCount);
       resolve();
     };
     img.onerror = () => {
+      clearTimeout(timeoutId);
       failedThumbnails.add(url);
       notifyListeners(totalCount);
       resolve();
     };
+    img.src = url;
   });
 }
 
@@ -86,8 +98,13 @@ export async function preloadGallery(limit = 200) {
   if (isPreloading) return;
   isPreloading = true;
 
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 5000);
+
   try {
-    const res = await fetch("http://localhost:5000/api/photos");
+    const res = await fetch("http://localhost:5000/api/photos", { signal: controller.signal });
+    clearTimeout(timeoutId);
+    
     const data = await res.json();
     const photos: Photo[] = data.reverse().slice(0, limit);
     sessionStorage.setItem("gallery", JSON.stringify(photos));
@@ -101,6 +118,7 @@ export async function preloadGallery(limit = 200) {
       await Promise.all(batch.map((p) => preloadPhoto(p, photos.length)));
     }
   } catch (err) {
+    clearTimeout(timeoutId);
     console.error("Failed to preload gallery:", err);
   } finally {
     isPreloading = false;

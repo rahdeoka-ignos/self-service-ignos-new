@@ -26,6 +26,10 @@ export function TemplateSelection() {
   useEffect(() => {
     timer.start();
     preloadGallery(200);
+    const interval = setInterval(() => {
+      preloadGallery(200);
+    }, 5000);
+    return () => clearInterval(interval);
   }, []);
 
   // SESUDAH

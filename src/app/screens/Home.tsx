@@ -9,6 +9,10 @@ export function Home() {
   const navigate = useNavigate();
   useEffect(() => {
     preloadGallery(200);
+    const interval = setInterval(() => {
+      preloadGallery(200);
+    }, 5000);
+    return () => clearInterval(interval);
   }, []);
 
   const services = [
