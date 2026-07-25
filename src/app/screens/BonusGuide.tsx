@@ -11,7 +11,7 @@ export function BonusGuide() {
   const navigate = useNavigate();
   const location = useLocation();
   const peopleCount = location.state?.peopleCount || 1;
-  const reviewLink = "https://maps.app.goo.gl/UoFiceME5foTegVd9";
+  const reviewLink = "google.com/maps/place/IGNOS+STUDIO+TABANAN+SELF+PHOTO/@-8.5203466,115.134402,16z/data=!4m6!3m5!1s0x2dd23b003f3ba179:0x539b6b3ef016aa4!8m2!3d-8.5175137!4d115.1404122!16s%2Fg%2F11nhf83py1?authuser=0&entry=tts&g_ep=EgoyMDI2MDcyMi4wIPu8ASoASAFQAw%3D%3D&skid=647dc14a-058a-4444-a39d-616a6db554aa";
   const coupleMode = location.state?.coupleMode ?? false;
   const { t } = useTranslation();
   const [showTimerModal, setShowTimerModal] = useState(false);
