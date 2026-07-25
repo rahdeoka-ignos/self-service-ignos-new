@@ -178,7 +178,20 @@ export function PhotoArrangement() {
       if (cached) {
         setPhotoGallery((prev) => {
           const parsed = JSON.parse(cached);
-          if (JSON.stringify(prev) !== JSON.stringify(parsed)) {
+          
+          // Only update if parsed and prev have different lengths or if non-base64 URLs changed
+          const isDifferent =
+            prev.length !== parsed.length ||
+            parsed.some((photo: any, idx: number) => {
+              const prevPhoto = prev[idx];
+              if (prevPhoto && prevPhoto.full.startsWith("data:")) {
+                // If it was flipped locally, preserve it
+                return false;
+              }
+              return !prevPhoto || prevPhoto.full !== photo.full;
+            });
+
+          if (isDifferent) {
             return parsed;
           }
           return prev;
@@ -1198,10 +1211,14 @@ export function PhotoArrangement() {
                           full: finalUrl,
                         };
                       }
-                      sessionStorage.setItem(
-                        "gallery",
-                        JSON.stringify(updated),
-                      );
+                      try {
+                        sessionStorage.setItem(
+                          "gallery",
+                          JSON.stringify(updated),
+                        );
+                      } catch (err) {
+                        console.warn("Storage quota exceeded, skipping gallery cache update:", err);
+                      }
                       return updated;
                     });
                   }

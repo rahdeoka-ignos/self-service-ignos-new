@@ -10,6 +10,7 @@ export function ImageWithFallback(
   const [isLoading, setIsLoading] = useState(true);
   const [retryCount, setRetryCount] = useState(0);
   const timeoutRef = useRef<number | null>(null);
+  const imgRef = useRef<HTMLImageElement | null>(null);
 
   const maxRetries = 10; // Try for up to 20 seconds (10 * 2000ms)
 
@@ -18,6 +19,11 @@ export function ImageWithFallback(
     setIsLoading(true);
     setDidError(false);
     setRetryCount(0);
+
+    // Initial check in case it completed before effect ran
+    if (imgRef.current && imgRef.current.complete && imgRef.current.naturalWidth > 0) {
+      setIsLoading(false);
+    }
 
     return () => {
       if (timeoutRef.current) {
@@ -48,6 +54,16 @@ export function ImageWithFallback(
     setDidError(false);
     if (props.onLoad) {
       props.onLoad(e);
+    }
+  };
+
+  const refCallback = (node: HTMLImageElement | null) => {
+    imgRef.current = node;
+    if (node && node.complete && node.naturalWidth > 0 && isLoading) {
+      // Use setTimeout to avoid React setting state warning during render
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 0);
     }
   };
 
@@ -82,6 +98,7 @@ export function ImageWithFallback(
         </div>
       )}
       <img
+        ref={refCallback}
         src={finalSrc}
         alt={alt}
         className={`${className ?? ""} transition-opacity duration-300 ${

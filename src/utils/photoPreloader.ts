@@ -107,7 +107,11 @@ export async function preloadGallery(limit = 200) {
     
     const data = await res.json();
     const photos: Photo[] = data.reverse().slice(0, limit);
-    sessionStorage.setItem("gallery", JSON.stringify(photos));
+    try {
+      sessionStorage.setItem("gallery", JSON.stringify(photos));
+    } catch (err) {
+      console.warn("Storage quota exceeded, skipping preloaded gallery cache update:", err);
+    }
 
     notifyListeners(photos.length);
 
