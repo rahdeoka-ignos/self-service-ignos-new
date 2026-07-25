@@ -11,7 +11,7 @@ export function BonusGuide() {
   const navigate = useNavigate();
   const location = useLocation();
   const peopleCount = location.state?.peopleCount || 1;
-  const reviewLink = "https://maps.app.goo.gl/UoFiceME5foTegVd9";
+  const reviewLink = "https://maps.app.goo.gl/Kk1nUNUauEu16LkS8";
   const coupleMode = location.state?.coupleMode ?? false;
   const { t } = useTranslation();
   const [showTimerModal, setShowTimerModal] = useState(false);
