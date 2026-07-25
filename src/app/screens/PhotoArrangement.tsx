@@ -18,16 +18,16 @@ type Template = {
   background: string;
   overlay: string;
   layout:
-    | "1"
-    | "2"
-    | "4"
-    | "6"
-    | "8"
-    | "newspaper"
-    | "wannabeyours"
-    | "300days"
-    | "aboutu-v2"
-    | "custom";
+  | "1"
+  | "2"
+  | "4"
+  | "6"
+  | "8"
+  | "newspaper"
+  | "wannabeyours"
+  | "300days"
+  | "aboutu-v2"
+  | "custom";
   customSlots?: CustomSlotDef[] | null;
 };
 
@@ -77,6 +77,34 @@ const L6_GAP_Y = 149.4; // gap antar baris
 // Posisi kolom 2 (mirror dari kanan)
 // L6_X1 = 1334.1 → slot 2 mulai di x=1334.1 dalam print canvas
 
+const createFlippedImage = (
+  src: string,
+  flipX: boolean,
+  flipY: boolean,
+): Promise<string> => {
+  return new Promise((resolve) => {
+    if (!flipX && !flipY) return resolve(src);
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      const ctx = canvas.getContext("2d");
+      if (ctx) {
+        ctx.translate(flipX ? canvas.width : 0, flipY ? canvas.height : 0);
+        ctx.scale(flipX ? -1 : 1, flipY ? -1 : 1);
+        ctx.drawImage(img, 0, 0);
+        resolve(canvas.toDataURL("image/jpeg", 0.95));
+      } else {
+        resolve(src);
+      }
+    };
+    img.onerror = () => resolve(src);
+    img.src = src;
+  });
+};
+
 export function PhotoArrangement() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -115,6 +143,8 @@ export function PhotoArrangement() {
   const [previewPhotoUrl, setPreviewPhotoUrl] = useState<string | null>(null);
   const [previewPhotoOpen, setPreviewPhotoOpen] = useState(false);
   const [previewPhotoIndex, setPreviewPhotoIndex] = useState<number>(0);
+  const [isFlippedX, setIsFlippedX] = useState(false);
+  const [isFlippedY, setIsFlippedY] = useState(false);
   const [countdown, setCountdown] = useState(5);
   const [activeFilters, setActiveFilters] = useState<{
     [templateIndex: number]: string;
@@ -137,19 +167,30 @@ export function PhotoArrangement() {
 
   useEffect(() => {
     const cached = sessionStorage.getItem("gallery");
-    console.log(peopleCount);
-
     if (cached) {
       setPhotoGallery(JSON.parse(cached));
-    } else {
+    }
+
+    const fetchPhotos = () => {
       fetch("http://localhost:5000/api/photos")
         .then((res) => res.json())
         .then((data) => {
           const photos = data.reverse().slice(0, 200);
           sessionStorage.setItem("gallery", JSON.stringify(photos));
-          setPhotoGallery(photos);
-        });
-    }
+          setPhotoGallery((prev) => {
+            if (JSON.stringify(prev) !== JSON.stringify(photos)) {
+              return photos;
+            }
+            return prev;
+          });
+        })
+        .catch((err) => console.error("Fetch photos failed:", err));
+    };
+
+    fetchPhotos();
+    const interval = setInterval(fetchPhotos, 3000);
+
+    return () => clearInterval(interval);
   }, []);
 
   const activeLayout = templates[activeTemplate]?.layout || "4";
@@ -271,21 +312,20 @@ export function PhotoArrangement() {
   const [uiSlotSizes, setUiSlotSizes] = useState<{
     [templateIndex: number]: { w: number; h: number };
   }>({});
-
   // Ukur slot setiap kali layout atau template aktif berubah
   useEffect(() => {
     const timeout = setTimeout(() => {
       if (slotRef.current) {
-        const rect = slotRef.current.getBoundingClientRect();
+        const w = slotRef.current.offsetWidth;
+        const h = slotRef.current.offsetHeight;
         setUiSlotSizes((prev) => ({
           ...prev,
-          [activeTemplate]: { w: rect.width, h: rect.height },
+          [activeTemplate]: { w, h },
         }));
       }
     }, 100);
     return () => clearTimeout(timeout);
   }, [activeTemplate, activeLayout, filledSlots]);
-
   const handleDragStart = (e: React.DragEvent, photoUrl: string) => {
     e.dataTransfer.setData("photoUrl", photoUrl);
   };
@@ -517,11 +557,10 @@ export function PhotoArrangement() {
                   {photoGallery.map((photo, index) => (
                     <BrutalistCard
                       key={index}
-                      interactive
                       draggable
                       onDragStart={(e) => handleDragStart(e, photo.full)}
                       onClick={() => handlePhotoClick(photo)}
-                      className="p-0 overflow-hidden cursor-pointer group"
+                      className="relative p-0 overflow-hidden cursor-pointer group"
                     >
                       <ImageWithFallback
                         src={photo.thumb}
@@ -537,6 +576,8 @@ export function PhotoArrangement() {
                           e.stopPropagation();
                           setPreviewPhotoIndex(index);
                           setPreviewPhotoUrl(photo.full);
+                          setIsFlippedX(false);
+                          setIsFlippedY(false);
                           setPreviewPhotoOpen(true);
                         }}
                       >
@@ -564,15 +605,14 @@ export function PhotoArrangement() {
                         key={index}
                         onClick={() => setActiveTemplate(index)}
                         className={`text-lg px-4 py-2 whitespace-nowrap border-4 border-black transition-all cursor-pointer
-        ${
-          isActive
-            ? isBonus
-              ? "bg-yellow-300 text-black border-8 border-yellow-400"
-              : "bg-black text-white border-8"
-            : isBonus
-              ? "bg-yellow-100 !text-black border-yellow-400 hover:bg-yellow-300"
-              : "bg-transparent !text-black hover:bg-black hover:!text-white"
-        }`}
+        ${isActive
+                            ? isBonus
+                              ? "bg-yellow-300 text-black border-8 border-yellow-400"
+                              : "bg-black text-white border-8"
+                            : isBonus
+                              ? "bg-yellow-100 !text-black border-yellow-400 hover:bg-yellow-300"
+                              : "bg-transparent !text-black hover:bg-black hover:!text-white"
+                          }`}
                       >
                         {isBonus
                           ? `🎁 Bonus ${bonusIndex}`
@@ -611,13 +651,11 @@ export function PhotoArrangement() {
                           ref={slotRef}
                         >
                           <BrutalistCard
-                            interactive
                             onClick={() => handleSlotClick(1)}
                             onDrop={(e) => handleDrop(e, 1)}
                             onDragOver={allowDrop}
-                            className={`w-full h-full p-0 overflow-hidden shadow-none !border-0 ${
-                              selectedPhoto ? "cursor-pointer" : ""
-                            }`}
+                            className={`w-full h-full p-0 overflow-hidden shadow-none !border-0 ${selectedPhoto ? "cursor-pointer" : ""
+                              }`}
                           >
                             {renderSlotContent(1)}
                           </BrutalistCard>
@@ -651,13 +689,11 @@ export function PhotoArrangement() {
                                 style={{ aspectRatio: "484/652" }}
                               >
                                 <BrutalistCard
-                                  interactive
                                   onClick={() => handleSlotClick(slotNum)}
                                   onDrop={(e) => handleDrop(e, slotNum)}
                                   onDragOver={allowDrop}
-                                  className={`w-full h-full p-0 overflow-hidden shadow-none !border-0 ${
-                                    selectedPhoto ? "cursor-pointer" : ""
-                                  }`}
+                                  className={`w-full h-full p-0 overflow-hidden shadow-none !border-0 ${selectedPhoto ? "cursor-pointer" : ""
+                                    }`}
                                 >
                                   {renderSlotContent(slotNum)}
                                 </BrutalistCard>
@@ -693,13 +729,11 @@ export function PhotoArrangement() {
                               style={{ aspectRatio: "994/652" }}
                             >
                               <BrutalistCard
-                                interactive
                                 onClick={() => handleSlotClick(slotNum)}
                                 onDrop={(e) => handleDrop(e, slotNum)}
                                 onDragOver={allowDrop}
-                                className={`w-full h-full p-0 overflow-hidden shadow-none !border-0 ${
-                                  selectedPhoto ? "cursor-pointer" : ""
-                                }`}
+                                className={`w-full h-full p-0 overflow-hidden shadow-none !border-0 ${selectedPhoto ? "cursor-pointer" : ""
+                                  }`}
                               >
                                 {renderSlotContent(slotNum)}
                               </BrutalistCard>
@@ -739,13 +773,11 @@ export function PhotoArrangement() {
                                 }}
                               >
                                 <BrutalistCard
-                                  interactive
                                   onClick={() => handleSlotClick(slotNum)}
                                   onDrop={(e) => handleDrop(e, slotNum)}
                                   onDragOver={allowDrop}
-                                  className={`w-full h-full p-0 overflow-hidden shadow-none !border-0 !border-transparent !rounded-none ${
-                                    selectedPhoto ? "cursor-pointer" : ""
-                                  }`}
+                                  className={`w-full h-full p-0 overflow-hidden shadow-none !border-0 !border-transparent !rounded-none ${selectedPhoto ? "cursor-pointer" : ""
+                                    }`}
                                 >
                                   {renderSlotContent(slotNum)}
                                 </BrutalistCard>
@@ -786,13 +818,11 @@ export function PhotoArrangement() {
                                 }}
                               >
                                 <BrutalistCard
-                                  interactive
                                   onClick={() => handleSlotClick(slotNum)}
                                   onDrop={(e) => handleDrop(e, slotNum)}
                                   onDragOver={allowDrop}
-                                  className={`w-full h-full p-0 overflow-hidden shadow-none !border-0 !border-transparent !rounded-none transition-all! hover:translate-x-0! hover:translate-y-0! active:translate-x-0! active:translate-y-0! ${
-                                    selectedPhoto ? "cursor-pointer" : ""
-                                  }`}
+                                  className={`w-full h-full p-0 overflow-hidden shadow-none !border-0 !border-transparent !rounded-none ${selectedPhoto ? "cursor-pointer" : ""
+                                    }`}
                                 >
                                   {renderSlotContent(slotNum)}
                                 </BrutalistCard>
@@ -816,13 +846,11 @@ export function PhotoArrangement() {
                         }}
                       >
                         <BrutalistCard
-                          interactive
                           onClick={() => handleSlotClick(1)}
                           onDrop={(e) => handleDrop(e, 1)}
                           onDragOver={allowDrop}
-                          className={`w-full h-full p-0 overflow-hidden shadow-none !border-0 !rounded-none ${
-                            selectedPhoto ? "cursor-pointer" : ""
-                          }`}
+                          className={`w-full h-full p-0 overflow-hidden shadow-none !border-0 !rounded-none ${selectedPhoto ? "cursor-pointer" : ""
+                            }`}
                         >
                           {renderSlotContent(1)}
                         </BrutalistCard>
@@ -841,13 +869,11 @@ export function PhotoArrangement() {
                         }}
                       >
                         <BrutalistCard
-                          interactive
                           onClick={() => handleSlotClick(1)}
                           onDrop={(e) => handleDrop(e, 1)}
                           onDragOver={allowDrop}
-                          className={`w-full h-full p-0 overflow-hidden shadow-none !border-0 !rounded-none ${
-                            selectedPhoto ? "cursor-pointer" : ""
-                          }`}
+                          className={`w-full h-full p-0 overflow-hidden shadow-none !border-0 !rounded-none ${selectedPhoto ? "cursor-pointer" : ""
+                            }`}
                         >
                           {renderSlotContent(1)}
                         </BrutalistCard>
@@ -866,13 +892,11 @@ export function PhotoArrangement() {
                         }}
                       >
                         <BrutalistCard
-                          interactive
                           onClick={() => handleSlotClick(1)}
                           onDrop={(e) => handleDrop(e, 1)}
                           onDragOver={allowDrop}
-                          className={`w-full h-full p-0 overflow-hidden shadow-none !border-0 !rounded-none ${
-                            selectedPhoto ? "cursor-pointer" : ""
-                          }`}
+                          className={`w-full h-full p-0 overflow-hidden shadow-none !border-0 !rounded-none ${selectedPhoto ? "cursor-pointer" : ""
+                            }`}
                         >
                           {renderSlotContent(1)}
                         </BrutalistCard>
@@ -896,11 +920,10 @@ export function PhotoArrangement() {
                           }}
                         >
                           <BrutalistCard
-                            interactive
                             onClick={() => handleSlotClick(1)}
                             onDrop={(e) => handleDrop(e, 1)}
                             onDragOver={allowDrop}
-                            className={`w-full h-full p-0 overflow-hidden shadow-none !border-0 !rounded-none hover:translate-x-0! hover:translate-y-0! active:translate-x-0! active:translate-y-0! ${selectedPhoto ? "cursor-pointer" : ""}`}
+                            className={`w-full h-full p-0 overflow-hidden shadow-none !border-0 !rounded-none ${selectedPhoto ? "cursor-pointer" : ""}`}
                           >
                             {renderSlotContent(1)}
                           </BrutalistCard>
@@ -920,11 +943,10 @@ export function PhotoArrangement() {
                           }}
                         >
                           <BrutalistCard
-                            interactive
                             onClick={() => handleSlotClick(2)}
                             onDrop={(e) => handleDrop(e, 2)}
                             onDragOver={allowDrop}
-                            className={`w-full h-full p-0 overflow-hidden shadow-none !border-0 !rounded-none hover:translate-x-0! hover:translate-y-0! active:translate-x-0! active:translate-y-0! ${selectedPhoto ? "cursor-pointer" : ""}`}
+                            className={`w-full h-full p-0 overflow-hidden shadow-none !border-0 !rounded-none ${selectedPhoto ? "cursor-pointer" : ""}`}
                           >
                             {renderSlotContent(2)}
                           </BrutalistCard>
@@ -952,7 +974,6 @@ export function PhotoArrangement() {
                           }}
                         >
                           <BrutalistCard
-                            interactive
                             onClick={() => handleSlotClick(slotDef.slotNumber)}
                             onDrop={(e) => handleDrop(e, slotDef.slotNumber)}
                             onDragOver={allowDrop}
@@ -1014,11 +1035,10 @@ export function PhotoArrangement() {
                     <button
                       key={filter.id}
                       onClick={() => setActiveFilter(filter.id)}
-                      className={`w-full border-4 border-black rounded-xl overflow-hidden transition-all cursor-pointer ${
-                        activeFilter === filter.id
+                      className={`w-full border-4 border-black rounded-xl overflow-hidden transition-all cursor-pointer ${activeFilter === filter.id
                           ? "border-8 scale-95"
-                          : "hover:scale-105"
-                      }`}
+                          : ""
+                        }`}
                     >
                       {/* Preview thumbnail pakai foto pertama di gallery */}
                       <div className="w-full aspect-square overflow-hidden">
@@ -1050,7 +1070,11 @@ export function PhotoArrangement() {
       {previewPhotoOpen && previewPhotoUrl && (
         <div
           className="fixed inset-0 bg-black/80 flex items-center justify-center z-50"
-          onClick={() => setPreviewPhotoOpen(false)}
+          onClick={() => {
+            setPreviewPhotoOpen(false);
+            setIsFlippedX(false);
+            setIsFlippedY(false);
+          }}
         >
           <div
             className="bg-white p-6 rounded-xl border-4 border-black max-w-3xl w-full mx-4"
@@ -1060,36 +1084,64 @@ export function PhotoArrangement() {
               Preview Gambar ({previewPhotoIndex + 1} / {photoGallery.length})
             </h2>
 
-            <img
-              src={previewPhotoUrl}
-              className="w-full rounded-lg border-4 border-black aspect-[4/6]"
-            />
-
-            {/* Prev / Next */}
-            <div className="flex gap-4 mt-4">
-              <BrutalistButton
-                className="w-full"
-                variant="outline"
+            <div className="relative flex items-center justify-center gap-4 my-2">
+              {/* Previous Arrow Button */}
+              <button
                 disabled={previewPhotoIndex === 0}
                 onClick={() => {
                   const newIndex = previewPhotoIndex - 1;
                   setPreviewPhotoIndex(newIndex);
                   setPreviewPhotoUrl(photoGallery[newIndex].full);
+                  setIsFlippedX(false);
+                  setIsFlippedY(false);
                 }}
+                className="w-12 h-12 flex items-center justify-center text-2xl font-bold border-4 border-black rounded-full bg-white text-black hover:bg-black hover:text-white transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed shrink-0 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
               >
-                ← Previous
-              </BrutalistButton>
-              <BrutalistButton
-                className="w-full"
-                variant="outline"
+                ←
+              </button>
+
+              {/* Preview Image */}
+              <div className="overflow-hidden rounded-lg border-4 border-black aspect-[4/6] bg-black flex items-center justify-center max-h-[80vh] flex-1">
+                <img
+                  src={previewPhotoUrl}
+                  className="w-full h-full object-contain transition-transform duration-300"
+                  style={{
+                    transform: `scale(${isFlippedX ? -1 : 1}, ${isFlippedY ? -1 : 1})`,
+                  }}
+                />
+              </div>
+
+              {/* Next Arrow Button */}
+              <button
                 disabled={previewPhotoIndex === photoGallery.length - 1}
                 onClick={() => {
                   const newIndex = previewPhotoIndex + 1;
                   setPreviewPhotoIndex(newIndex);
                   setPreviewPhotoUrl(photoGallery[newIndex].full);
+                  setIsFlippedX(false);
+                  setIsFlippedY(false);
                 }}
+                className="w-12 h-12 flex items-center justify-center text-2xl font-bold border-4 border-black rounded-full bg-white text-black hover:bg-black hover:text-white transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed shrink-0 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
               >
-                Next →
+                →
+              </button>
+            </div>
+
+            {/* Flip Controls */}
+            <div className="flex gap-4 mt-4">
+              <BrutalistButton
+                className="w-full"
+                variant={isFlippedX ? "primary" : "outline"}
+                onClick={() => setIsFlippedX((prev) => !prev)}
+              >
+                ↔ Flip Horizontal {isFlippedX ? "✓" : ""}
+              </BrutalistButton>
+              <BrutalistButton
+                className="w-full"
+                variant={isFlippedY ? "primary" : "outline"}
+                onClick={() => setIsFlippedY((prev) => !prev)}
+              >
+                ↕ Flip Vertical {isFlippedY ? "✓" : ""}
               </BrutalistButton>
             </div>
 
@@ -1097,18 +1149,48 @@ export function PhotoArrangement() {
               <BrutalistButton
                 className="w-full"
                 variant="outline"
-                onClick={() => setPreviewPhotoOpen(false)}
+                onClick={() => {
+                  setPreviewPhotoOpen(false);
+                  setIsFlippedX(false);
+                  setIsFlippedY(false);
+                }}
               >
                 Tutup
               </BrutalistButton>
               <BrutalistButton
                 className="w-full"
-                onClick={() => {
-                  handlePhotoClick({
-                    thumb: previewPhotoUrl,
-                    full: previewPhotoUrl,
-                  });
+                onClick={async () => {
+                  let finalUrl = previewPhotoUrl;
+                  if (previewPhotoUrl && (isFlippedX || isFlippedY)) {
+                    finalUrl = await createFlippedImage(
+                      previewPhotoUrl,
+                      isFlippedX,
+                      isFlippedY,
+                    );
+                    setPhotoGallery((prev) => {
+                      const updated = [...prev];
+                      if (updated[previewPhotoIndex]) {
+                        updated[previewPhotoIndex] = {
+                          thumb: finalUrl,
+                          full: finalUrl,
+                        };
+                      }
+                      sessionStorage.setItem(
+                        "gallery",
+                        JSON.stringify(updated),
+                      );
+                      return updated;
+                    });
+                  }
+                  if (finalUrl) {
+                    handlePhotoClick({
+                      thumb: finalUrl,
+                      full: finalUrl,
+                    });
+                  }
                   setPreviewPhotoOpen(false);
+                  setIsFlippedX(false);
+                  setIsFlippedY(false);
                 }}
               >
                 Pilih Foto Ini

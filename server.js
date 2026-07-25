@@ -4,6 +4,9 @@ import path from "path";
 import cors from "cors";
 import sharp from "sharp";
 import multer from "multer";
+
+// Disable sharp cache to release file locks on Windows
+sharp.cache(false);
 import { fileURLToPath } from "url";
 
 const app = express();
@@ -74,10 +77,15 @@ async function generateThumbnail(file) {
   const thumbPath = path.join(THUMBS_DIR, file);
 
   if (!fs.existsSync(thumbPath)) {
-    await sharp(inputPath)
-      .resize(400) // ukuran thumbnail
-      .jpeg({ quality: 80 })
-      .toFile(thumbPath);
+    try {
+      await sharp(inputPath)
+        .rotate()
+        .resize(400) // ukuran thumbnail
+        .jpeg({ quality: 80 })
+        .toFile(thumbPath);
+    } catch (err) {
+      console.error(`Failed to generate thumbnail for ${file}:`, err);
+    }
   }
 }
 

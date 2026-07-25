@@ -69,60 +69,112 @@
         "slots": null
       },
       {
-        "id": 1782238514416,
-        "name": "tes",
-        "preview": "/templates/tes/background.png",
+        "id": 1784626039623,
+        "name": "Special-DAY",
+        "preview": "/templates/Special-DAY/background.png",
         "overlay": null,
         "layout": "custom",
-        "previewTemplate": "/templates/tes/preview.png",
+        "previewTemplate": "/templates/Special-DAY/preview.png",
         "slots": [
           {
             "slotNumber": 1,
-            "x": 90,
-            "y": 325,
-            "width": 990,
-            "height": 990,
-            "rotation": 0
+            "x": 135,
+            "y": 585,
+            "width": 935,
+            "height": 720,
+            "rotation": 0,
+            "borderRadius": 0
           },
           {
             "slotNumber": 2,
-            "x": 1285,
-            "y": 325,
-            "width": 1010,
-            "height": 990,
-            "rotation": 0
+            "x": 135,
+            "y": 1325,
+            "width": 935,
+            "height": 720,
+            "rotation": 0,
+            "borderRadius": 0
           },
           {
             "slotNumber": 3,
-            "x": 80,
-            "y": 1330,
-            "width": 1015,
-            "height": 1000,
-            "rotation": 0
+            "x": 135,
+            "y": 2065,
+            "width": 935,
+            "height": 720,
+            "rotation": 0,
+            "borderRadius": 0
           },
           {
             "slotNumber": 4,
-            "x": 1290,
-            "y": 1345,
-            "width": 1000,
-            "height": 1000,
-            "rotation": 0
+            "x": 1325,
+            "y": 844,
+            "width": 935,
+            "height": 720,
+            "rotation": 0,
+            "borderRadius": 0
           },
           {
             "slotNumber": 5,
-            "x": 90,
-            "y": 2375,
-            "width": 995,
-            "height": 980,
-            "rotation": 0
+            "x": 1325,
+            "y": 1592,
+            "width": 935,
+            "height": 720,
+            "rotation": 0,
+            "borderRadius": 0
           },
           {
             "slotNumber": 6,
-            "x": 1305,
-            "y": 2370,
-            "width": 985,
-            "height": 1005,
-            "rotation": 0
+            "x": 1325,
+            "y": 2340,
+            "width": 935,
+            "height": 720,
+            "rotation": 0,
+            "borderRadius": 0
+          }
+        ]
+      },
+      {
+        "id": 1784631579409,
+        "name": "DisneY",
+        "preview": "/templates/DisneY/background.png",
+        "overlay": null,
+        "layout": "custom",
+        "previewTemplate": "/templates/DisneY/preview.png",
+        "slots": [
+          {
+            "slotNumber": 1,
+            "x": 210,
+            "y": 565,
+            "width": 970,
+            "height": 870,
+            "rotation": 0,
+            "borderRadius": 0
+          },
+          {
+            "slotNumber": 2,
+            "x": 1225,
+            "y": 565,
+            "width": 970,
+            "height": 870,
+            "rotation": 0,
+            "borderRadius": 0
+          },
+          {
+            "slotNumber": 3,
+            "x": 1225,
+            "y": 1460,
+            "width": 970,
+            "height": 870,
+            "rotation": 0,
+            "borderRadius": 0
+          },
+          {
+            "slotNumber": 4,
+            "x": 210,
+            "y": 1460,
+            "width": 970,
+            "height": 870,
+            "rotation": 0,
+            "borderRadius": 0
           }
         ]
       },
@@ -211,15 +263,6 @@
         "slots": null
       },
       {
-        "id": 11,
-        "name": "aboutU-1975",
-        "preview": "/templates/aboutU-1975/background.png",
-        "overlay": "/templates/aboutU-1975/overlay.png",
-        "layout": "aboutu-v2",
-        "previewTemplate": "/templates/aboutU-1975/preview.png",
-        "slots": null
-      },
-      {
         "id": 12,
         "name": "300days-1975",
         "preview": "/templates/300days-1975/background.png",
@@ -227,6 +270,53 @@
         "layout": "300days",
         "previewTemplate": "/templates/300days-1975/preview.png",
         "slots": null
+      },
+      {
+        "id": 1784517745270,
+        "name": "AbouU-1975",
+        "preview": "/templates/AbouU-1975/background.png",
+        "overlay": null,
+        "layout": "custom",
+        "previewTemplate": "/templates/AbouU-1975/preview.png",
+        "slots": [
+          {
+            "slotNumber": 1,
+            "x": 445,
+            "y": 735,
+            "width": 1320,
+            "height": 1235,
+            "rotation": -11,
+            "borderRadius": 0
+          },
+          {
+            "slotNumber": 2,
+            "x": 680,
+            "y": 1940,
+            "width": 1320,
+            "height": 1235,
+            "rotation": -11,
+            "borderRadius": 0
+          }
+        ]
+      },
+      {
+        "id": 1784627348513,
+        "name": "Birthday-1945",
+        "preview": "/templates/Birthday-1945/background.png",
+        "overlay": null,
+        "layout": "custom",
+        "previewTemplate": "/templates/Birthday-1945/preview.png",
+        "slots": [
+          {
+            "slotNumber": 1,
+            "x": 280,
+            "y": 1420,
+            "width": 1820,
+            "height": 1810,
+            "rotation": 0,
+            "borderRadius": 0
+          }
+        ]
       }
     ]
   }

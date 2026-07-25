@@ -13,7 +13,7 @@ export function BrutalistCard({
   className = "",
   ...props
 }: BrutalistCardProps) {
-  const baseClasses = "bg-white border-4 border-black rounded-2xl";
+  const baseClasses = "relative bg-white border-4 border-black rounded-2xl";
   const interactiveClasses = interactive
     ? "cursor-pointer transition-all hover:translate-x-1 hover:translate-y-1 active:translate-x-2 active:translate-y-2"
     : "";

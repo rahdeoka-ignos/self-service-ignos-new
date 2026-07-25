@@ -46,22 +46,36 @@ export function PhotoArrangementA4() {
     const cached = sessionStorage.getItem("gallery");
     if (cached) {
       setPhotoGallery(JSON.parse(cached));
-    } else {
+    }
+
+    const fetchPhotos = () => {
       fetch("http://localhost:5000/api/photos")
         .then((res) => res.json())
         .then((data) => {
           const photos = data.reverse().slice(0, 200);
           sessionStorage.setItem("gallery", JSON.stringify(photos));
-          setPhotoGallery(photos);
-        });
-    }
+          setPhotoGallery((prev) => {
+            if (JSON.stringify(prev) !== JSON.stringify(photos)) {
+              return photos;
+            }
+            return prev;
+          });
+        })
+        .catch((err) => console.error("Fetch photos failed:", err));
+    };
+
+    fetchPhotos();
+    const interval = setInterval(fetchPhotos, 3000);
+
+    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
     const timeout = setTimeout(() => {
       if (slotRef.current) {
-        const rect = slotRef.current.getBoundingClientRect();
-        setUiSlotSize({ w: rect.width, h: rect.height });
+        const w = slotRef.current.offsetWidth;
+        const h = slotRef.current.offsetHeight;
+        setUiSlotSize({ w, h });
       }
     }, 100);
     return () => clearTimeout(timeout);
