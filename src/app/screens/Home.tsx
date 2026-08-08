@@ -3,21 +3,16 @@ import { Camera, Users } from "lucide-react";
 import { BrutalistCard } from "../components/BrutalistCard";
 import { useEffect } from "react";
 import { BrutalistButton } from "../components/BrutalistButton";
+import { preloadGallery } from "../../utils/photoPreloader";
 
 export function Home() {
   const navigate = useNavigate();
   useEffect(() => {
-    fetch("http://localhost:5000/api/photos")
-      .then((res) => res.json())
-      .then((data) => {
-        const photos = data.reverse().slice(0, 400);
-        try {
-          sessionStorage.setItem("gallery", JSON.stringify(photos));
-        } catch (e) {
-          console.warn("Storage quota exceeded, skipping prefetch cache for gallery:", e);
-        }
-      })
-      .catch((err) => console.error("Prefetch failed:", err));
+    preloadGallery(200);
+    const interval = setInterval(() => {
+      preloadGallery(200);
+    }, 5000);
+    return () => clearInterval(interval);
   }, []);
 
   const services = [

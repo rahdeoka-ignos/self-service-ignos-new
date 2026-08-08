@@ -7,6 +7,7 @@ import { ImageWithFallback } from "../../components/figma/ImageWithFallback";
 import { SlotImage } from "../../components/SlotImage";
 import type { KeychainOrder } from "./Keychainoptions";
 import { generatePrintKeychain } from "../../../utils/printKeychain";
+import { preloadGallery, subscribeToProgress, type PreloadProgress } from "../../../utils/photoPreloader";
 
 // Expand orders jadi flat list slot
 // Misal: Kotak Plastik x2, Oval Metal x1 → [KotakPlastik-0, KotakPlastik-1, OvalMetal-0]
@@ -64,37 +65,37 @@ export function KeychainArrangement() {
   );
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [preloadStatus, setPreloadStatus] = useState<PreloadProgress>({ loaded: 0, total: 0, isDone: false });
 
   useEffect(() => {
-    const cached = sessionStorage.getItem("gallery");
-    if (cached) {
-      setPhotoGallery(JSON.parse(cached));
-    }
+    const unsubscribeProgress = subscribeToProgress((progress) => {
+      setPreloadStatus(progress);
+    });
 
-    const fetchPhotos = () => {
-      fetch("http://localhost:5000/api/photos")
-        .then((res) => res.json())
-        .then((data) => {
-          const photos = data.reverse().slice(0, 200);
-          try {
-            sessionStorage.setItem("gallery", JSON.stringify(photos));
-          } catch (e) {
-            console.warn("Storage quota exceeded, skipping cached write for photo gallery:", e);
+    const updateFromCache = () => {
+      const cached = sessionStorage.getItem("gallery");
+      if (cached) {
+        setPhotoGallery((prev) => {
+          const parsed = JSON.parse(cached);
+          if (JSON.stringify(prev) !== JSON.stringify(parsed)) {
+            return parsed;
           }
-          setPhotoGallery((prev) => {
-            if (JSON.stringify(prev) !== JSON.stringify(photos)) {
-              return photos;
-            }
-            return prev;
-          });
-        })
-        .catch((err) => console.error("Fetch photos failed:", err));
+          return prev;
+        });
+      }
     };
 
-    fetchPhotos();
-    const interval = setInterval(fetchPhotos, 3000);
+    updateFromCache();
+    preloadGallery(200).then(updateFromCache);
 
-    return () => clearInterval(interval);
+    const interval = setInterval(() => {
+      preloadGallery(200).then(updateFromCache);
+    }, 3000);
+
+    return () => {
+      unsubscribeProgress();
+      clearInterval(interval);
+    };
   }, []);
 
   const activeSlotItem = slots[activeSlot];
@@ -216,35 +217,52 @@ export function KeychainArrangement() {
             {/* LEFT - Gallery */}
             <div className="col-span-8 h-[80dvh] min-h-0">
               <BrutalistCard className="p-6 h-full flex flex-col overflow-y-auto">
-                <h2 className="text-3xl font-bold mb-6 ">Photo Gallery</h2>
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-3xl font-bold">Photo Gallery</h2>
+                  {!preloadStatus.isDone && preloadStatus.total > 0 && (
+                    <span className="bg-yellow-300 border-4 border-black px-4 py-2 font-bold text-lg shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] animate-pulse">
+                      ⏳ Memuat foto ({preloadStatus.loaded}/{preloadStatus.total})...
+                    </span>
+                  )}
+                </div>
                 <div className="grid grid-cols-5 gap-4 flex-1 min-h-0 overflow-y-auto pr-2">
-                  {photoGallery.map((photo, index) => (
-                    <BrutalistCard
-                      key={index}
-                      interactive
-                      onClick={() => handlePhotoClick(photo)}
-                      className="p-0 h-full cursor-pointer group"
-                    >
-                      <ImageWithFallback
-                        src={photo.thumb}
-                        alt={`Photo ${index + 1}`}
-                        loading="lazy"
-                        decoding="async"
-                        className="w-full h-full object-cover"
-                      />
-                      <button
-                        className="absolute top-2 right-2 z-50 bg-white text-black text-base font-bold px-3 py-1 rounded-lg border-2 border-black opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black hover:text-white cursor-pointer"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setPreviewPhotoIndex(index);
-                          setPreviewPhotoUrl(photo.full);
-                          setPreviewPhotoOpen(true);
-                        }}
+                  {photoGallery.length === 0 ? (
+                    Array.from({ length: 10 }).map((_, idx) => (
+                      <div
+                        key={idx}
+                        className="relative aspect-square bg-gray-200 animate-pulse border-4 border-black rounded-xl overflow-hidden flex items-center justify-center min-h-[150px]"
                       >
-                        Preview
-                      </button>
-                    </BrutalistCard>
-                  ))}
+                        <div className="w-8 h-8 border-4 border-black border-t-transparent rounded-full animate-spin"></div>
+                      </div>
+                    ))
+                  ) : (
+                    photoGallery.map((photo, index) => (
+                      <BrutalistCard
+                        key={index}
+                        interactive
+                        onClick={() => handlePhotoClick(photo)}
+                        className="p-0 cursor-pointer group relative"
+                      >
+                        <ImageWithFallback
+                          src={photo.thumb}
+                          alt={`Photo ${index + 1}`}
+                          decoding="async"
+                          className="w-full h-full object-cover"
+                        />
+                        <button
+                          className="absolute top-2 right-2 z-50 bg-white text-black text-base font-bold px-3 py-1 rounded-lg border-2 border-black opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black hover:text-white cursor-pointer"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setPreviewPhotoIndex(index);
+                            setPreviewPhotoUrl(photo.full);
+                            setPreviewPhotoOpen(true);
+                          }}
+                        >
+                          Preview
+                        </button>
+                      </BrutalistCard>
+                    ))
+                  )}
                 </div>
               </BrutalistCard>
             </div>

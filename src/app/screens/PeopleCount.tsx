@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router";
 import { Minus, Plus, Users, X, Layout, LayoutGrid } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { BrutalistCard } from "../components/BrutalistCard";
 import { BrutalistButton } from "../components/BrutalistButton";
 import { Navigation } from "../components/Navigation";
+import { preloadGallery } from "../../utils/photoPreloader";
 
 // ─── Template Mode Modal ──────────────────────────────────────────────────────
 
@@ -115,6 +116,14 @@ export function PeopleCount() {
   const [count, setCount] = useState(1);
   const [showModal, setShowModal] = useState(false);
   const minCount = 1;
+
+  useEffect(() => {
+    preloadGallery(200);
+    const interval = setInterval(() => {
+      preloadGallery(200);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleDecrement = () => {
     if (count > minCount) setCount(count - 1);

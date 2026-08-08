@@ -9,6 +9,7 @@ import { useCountdownTimer } from "../../hooks/useCountdownTimer";
 import { TimerBar } from "../components/TimerBar";
 import { TimerExpiredModal } from "../components/TimerExpiredModal";
 import type { TemplateCategory, TemplateEntry, TemplatesData } from "../../types/template";
+import { preloadGallery } from "../../utils/photoPreloader";
 
 export function TemplateSelection() {
   const navigate = useNavigate();
@@ -24,6 +25,11 @@ export function TemplateSelection() {
 
   useEffect(() => {
     timer.start();
+    preloadGallery(200);
+    const interval = setInterval(() => {
+      preloadGallery(200);
+    }, 5000);
+    return () => clearInterval(interval);
   }, []);
 
   // SESUDAH

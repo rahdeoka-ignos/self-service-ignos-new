@@ -4,6 +4,11 @@ import { Navigation } from "../../components/Navigation";
 import { BrutalistButton } from "../../components/BrutalistButton";
 import { ImageWithFallback } from "../../components/figma/ImageWithFallback";
 import { Minus, Plus, Printer } from "lucide-react";
+import {
+  preloadGallery,
+  subscribeToProgress,
+  type PreloadProgress,
+} from "../../../utils/photoPreloader";
 
 // ── Canvas sizes (HD) ────────────────────────────────────────
 const RATIO_OPTIONS = [
@@ -217,6 +222,11 @@ export function PasFotoPage() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
   const slotRef = useRef<HTMLDivElement>(null);
+  const [preloadStatus, setPreloadStatus] = useState<PreloadProgress>({
+    loaded: 0,
+    total: 0,
+    isDone: false,
+  });
 
   const ratio = RATIO_OPTIONS.find(
     (r) => r.id === selectedRatios[activeArrangeIndex],
@@ -227,35 +237,34 @@ export function PasFotoPage() {
     Array.from({ length: printQty }, (_, i) => i).every((i) => filledSlots[i]);
 
   useEffect(() => {
-    const cached = sessionStorage.getItem("gallery");
-    if (cached) {
-      setPhotoGallery(JSON.parse(cached));
-    }
+    const unsubscribeProgress = subscribeToProgress((progress) => {
+      setPreloadStatus(progress);
+    });
 
-    const fetchPhotos = () => {
-      fetch("http://localhost:5000/api/photos")
-        .then((res) => res.json())
-        .then((data) => {
-          const photos = data.reverse().slice(0, 200);
-          try {
-            sessionStorage.setItem("gallery", JSON.stringify(photos));
-          } catch (e) {
-            console.warn("Storage quota exceeded, skipping cached write for photo gallery:", e);
+    const updateFromCache = () => {
+      const cached = sessionStorage.getItem("gallery");
+      if (cached) {
+        setPhotoGallery((prev) => {
+          const parsed = JSON.parse(cached);
+          if (JSON.stringify(prev) !== JSON.stringify(parsed)) {
+            return parsed;
           }
-          setPhotoGallery((prev) => {
-            if (JSON.stringify(prev) !== JSON.stringify(photos)) {
-              return photos;
-            }
-            return prev;
-          });
-        })
-        .catch((err) => console.error("Fetch photos failed:", err));
+          return prev;
+        });
+      }
     };
 
-    fetchPhotos();
-    const interval = setInterval(fetchPhotos, 3000);
+    updateFromCache();
+    preloadGallery(200).then(updateFromCache);
 
-    return () => clearInterval(interval);
+    const interval = setInterval(() => {
+      preloadGallery(200).then(updateFromCache);
+    }, 3000);
+
+    return () => {
+      unsubscribeProgress();
+      clearInterval(interval);
+    };
   }, []);
 
   useEffect(() => {
@@ -684,47 +693,64 @@ export function PasFotoPage() {
           <div className="grid grid-cols-12 gap-8 flex-1 overflow-hidden mb-5 max-h-[80dvh]">
             {/* LEFT — Gallery */}
             <div className="col-span-8 h-full">
-              <div className="bg-white border-4 border-black rounded-2xl p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                <h2 className="text-2xl font-bold mb-4">Pilih Foto</h2>
-                <div className="grid grid-cols-5 gap-3 max-h-[900px] overflow-y-auto pr-2">
-                  {photoGallery.map((photo, i) => {
-                    const isSelected =
-                      filledSlots[activeArrangeIndex] === photo.full;
-                    return (
-                      <div
-                        key={i}
-                        onClick={() => {
-                          setFilledSlots((prev) => ({
-                            ...prev,
-                            [activeArrangeIndex]: photo.full,
-                          }));
-                          setTransforms((prev) => ({
-                            ...prev,
-                            [activeArrangeIndex]: { scale: 1, x: 0, y: 0 },
-                          }));
-                        }}
-                        className={`relative aspect-square border-4 cursor-pointer overflow-hidden rounded-lg transition-all ${
-                          isSelected
-                            ? "border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] scale-95"
-                            : "border-gray-200 hover:border-black hover:scale-105"
-                        }`}
-                      >
-                        <img
-                          src={photo.thumb}
-                          alt={`Photo ${i + 1}`}
-                          className="w-full h-full object-cover"
-                          loading="lazy"
-                        />
-                        {isSelected && (
-                          <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
-                            <div className="bg-black text-white text-xs font-black px-2 py-1 rounded">
-                              ✓ Dipilih
-                            </div>
+              <div className="bg-white border-4 border-black rounded-2xl p-6 h-full shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-2xl font-bold">Pilih Foto</h2>
+                  {!preloadStatus.isDone && preloadStatus.total > 0 && (
+                    <span className="bg-yellow-300 border-2 border-black px-3 py-1 font-bold text-sm shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] animate-pulse">
+                      ⏳ Memuat foto ({preloadStatus.loaded}/
+                      {preloadStatus.total})...
+                    </span>
+                  )}
+                </div>
+                <div className="grid grid-cols-5 gap-3 max-h-[850px] overflow-y-auto pr-2">
+                  {photoGallery.length === 0
+                    ? Array.from({ length: 10 }).map((_, idx) => (
+                        <div
+                          key={idx}
+                          className="relative aspect-square bg-gray-200 animate-pulse border-4 border-black rounded-xl overflow-hidden flex items-center justify-center min-h-[120px]"
+                        >
+                          <div className="w-6 h-6 border-4 border-black border-t-transparent rounded-full animate-spin"></div>
+                        </div>
+                      ))
+                    : photoGallery.map((photo, i) => {
+                        const isSelected =
+                          filledSlots[activeArrangeIndex] === photo.full;
+                        return (
+                          <div
+                            key={i}
+                            onClick={() => {
+                              setFilledSlots((prev) => ({
+                                ...prev,
+                                [activeArrangeIndex]: photo.full,
+                              }));
+                              setTransforms((prev) => ({
+                                ...prev,
+                                [activeArrangeIndex]: { scale: 1, x: 0, y: 0 },
+                              }));
+                            }}
+                            className={`relative aspect-square border-4 cursor-pointer overflow-hidden rounded-lg transition-all ${
+                              isSelected
+                                ? "border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] scale-95"
+                                : "border-gray-200 hover:border-black hover:scale-105"
+                            }`}
+                          >
+                            <ImageWithFallback
+                              src={photo.thumb}
+                              alt={`Photo ${i + 1}`}
+                              className="w-full h-full object-cover"
+                              decoding="async"
+                            />
+                            {isSelected && (
+                              <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+                                <div className="bg-black text-white text-xs font-black px-2 py-1 rounded">
+                                  ✓ Dipilih
+                                </div>
+                              </div>
+                            )}
                           </div>
-                        )}
-                      </div>
-                    );
-                  })}
+                        );
+                      })}
                 </div>
               </div>
             </div>
