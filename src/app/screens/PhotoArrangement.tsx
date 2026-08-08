@@ -206,10 +206,10 @@ export function PhotoArrangement() {
     };
 
     updateFromCache();
-    preloadGallery(200).then(updateFromCache);
+    preloadGallery(400).then(updateFromCache);
 
     const interval = setInterval(() => {
-      preloadGallery(200).then(updateFromCache);
+      preloadGallery(400).then(updateFromCache);
     }, 3000);
 
     return () => {
