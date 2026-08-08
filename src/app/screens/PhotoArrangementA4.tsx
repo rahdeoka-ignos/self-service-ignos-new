@@ -53,7 +53,11 @@ export function PhotoArrangementA4() {
         .then((res) => res.json())
         .then((data) => {
           const photos = data.reverse().slice(0, 200);
-          sessionStorage.setItem("gallery", JSON.stringify(photos));
+          try {
+            sessionStorage.setItem("gallery", JSON.stringify(photos));
+          } catch (e) {
+            console.warn("Storage quota exceeded, skipping cached write for photo gallery:", e);
+          }
           setPhotoGallery((prev) => {
             if (JSON.stringify(prev) !== JSON.stringify(photos)) {
               return photos;

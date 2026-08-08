@@ -11,7 +11,11 @@ export function Home() {
       .then((res) => res.json())
       .then((data) => {
         const photos = data.reverse().slice(0, 400);
-        sessionStorage.setItem("gallery", JSON.stringify(photos));
+        try {
+          sessionStorage.setItem("gallery", JSON.stringify(photos));
+        } catch (e) {
+          console.warn("Storage quota exceeded, skipping prefetch cache for gallery:", e);
+        }
       })
       .catch((err) => console.error("Prefetch failed:", err));
   }, []);

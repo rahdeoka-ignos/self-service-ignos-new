@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router";
 import { BrutalistCard } from "../components/BrutalistCard";
 import { BrutalistButton } from "../components/BrutalistButton";
@@ -18,16 +18,16 @@ type Template = {
   background: string;
   overlay: string;
   layout:
-  | "1"
-  | "2"
-  | "4"
-  | "6"
-  | "8"
-  | "newspaper"
-  | "wannabeyours"
-  | "300days"
-  | "aboutu-v2"
-  | "custom";
+    | "1"
+    | "2"
+    | "4"
+    | "6"
+    | "8"
+    | "newspaper"
+    | "wannabeyours"
+    | "300days"
+    | "aboutu-v2"
+    | "custom";
   customSlots?: CustomSlotDef[] | null;
 };
 
@@ -134,6 +134,12 @@ export function PhotoArrangement() {
   const [photoGallery, setPhotoGallery] = useState<
     { thumb: string; full: string }[]
   >([]);
+  const [flippedImages, setFlippedImages] = useState<
+    Record<string, { thumb: string; full: string }>
+  >({});
+  const displayPhotos = useMemo(() => {
+    return photoGallery.map((photo) => flippedImages[photo.full] || photo);
+  }, [photoGallery, flippedImages]);
   const [printing, setPrinting] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -175,8 +181,12 @@ export function PhotoArrangement() {
       fetch("http://localhost:5000/api/photos")
         .then((res) => res.json())
         .then((data) => {
-          const photos = data.reverse().slice(0, 200);
-          sessionStorage.setItem("gallery", JSON.stringify(photos));
+          const photos = data.reverse().slice(0, 400);
+          try {
+            sessionStorage.setItem("gallery", JSON.stringify(photos));
+          } catch (e) {
+            console.warn("Storage quota exceeded, skipping cached write for photo gallery:", e);
+          }
           setPhotoGallery((prev) => {
             if (JSON.stringify(prev) !== JSON.stringify(photos)) {
               return photos;
@@ -554,7 +564,7 @@ export function PhotoArrangement() {
                   {t("photoArrange.gallery")}
                 </h2>
                 <div className="grid grid-cols-5 gap-4 max-h-[995px] overflow-y-auto pr-2">
-                  {photoGallery.map((photo, index) => (
+                  {displayPhotos.map((photo, index) => (
                     <BrutalistCard
                       key={index}
                       draggable
@@ -575,7 +585,7 @@ export function PhotoArrangement() {
                         onClick={(e) => {
                           e.stopPropagation();
                           setPreviewPhotoIndex(index);
-                          setPreviewPhotoUrl(photo.full);
+                          setPreviewPhotoUrl(photoGallery[index]?.full || photo.full);
                           setIsFlippedX(false);
                           setIsFlippedY(false);
                           setPreviewPhotoOpen(true);
@@ -605,14 +615,15 @@ export function PhotoArrangement() {
                         key={index}
                         onClick={() => setActiveTemplate(index)}
                         className={`text-lg px-4 py-2 whitespace-nowrap border-4 border-black transition-all cursor-pointer
-        ${isActive
-                            ? isBonus
-                              ? "bg-yellow-300 text-black border-8 border-yellow-400"
-                              : "bg-black text-white border-8"
-                            : isBonus
-                              ? "bg-yellow-100 !text-black border-yellow-400 hover:bg-yellow-300"
-                              : "bg-transparent !text-black hover:bg-black hover:!text-white"
-                          }`}
+        ${
+          isActive
+            ? isBonus
+              ? "bg-yellow-300 text-black border-8 border-yellow-400"
+              : "bg-black text-white border-8"
+            : isBonus
+              ? "bg-yellow-100 !text-black border-yellow-400 hover:bg-yellow-300"
+              : "bg-transparent !text-black hover:bg-black hover:!text-white"
+        }`}
                       >
                         {isBonus
                           ? `🎁 Bonus ${bonusIndex}`
@@ -654,8 +665,9 @@ export function PhotoArrangement() {
                             onClick={() => handleSlotClick(1)}
                             onDrop={(e) => handleDrop(e, 1)}
                             onDragOver={allowDrop}
-                            className={`w-full h-full p-0 overflow-hidden shadow-none !border-0 ${selectedPhoto ? "cursor-pointer" : ""
-                              }`}
+                            className={`w-full h-full p-0 overflow-hidden shadow-none !border-0 ${
+                              selectedPhoto ? "cursor-pointer" : ""
+                            }`}
                           >
                             {renderSlotContent(1)}
                           </BrutalistCard>
@@ -692,8 +704,9 @@ export function PhotoArrangement() {
                                   onClick={() => handleSlotClick(slotNum)}
                                   onDrop={(e) => handleDrop(e, slotNum)}
                                   onDragOver={allowDrop}
-                                  className={`w-full h-full p-0 overflow-hidden shadow-none !border-0 ${selectedPhoto ? "cursor-pointer" : ""
-                                    }`}
+                                  className={`w-full h-full p-0 overflow-hidden shadow-none !border-0 ${
+                                    selectedPhoto ? "cursor-pointer" : ""
+                                  }`}
                                 >
                                   {renderSlotContent(slotNum)}
                                 </BrutalistCard>
@@ -732,8 +745,9 @@ export function PhotoArrangement() {
                                 onClick={() => handleSlotClick(slotNum)}
                                 onDrop={(e) => handleDrop(e, slotNum)}
                                 onDragOver={allowDrop}
-                                className={`w-full h-full p-0 overflow-hidden shadow-none !border-0 ${selectedPhoto ? "cursor-pointer" : ""
-                                  }`}
+                                className={`w-full h-full p-0 overflow-hidden shadow-none !border-0 ${
+                                  selectedPhoto ? "cursor-pointer" : ""
+                                }`}
                               >
                                 {renderSlotContent(slotNum)}
                               </BrutalistCard>
@@ -776,8 +790,9 @@ export function PhotoArrangement() {
                                   onClick={() => handleSlotClick(slotNum)}
                                   onDrop={(e) => handleDrop(e, slotNum)}
                                   onDragOver={allowDrop}
-                                  className={`w-full h-full p-0 overflow-hidden shadow-none !border-0 !border-transparent !rounded-none ${selectedPhoto ? "cursor-pointer" : ""
-                                    }`}
+                                  className={`w-full h-full p-0 overflow-hidden shadow-none !border-0 !border-transparent !rounded-none ${
+                                    selectedPhoto ? "cursor-pointer" : ""
+                                  }`}
                                 >
                                   {renderSlotContent(slotNum)}
                                 </BrutalistCard>
@@ -821,8 +836,9 @@ export function PhotoArrangement() {
                                   onClick={() => handleSlotClick(slotNum)}
                                   onDrop={(e) => handleDrop(e, slotNum)}
                                   onDragOver={allowDrop}
-                                  className={`w-full h-full p-0 overflow-hidden shadow-none !border-0 !border-transparent !rounded-none ${selectedPhoto ? "cursor-pointer" : ""
-                                    }`}
+                                  className={`w-full h-full p-0 overflow-hidden shadow-none !border-0 !border-transparent !rounded-none ${
+                                    selectedPhoto ? "cursor-pointer" : ""
+                                  }`}
                                 >
                                   {renderSlotContent(slotNum)}
                                 </BrutalistCard>
@@ -849,8 +865,9 @@ export function PhotoArrangement() {
                           onClick={() => handleSlotClick(1)}
                           onDrop={(e) => handleDrop(e, 1)}
                           onDragOver={allowDrop}
-                          className={`w-full h-full p-0 overflow-hidden shadow-none !border-0 !rounded-none ${selectedPhoto ? "cursor-pointer" : ""
-                            }`}
+                          className={`w-full h-full p-0 overflow-hidden shadow-none !border-0 !rounded-none ${
+                            selectedPhoto ? "cursor-pointer" : ""
+                          }`}
                         >
                           {renderSlotContent(1)}
                         </BrutalistCard>
@@ -872,8 +889,9 @@ export function PhotoArrangement() {
                           onClick={() => handleSlotClick(1)}
                           onDrop={(e) => handleDrop(e, 1)}
                           onDragOver={allowDrop}
-                          className={`w-full h-full p-0 overflow-hidden shadow-none !border-0 !rounded-none ${selectedPhoto ? "cursor-pointer" : ""
-                            }`}
+                          className={`w-full h-full p-0 overflow-hidden shadow-none !border-0 !rounded-none ${
+                            selectedPhoto ? "cursor-pointer" : ""
+                          }`}
                         >
                           {renderSlotContent(1)}
                         </BrutalistCard>
@@ -895,8 +913,9 @@ export function PhotoArrangement() {
                           onClick={() => handleSlotClick(1)}
                           onDrop={(e) => handleDrop(e, 1)}
                           onDragOver={allowDrop}
-                          className={`w-full h-full p-0 overflow-hidden shadow-none !border-0 !rounded-none ${selectedPhoto ? "cursor-pointer" : ""
-                            }`}
+                          className={`w-full h-full p-0 overflow-hidden shadow-none !border-0 !rounded-none ${
+                            selectedPhoto ? "cursor-pointer" : ""
+                          }`}
                         >
                           {renderSlotContent(1)}
                         </BrutalistCard>
@@ -965,12 +984,16 @@ export function PhotoArrangement() {
                             top: `${(slotDef.y / 3600) * 100}%`,
                             width: `${(slotDef.width / 2400) * 100}%`,
                             height: `${(slotDef.height / 3600) * 100}%`,
-                            transform: slotDef.rotation !== 0 ? `rotate(${slotDef.rotation}deg)` : undefined,
+                            transform:
+                              slotDef.rotation !== 0
+                                ? `rotate(${slotDef.rotation}deg)`
+                                : undefined,
                             transformOrigin: "center center",
                             overflow: "hidden",
-                            borderRadius: (slotDef.borderRadius ?? 0) > 0
-                              ? `${((slotDef.borderRadius ?? 0) / slotDef.width * 100).toFixed(1)}%`
-                              : undefined,
+                            borderRadius:
+                              (slotDef.borderRadius ?? 0) > 0
+                                ? `${(((slotDef.borderRadius ?? 0) / slotDef.width) * 100).toFixed(1)}%`
+                                : undefined,
                           }}
                         >
                           <BrutalistCard
@@ -1035,16 +1058,15 @@ export function PhotoArrangement() {
                     <button
                       key={filter.id}
                       onClick={() => setActiveFilter(filter.id)}
-                      className={`w-full border-4 border-black rounded-xl overflow-hidden transition-all cursor-pointer ${activeFilter === filter.id
-                          ? "border-8 scale-95"
-                          : ""
-                        }`}
+                      className={`w-full border-4 border-black rounded-xl overflow-hidden transition-all cursor-pointer ${
+                        activeFilter === filter.id ? "border-8 scale-95" : ""
+                      }`}
                     >
                       {/* Preview thumbnail pakai foto pertama di gallery */}
                       <div className="w-full aspect-square overflow-hidden">
-                        {photoGallery[0] ? (
+                        {displayPhotos[0] ? (
                           <img
-                            src={photoGallery[0].thumb}
+                            src={displayPhotos[0].thumb}
                             className="w-full h-full object-cover"
                             style={{ filter: filter.style }}
                           />
@@ -1161,26 +1183,29 @@ export function PhotoArrangement() {
                 className="w-full"
                 onClick={async () => {
                   let finalUrl = previewPhotoUrl;
-                  if (previewPhotoUrl && (isFlippedX || isFlippedY)) {
-                    finalUrl = await createFlippedImage(
-                      previewPhotoUrl,
-                      isFlippedX,
-                      isFlippedY,
-                    );
-                    setPhotoGallery((prev) => {
-                      const updated = [...prev];
-                      if (updated[previewPhotoIndex]) {
-                        updated[previewPhotoIndex] = {
+                  if (previewPhotoUrl) {
+                    if (isFlippedX || isFlippedY) {
+                      finalUrl = await createFlippedImage(
+                        previewPhotoUrl,
+                        isFlippedX,
+                        isFlippedY,
+                      );
+                      const originalUrl = photoGallery[previewPhotoIndex]?.full || previewPhotoUrl;
+                      setFlippedImages((prev) => ({
+                        ...prev,
+                        [originalUrl]: {
                           thumb: finalUrl,
                           full: finalUrl,
-                        };
-                      }
-                      sessionStorage.setItem(
-                        "gallery",
-                        JSON.stringify(updated),
-                      );
-                      return updated;
-                    });
+                        },
+                      }));
+                    } else {
+                      const originalUrl = photoGallery[previewPhotoIndex]?.full || previewPhotoUrl;
+                      setFlippedImages((prev) => {
+                        const next = { ...prev };
+                        delete next[originalUrl];
+                        return next;
+                      });
+                    }
                   }
                   if (finalUrl) {
                     handlePhotoClick({

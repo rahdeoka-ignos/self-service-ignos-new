@@ -44,8 +44,8 @@ const RATIO_OPTIONS = [
     badge: null,
   },
   {
-    id: "5xt",
-    label: "5 × 5",
+    id: "5x7",
+    label: "5 × 7",
     desc: "Pas foto ukuran 5R / tanda tangan",
     canvasW: 5000,
     canvasH: 7000,
@@ -237,7 +237,11 @@ export function PasFotoPage() {
         .then((res) => res.json())
         .then((data) => {
           const photos = data.reverse().slice(0, 200);
-          sessionStorage.setItem("gallery", JSON.stringify(photos));
+          try {
+            sessionStorage.setItem("gallery", JSON.stringify(photos));
+          } catch (e) {
+            console.warn("Storage quota exceeded, skipping cached write for photo gallery:", e);
+          }
           setPhotoGallery((prev) => {
             if (JSON.stringify(prev) !== JSON.stringify(photos)) {
               return photos;
