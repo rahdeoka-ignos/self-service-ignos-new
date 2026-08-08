@@ -586,7 +586,7 @@ export function PhotoArrangement() {
                   )}
                 </div>
                 <div className="grid grid-cols-5 gap-4 max-h-[995px] overflow-y-auto pr-2">
-                  {photoGallery.length === 0 ? (
+                  {displayPhotos.length === 0 ? (
                     Array.from({ length: 10 }).map((_, idx) => (
                       <div
                         key={idx}
@@ -596,7 +596,7 @@ export function PhotoArrangement() {
                       </div>
                     ))
                   ) : (
-                    photoGallery.map((photo, index) => (
+                    displayPhotos.map((photo, index) => (
                       <BrutalistCard
                         key={index}
                         draggable
@@ -616,7 +616,7 @@ export function PhotoArrangement() {
                           onClick={(e) => {
                             e.stopPropagation();
                             setPreviewPhotoIndex(index);
-                            setPreviewPhotoUrl(photo.full);
+                            setPreviewPhotoUrl(photoGallery[index]?.full || photo.full);
                             setIsFlippedX(false);
                             setIsFlippedY(false);
                             setPreviewPhotoOpen(true);
@@ -1228,18 +1228,16 @@ export function PhotoArrangement() {
                         [originalUrl]: {
                           thumb: finalUrl,
                           full: finalUrl,
-                        };
-                      }
-                      try {
-                        sessionStorage.setItem(
-                          "gallery",
-                          JSON.stringify(updated),
-                        );
-                      } catch (err) {
-                        console.warn("Storage quota exceeded, skipping gallery cache update:", err);
-                      }
-                      return updated;
-                    });
+                        },
+                      }));
+                    } else {
+                      const originalUrl = photoGallery[previewPhotoIndex]?.full || previewPhotoUrl;
+                      setFlippedImages((prev) => {
+                        const next = { ...prev };
+                        delete next[originalUrl];
+                        return next;
+                      });
+                    }
                   }
                   if (finalUrl) {
                     handlePhotoClick({
