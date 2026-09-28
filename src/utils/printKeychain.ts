@@ -142,10 +142,13 @@ export async function generatePrintKeychain(
 
     const formData = new FormData();
     formData.append("file", blob, `keychain-kotak-plastik-${Date.now()}.png`);
-    await fetch("http://localhost:5000/api/save-print", {
-      method: "POST",
-      body: formData,
-    });
+    await fetch(
+      "http://localhost:5000/api/save-print?printProfile=keychain-kotak-plastik",
+      {
+        method: "POST",
+        body: formData,
+      },
+    );
     return;
   }
 
@@ -208,10 +211,13 @@ export async function generatePrintKeychain(
 
     const formData = new FormData();
     formData.append("file", blob, `keychain-kotak-metal-${Date.now()}.png`);
-    await fetch("http://localhost:5000/api/save-print", {
-      method: "POST",
-      body: formData,
-    });
+    await fetch(
+      "http://localhost:5000/api/save-print?printProfile=keychain-kotak-metal",
+      {
+        method: "POST",
+        body: formData,
+      },
+    );
     return;
   }
 
@@ -288,10 +294,13 @@ export async function generatePrintKeychain(
 
     const formData = new FormData();
     formData.append("file", blob, `keychain-oval-metal-${Date.now()}.png`);
-    await fetch("http://localhost:5000/api/save-print", {
-      method: "POST",
-      body: formData,
-    });
+    await fetch(
+      "http://localhost:5000/api/save-print?printProfile=keychain-oval-metal",
+      {
+        method: "POST",
+        body: formData,
+      },
+    );
     return;
   }
 
@@ -358,10 +367,13 @@ export async function generatePrintKeychain(
 
     const formData = new FormData();
     formData.append("file", blob, `keychain-love-metal-${Date.now()}.png`);
-    await fetch("http://localhost:5000/api/save-print", {
-      method: "POST",
-      body: formData,
-    });
+    await fetch(
+      "http://localhost:5000/api/save-print?printProfile=keychain-love-metal",
+      {
+        method: "POST",
+        body: formData,
+      },
+    );
     return;
   }
 
@@ -425,8 +437,11 @@ export async function generatePrintKeychain(
 
   const formData = new FormData();
   formData.append("file", blob, `keychain-${keychainType}-${Date.now()}.png`);
-  await fetch("http://localhost:5000/api/save-print", {
-    method: "POST",
-    body: formData,
-  });
+  await fetch(
+    "http://localhost:5000/api/save-print?printProfile=keychain-default",
+    {
+      method: "POST",
+      body: formData,
+    },
+  );
 }

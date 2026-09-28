@@ -101,7 +101,7 @@ export async function generatePrintA4(
   const formData = new FormData();
   formData.append("file", blob, `print-a4-${Date.now()}.png`);
 
-  await fetch("http://localhost:5000/api/save-print", {
+  await fetch("http://localhost:5000/api/save-print?printProfile=a4", {
     method: "POST",
     body: formData,
   });

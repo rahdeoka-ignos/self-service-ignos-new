@@ -18,6 +18,7 @@ import { CompletePage } from "./screens/AddOns/Completepage";
 import { LoyaltyCard } from "./screens/LoyaltyCard";
 import { AdminMessagePage } from "./screens/AdminMessagePage";
 import { AdminTemplatePage } from "./screens/AdminTemplatePage";
+import { AdminPrinterPage } from "./screens/AdminPrinterPage";
 import { PasFotoPage } from "./screens/AddOns/PasFoto";
 
 export const router = createBrowserRouter([
@@ -116,6 +117,10 @@ export const router = createBrowserRouter([
   {
     path: "/admin/templates",
     Component: AdminTemplatePage,
+  },
+  {
+    path: "/admin/printers",
+    Component: AdminPrinterPage,
   },
   {
     path: "/pasfoto",

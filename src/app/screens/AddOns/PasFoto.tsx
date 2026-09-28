@@ -360,7 +360,7 @@ export function PasFotoPage() {
     formData.append("file", blob, filename);
 
     await fetch(
-      `http://localhost:5000/api/save-print?label=pasfoto-${ratioOpt.id}`,
+      `http://localhost:5000/api/save-print?label=pasfoto-${ratioOpt.id}&printProfile=pasfoto`,
       {
         method: "POST",
         body: formData,

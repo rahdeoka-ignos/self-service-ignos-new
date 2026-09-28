@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "profiles": [
+    {
+      "id": "4r-mantap",
+      "label": "4R mantap",
+      "printerName": "Microsoft Print to PDF",
+      "appliesTo": [
+        "4r"
+      ],
+      "copies": 1
+    }
+  ]
+}

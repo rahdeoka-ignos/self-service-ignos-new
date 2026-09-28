@@ -4,6 +4,8 @@ import path from "path";
 import cors from "cors";
 import sharp from "sharp";
 import multer from "multer";
+import pdfToPrinter from "pdf-to-printer";
+const { print, getPrinters } = pdfToPrinter;
 
 // Disable sharp cache to release file locks on Windows
 sharp.cache(false);
@@ -21,12 +23,21 @@ const PHOTOS_DIR = path.join(__dirname, "public/photos");
 const THUMBS_DIR = path.join(__dirname, "public/thumbnails");
 const TEMPLATES_DIR = path.join(__dirname, "public/templates");
 const TEMPLATES_JSON = path.join(TEMPLATES_DIR, "templates.json");
+const PRINTERS_JSON = path.join(__dirname, "public/printers.json");
 
 function readTemplates() {
   return JSON.parse(fs.readFileSync(TEMPLATES_JSON, "utf-8"));
 }
 function writeTemplates(data) {
   fs.writeFileSync(TEMPLATES_JSON, JSON.stringify(data, null, 2), "utf-8");
+}
+
+function readPrinters() {
+  if (!fs.existsSync(PRINTERS_JSON)) return { version: 1, profiles: [] };
+  return JSON.parse(fs.readFileSync(PRINTERS_JSON, "utf-8"));
+}
+function writePrinters(data) {
+  fs.writeFileSync(PRINTERS_JSON, JSON.stringify(data, null, 2), "utf-8");
 }
 
 const templateImageStorage = multer.diskStorage({
@@ -65,11 +76,44 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-app.post("/api/save-print", upload.single("file"), (req, res) => {
+function findPrinterProfile(productType) {
+  if (!productType) return null;
+  const data = readPrinters();
+  return data.profiles.find((p) => p.appliesTo.includes(productType)) || null;
+}
+
+async function autoPrintFile(filePath, productType) {
+  const profile = findPrinterProfile(productType);
+  if (!profile) {
+    console.log(`No printer profile found for product type "${productType}", skipping auto-print.`);
+    return;
+  }
+  try {
+    await print(filePath, {
+      printer: profile.printerName,
+      copies: profile.copies || 1,
+      printDialog: false,
+      silent: true,
+    });
+    console.log(`Auto-printed "${path.basename(filePath)}" to "${profile.printerName}" (profile: ${profile.id})`);
+  } catch (err) {
+    console.error(`Auto-print failed for profile "${profile.id}":`, err.message);
+  }
+}
+
+app.post("/api/save-print", upload.single("file"), async (req, res) => {
+  const productType = req.query.printProfile?.toString();
+  const filePath = req.file.path;
+
   res.json({
     success: true,
     file: `http://localhost:5000/photos/${req.file.filename}`,
   });
+
+  // Fire-and-forget: kirim response dulu ke frontend, print jalan di background
+  if (productType) {
+    autoPrintFile(filePath, productType);
+  }
 });
 
 async function generateThumbnail(file) {
@@ -240,6 +284,61 @@ app.post(
     res.json({ success: true, files: req.files });
   }
 );
+
+// ── Printer API ──────────────────────────────────────────────
+
+app.get("/api/system-printers", async (req, res) => {
+  try {
+    const printers = await getPrinters();
+    res.json(printers);
+  } catch (err) {
+    res.status(500).json({ error: "Cannot list system printers", detail: err.message });
+  }
+});
+
+app.get("/api/printers", (req, res) => {
+  try {
+    res.json(readPrinters());
+  } catch (err) {
+    res.status(500).json({ error: "Cannot read printers.json" });
+  }
+});
+
+app.post("/api/printers", (req, res) => {
+  const { id, label, printerName, appliesTo, copies } = req.body;
+  if (!id || !label || !printerName || !Array.isArray(appliesTo)) {
+    return res.status(400).json({ error: "id, label, printerName, and appliesTo are required" });
+  }
+  const data = readPrinters();
+  if (data.profiles.find((p) => p.id === id)) {
+    return res.status(409).json({ error: "Printer profile already exists" });
+  }
+  const entry = { id, label, printerName, appliesTo, copies: copies || 1 };
+  data.profiles.push(entry);
+  writePrinters(data);
+  res.json({ success: true, profile: entry });
+});
+
+app.put("/api/printers/:id", (req, res) => {
+  const { id } = req.params;
+  const changes = req.body;
+  const data = readPrinters();
+  const idx = data.profiles.findIndex((p) => p.id === id);
+  if (idx === -1) return res.status(404).json({ error: "Printer profile not found" });
+  data.profiles[idx] = { ...data.profiles[idx], ...changes };
+  writePrinters(data);
+  res.json({ success: true, profile: data.profiles[idx] });
+});
+
+app.delete("/api/printers/:id", (req, res) => {
+  const { id } = req.params;
+  const data = readPrinters();
+  const idx = data.profiles.findIndex((p) => p.id === id);
+  if (idx === -1) return res.status(404).json({ error: "Printer profile not found" });
+  data.profiles.splice(idx, 1);
+  writePrinters(data);
+  res.json({ success: true });
+});
 
 // ─────────────────────────────────────────────────────────────
 

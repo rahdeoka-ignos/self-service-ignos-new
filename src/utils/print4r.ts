@@ -30,6 +30,7 @@ interface PrintOptions {
   filter?: string;
   printLabel?: string;
   customSlots?: CustomSlotDef[];
+  printProfile?: string;
 }
 
 export async function generatePrint(
@@ -495,8 +496,12 @@ export async function generatePrint(
   formData.append("file", blob, filename);
 
   const label = options.printLabel;
-  await fetch(`http://localhost:5000/api/save-print?label=${label}`, {
-    method: "POST",
-    body: formData,
-  });
+  const printProfile = options.printProfile || "4r";
+  await fetch(
+    `http://localhost:5000/api/save-print?label=${label}&printProfile=${printProfile}`,
+    {
+      method: "POST",
+      body: formData,
+    },
+  );
 }

@@ -1,5 +1,5 @@
 import { useLocation, useNavigate } from "react-router";
-import { LayoutTemplate, MessageSquare, ArrowLeft, Camera } from "lucide-react";
+import { LayoutTemplate, MessageSquare, ArrowLeft, Camera, Printer } from "lucide-react";
 
 const NAV_ITEMS = [
   {
@@ -7,6 +7,12 @@ const NAV_ITEMS = [
     label: "Templates",
     icon: LayoutTemplate,
     desc: "Kelola layout foto",
+  },
+  {
+    path: "/admin/printers",
+    label: "Printers",
+    icon: Printer,
+    desc: "Kelola auto-print",
   },
   {
     path: "/admin/message",

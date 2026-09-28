@@ -267,10 +267,13 @@ export function CompletePage() {
       const formData = new FormData();
       formData.append("file", blob, filename);
 
-      await fetch("http://localhost:5000/api/save-print?label=struk", {
-        method: "POST",
-        body: formData,
-      });
+      await fetch(
+        "http://localhost:5000/api/save-print?label=struk&printProfile=struk",
+        {
+          method: "POST",
+          body: formData,
+        },
+      );
       console.log("Receipt saved to server successfully.");
     } catch (err) {
       console.error("Failed to generate/upload receipt PDF:", err);
