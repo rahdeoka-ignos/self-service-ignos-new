@@ -394,6 +394,28 @@ export function PhotoArrangement() {
     }));
   };
 
+  const getTemplateCopies = (index: number): number => {
+    if (!coupleMode) {
+      // Mode Beda-beda: setiap template mewakili 1 orang / 1 bonus, dicetak 1 lembar
+      return 1;
+    }
+    // Mode Sama-an (coupleMode === true):
+    if (!joinedBonus) {
+      // Tanpa bonus: 1 template dipakai bersama, dicetak sebanyak jumlah orang
+      return peopleCount;
+    }
+    // Dengan bonus:
+    // index 0 = template utama
+    // index 1 = template bonus
+    if (peopleCount <= 3) {
+      // <= 3 orang: masing-masing orang dapat 1 lembar utama + 1 lembar bonus
+      return peopleCount;
+    } else {
+      // > 3 orang: template utama dicetak untuk tiap orang, bonus 1 lembar bersama
+      return index === 0 ? peopleCount : 1;
+    }
+  };
+
   const handlePrint = async () => {
     try {
       setPrinting(true);
@@ -408,6 +430,8 @@ export function PhotoArrangement() {
           : `cetak-${labelIndex}`;
         // console.log("PRINTING TEMPLATE", i, "LABEL:", printLabel);
 
+        const copies = getTemplateCopies(i);
+
         await generatePrint(filledSlots[i], {
           layout: templates[i].layout,
           background: templates[i].background,
@@ -421,6 +445,7 @@ export function PhotoArrangement() {
             "",
           printLabel,
           customSlots: templates[i].customSlots ?? undefined,
+          copies,
         });
       }
       setPrinted(true);

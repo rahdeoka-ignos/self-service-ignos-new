@@ -82,20 +82,25 @@ function findPrinterProfile(productType) {
   return data.profiles.find((p) => p.appliesTo.includes(productType)) || null;
 }
 
-async function autoPrintFile(filePath, productType) {
+async function autoPrintFile(filePath, productType, copiesOverride) {
   const profile = findPrinterProfile(productType);
   if (!profile) {
     console.log(`No printer profile found for product type "${productType}", skipping auto-print.`);
     return;
   }
+  const copiesToPrint = copiesOverride || profile.copies || 1;
   try {
-    await print(filePath, {
-      printer: profile.printerName,
-      copies: profile.copies || 1,
-      printDialog: false,
-      silent: true,
-    });
-    console.log(`Auto-printed "${path.basename(filePath)}" to "${profile.printerName}" (profile: ${profile.id})`);
+    for (let c = 0; c < copiesToPrint; c++) {
+      await print(filePath, {
+        printer: profile.printerName,
+        copies: 1,
+        printDialog: false,
+        silent: true,
+        scale: "fit",
+        ...(profile.paperSize ? { paperSize: profile.paperSize } : {}),
+      });
+    }
+    console.log(`Auto-printed "${path.basename(filePath)}" (${copiesToPrint}x) to "${profile.printerName}" (profile: ${profile.id})`);
   } catch (err) {
     console.error(`Auto-print failed for profile "${profile.id}":`, err.message);
   }
@@ -103,6 +108,7 @@ async function autoPrintFile(filePath, productType) {
 
 app.post("/api/save-print", upload.single("file"), async (req, res) => {
   const productType = req.query.printProfile?.toString();
+  const copiesOverride = req.query.copies ? parseInt(req.query.copies.toString(), 10) : undefined;
   const filePath = req.file.path;
 
   res.json({
@@ -112,7 +118,7 @@ app.post("/api/save-print", upload.single("file"), async (req, res) => {
 
   // Fire-and-forget: kirim response dulu ke frontend, print jalan di background
   if (productType) {
-    autoPrintFile(filePath, productType);
+    autoPrintFile(filePath, productType, copiesOverride);
   }
 });
 

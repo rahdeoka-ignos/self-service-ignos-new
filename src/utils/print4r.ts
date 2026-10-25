@@ -31,6 +31,7 @@ interface PrintOptions {
   printLabel?: string;
   customSlots?: CustomSlotDef[];
   printProfile?: string;
+  copies?: number;
 }
 
 export async function generatePrint(
@@ -497,8 +498,9 @@ export async function generatePrint(
 
   const label = options.printLabel;
   const printProfile = options.printProfile || "4r";
+  const copiesParam = options.copies && options.copies > 1 ? `&copies=${options.copies}` : "";
   await fetch(
-    `http://localhost:5000/api/save-print?label=${label}&printProfile=${printProfile}`,
+    `http://localhost:5000/api/save-print?label=${label}&printProfile=${printProfile}${copiesParam}`,
     {
       method: "POST",
       body: formData,
