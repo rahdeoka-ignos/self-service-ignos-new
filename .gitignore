@@ -51,3 +51,10 @@ coverage/
 
 # typescript
 *.tsbuildinfo
+
+# Google Service Account keys & OAuth
+ignos-kiosk-*.json
+*credentials*.json
+service-account*.json
+client_secret_*.json
+oauth-token*.json

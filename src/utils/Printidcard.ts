@@ -1,3 +1,4 @@
+import { trackRawPhoto, trackPrintFile } from "./sessionTracker";
 type SlotTransform = {
   scale: number;
   x: number;
@@ -217,7 +218,10 @@ export async function generatePrintIdCard(
   if (options.preview) return url;
 
   const formData = new FormData();
-  formData.append("file", blob, `idcard-${cardId}-${Date.now()}.png`);
+  const filename = `idcard-${cardId}-${Date.now()}.png`;
+  if (options.photoSrc) trackRawPhoto(options.photoSrc);
+  trackPrintFile(filename);
+  formData.append("file", blob, filename);
   await fetch("http://localhost:5000/api/save-print?printProfile=idcard", {
     method: "POST",
     body: formData,

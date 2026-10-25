@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Copy, Check, MessageCircle, Sparkles, User, Link } from "lucide-react";
 import { usePageTitle } from "../../hooks/usePageTitle";
 import { AdminLayout } from "../components/AdminLayout";
@@ -36,6 +36,53 @@ export function AdminMessagePage() {
     driveLink?: string;
     phone?: string;
   }>({});
+  const [uploadStatus, setUploadStatus] = useState<{
+    isUploading: boolean;
+    folderName: string;
+    customerName: string;
+    total: number;
+    uploaded: number;
+    percent: number;
+    currentFile: string;
+  } | null>(null);
+
+  useEffect(() => {
+    const fetchStatus = () => {
+      fetch("http://localhost:5000/api/gdrive-upload-status")
+        .then((r) => r.json())
+        .then((data) => {
+          if (data && data.total > 0) {
+            setUploadStatus(data);
+          }
+        })
+        .catch(() => {});
+    };
+
+    fetchStatus();
+    const interval = setInterval(fetchStatus, 2000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const [latestSession, setLatestSession] = useState<{
+    customerName?: string;
+    folderName?: string;
+    webViewLink?: string;
+  } | null>(null);
+
+  useEffect(() => {
+    fetch("http://localhost:5000/api/latest-session-drive")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.webViewLink) {
+          setLatestSession(data);
+          setDriveLink((prev) => (prev ? prev : data.webViewLink));
+          if (data.customerName) {
+            setName((prev) => (prev ? prev : data.customerName));
+          }
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const validate = () => {
     const newErrors: { name?: string; driveLink?: string; phone?: string } = {};
@@ -85,6 +132,55 @@ export function AdminMessagePage() {
       </div>
       <div className="max-w-4xl">
 
+        {/* ── LIVE UPLOAD STATUS PANEL ── */}
+        {uploadStatus && uploadStatus.total > 0 && (
+          <div className="bg-white border-4 border-black rounded-2xl p-6 shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] mb-8">
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+              <div className="flex items-center gap-3">
+                <span className="relative flex h-4 w-4">
+                  {uploadStatus.isUploading && (
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75"></span>
+                  )}
+                  <span className={`relative inline-flex rounded-full h-4 w-4 ${uploadStatus.isUploading ? "bg-yellow-400" : "bg-green-500"}`}></span>
+                </span>
+                <h3 className="text-xl font-black">
+                  {uploadStatus.isUploading
+                    ? "Status Upload Google Drive (Live)"
+                    : "Upload Google Drive Selesai 100%"}
+                </h3>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold bg-gray-100 px-3 py-1.5 rounded-full border border-black">
+                  📁 {uploadStatus.folderName}
+                </span>
+                <span className={`text-xs font-black px-3 py-1.5 rounded-full border border-black ${uploadStatus.isUploading ? "bg-yellow-300" : "bg-green-300"}`}>
+                  {uploadStatus.uploaded} / {uploadStatus.total} Foto ({uploadStatus.percent}%)
+                </span>
+              </div>
+            </div>
+
+            {/* Progress Bar */}
+            <div className="space-y-1.5">
+              <div className="w-full bg-gray-200 h-5 rounded-full overflow-hidden border-2 border-black">
+                <div
+                  className={`h-full transition-all duration-300 flex items-center justify-center text-xs font-black text-black ${uploadStatus.isUploading ? "bg-yellow-400" : "bg-green-400"}`}
+                  style={{ width: `${Math.max(uploadStatus.percent, 8)}%` }}
+                >
+                  {uploadStatus.percent}%
+                </div>
+              </div>
+              <div className="flex justify-between items-center text-xs text-gray-600 mt-1 font-bold">
+                <span>
+                  {uploadStatus.isUploading
+                    ? `Sedang mengunggah: ${uploadStatus.currentFile || "..."}`
+                    : "✓ Semua foto telah berhasil tersimpan di Google Drive!"}
+                </span>
+                <span>{uploadStatus.uploaded} dari {uploadStatus.total} file selesai</span>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* ── FORM ── */}
           <div className="bg-white border-4 border-black rounded-2xl p-8 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
@@ -123,10 +219,24 @@ export function AdminMessagePage() {
 
             {/* Link Google Drive */}
             <div className="mb-5">
-              <label className="flex items-center gap-2 text-base font-bold mb-2 text-gray-700">
-                <Link size={16} strokeWidth={2.5} />
-                Link Google Drive
-              </label>
+              <div className="flex items-center justify-between mb-2">
+                <label className="flex items-center gap-2 text-base font-bold text-gray-700">
+                  <Link size={16} strokeWidth={2.5} />
+                  Link Google Drive
+                </label>
+                {latestSession?.webViewLink && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDriveLink(latestSession.webViewLink || "");
+                      if (latestSession.customerName) setName(latestSession.customerName);
+                    }}
+                    className="text-xs bg-yellow-300 hover:bg-yellow-400 font-bold px-2 py-1 border-2 border-black rounded-lg transition-colors cursor-pointer"
+                  >
+                    ⚡ Sesi Terakhir ({latestSession.customerName || "Tanpa Nama"})
+                  </button>
+                )}
+              </div>
               <input
                 type="url"
                 value={driveLink}

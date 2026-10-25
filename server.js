@@ -10,6 +10,7 @@ const { print, getPrinters } = pdfToPrinter;
 // Disable sharp cache to release file locks on Windows
 sharp.cache(false);
 import { fileURLToPath } from "url";
+import { createCustomerFolder, uploadMultipleFiles } from "./gdrive.js";
 
 const app = express();
 app.use(cors());
@@ -68,9 +69,14 @@ const storage = multer.diskStorage({
     cb(null, PHOTOS_DIR);
   },
   filename: function (req, file, cb) {
-    const label = req.query.label?.toString() || "print";
-    const ext = path.extname(file.originalname) || ".png";
-    cb(null, `${label}-${Date.now()}${ext}`);
+    // Jika frontend mengirimkan nama file spesifik (bukan default "blob"), gunakan nama tersebut
+    if (file.originalname && file.originalname !== "blob") {
+      cb(null, file.originalname);
+    } else {
+      const label = req.query.label?.toString() || "print";
+      const ext = path.extname(file.originalname) || ".png";
+      cb(null, `${label}-${Date.now()}${ext}`);
+    }
   },
 });
 
@@ -114,11 +120,146 @@ app.post("/api/save-print", upload.single("file"), async (req, res) => {
   res.json({
     success: true,
     file: `http://localhost:5000/photos/${req.file.filename}`,
+    filename: req.file.filename,
   });
 
   // Fire-and-forget: kirim response dulu ke frontend, print jalan di background
   if (productType) {
     autoPrintFile(filePath, productType, copiesOverride);
+  }
+});
+
+// ── Google Drive Session Upload API & Progress Tracker ──────────────────────────────
+let latestDriveSession = null;
+
+let uploadProgress = {
+  isUploading: false,
+  folderName: "",
+  webViewLink: "",
+  customerName: "",
+  total: 0,
+  uploaded: 0,
+  percent: 0,
+  currentFile: "",
+  files: [],
+  updatedAt: new Date().toISOString(),
+};
+
+app.get("/api/gdrive-upload-status", (req, res) => {
+  res.json(uploadProgress);
+});
+
+app.get("/api/latest-session-drive", (req, res) => {
+  res.json(latestDriveSession || { success: false, message: "Belum ada sesi Google Drive" });
+});
+
+app.post("/api/upload-session-gdrive", async (req, res) => {
+  try {
+    const { customerName = "", rawPhotos = [], printFiles = [] } = req.body;
+
+    const cleanCustomerName = customerName ? customerName.replace(/^@+/, "").trim() : "";
+
+    console.log(`[GDrive] Membuat folder Google Drive untuk sesi: "${cleanCustomerName || "Tanpa Nama"}"...`);
+    const folderResult = await createCustomerFolder(cleanCustomerName);
+    console.log(`[GDrive] Folder dibuat: ${folderResult.folderName} (${folderResult.webViewLink})`);
+
+    latestDriveSession = {
+      customerName: cleanCustomerName,
+      folderName: folderResult.folderName,
+      webViewLink: folderResult.webViewLink,
+      createdAt: new Date().toISOString(),
+    };
+
+    // Cari dan kumpulkan semua path file yang akan diunggah
+    const uniqueItems = Array.from(new Set([...rawPhotos, ...printFiles]));
+    const filePathsToUpload = [];
+
+    for (const item of uniqueItems) {
+      if (!item) continue;
+      if (item.startsWith("data:image/")) {
+        const matches = item.match(/^data:image\/([a-zA-Z0-9]+);base64,(.+)$/);
+        if (matches) {
+          const ext = matches[1] === "jpeg" ? "jpg" : matches[1];
+          const buffer = Buffer.from(matches[2], "base64");
+          const tempName = `raw-${Date.now()}-${Math.random().toString(36).substring(7)}.${ext}`;
+          const tempPath = path.join(PHOTOS_DIR, tempName);
+          fs.writeFileSync(tempPath, buffer);
+          filePathsToUpload.push(tempPath);
+        }
+      } else {
+        const filename = item.includes("/") ? item.split("/").pop().split("?")[0] : item;
+        const fullPath = path.join(PHOTOS_DIR, filename);
+        if (fs.existsSync(fullPath)) {
+          filePathsToUpload.push(fullPath);
+        } else {
+          // Cari kemungkinan kemiripan nama (misal label timestamp prefix)
+          const localFiles = fs.readdirSync(PHOTOS_DIR);
+          const matched = localFiles.find((f) => f.includes(filename) || filename.includes(f));
+          if (matched) {
+            filePathsToUpload.push(path.join(PHOTOS_DIR, matched));
+          } else {
+            console.warn(`[GDrive] File tidak ditemukan di folder lokal: ${fullPath}`);
+          }
+        }
+      }
+    }
+
+    // Inisialisasi progress untuk dipantau admin & frontend
+    uploadProgress = {
+      isUploading: true,
+      folderName: folderResult.folderName,
+      webViewLink: folderResult.webViewLink,
+      customerName: cleanCustomerName,
+      total: filePathsToUpload.length,
+      uploaded: 0,
+      percent: 0,
+      currentFile: filePathsToUpload.length > 0 ? path.basename(filePathsToUpload[0]) : "",
+      files: filePathsToUpload.map((p) => ({
+        name: path.basename(p),
+        status: "pending",
+      })),
+      updatedAt: new Date().toISOString(),
+    };
+
+    // Kirim response link ke frontend secepatnya (di bawah 1 detik)
+    res.json({
+      success: true,
+      folderId: folderResult.folderId,
+      folderName: folderResult.folderName,
+      webViewLink: folderResult.webViewLink,
+      totalFiles: filePathsToUpload.length,
+    });
+
+    // Background upload dengan update real-time progress
+    (async () => {
+      try {
+        console.log(`[GDrive] Mengunggah ${filePathsToUpload.length} file ke ${folderResult.folderName}...`);
+        await uploadMultipleFiles(
+          filePathsToUpload,
+          folderResult.folderId,
+          (uploadedCount, totalCount, fileName, status) => {
+            const fileItem = uploadProgress.files.find((f) => f.name === fileName);
+            if (fileItem) fileItem.status = status;
+            uploadProgress.uploaded = (status === "done" || status === "failed") ? uploadedCount : uploadProgress.uploaded;
+            uploadProgress.percent = Math.round((uploadProgress.uploaded / totalCount) * 100);
+            uploadProgress.currentFile = status === "uploading" ? fileName : "";
+            uploadProgress.updatedAt = new Date().toISOString();
+          }
+        );
+        uploadProgress.isUploading = false;
+        uploadProgress.percent = 100;
+        uploadProgress.currentFile = "";
+        uploadProgress.updatedAt = new Date().toISOString();
+        console.log(`[GDrive] Selesai! Semua ${filePathsToUpload.length} file berhasil diunggah ke ${folderResult.folderName}.`);
+      } catch (uploadErr) {
+        uploadProgress.isUploading = false;
+        uploadProgress.error = uploadErr.message;
+        console.error("[GDrive] Error saat background file upload:", uploadErr);
+      }
+    })();
+  } catch (err) {
+    console.error("[GDrive] Gagal membuat sesi Google Drive:", err);
+    res.status(500).json({ error: err.message });
   }
 });
 

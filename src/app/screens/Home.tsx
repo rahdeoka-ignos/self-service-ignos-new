@@ -1,3 +1,4 @@
+import { clearSessionData } from "../../utils/sessionTracker";
 import { useNavigate } from "react-router";
 import { Camera, Users } from "lucide-react";
 import { BrutalistCard } from "../components/BrutalistCard";
@@ -8,6 +9,7 @@ import { preloadGallery } from "../../utils/photoPreloader";
 export function Home() {
   const navigate = useNavigate();
   useEffect(() => {
+    clearSessionData();
     preloadGallery(200);
     const interval = setInterval(() => {
       preloadGallery(200);

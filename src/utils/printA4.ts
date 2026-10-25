@@ -1,3 +1,4 @@
+import { trackRawPhoto, trackPrintFile } from "./sessionTracker";
 type SlotTransform = {
   scale: number;
   x: number;

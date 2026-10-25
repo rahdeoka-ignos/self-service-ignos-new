@@ -1,8 +1,14 @@
-import { useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
+import { QRCodeSVG } from "qrcode.react";
+import {
+  getSessionRawPhotos,
+  getSessionPrintFiles,
+  clearSessionData,
+  DRIVE_LINK_KEY,
+} from "../../../utils/sessionTracker";
 import { useLocation, useNavigate } from "react-router";
 import { Navigation } from "../../components/Navigation";
 import {
-  CheckCircle,
   MapPin,
   ArrowRight,
   Instagram,
@@ -13,6 +19,9 @@ import {
   LayoutTemplate,
   Key,
   ShoppingBag,
+  QrCode,
+  ExternalLink,
+  Loader2,
 } from "lucide-react";
 import { Trans, useTranslation } from "react-i18next";
 
@@ -266,6 +275,7 @@ export function CompletePage() {
       const blob = pdf.output("blob");
       const formData = new FormData();
       formData.append("file", blob, filename);
+      trackPrintFile(filename);
 
       await fetch(
         "http://localhost:5000/api/save-print?label=struk&printProfile=struk",
@@ -280,12 +290,107 @@ export function CompletePage() {
     }
   };
 
+  const [driveData, setDriveData] = useState<{
+    folderName: string;
+    webViewLink: string;
+  } | null>(() => {
+    try {
+      const cached = sessionStorage.getItem(DRIVE_LINK_KEY);
+      return cached ? JSON.parse(cached) : null;
+    } catch {
+      return null;
+    }
+  });
+  const [driveLoading, setDriveLoading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<{
+    isUploading: boolean;
+    total: number;
+    uploaded: number;
+    percent: number;
+    currentFile: string;
+  } | null>(null);
+
+  useEffect(() => {
+    const checkInterval = setInterval(() => {
+      fetch("http://localhost:5000/api/gdrive-upload-status")
+        .then((r) => r.json())
+        .then((data) => {
+          if (data && data.total > 0) {
+            setUploadProgress(data);
+          }
+        })
+        .catch(() => {});
+    }, 2000);
+
+    return () => clearInterval(checkInterval);
+  }, []);
+
+  const customerName = (instagramUsernames[0] ?? "").replace(/^@+/, "").trim();
+
+  const autoUploadDrive = async () => {
+    const cached = sessionStorage.getItem(DRIVE_LINK_KEY);
+    if (cached) {
+      try {
+        const parsed = JSON.parse(cached);
+        setDriveData(parsed);
+        setDriveLoading(false);
+        return;
+      } catch (e) {}
+    }
+
+    try {
+      setDriveLoading(true);
+      // Ambil SEMUA foto dari galeri jepretan studio sesi ini
+      let allGalleryPhotos: string[] = [];
+      try {
+        const cachedGallery = sessionStorage.getItem("gallery");
+        if (cachedGallery) {
+          const parsed = JSON.parse(cachedGallery);
+          allGalleryPhotos = parsed.map((item: any) => item.full);
+        }
+      } catch (e) {}
+
+      const chosenPhotos = getSessionRawPhotos();
+      const rawPhotos = Array.from(new Set([...allGalleryPhotos, ...chosenPhotos]));
+      const printFiles = getSessionPrintFiles();
+
+      const res = await fetch("http://localhost:5000/api/upload-session-gdrive", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          customerName,
+          rawPhotos,
+          printFiles,
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error(`Server returned status ${res.status}`);
+      }
+
+      const data = await res.json();
+      if (data.success) {
+        const result = {
+          folderName: data.folderName,
+          webViewLink: data.webViewLink,
+        };
+        setDriveData(result);
+        sessionStorage.setItem(DRIVE_LINK_KEY, JSON.stringify(result));
+      }
+    } catch (err) {
+      console.error("Gagal auto upload Google Drive:", err);
+    } finally {
+      setDriveLoading(false);
+    }
+  };
+
   const uploadStarted = useRef(false);
 
   useEffect(() => {
     if (uploadStarted.current) return;
     uploadStarted.current = true;
     autoUploadReceipt();
+    autoUploadDrive();
   }, []);
 
   const layoutLabels: { [key: string]: string } = {
@@ -363,32 +468,123 @@ export function CompletePage() {
       <Navigation currentStep={5} totalSteps={5} />
 
       <div className="flex items-center justify-center min-h-screen p-12 pt-36 pb-20">
-        <div className="max-w-xl w-full">
-          {/* ── Success heading ── */}
-          <div className="text-center mb-10">
-            <div className="relative inline-flex mb-8">
-              <div className="w-36 h-36 bg-black rounded-full flex items-center justify-center border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,0.3)]">
-                <CheckCircle size={72} className="text-white" strokeWidth={2} />
-              </div>
-              <span className="absolute -top-2 -right-2 w-6 h-6 bg-yellow-300 border-2 border-black rounded-full" />
-              <span className="absolute -bottom-1 -left-3 w-4 h-4 bg-green-400 border-2 border-black rounded-full" />
-            </div>
-            <h1 className="text-7xl font-bold mb-5 leading-tight">
-              {t("complete.title")}
+        <div className="max-w-6xl w-full">
+          {/* ── JUDUL & SUBJUDUL HALAMAN ── */}
+          <div className="text-center mb-8">
+            <h1 className="text-4xl sm:text-5xl font-black mb-2 text-black tracking-tight">
+              Sesi Selesai! 🎉
             </h1>
-            <p className="text-3xl text-gray-600 leading-relaxed">
-              <Trans
-                i18nKey="complete.subtitle"
-                components={{ 1: <span className="font-bold text-black" /> }}
-              />
+            <p className="text-lg text-gray-600 font-medium max-w-xl mx-auto">
+              Scan QR Code untuk mengunduh softcopy foto, dan tunjukkan struk ke kasir untuk transaksi.
             </p>
           </div>
 
-          {/* ── RECEIPT ── */}
-          <div
-            ref={receiptRef}
-            className="bg-white border-4 border-black rounded-3xl shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] overflow-hidden mb-8"
-          >
+          {/* ── DUA KOLOM SEIMBANG: SOFTCOPY & STRUK KASIR ── */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start mb-12">
+            {/* ── KOLOM 1: SOFTCOPY QR CODE (BACKGROUND PUTIH & BALANCED HEIGHT) ── */}
+            <div className="bg-white border-4 border-black rounded-3xl p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] text-center relative overflow-hidden flex flex-col items-center">
+              {/* Header Card */}
+              <div>
+                <div className="inline-flex items-center bg-black text-white px-5 py-2 rounded-full font-black text-sm tracking-wider uppercase mb-3 shadow-[2px_2px_0px_0px_rgba(0,0,0,0.15)]">
+                  <span>Softcopy Foto Kamu</span>
+                </div>
+                <h2 className="text-3xl font-black mb-2 text-black leading-tight">
+                  Scan & Download Foto!
+                </h2>
+                <p className="text-sm text-gray-600 font-semibold max-w-sm mx-auto mb-4">
+                  Arahkan kamera HP ke QR Code di bawah untuk mengunduh semua foto mentah & hasil cetak:
+                </p>
+              </div>
+
+              {/* Center Content (QR Code & Actions) */}
+              <div className="w-full flex flex-col items-center">
+                {driveLoading ? (
+                  <div className="bg-gray-50 border-4 border-black rounded-2xl p-8 flex flex-col items-center justify-center gap-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] w-full">
+                    <Loader2 size={44} className="animate-spin text-black" />
+                    <p className="text-base font-bold text-gray-800">Menyiapkan link Google Drive kamu...</p>
+                  </div>
+                ) : driveData?.webViewLink ? (
+                  <div className="flex flex-col items-center gap-4 w-full">
+                    {/* QR Code Container */}
+                    <div className="bg-white p-4 border-4 border-black rounded-3xl shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] inline-block">
+                      <QRCodeSVG
+                        value={driveData.webViewLink}
+                        size={230}
+                        level="M"
+                        includeMargin={false}
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">
+                        Folder Google Drive:
+                      </p>
+                      <p className="text-sm font-black bg-gray-50 px-4 py-1.5 rounded-xl border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] inline-block">
+                        {driveData.folderName}
+                      </p>
+                    </div>
+
+                    <a
+                      href={driveData.webViewLink}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-2 text-sm font-black text-black bg-yellow-300 hover:bg-black hover:text-white px-5 py-2.5 rounded-xl border-3 border-black transition-colors shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] cursor-pointer"
+                    >
+                      <span>Buka Link Folder Drive</span>
+                      <ExternalLink size={16} />
+                    </a>
+                  </div>
+                ) : (
+                  <div className="p-4 bg-gray-50 border-4 border-black rounded-2xl text-black text-sm font-bold shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] w-full">
+                    Link Google Drive sedang disiapkan server. Kasir dapat membantu memeriksa softcopy foto Anda.
+                  </div>
+                )}
+              </div>
+
+              {/* Bottom Footer (Upload Progress) */}
+              <div className="w-full mt-4 pt-3 border-t-2 border-dashed border-gray-200">
+                {uploadProgress && uploadProgress.total > 0 ? (
+                  <div className="w-full bg-gray-50 p-3 border-2 border-black rounded-xl shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] text-left">
+                    <div className="flex justify-between items-center mb-1 text-xs font-bold">
+                      <span className="flex items-center gap-1.5">
+                        {uploadProgress.isUploading ? (
+                          <>
+                            <Loader2 size={13} className="animate-spin text-black" />
+                            <span>Mengunggah foto ke Drive...</span>
+                          </>
+                        ) : (
+                          <span className="text-green-700 font-black">✓ Selesai Diunggah</span>
+                        )}
+                      </span>
+                      <span className="font-black text-black text-xs">
+                        {uploadProgress.uploaded} / {uploadProgress.total} ({uploadProgress.percent}%)
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-200 h-2.5 rounded-full overflow-hidden border border-black">
+                      <div
+                        className={`h-full transition-all duration-300 ${uploadProgress.isUploading ? "bg-yellow-400" : "bg-green-500"}`}
+                        style={{ width: `${Math.max(uploadProgress.percent, 5)}%` }}
+                      />
+                    </div>
+                    {uploadProgress.isUploading && uploadProgress.currentFile && (
+                      <p className="text-[10px] text-gray-500 mt-1 truncate font-medium">
+                        File: {uploadProgress.currentFile}
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-xs text-gray-400 font-medium">
+                    Semua foto sesi ini tersimpan aman di cloud.
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* ── KOLOM 2: STRUK KASIR (BALANCED HEIGHT) ── */}
+            <div
+              ref={receiptRef}
+              className="bg-white border-4 border-black rounded-3xl shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] overflow-hidden"
+            >
             {/* Header */}
             <div className="bg-black text-white px-8 py-6 text-center">
               <p className="text-3xl font-black tracking-widest uppercase">
@@ -622,11 +818,15 @@ export function CompletePage() {
               />
             </div>
           </div>
+        </div>
 
-          {/* Back home */}
-          <div className="flex justify-center">
+        {/* Back home */}
+        <div className="flex justify-center">
             <button
-              onClick={() => navigate("/")}
+              onClick={() => {
+                clearSessionData();
+                navigate("/");
+              }}
               className="text-2xl font-bold border-4 border-black px-16 py-5 bg-white hover:bg-black hover:text-white transition-colors rounded-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1"
             >
               {t("complete.actions.backHome")}

@@ -1,3 +1,4 @@
+import { trackRawPhotos, trackPrintFile } from "./sessionTracker";
 import type { CustomSlotDef } from "../types/template";
 
 type Slots = { [key: number]: string };
@@ -494,6 +495,8 @@ export async function generatePrint(
     ? `${options.printLabel}-${Date.now()}.png`
     : `${options.printLabel}-${Date.now()}.png`;
   // console.log(filename);
+  trackRawPhotos(Object.values(slots));
+  trackPrintFile(filename);
   formData.append("file", blob, filename);
 
   const label = options.printLabel;
