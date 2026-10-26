@@ -1,8 +1,14 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router";
-import { LayoutTemplate, MessageSquare, ArrowLeft, Camera, Printer } from "lucide-react";
+import { LayoutTemplate, MessageSquare, ArrowLeft, Camera, Printer, LayoutDashboard } from "lucide-react";
 
 const NAV_ITEMS = [
+  {
+    path: "/admin",
+    label: "Dashboard",
+    icon: LayoutDashboard,
+    desc: "Rekap & omset harian",
+  },
   {
     path: "/admin/templates",
     label: "Templates",
@@ -75,7 +81,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
             Menu
           </p>
           {NAV_ITEMS.map(({ path, label, icon: Icon, desc }) => {
-            const isActive = location.pathname === path;
+            const isActive = path === "/admin" ? location.pathname === "/admin" : location.pathname.startsWith(path);
             return (
               <button
                 key={path}

@@ -1,0 +1,58 @@
+[
+  {
+    "id": "SES-1793019533209",
+    "timestamp": "2026-10-26T15:00:12.000Z",
+    "date": "2026-10-26",
+    "time": "15.00",
+    "customerName": "Dewa Ayu",
+    "peopleCount": 2,
+    "coupleMode": true,
+    "joinedBonus": true,
+    "makeStory": false,
+    "softcopyType": "paid",
+    "softcopyCharge": 25000,
+    "prints": {
+      "regular": 2,
+      "bonus": 2,
+      "total": 4
+    },
+    "a4Count": 0,
+    "miscAddons": [],
+    "basePrice": 50000,
+    "totalAddonsPrice": 0,
+    "totalPrice": 75000,
+    "driveFolderName": "IGNOS STUDIO - 15.00 (Dewa Ayu)",
+    "driveWebViewLink": "https://drive.google.com/drive/folders/1Ec1s-sQJnBVzpb7-jhWIsrJf8FPGeyrD"
+  },
+  {
+    "id": "SES-1792912955608",
+    "timestamp": "2026-10-26T16:37:45.000Z",
+    "date": "2026-10-26",
+    "time": "16.37",
+    "customerName": "arikulantariiii",
+    "peopleCount": 4,
+    "coupleMode": false,
+    "joinedBonus": true,
+    "makeStory": true,
+    "softcopyType": "story_free",
+    "softcopyCharge": 0,
+    "prints": {
+      "regular": 4,
+      "bonus": 4,
+      "total": 8
+    },
+    "a4Count": 0,
+    "miscAddons": [
+      {
+        "name": "Keychain Love Metal",
+        "qty": 1,
+        "price": 15000
+      }
+    ],
+    "basePrice": 50000,
+    "totalAddonsPrice": 15000,
+    "totalPrice": 65000,
+    "driveFolderName": "IGNOS STUDIO - 16.37 (arikulantariiii)",
+    "driveWebViewLink": "https://drive.google.com/drive/folders/1Ec1s-sQJnBVzpb7-jhWIsrJf8FPGeyrD"
+  }
+]

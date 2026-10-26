@@ -26,6 +26,24 @@ const THUMBS_DIR = path.join(__dirname, "public/thumbnails");
 const TEMPLATES_DIR = path.join(__dirname, "public/templates");
 const TEMPLATES_JSON = path.join(TEMPLATES_DIR, "templates.json");
 const PRINTERS_JSON = path.join(__dirname, "public/printers.json");
+const SESSIONS_DIR = path.join(__dirname, "data");
+const SESSIONS_JSON = path.join(SESSIONS_DIR, "sessions.json");
+
+function readSessions() {
+  if (!fs.existsSync(SESSIONS_JSON)) return [];
+  try {
+    return JSON.parse(fs.readFileSync(SESSIONS_JSON, "utf-8"));
+  } catch {
+    return [];
+  }
+}
+
+function writeSessions(sessions) {
+  if (!fs.existsSync(SESSIONS_DIR)) {
+    fs.mkdirSync(SESSIONS_DIR, { recursive: true });
+  }
+  fs.writeFileSync(SESSIONS_JSON, JSON.stringify(sessions, null, 2), "utf-8");
+}
 
 function readTemplates() {
   return JSON.parse(fs.readFileSync(TEMPLATES_JSON, "utf-8"));
@@ -156,7 +174,22 @@ app.get("/api/latest-session-drive", (req, res) => {
 
 app.post("/api/upload-session-gdrive", async (req, res) => {
   try {
-    const { customerName = "", rawPhotos = [], printFiles = [] } = req.body;
+    const {
+      customerName = "",
+      rawPhotos = [],
+      printFiles = [],
+      peopleCount = 1,
+      coupleMode = false,
+      joinedBonus = false,
+      makeStory = true,
+      extraCharge = 0,
+      totalPrint = 1,
+      regularPrint = 1,
+      bonusPrint = 0,
+      a4Count = 0,
+      miscAddons = [],
+      basePrice = 50000,
+    } = req.body;
 
     const cleanCustomerName = customerName ? customerName.replace(/^@+/, "").trim() : "";
 
@@ -170,6 +203,57 @@ app.post("/api/upload-session-gdrive", async (req, res) => {
       webViewLink: folderResult.webViewLink,
       createdAt: new Date().toISOString(),
     };
+
+    // Auto-record session in persistent storage
+    try {
+      const now = new Date();
+      const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+      const hours = now.getHours().toString().padStart(2, "0");
+      const minutes = now.getMinutes().toString().padStart(2, "0");
+      const timeStr = `${hours}.${minutes}`;
+
+      const addonsTotal = (miscAddons || []).reduce((sum, item) => {
+        const price = item.price || 15000;
+        return sum + (price * (item.qty || 1));
+      }, 0);
+      const a4Total = (Number(a4Count) || 0) * 20000;
+      const softcopyTotal = makeStory ? 0 : (Number(extraCharge) || 25000);
+      const sessionBasePrice = Number(basePrice) || 50000;
+      const finalTotalPrice = sessionBasePrice + addonsTotal + a4Total + softcopyTotal;
+
+      const newSessionRecord = {
+        id: `SES-${Date.now()}`,
+        timestamp: now.toISOString(),
+        date: dateStr,
+        time: timeStr,
+        customerName: cleanCustomerName || "Customer",
+        peopleCount: Number(peopleCount) || 1,
+        coupleMode: Boolean(coupleMode),
+        joinedBonus: Boolean(joinedBonus),
+        makeStory: Boolean(makeStory),
+        softcopyType: makeStory ? "story_free" : "paid",
+        softcopyCharge: softcopyTotal,
+        prints: {
+          regular: Number(regularPrint) || Number(peopleCount) || 1,
+          bonus: Number(bonusPrint) || (joinedBonus ? Number(peopleCount) : 0),
+          total: Number(totalPrint) || (joinedBonus ? (Number(peopleCount) * 2) : Number(peopleCount)),
+        },
+        a4Count: Number(a4Count) || 0,
+        miscAddons: miscAddons || [],
+        basePrice: sessionBasePrice,
+        totalAddonsPrice: addonsTotal + a4Total,
+        totalPrice: finalTotalPrice,
+        driveFolderName: folderResult.folderName,
+        driveWebViewLink: folderResult.webViewLink,
+      };
+
+      const allSessions = readSessions();
+      allSessions.unshift(newSessionRecord);
+      writeSessions(allSessions);
+      console.log(`[Session] Recorded session for ${cleanCustomerName}: Total Rp ${finalTotalPrice}`);
+    } catch (saveErr) {
+      console.error("[Session] Gagal menyimpan data sesi:", saveErr.message);
+    }
 
     // Cari dan kumpulkan semua path file yang akan diunggah
     const uniqueItems = Array.from(new Set([...rawPhotos, ...printFiles]));
@@ -712,6 +796,113 @@ app.post("/api/printers/clear-jobs", (req, res) => {
     if (err) return res.status(500).json({ success: false, error: err.message });
     res.json({ success: true, message: "Antrean cetak berhasil dibersihkan" });
   });
+});
+
+// ── Session Sales & Shift Endpoints ──────────────────────
+app.get("/api/sessions", (req, res) => {
+  const { date, all } = req.query;
+  const allSessions = readSessions();
+  const now = new Date();
+  const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+  const targetDate = date ? date.toString() : todayStr;
+
+  const filteredSessions = all === "true" 
+    ? allSessions 
+    : allSessions.filter((s) => s.date === targetDate);
+
+  let totalSessions = filteredSessions.length;
+  let totalPeople = 0;
+  let totalOmset = 0;
+  let totalReg4R = 0;
+  let totalBonus4R = 0;
+  let totalA4 = 0;
+  let storyFreeCount = 0;
+  let paidSoftcopyCount = 0;
+  let paidSoftcopyRevenue = 0;
+  const addonsMap = {};
+
+  filteredSessions.forEach((s) => {
+    totalPeople += Number(s.peopleCount) || 1;
+    totalOmset += Number(s.totalPrice) || 0;
+    totalReg4R += Number(s.prints?.regular) || 0;
+    totalBonus4R += Number(s.prints?.bonus) || 0;
+    totalA4 += Number(s.a4Count) || 0;
+
+    if (s.makeStory) {
+      storyFreeCount++;
+    } else {
+      paidSoftcopyCount++;
+      paidSoftcopyRevenue += Number(s.softcopyCharge) || 25000;
+    }
+
+    if (Array.isArray(s.miscAddons)) {
+      s.miscAddons.forEach((item) => {
+        const name = item.name || "Addon";
+        const qty = Number(item.qty) || 1;
+        const price = Number(item.price) || 15000;
+        if (!addonsMap[name]) {
+          addonsMap[name] = { name, qty: 0, revenue: 0 };
+        }
+        addonsMap[name].qty += qty;
+        addonsMap[name].revenue += (qty * price);
+      });
+    }
+  });
+
+  const allAvailableDates = Array.from(new Set(allSessions.map((s) => s.date))).sort().reverse();
+
+  res.json({
+    success: true,
+    date: targetDate,
+    summary: {
+      totalSessions,
+      totalPeople,
+      totalOmset,
+      totalPrints: {
+        regular: totalReg4R,
+        bonus: totalBonus4R,
+        total4R: totalReg4R + totalBonus4R,
+        a4: totalA4,
+      },
+      softcopy: {
+        storyFree: storyFreeCount,
+        paid: paidSoftcopyCount,
+        paidRevenue: paidSoftcopyRevenue,
+      },
+      addonsSummary: Object.values(addonsMap),
+    },
+    sessions: filteredSessions,
+    allAvailableDates,
+  });
+});
+
+app.post("/api/sessions", (req, res) => {
+  const sessionData = req.body;
+  if (!sessionData) return res.status(400).json({ error: "Missing session data" });
+  const allSessions = readSessions();
+  const now = new Date();
+  const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+  const hours = now.getHours().toString().padStart(2, "0");
+  const minutes = now.getMinutes().toString().padStart(2, "0");
+
+  const newEntry = {
+    id: sessionData.id || `SES-${Date.now()}`,
+    timestamp: sessionData.timestamp || now.toISOString(),
+    date: sessionData.date || dateStr,
+    time: sessionData.time || `${hours}.${minutes}`,
+    ...sessionData,
+  };
+  allSessions.unshift(newEntry);
+  writeSessions(allSessions);
+  res.json({ success: true, session: newEntry });
+});
+
+app.delete("/api/sessions/:id", (req, res) => {
+  const { id } = req.params;
+  const allSessions = readSessions();
+  const filtered = allSessions.filter((s) => s.id !== id);
+  writeSessions(filtered);
+  res.json({ success: true, message: "Sesi berhasil dihapus" });
 });
 
 app.delete("/api/printers/:id", (req, res) => {

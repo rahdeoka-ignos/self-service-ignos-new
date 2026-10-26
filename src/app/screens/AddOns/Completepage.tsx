@@ -370,6 +370,16 @@ export function CompletePage() {
           customerName,
           rawPhotos,
           printFiles,
+          peopleCount,
+          coupleMode,
+          joinedBonus,
+          makeStory,
+          extraCharge: location.state?.extraCharge ?? (makeStory ? 0 : 25000),
+          totalPrint,
+          regularPrint,
+          bonusPrint,
+          a4Count,
+          miscAddons,
         }),
       });
 

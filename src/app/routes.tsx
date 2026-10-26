@@ -16,6 +16,7 @@ import { IdCardArrangement } from "./screens/AddOns/Idcardarrangement";
 import { StoryQuestion } from "./screens/AddOns/Storyquestion";
 import { CompletePage } from "./screens/AddOns/Completepage";
 import { LoyaltyCard } from "./screens/LoyaltyCard";
+import { AdminDashboardPage } from "./screens/AdminDashboardPage";
 import { AdminMessagePage } from "./screens/AdminMessagePage";
 import { AdminTemplatePage } from "./screens/AdminTemplatePage";
 import { AdminPrinterPage } from "./screens/AdminPrinterPage";
@@ -109,6 +110,10 @@ export const router = createBrowserRouter([
   {
     path: "/loyalty",
     Component: LoyaltyCard,
+  },
+  {
+    path: "/admin",
+    Component: AdminDashboardPage,
   },
   {
     path: "/admin/message",
