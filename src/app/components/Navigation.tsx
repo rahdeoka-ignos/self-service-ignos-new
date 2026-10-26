@@ -1,3 +1,4 @@
+import { KioskPrinterAlertModal } from "./KioskPrinterAlertModal";
 import { useNavigate } from "react-router";
 import { ArrowLeft } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -22,7 +23,9 @@ export function Navigation({
   };
 
   return (
-    <div className="fixed top-0 left-0 right-0 bg-white border-b-4 border-black z-50">
+    <>
+      <KioskPrinterAlertModal />
+      <div className="fixed top-0 left-0 right-0 bg-white border-b-4 border-black z-50">
       <div className="flex items-center justify-between p-6">
         <div className="flex items-center gap-4">
           {showBack && (
@@ -70,5 +73,6 @@ export function Navigation({
         </div>
       </div>
     </div>
+    </>
   );
 }

@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router";
 import { LayoutTemplate, MessageSquare, ArrowLeft, Camera, Printer } from "lucide-react";
 
@@ -23,6 +24,27 @@ const NAV_ITEMS = [
 ];
 
 export function AdminLayout({ children }: { children: React.ReactNode }) {
+  const [printerAlert, setPrinterAlert] = useState<any>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    const checkAlert = async () => {
+      try {
+        const res = await fetch("http://localhost:5000/api/printer-status");
+        if (!res.ok) return;
+        const data = await res.json();
+        if (isMounted) {
+          setPrinterAlert(data.hasError && data.alert ? data.alert : null);
+        }
+      } catch {}
+    };
+    checkAlert();
+    const interval = setInterval(checkAlert, 4000);
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, []);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -83,7 +105,12 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
                     {desc}
                   </p>
                 </div>
-                {isActive && (
+                {path === "/admin/printers" && printerAlert && (
+                  <span className="ml-auto bg-red-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider animate-pulse border border-black shrink-0">
+                    Alert!
+                  </span>
+                )}
+                {isActive && !printerAlert && (
                   <div className="ml-auto w-1.5 h-1.5 rounded-full bg-white shrink-0" />
                 )}
               </button>
@@ -106,7 +133,28 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
       </aside>
 
       {/* ── Main Content ── */}
-      <main className="flex-1 overflow-y-auto min-w-0">
+      <main className="flex-1 overflow-y-auto min-w-0 flex flex-col">
+        {printerAlert && (
+          <div className="bg-red-500 text-white px-6 py-3 border-b-4 border-black flex items-center justify-between font-bold text-sm shrink-0 shadow-[0_2px_0_0_rgba(0,0,0,1)]">
+            <div className="flex items-center gap-3">
+              <span className="text-xl">🖨️⚠️</span>
+              <div>
+                <span className="font-black uppercase tracking-wider mr-2 bg-black text-white px-2 py-0.5 rounded text-xs">
+                  {printerAlert.title}
+                </span>
+                <span>{printerAlert.adminMessage}</span>
+              </div>
+            </div>
+            {location.pathname !== "/admin/printers" && (
+              <button
+                onClick={() => navigate("/admin/printers")}
+                className="bg-white text-black px-4 py-1.5 rounded-xl border-2 border-black font-black text-xs hover:bg-yellow-300 transition-colors shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] cursor-pointer"
+              >
+                Buka Menu Printer →
+              </button>
+            )}
+          </div>
+        )}
         {children}
       </main>
     </div>

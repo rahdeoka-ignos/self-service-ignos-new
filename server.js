@@ -1,3 +1,4 @@
+import { exec } from "child_process";
 import express from "express";
 import fs from "fs";
 import path from "path";
@@ -475,6 +476,242 @@ app.put("/api/printers/:id", (req, res) => {
   data.profiles[idx] = { ...data.profiles[idx], ...changes };
   writePrinters(data);
   res.json({ success: true, profile: data.profiles[idx] });
+});
+
+// ── Live Printer Monitoring & Spooler Tracking ─────────────
+let printerStatusCache = null;
+let printerStatusCacheTime = 0;
+let simulatedPrinterAlert = null;
+
+function fetchWindowsPrinterStatus() {
+  return new Promise((resolve) => {
+    const psScript = `
+$p = @(Get-CimInstance Win32_Printer | Select-Object Name, PrinterStatus, ExtendedPrinterStatus, DetectedErrorState, PrinterState, WorkOffline, PortName);
+$j = @(Get-CimInstance Win32_PrintJob | Select-Object Name, JobStatus, Status, Document);
+[PSCustomObject]@{ printers = $p; jobs = $j } | ConvertTo-Json -Depth 3 -Compress
+`;
+    const b64 = Buffer.from(psScript, "utf16le").toString("base64");
+    exec(`powershell -NoProfile -EncodedCommand ${b64}`, { windowsHide: true, timeout: 6000 }, (err, stdout) => {
+      if (err) {
+        return resolve({ success: false, error: err.message, printers: [], jobs: [] });
+      }
+      try {
+        const raw = JSON.parse(stdout);
+        const printers = Array.isArray(raw.printers) ? raw.printers : raw.printers ? [raw.printers] : [];
+        const jobs = Array.isArray(raw.jobs) ? raw.jobs : raw.jobs ? [raw.jobs] : [];
+        resolve({ success: true, printers, jobs });
+      } catch (parseErr) {
+        resolve({ success: false, error: parseErr.message, printers: [], jobs: [] });
+      }
+    });
+  });
+}
+
+async function getDetailedPrinterStatus() {
+  const now = Date.now();
+  if (printerStatusCache && now - printerStatusCacheTime < 2500) {
+    return { ...printerStatusCache, alert: simulatedPrinterAlert || printerStatusCache.alert };
+  }
+
+  const { success, printers = [], jobs = [], error } = await fetchWindowsPrinterStatus();
+  const printersData = readPrinters();
+  const profiles = printersData.profiles || [];
+
+  const mappedPrinters = printers.map((p) => {
+    const printerState = p.PrinterState || 0;
+    const detectedError = p.DetectedErrorState || 0;
+    const isOffline = !!p.WorkOffline || (printerState & 128) !== 0 || p.PrinterStatus === 7;
+    
+    // Paper out checks (DetectedErrorState 4 or PrinterState bit 16)
+    const isPaperOut = detectedError === 4 || (printerState & 16) !== 0;
+
+    // Door / Cover / Output Tray closed checks (DetectedErrorState 7 or PrinterState bit 4194304)
+    const isDoorOpen = detectedError === 7 || (printerState & 4194304) !== 0;
+
+    // Paper jam checks (DetectedErrorState 8 or PrinterState bit 8)
+    const isPaperJam = detectedError === 8 || (printerState & 8) !== 0;
+
+    // User intervention
+    const isUserIntervention = (printerState & 1048576) !== 0;
+
+    // Printing
+    const isPrinting = (printerState & 1024) !== 0 || p.PrinterStatus === 4;
+
+    const printerJobs = jobs.filter((j) => (j.Name || "").toLowerCase().startsWith(p.Name.toLowerCase()));
+
+    let statusCode = "ready";
+    let statusText = "Ready";
+
+    if (isOffline) {
+      statusCode = "offline";
+      statusText = "Offline";
+    } else if (isPaperOut) {
+      statusCode = "paper_out";
+      statusText = "Kertas Habis";
+    } else if (isDoorOpen) {
+      statusCode = "door_open";
+      statusText = "Penutup / Tray Tertutup";
+    } else if (isPaperJam) {
+      statusCode = "paper_jam";
+      statusText = "Kertas Macet (Paper Jam)";
+    } else if (isUserIntervention) {
+      statusCode = "user_intervention";
+      statusText = "Perlu Perhatian Kasir";
+    } else if (isPrinting) {
+      statusCode = "printing";
+      statusText = "Sedang Mencetak";
+    }
+
+    const matchingProfiles = profiles.filter(
+      (prof) => prof.printerName.toLowerCase() === p.Name.toLowerCase()
+    );
+
+    return {
+      name: p.Name,
+      status: statusText,
+      statusCode,
+      isOffline,
+      isPaperOut,
+      isDoorOpen,
+      isPaperJam,
+      isUserIntervention,
+      isPrinting,
+      jobsCount: printerJobs.length,
+      jobs: printerJobs,
+      profiles: matchingProfiles.map((prof) => ({
+        id: prof.id,
+        label: prof.label,
+        appliesTo: prof.appliesTo,
+      })),
+    };
+  });
+
+  // Calculate alert for customer kiosk and admin
+  let activeAlert = null;
+  if (simulatedPrinterAlert) {
+    activeAlert = simulatedPrinterAlert;
+  } else {
+    for (const p of mappedPrinters) {
+      if (p.profiles.length > 0) {
+        const profileLabels = p.profiles.map((pr) => pr.label).join(", ");
+        const appliesList = p.profiles.flatMap((pr) => pr.appliesTo);
+        const is4R = appliesList.includes("4r");
+
+        if (p.isPaperOut) {
+          activeAlert = {
+            type: "paper_out",
+            title: is4R ? "Kertas Printer 4R Habis" : `Kertas Printer ${profileLabels} Habis`,
+            customerMessage: "Kertas foto sedang diisi ulang oleh staff. Mohon tunggu beberapa saat ya kak!",
+            adminMessage: `Kertas pada printer "${p.name}" (${profileLabels}) telah habis! Mohon segera isi ulang kertas.`,
+            printerName: p.name,
+            profileLabel: profileLabels,
+          };
+          break;
+        } else if (p.isDoorOpen) {
+          activeAlert = {
+            type: "door_open",
+            title: is4R ? "Tray / Penutup Printer 4R Tertutup" : `Penutup Printer ${profileLabels} Belum Ditarik`,
+            customerMessage: "Tray penutup printer sedang dibuka/ditarik oleh staff. Foto kamu akan segera keluar!",
+            adminMessage: `Penutup/tray pada printer "${p.name}" (${profileLabels}) belum ditarik keluar.`,
+            printerName: p.name,
+            profileLabel: profileLabels,
+          };
+          break;
+        } else if (p.isPaperJam) {
+          activeAlert = {
+            type: "paper_jam",
+            title: `Kertas Macet (${profileLabels})`,
+            customerMessage: "Printer sedang diperiksa oleh staff. Mohon tunggu sebentar ya kak!",
+            adminMessage: `Terjadi Paper Jam pada printer "${p.name}" (${profileLabels})!`,
+            printerName: p.name,
+            profileLabel: profileLabels,
+          };
+          break;
+        } else if (p.isOffline && p.jobsCount > 0) {
+          activeAlert = {
+            type: "offline",
+            title: `Printer ${profileLabels} Offline`,
+            customerMessage: "Printer sedang disiapkan oleh staff. Mohon tunggu sebentar ya kak!",
+            adminMessage: `Printer "${p.name}" (${profileLabels}) Offline dengan ${p.jobsCount} antrean cetak!`,
+            printerName: p.name,
+            profileLabel: profileLabels,
+          };
+          break;
+        }
+      }
+    }
+  }
+
+  const result = {
+    success: true,
+    hasError: !!activeAlert,
+    alert: activeAlert,
+    printers: mappedPrinters,
+    error,
+    updatedAt: new Date().toISOString(),
+  };
+
+  printerStatusCache = result;
+  printerStatusCacheTime = now;
+  return result;
+}
+
+app.get("/api/printer-status", async (req, res) => {
+  try {
+    const status = await getDetailedPrinterStatus();
+    res.json(status);
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message, printers: [] });
+  }
+});
+
+app.post("/api/printer-status/test-alert", (req, res) => {
+  const { type, active } = req.body;
+  if (!active || type === "normal") {
+    simulatedPrinterAlert = null;
+  } else if (type === "paper_out") {
+    simulatedPrinterAlert = {
+      type: "paper_out",
+      title: "Kertas Printer 4R Habis (Simulasi)",
+      customerMessage: "Kertas foto sedang diisi ulang oleh staff. Mohon tunggu beberapa saat ya kak!",
+      adminMessage: "Simulasi: Kertas pada printer 4R habis!",
+      printerName: "EPSON L8050 Series",
+      profileLabel: "4R mantap",
+      isSimulated: true,
+    };
+  } else if (type === "door_open") {
+    simulatedPrinterAlert = {
+      type: "door_open",
+      title: "Penutup Printer 4R Belum Ditarik (Simulasi)",
+      customerMessage: "Tray penutup printer sedang ditarik oleh staff. Foto kamu akan segera keluar!",
+      adminMessage: "Simulasi: Tray/penutup printer belum ditarik keluar!",
+      printerName: "EPSON L8050 Series",
+      profileLabel: "4R mantap",
+      isSimulated: true,
+    };
+  } else if (type === "paper_jam") {
+    simulatedPrinterAlert = {
+      type: "paper_jam",
+      title: "Kertas Macet / Paper Jam (Simulasi)",
+      customerMessage: "Printer sedang diperiksa oleh staff. Mohon tunggu sebentar ya kak!",
+      adminMessage: "Simulasi: Kertas macet pada printer 4R!",
+      printerName: "EPSON L8050 Series",
+      profileLabel: "4R mantap",
+      isSimulated: true,
+    };
+  }
+  printerStatusCacheTime = 0; // force refresh
+  res.json({ success: true, alert: simulatedPrinterAlert });
+});
+
+app.post("/api/printers/clear-jobs", (req, res) => {
+  const psScript = `Get-CimInstance Win32_PrintJob | Remove-CimInstance`;
+  const b64 = Buffer.from(psScript, "utf16le").toString("base64");
+  exec(`powershell -NoProfile -EncodedCommand ${b64}`, { windowsHide: true }, (err) => {
+    printerStatusCacheTime = 0;
+    if (err) return res.status(500).json({ success: false, error: err.message });
+    res.json({ success: true, message: "Antrean cetak berhasil dibersihkan" });
+  });
 });
 
 app.delete("/api/printers/:id", (req, res) => {
