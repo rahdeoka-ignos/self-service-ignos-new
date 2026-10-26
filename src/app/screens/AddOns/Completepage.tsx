@@ -42,7 +42,9 @@ export function CompletePage() {
   const peopleCount: number = location.state?.peopleCount ?? 1;
   const joinedBonus: boolean = location.state?.joinedBonus ?? false;
   const coupleMode: boolean = location.state?.coupleMode ?? false;
-  const totalPrint: number = location.state?.totalPrint ?? peopleCount;
+  const totalPrint: number =
+    location.state?.totalPrint ??
+    (joinedBonus ? peopleCount * 2 : peopleCount);
   const templates: { layout: string }[] = location.state?.templates ?? [];
   const keychainOrder: KeychainOrder[] = location.state?.orders ?? [];
   const a4Count: number = location.state?.a4Count ?? 0;
@@ -404,7 +406,7 @@ export function CompletePage() {
     "300days": "300 Days",
   };
 
-  const regularPrint = coupleMode ? 1 : peopleCount;
+  const regularPrint = peopleCount;
   const bonusPrint = joinedBonus ? totalPrint - regularPrint : 0;
 
   // ── Reusable receipt components ──────────────────────────────

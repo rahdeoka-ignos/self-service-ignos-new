@@ -15,7 +15,7 @@ const STEPS = [
 export function BonusTutorial({ peopleCount, onClose }: BonusTutorialProps) {
   const [step, setStep] = useState(0);
 
-  const bonusCount = peopleCount <= 3 ? peopleCount * 2 : peopleCount + 1;
+  const bonusCount = peopleCount * 2;
 
   const next = () => setStep((s) => Math.min(s + 1, STEPS.length - 1));
   const prev = () => setStep((s) => Math.max(s - 1, 0));
@@ -169,8 +169,8 @@ export function BonusTutorial({ peopleCount, onClose }: BonusTutorialProps) {
                 },
                 {
                   range: "4+ orang",
-                  desc: "Dapat +1 bonus print",
-                  example: "5 orang → 6 print",
+                  desc: "Dapat 2× lipat print",
+                  example: "4 orang → 8 print (1 template bonus bersama)",
                 },
               ].map((row, i) => (
                 <div

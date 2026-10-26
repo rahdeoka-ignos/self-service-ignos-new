@@ -120,11 +120,7 @@ export function PhotoArrangement() {
 
   let totalPrint = peopleCount;
   if (joinedBonus) {
-    if (peopleCount <= 3) {
-      totalPrint = peopleCount * 2;
-    } else {
-      totalPrint = peopleCount + 1;
-    }
+    totalPrint = peopleCount * 2;
   }
 
   const templates: Template[] = location.state?.templates || [];
@@ -396,24 +392,27 @@ export function PhotoArrangement() {
 
   const getTemplateCopies = (index: number): number => {
     if (!coupleMode) {
-      // Mode Beda-beda: setiap template mewakili 1 orang / 1 bonus, dicetak 1 lembar
-      return 1;
+      // Mode Beda-beda:
+      if (!joinedBonus) return 1;
+      if (peopleCount <= 3) {
+        // <= 3 orang: masing-masing orang dapat 1 template reguler & 1 template bonus sendiri (1 lembar tiap template)
+        return 1;
+      } else {
+        // > 3 orang: template reguler (index 0 s/d peopleCount-1) dicetak 1 lembar untuk tiap orang,
+        // sedangkan 1 template bonus bersama (index peopleCount) dicetak SEBANYAK peopleCount lembar!
+        return index < peopleCount ? 1 : peopleCount;
+      }
     }
+
     // Mode Sama-an (coupleMode === true):
     if (!joinedBonus) {
       // Tanpa bonus: 1 template dipakai bersama, dicetak sebanyak jumlah orang
       return peopleCount;
     }
     // Dengan bonus:
-    // index 0 = template utama
-    // index 1 = template bonus
-    if (peopleCount <= 3) {
-      // <= 3 orang: masing-masing orang dapat 1 lembar utama + 1 lembar bonus
-      return peopleCount;
-    } else {
-      // > 3 orang: template utama dicetak untuk tiap orang, bonus 1 lembar bersama
-      return index === 0 ? peopleCount : 1;
-    }
+    // Template utama (index 0) dicetak sebanyak peopleCount lembar
+    // Template bonus (index 1) dicetak sebanyak peopleCount lembar
+    return peopleCount;
   };
 
   const handlePrint = async () => {
@@ -667,6 +666,15 @@ export function PhotoArrangement() {
                     const isBonus = joinedBonus && index >= regularCount;
                     const bonusIndex = index - regularCount + 1;
                     const isActive = activeTemplate === index;
+                    const copies = getTemplateCopies(index);
+                    const bonusLabel =
+                      isBonus && copies > 1
+                        ? `🎁 Bonus (${copies}x Print)`
+                        : `🎁 Bonus ${bonusIndex}`;
+                    const regularLabel =
+                      !isBonus && copies > 1
+                        ? `Cetak ${index + 1} (${copies}x Print)`
+                        : `Cetak ${index + 1}`;
                     return (
                       <ButtonTemplate
                         key={index}
@@ -682,9 +690,7 @@ export function PhotoArrangement() {
               : "bg-transparent !text-black hover:bg-black hover:!text-white"
         }`}
                       >
-                        {isBonus
-                          ? `🎁 Bonus ${bonusIndex}`
-                          : `Cetak ${index + 1}`}
+                        {isBonus ? bonusLabel : regularLabel}
                       </ButtonTemplate>
                     );
                   })}
