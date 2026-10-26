@@ -236,7 +236,7 @@ app.post("/api/upload-session-gdrive", async (req, res) => {
         console.log(`[GDrive] Mengunggah ${filePathsToUpload.length} file ke ${folderResult.folderName}...`);
         await uploadMultipleFiles(
           filePathsToUpload,
-          folderResult.folderId,
+          folderResult.photosFolderId || folderResult.folderId,
           (uploadedCount, totalCount, fileName, status) => {
             const fileItem = uploadProgress.files.find((f) => f.name === fileName);
             if (fileItem) fileItem.status = status;

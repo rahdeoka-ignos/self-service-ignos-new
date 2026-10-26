@@ -7,6 +7,7 @@ import {
   XCircle,
   ChevronRight,
   AtSign,
+  User,
 } from "lucide-react";
 import { BrutalistButton } from "../../components/BrutalistButton";
 import { Trans, useTranslation } from "react-i18next";
@@ -33,6 +34,8 @@ export function StoryQuestion() {
   };
 
   const [choice, setChoice] = useState<"yes" | "no" | null>(null);
+  const [customerName, setCustomerName] = useState("");
+  const [customerNameError, setCustomerNameError] = useState(false);
   const requiredUsernames = getRequiredUsernames(peopleCount);
   const [usernames, setUsernames] = useState<string[]>(
     Array(requiredUsernames).fill(""),
@@ -55,15 +58,30 @@ export function StoryQuestion() {
   };
 
   const validate = () => {
-    if (choice !== "yes") return true;
-    const newErrors = usernames.map((u) => u.trim() === "");
-    setErrors(newErrors);
-    return !newErrors.some(Boolean);
+    if (choice === "yes") {
+      const newErrors = usernames.map((u) => u.trim() === "");
+      setErrors(newErrors);
+      return !newErrors.some(Boolean);
+    }
+    if (choice === "no") {
+      const isBlank = customerName.trim() === "";
+      setCustomerNameError(isBlank);
+      return !isBlank;
+    }
+    return true;
   };
 
   const handleContinue = () => {
     if (!choice) return;
     if (!validate()) return;
+
+    const trimmedCustomerName = customerName.trim();
+    const finalUsernames =
+      choice === "yes"
+        ? usernames.map((u) => u.trim())
+        : trimmedCustomerName
+          ? [trimmedCustomerName]
+          : [];
 
     navigate("/complete", {
       state: {
@@ -73,8 +91,9 @@ export function StoryQuestion() {
         serviceId,
         coupleMode,
         makeStory: choice === "yes",
-        instagramUsernames:
-          choice === "yes" ? usernames.map((u) => u.trim()) : [],
+        customerName:
+          choice === "yes" ? (usernames[0]?.trim() || "") : trimmedCustomerName,
+        instagramUsernames: finalUsernames,
         extraCharge: choice === "no" ? 25000 : 0,
       },
     });
@@ -268,10 +287,10 @@ export function StoryQuestion() {
             </div>
           )}
 
-          {/* Extra charge info — shown when "no" */}
+          {/* Extra charge info & Customer Name Input — shown when "no" */}
           {choice === "no" && (
-            <div className="bg-white border-4 border-black rounded-2xl p-8 mb-10 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-              <div className="flex items-center justify-between">
+            <div className="bg-white border-4 border-black rounded-2xl p-10 mb-10 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] space-y-8">
+              <div className="flex items-center justify-between pb-6 border-b-2 border-gray-200">
                 <div>
                   <p className="font-bold text-2xl">
                     {t("story.extraCharge.title")}
@@ -281,6 +300,47 @@ export function StoryQuestion() {
                   </p>
                 </div>
                 <p className="text-4xl font-bold">{formatPrice(25000)}</p>
+              </div>
+
+              {/* Customer Name input */}
+              <div>
+                <h3 className="text-2xl font-bold mb-2 flex items-center gap-3">
+                  <User size={28} className="text-black" />
+                  <span>Masukkan Nama Customer</span>
+                </h3>
+                <p className="text-gray-500 text-lg mb-4">
+                  Nama ini akan digunakan untuk penamaan folder Google Drive softcopy foto kamu.
+                </p>
+
+                <div
+                  className={`flex items-center border-4 rounded-xl overflow-hidden transition-colors ${
+                    customerNameError ? "border-red-500" : "border-black"
+                  }`}
+                >
+                  <div className="bg-gray-100 border-r-4 border-black px-4 h-full flex items-center py-4">
+                    <User
+                      size={24}
+                      strokeWidth={2.5}
+                      className="text-gray-500"
+                    />
+                  </div>
+                  <input
+                    type="text"
+                    value={customerName}
+                    onChange={(e) => {
+                      setCustomerName(e.target.value);
+                      if (customerNameError) setCustomerNameError(false);
+                    }}
+                    placeholder="Contoh: Dewa Ayu"
+                    className="flex-1 px-5 py-4 text-xl font-medium outline-none bg-white placeholder:text-gray-400"
+                    autoFocus
+                  />
+                </div>
+                {customerNameError && (
+                  <p className="text-red-500 text-base font-bold mt-2">
+                    Nama customer wajib diisi untuk folder softcopy
+                  </p>
+                )}
               </div>
             </div>
           )}

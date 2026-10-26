@@ -3,6 +3,7 @@ import { QRCodeSVG } from "qrcode.react";
 import {
   getSessionRawPhotos,
   getSessionPrintFiles,
+  trackPrintFile,
   clearSessionData,
   DRIVE_LINK_KEY,
 } from "../../../utils/sessionTracker";
@@ -237,7 +238,7 @@ export function CompletePage() {
 
       // ── ADD-ONS ──
       drawSectionHeader("Instagram Story");
-      drawRow("Instagram Story", makeStory ? "✓ Ya" : "✗ Tidak");
+      drawRow("Instagram Story", makeStory ? "✓ Ya (Gratis)" : "✗ Bayar (+Rp 25.000)");
       if (makeStory && instagramUsernames.length > 0) {
         instagramUsernames.forEach((username, i) => {
           addText(`  ${i + 1}. @${username}`, margin, y + 1, {
@@ -246,6 +247,8 @@ export function CompletePage() {
           });
           y += 8;
         });
+      } else if (!makeStory && customerName) {
+        drawRow("Nama Customer", customerName);
       }
       y += 2;
       drawDivider();
@@ -253,8 +256,8 @@ export function CompletePage() {
       const now = new Date();
       const timeStr = `${now.getDate().toString().padStart(2, "0")}-${(now.getMonth() + 1).toString().padStart(2, "0")}-${now.getFullYear()} ${now.getHours().toString().padStart(2, "0")}.${now.getMinutes().toString().padStart(2, "0")}`;
       const filename =
-        makeStory && instagramUsernames.length > 0
-          ? `struk-tambahan-${instagramUsernames[0]}.pdf`
+        customerName
+          ? `struk-tambahan-${customerName}.pdf`
           : `struk-tambahan-sesi ${timeStr}.pdf`;
 
       // ── FOOTER ──
@@ -327,7 +330,11 @@ export function CompletePage() {
     return () => clearInterval(checkInterval);
   }, []);
 
-  const customerName = (instagramUsernames[0] ?? "").replace(/^@+/, "").trim();
+  const customerName = (
+    location.state?.customerName ||
+    instagramUsernames[0] ||
+    ""
+  ).replace(/^@+/, "").trim();
 
   const autoUploadDrive = async () => {
     const cached = sessionStorage.getItem(DRIVE_LINK_KEY);
@@ -736,8 +743,14 @@ export function CompletePage() {
               />
               <Row
                 label="Instagram Story"
-                value={makeStory ? "✅ Ya" : "❌ Tidak"}
+                value={makeStory ? "✅ Ya (Gratis)" : "❌ Bayar (+Rp 25.000)"}
               />
+              {!makeStory && customerName && (
+                <Row
+                  label="Nama Customer"
+                  value={customerName}
+                />
+              )}
               {makeStory && instagramUsernames.length > 0 && (
                 <div className="mt-2 space-y-2 mb-2">
                   {instagramUsernames.map((username, i) => (

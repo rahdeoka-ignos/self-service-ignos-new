@@ -63,13 +63,63 @@ export async function testFolderAccess(folderId = PARENT_FOLDER_ID) {
   return res.data;
 }
 
+const MONTH_NAMES = [
+  "januari", "februari", "maret", "april", "mei", "juni",
+  "juli", "agustus", "september", "oktober", "november", "desember"
+];
+
+const MONTH_SHORTS = [
+  "JAN", "FEB", "MAR", "APR", "MEI", "JUN",
+  "JUL", "AGU", "SEP", "OKT", "NOV", "DES"
+];
+
 /**
- * Membuat subfolder khusus untuk sesi customer dan mengatur agar bisa diakses via link
- * Format:
- * - Jika ada nama: IGNOS STUDIO - 11.00 (Nita danianti)
- * - Jika nama kosong: IGNOS STUDIO - 11.00
+ * Cari folder di dalam parentId secara case-insensitive. Jika belum ada, buat baru.
+ * @param {import("googleapis").drive_v3.Drive} drive
+ * @param {string} folderName - Nama folder yang dicari / dibuat
+ * @param {string} parentId - ID folder induk
+ * @param {string[]} [alternativeMatches] - Variasi nama lain yang cocok jika ada
+ * @returns {Promise<string>} folderId
+ */
+export async function getOrCreateSubfolder(drive, folderName, parentId, alternativeMatches = []) {
+  const q = `'${parentId}' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false`;
+  const listRes = await drive.files.list({
+    q,
+    fields: "files(id, name)",
+    supportsAllDrives: true,
+    includeItemsFromAllDrives: true,
+  });
+
+  const allMatches = [folderName, ...alternativeMatches].map((m) => m.toLowerCase());
+  const existing = (listRes.data.files || []).find((f) =>
+    allMatches.includes(f.name.toLowerCase())
+  );
+
+  if (existing) {
+    return existing.id;
+  }
+
+  const createRes = await drive.files.create({
+    resource: {
+      name: folderName,
+      mimeType: "application/vnd.google-apps.folder",
+      parents: [parentId],
+    },
+    fields: "id, name",
+    supportsAllDrives: true,
+  });
+
+  return createRes.data.id;
+}
+
+/**
+ * Membuat subfolder khusus untuk sesi customer dengan struktur hirarki:
+ * Root -> Folder Bulan (contoh: "oktober") -> Folder Tanggal (contoh: "26 - OKT") -> Folder Sesi Customer
+ * Format folder sesi customer:
+ * - Jika ada nama: IGNOS STUDIO - 16.37 (arikulantariiii)
+ * - Jika nama kosong: IGNOS STUDIO - 16.37
  * @param {string} customerName - Nama customer (opsional)
- * @param {string} [parentFolderId] - ID folder induk
+ * @param {string} [parentFolderId] - ID folder induk root
  * @returns {Promise<{ folderId: string, folderName: string, webViewLink: string }>}
  */
 export async function createCustomerFolder(customerName = "", parentFolderId = PARENT_FOLDER_ID) {
@@ -80,16 +130,35 @@ export async function createCustomerFolder(customerName = "", parentFolderId = P
   const minutes = now.getMinutes().toString().padStart(2, "0");
   const timeStr = `${hours}.${minutes}`;
 
+  const monthIndex = now.getMonth();
+  const monthName = MONTH_NAMES[monthIndex]; // e.g. "oktober"
+  const day = now.getDate();
+  const dayPadded = String(day).padStart(2, "0");
+  const monthShort = MONTH_SHORTS[monthIndex]; // e.g. "OKT"
+  const dateFolderName = `${day} - ${monthShort}`; // e.g. "26 - OKT"
+
+  // 1. Dapatkan atau buat folder bulan di dalam root (misal: "oktober")
+  const monthFolderId = await getOrCreateSubfolder(drive, monthName, parentFolderId);
+
+  // 2. Dapatkan atau buat folder tanggal di dalam folder bulan (misal: "26 - OKT" atau "05 - OKT")
+  const dateFolderId = await getOrCreateSubfolder(
+    drive,
+    dateFolderName,
+    monthFolderId,
+    [`${dayPadded} - ${monthShort}`, `${day} - ${monthShort}`]
+  );
+
+  // 3. Tentukan nama folder sesi customer
   const cleanName = customerName ? customerName.trim() : "";
   const folderName = cleanName
     ? `IGNOS STUDIO - ${timeStr} (${cleanName})`
     : `IGNOS STUDIO - ${timeStr}`;
 
-  // 1. Buat folder di dalam parentFolder
+  // 4. Buat folder sesi customer di dalam folder tanggal
   const folderMetadata = {
     name: folderName,
     mimeType: "application/vnd.google-apps.folder",
-    parents: [parentFolderId],
+    parents: [dateFolderId],
   };
 
   const folder = await drive.files.create({
@@ -100,7 +169,7 @@ export async function createCustomerFolder(customerName = "", parentFolderId = P
 
   const folderId = folder.data.id;
 
-  // 2. Set permission: anyone with link can view/download
+  // 5. Set permission: anyone with link can view/download
   await drive.permissions.create({
     fileId: folderId,
     resource: {
@@ -110,7 +179,30 @@ export async function createCustomerFolder(customerName = "", parentFolderId = P
     supportsAllDrives: true,
   });
 
-  // 3. Ambil webViewLink yang valid
+  // 6. Buat subfolder untuk membungkus hasil foto customer: "FOTONYA DI SINI KAKAK"
+  const photosFolderId = await getOrCreateSubfolder(
+    drive,
+    "FOTONYA DI SINI KAKAK",
+    folderId,
+    ["FOTONYA DISINI KAK", "FOTOYA DI SINI KAKAK", "FOTONYA DISINI KAKAK"]
+  );
+
+  // 7. Upload gambar izin posting ke dalam folder sesi customer jika file ada di public/img
+  const IZIN_POSTING_PATH = path.join(__dirname, "public", "img", "izin_posting.jpg");
+  if (fs.existsSync(IZIN_POSTING_PATH)) {
+    try {
+      await uploadFileToDrive(
+        IZIN_POSTING_PATH,
+        folderId,
+        "IZIN POSTING FOTO KAKAK 🥰.jpg"
+      );
+      console.log(`[GDrive] Uploaded izin_posting to session folder: ${folderName}`);
+    } catch (err) {
+      console.error("[GDrive] Gagal upload izin_posting:", err.message);
+    }
+  }
+
+  // 8. Ambil webViewLink yang valid
   const folderInfo = await drive.files.get({
     fileId: folderId,
     fields: "id, name, webViewLink",
@@ -119,6 +211,7 @@ export async function createCustomerFolder(customerName = "", parentFolderId = P
 
   return {
     folderId,
+    photosFolderId,
     folderName,
     webViewLink: folderInfo.data.webViewLink,
   };
