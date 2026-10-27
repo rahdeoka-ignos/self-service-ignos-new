@@ -570,9 +570,18 @@ let simulatedPrinterAlert = null;
 function fetchWindowsPrinterStatus() {
   return new Promise((resolve) => {
     const psScript = `
-$p = @(Get-CimInstance Win32_Printer | Select-Object Name, PrinterStatus, ExtendedPrinterStatus, DetectedErrorState, PrinterState, WorkOffline, PortName);
-$j = @(Get-CimInstance Win32_PrintJob | Select-Object Name, JobStatus, Status, Document);
-[PSCustomObject]@{ printers = $p; jobs = $j } | ConvertTo-Json -Depth 3 -Compress
+$ProgressPreference = 'SilentlyContinue'
+$printers = @(Get-CimInstance Win32_Printer | Select-Object Name, PrinterStatus, ExtendedPrinterStatus, DetectedErrorState, PrinterState, WorkOffline, PortName)
+$allJobs = @()
+foreach ($pr in $printers) {
+    try {
+        $pJobs = @(Get-PrintJob -PrinterName $pr.Name -ErrorAction SilentlyContinue | Select-Object Id, PrinterName, DocumentName, JobStatus, Position, TotalPages, PagesPrinted, Size, @{Name='SubmittedTimeEpoch';Expression={if ($_.SubmittedTime) { [double]([DateTimeOffset]$_.SubmittedTime).ToUnixTimeMilliseconds() } else { 0 }}})
+        if ($pJobs -and $pJobs.Count -gt 0) {
+            $allJobs += $pJobs
+        }
+    } catch {}
+}
+[PSCustomObject]@{ printers = $printers; jobs = $allJobs } | ConvertTo-Json -Depth 3 -Compress
 `;
     const b64 = Buffer.from(psScript, "utf16le").toString("base64");
     exec(`powershell -NoProfile -EncodedCommand ${b64}`, { windowsHide: true, timeout: 6000 }, (err, stdout) => {
@@ -604,24 +613,36 @@ async function getDetailedPrinterStatus() {
   const mappedPrinters = printers.map((p) => {
     const printerState = p.PrinterState || 0;
     const detectedError = p.DetectedErrorState || 0;
+
+    const printerJobs = jobs.filter(
+      (j) => (j.PrinterName || "").toLowerCase() === (p.Name || "").toLowerCase() ||
+             (j.Name || "").toLowerCase().startsWith((p.Name || "").toLowerCase())
+    );
+
+    printerJobs.sort((a, b) => (a.Position || 0) - (b.Position || 0));
+    const activeJob = printerJobs[0];
+
     const isOffline = !!p.WorkOffline || (printerState & 128) !== 0 || p.PrinterStatus === 7;
-    
-    // Paper out checks (DetectedErrorState 4 or PrinterState bit 16)
-    const isPaperOut = detectedError === 4 || (printerState & 16) !== 0;
 
-    // Door / Cover / Output Tray closed checks (DetectedErrorState 7 or PrinterState bit 4194304)
-    const isDoorOpen = detectedError === 7 || (printerState & 4194304) !== 0;
-
-    // Paper jam checks (DetectedErrorState 8 or PrinterState bit 8)
-    const isPaperJam = detectedError === 8 || (printerState & 8) !== 0;
-
-    // User intervention
+    let isPaperOut = detectedError === 4 || (printerState & 16) !== 0;
+    let isDoorOpen = detectedError === 7 || (printerState & 4194304) !== 0;
+    let isPaperJam = detectedError === 8 || (printerState & 8) !== 0;
     const isUserIntervention = (printerState & 1048576) !== 0;
-
-    // Printing
     const isPrinting = (printerState & 1024) !== 0 || p.PrinterStatus === 4;
 
-    const printerJobs = jobs.filter((j) => (j.Name || "").toLowerCase().startsWith(p.Name.toLowerCase()));
+    // Check stalled jobs (tray closed or paper out)
+    // On photo printers (like Epson L8050), when the tray is closed or paper is out,
+    // the driver pauses paper feed and leaves the job at Position 1 with 0 pages printed.
+    let isStalled = false;
+    if (activeJob && !isOffline) {
+      const ageMs = activeJob.SubmittedTimeEpoch ? (now - activeJob.SubmittedTimeEpoch) : 10000;
+      if (ageMs > 3500 && (activeJob.PagesPrinted || 0) === 0) {
+        isStalled = true;
+        if (!isDoorOpen && !isPaperOut && !isPaperJam) {
+          isDoorOpen = true; // Tray closed / retracted!
+        }
+      }
+    }
 
     let statusCode = "ready";
     let statusText = "Ready";
@@ -629,12 +650,12 @@ async function getDetailedPrinterStatus() {
     if (isOffline) {
       statusCode = "offline";
       statusText = "Offline";
+    } else if (isDoorOpen) {
+      statusCode = "door_open";
+      statusText = "Tray Tertutup / Belum Ditarik";
     } else if (isPaperOut) {
       statusCode = "paper_out";
       statusText = "Kertas Habis";
-    } else if (isDoorOpen) {
-      statusCode = "door_open";
-      statusText = "Penutup / Tray Tertutup";
     } else if (isPaperJam) {
       statusCode = "paper_jam";
       statusText = "Kertas Macet (Paper Jam)";
@@ -644,10 +665,13 @@ async function getDetailedPrinterStatus() {
     } else if (isPrinting) {
       statusCode = "printing";
       statusText = "Sedang Mencetak";
+    } else if (printerJobs.length > 0) {
+      statusCode = "door_open";
+      statusText = "Tray Tertutup / Belum Ditarik";
     }
 
     const matchingProfiles = profiles.filter(
-      (prof) => prof.printerName.toLowerCase() === p.Name.toLowerCase()
+      (prof) => prof.printerName.toLowerCase() === (p.Name || "").toLowerCase()
     );
 
     return {
@@ -681,22 +705,22 @@ async function getDetailedPrinterStatus() {
         const appliesList = p.profiles.flatMap((pr) => pr.appliesTo);
         const is4R = appliesList.includes("4r");
 
-        if (p.isPaperOut) {
+        if (p.isDoorOpen) {
+          activeAlert = {
+            type: "door_open",
+            title: is4R ? "Tray / Penutup Printer 4R Belum Ditarik" : `Tray Printer ${profileLabels} Belum Ditarik`,
+            customerMessage: "Tray penutup printer belum ditarik keluar. Foto kamu akan otomatis keluar setelah tray ditarik ya kak!",
+            adminMessage: `Penutup/tray keluaran pada printer "${p.name}" (${profileLabels}) belum ditarik keluar! Mohon tarik keluar tray printer agar foto dapat tercetak.`,
+            printerName: p.name,
+            profileLabel: profileLabels,
+          };
+          break;
+        } else if (p.isPaperOut) {
           activeAlert = {
             type: "paper_out",
             title: is4R ? "Kertas Printer 4R Habis" : `Kertas Printer ${profileLabels} Habis`,
             customerMessage: "Kertas foto sedang diisi ulang oleh staff. Mohon tunggu beberapa saat ya kak!",
             adminMessage: `Kertas pada printer "${p.name}" (${profileLabels}) telah habis! Mohon segera isi ulang kertas.`,
-            printerName: p.name,
-            profileLabel: profileLabels,
-          };
-          break;
-        } else if (p.isDoorOpen) {
-          activeAlert = {
-            type: "door_open",
-            title: is4R ? "Tray / Penutup Printer 4R Tertutup" : `Penutup Printer ${profileLabels} Belum Ditarik`,
-            customerMessage: "Tray penutup printer sedang dibuka/ditarik oleh staff. Foto kamu akan segera keluar!",
-            adminMessage: `Penutup/tray pada printer "${p.name}" (${profileLabels}) belum ditarik keluar.`,
             printerName: p.name,
             profileLabel: profileLabels,
           };
