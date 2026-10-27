@@ -23,6 +23,11 @@ const __dirname = path.dirname(__filename);
 
 const PHOTOS_DIR = path.join(__dirname, "public/photos");
 const THUMBS_DIR = path.join(__dirname, "public/thumbnails");
+const UPLOAD_QUEUE_DIR = path.join(__dirname, "storage/upload_queue");
+const ARCHIVE_DIR = path.join(__dirname, "storage/archive");
+
+if (!fs.existsSync(UPLOAD_QUEUE_DIR)) fs.mkdirSync(UPLOAD_QUEUE_DIR, { recursive: true });
+if (!fs.existsSync(ARCHIVE_DIR)) fs.mkdirSync(ARCHIVE_DIR, { recursive: true });
 const TEMPLATES_DIR = path.join(__dirname, "public/templates");
 const TEMPLATES_JSON = path.join(TEMPLATES_DIR, "templates.json");
 const PRINTERS_JSON = path.join(__dirname, "public/printers.json");
@@ -255,10 +260,29 @@ app.post("/api/upload-session-gdrive", async (req, res) => {
       console.error("[Session] Gagal menyimpan data sesi:", saveErr.message);
     }
 
-    // Cari dan kumpulkan semua path file yang akan diunggah
-    const uniqueItems = Array.from(new Set([...rawPhotos, ...printFiles]));
+    // ─── 1. SESSION STAGING QUEUE (ISOLASI FILE SESI) ─────────
+    // Buat folder staging terpisah di storage/upload_queue agar file sesi ini
+    // TIDAK HILANG / RUSAK meskipun folder public/photos dihapus untuk customer berikutnya.
+    const safeSessionDirName = `${Date.now()}_${cleanCustomerName || "Session"}`.replace(/[/\\?%*:|"<>]/g, "_");
+    const sessionStagingDir = path.join(UPLOAD_QUEUE_DIR, safeSessionDirName);
+    fs.mkdirSync(sessionStagingDir, { recursive: true });
+
     const filePathsToUpload = [];
 
+    // Helper untuk memindahkan file secara aman
+    function stageFile(sourcePath, filename) {
+      const destPath = path.join(sessionStagingDir, filename);
+      try {
+        fs.renameSync(sourcePath, destPath);
+      } catch (err) {
+        fs.copyFileSync(sourcePath, destPath);
+        try { fs.unlinkSync(sourcePath); } catch {}
+      }
+      return destPath;
+    }
+
+    // A. Simpan data:image base64 (seperti print composite/layout) langsung ke staging folder
+    const uniqueItems = Array.from(new Set([...rawPhotos, ...printFiles]));
     for (const item of uniqueItems) {
       if (!item) continue;
       if (item.startsWith("data:image/")) {
@@ -266,28 +290,36 @@ app.post("/api/upload-session-gdrive", async (req, res) => {
         if (matches) {
           const ext = matches[1] === "jpeg" ? "jpg" : matches[1];
           const buffer = Buffer.from(matches[2], "base64");
-          const tempName = `raw-${Date.now()}-${Math.random().toString(36).substring(7)}.${ext}`;
-          const tempPath = path.join(PHOTOS_DIR, tempName);
-          fs.writeFileSync(tempPath, buffer);
-          filePathsToUpload.push(tempPath);
+          const tempName = `print-${Date.now()}-${Math.random().toString(36).substring(7)}.${ext}`;
+          const destPath = path.join(sessionStagingDir, tempName);
+          fs.writeFileSync(destPath, buffer);
+          filePathsToUpload.push(destPath);
         }
-      } else {
-        const filename = item.includes("/") ? item.split("/").pop().split("?")[0] : item;
-        const fullPath = path.join(PHOTOS_DIR, filename);
-        if (fs.existsSync(fullPath)) {
-          filePathsToUpload.push(fullPath);
-        } else {
-          // Cari kemungkinan kemiripan nama (misal label timestamp prefix)
-          const localFiles = fs.readdirSync(PHOTOS_DIR);
-          const matched = localFiles.find((f) => f.includes(filename) || filename.includes(f));
-          if (matched) {
-            filePathsToUpload.push(path.join(PHOTOS_DIR, matched));
-          } else {
-            console.warn(`[GDrive] File tidak ditemukan di folder lokal: ${fullPath}`);
+      }
+    }
+
+    // B. Pindahkan SEMUA foto jepretan kamera dari public/photos ke staging folder
+    // Semua file foto yang ada di PHOTOS_DIR adalah jepretan sesi customer ini.
+    // Dengan memindahkannya, PHOTOS_DIR langsung KOSONG seketika untuk customer berikutnya!
+    if (fs.existsSync(PHOTOS_DIR)) {
+      const existingPhotos = fs.readdirSync(PHOTOS_DIR);
+      for (const f of existingPhotos) {
+        if (f.match(/\.(jpg|jpeg|png|webp)$/i)) {
+          const srcPath = path.join(PHOTOS_DIR, f);
+          const stagedPath = stageFile(srcPath, f);
+          filePathsToUpload.push(stagedPath);
+
+          // Hapus thumbnail di THUMBS_DIR agar galeri sesi berikutnya juga bersih
+          const thumbPath = path.join(THUMBS_DIR, f);
+          if (fs.existsSync(thumbPath)) {
+            try { fs.unlinkSync(thumbPath); } catch {}
           }
         }
       }
     }
+
+    console.log(`[GDrive] ${filePathsToUpload.length} foto berhasil diisolasi ke antrian: ${sessionStagingDir}`);
+    console.log(`[GDrive] Folder ${PHOTOS_DIR} kini telah bersih dan siap untuk sesi berikutnya.`);
 
     // Inisialisasi progress untuk dipantau admin & frontend
     uploadProgress = {
@@ -336,6 +368,18 @@ app.post("/api/upload-session-gdrive", async (req, res) => {
         uploadProgress.currentFile = "";
         uploadProgress.updatedAt = new Date().toISOString();
         console.log(`[GDrive] Selesai! Semua ${filePathsToUpload.length} file berhasil diunggah ke ${folderResult.folderName}.`);
+
+        // Setelah upload selesai 100%, pindahkan staging folder ke arsip lokal harian sebagai cadangan
+        try {
+          const now = new Date();
+          const dateFolder = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+          const archiveDestDir = path.join(ARCHIVE_DIR, dateFolder, safeSessionDirName);
+          fs.mkdirSync(path.dirname(archiveDestDir), { recursive: true });
+          fs.renameSync(sessionStagingDir, archiveDestDir);
+          console.log(`[GDrive] Sesi diarsipkan di disk lokal: ${archiveDestDir}`);
+        } catch (archiveErr) {
+          try { fs.rmSync(sessionStagingDir, { recursive: true, force: true }); } catch {}
+        }
       } catch (uploadErr) {
         uploadProgress.isUploading = false;
         uploadProgress.error = uploadErr.message;
@@ -386,6 +430,404 @@ app.get("/api/photos", async (req, res) => {
     res.json(images.reverse());
   } catch (err) {
     res.status(500).json({ error: "Cannot read photos folder" });
+  }
+});
+
+app.post("/api/clear-photos", (req, res) => {
+  try {
+    let clearedCount = 0;
+    if (fs.existsSync(PHOTOS_DIR)) {
+      const files = fs.readdirSync(PHOTOS_DIR);
+      for (const f of files) {
+        if (f.match(/\.(jpg|jpeg|png|webp)$/i)) {
+          try {
+            fs.unlinkSync(path.join(PHOTOS_DIR, f));
+            clearedCount++;
+          } catch {}
+        }
+      }
+    }
+    if (fs.existsSync(THUMBS_DIR)) {
+      const thumbs = fs.readdirSync(THUMBS_DIR);
+      for (const t of thumbs) {
+        try { fs.unlinkSync(path.join(THUMBS_DIR, t)); } catch {}
+      }
+    }
+    console.log(`[Photos] Manual clear: ${clearedCount} foto dibersihkan dari folder kamera.`);
+    res.json({ success: true, cleared: clearedCount });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── Storage Manager & Disk Cleanup API ────────────────────────
+
+const STORAGE_CONFIG_JSON = path.join(SESSIONS_DIR, "storage-config.json");
+const DEFAULT_STORAGE_CONFIG = {
+  autoCleanEnabled: true,
+  retentionDays: 7,
+  lastCleanedAt: null,
+};
+
+function readStorageConfig() {
+  if (!fs.existsSync(STORAGE_CONFIG_JSON)) {
+    return DEFAULT_STORAGE_CONFIG;
+  }
+  try {
+    return { ...DEFAULT_STORAGE_CONFIG, ...JSON.parse(fs.readFileSync(STORAGE_CONFIG_JSON, "utf-8")) };
+  } catch {
+    return DEFAULT_STORAGE_CONFIG;
+  }
+}
+
+function writeStorageConfig(data) {
+  try {
+    if (!fs.existsSync(SESSIONS_DIR)) fs.mkdirSync(SESSIONS_DIR, { recursive: true });
+    fs.writeFileSync(STORAGE_CONFIG_JSON, JSON.stringify(data, null, 2), "utf-8");
+  } catch (err) {
+    console.error("[Storage] Failed to write storage config:", err);
+  }
+}
+
+function formatBytes(bytes) {
+  if (bytes === 0) return "0 B";
+  const k = 1024;
+  const sizes = ["B", "KB", "MB", "GB", "TB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+}
+
+function getDirectoryStats(dirPath) {
+  let totalBytes = 0;
+  let fileCount = 0;
+  if (!fs.existsSync(dirPath)) return { bytes: 0, files: 0, formatted: "0 B" };
+  const stack = [dirPath];
+  while (stack.length > 0) {
+    const current = stack.pop();
+    try {
+      const entries = fs.readdirSync(current, { withFileTypes: true });
+      for (const entry of entries) {
+        const fullPath = path.join(current, entry.name);
+        if (entry.isDirectory()) {
+          stack.push(fullPath);
+        } else if (entry.isFile()) {
+          try {
+            const stat = fs.statSync(fullPath);
+            totalBytes += stat.size;
+            fileCount++;
+          } catch {}
+        }
+      }
+    } catch {}
+  }
+  return { bytes: totalBytes, files: fileCount, formatted: formatBytes(totalBytes) };
+}
+
+function getDiskStats() {
+  try {
+    if (typeof fs.statfsSync === "function") {
+      const stat = fs.statfsSync(__dirname);
+      const total = stat.blocks * stat.bsize;
+      const free = stat.bavail * stat.bsize;
+      const used = total - free;
+      return {
+        totalBytes: total,
+        freeBytes: free,
+        usedBytes: used,
+        usedPercent: total > 0 ? parseFloat(((used / total) * 100).toFixed(1)) : 0,
+        totalFormatted: formatBytes(total),
+        freeFormatted: formatBytes(free),
+        usedFormatted: formatBytes(used),
+      };
+    }
+  } catch (err) {
+    console.warn("[Storage] statfsSync error:", err.message);
+  }
+  return null;
+}
+
+function getArchiveDateFolders() {
+  if (!fs.existsSync(ARCHIVE_DIR)) return [];
+  try {
+    const dates = fs.readdirSync(ARCHIVE_DIR, { withFileTypes: true })
+      .filter((d) => d.isDirectory())
+      .map((d) => d.name)
+      .sort()
+      .reverse();
+
+    const now = new Date();
+    return dates.map((dateStr) => {
+      const folderPath = path.join(ARCHIVE_DIR, dateStr);
+      const stats = getDirectoryStats(folderPath);
+      let sessionCount = 0;
+      let sessionNames = [];
+      try {
+        const sub = fs.readdirSync(folderPath, { withFileTypes: true })
+          .filter((e) => e.isDirectory());
+        sessionCount = sub.length;
+        sessionNames = sub.map((s) => s.name);
+      } catch {}
+
+      // Hitung umur folder (hari)
+      let ageDays = 0;
+      try {
+        const fDate = new Date(dateStr);
+        if (!isNaN(fDate.getTime())) {
+          ageDays = Math.max(0, Math.floor((now.getTime() - fDate.getTime()) / (1000 * 60 * 60 * 24)));
+        }
+      } catch {}
+
+      return {
+        date: dateStr,
+        bytes: stats.bytes,
+        formatted: stats.formatted,
+        files: stats.files,
+        sessionCount,
+        sessionNames,
+        ageDays,
+      };
+    });
+  } catch {
+    return [];
+  }
+}
+
+function getFullStorageStats() {
+  const disk = getDiskStats();
+  const cameraStats = getDirectoryStats(PHOTOS_DIR);
+  const thumbsStats = getDirectoryStats(THUMBS_DIR);
+  const queueStats = getDirectoryStats(UPLOAD_QUEUE_DIR);
+  const archiveDateFolders = getArchiveDateFolders();
+
+  const totalArchiveBytes = archiveDateFolders.reduce((sum, item) => sum + item.bytes, 0);
+  const totalArchiveFiles = archiveDateFolders.reduce((sum, item) => sum + item.files, 0);
+  const totalArchiveSessions = archiveDateFolders.reduce((sum, item) => sum + item.sessionCount, 0);
+
+  // Queue subfolders
+  let queueFolders = [];
+  try {
+    if (fs.existsSync(UPLOAD_QUEUE_DIR)) {
+      queueFolders = fs.readdirSync(UPLOAD_QUEUE_DIR, { withFileTypes: true })
+        .filter((e) => e.isDirectory())
+        .map((e) => e.name);
+    }
+  } catch {}
+
+  const config = readStorageConfig();
+
+  const studioTotalBytes = cameraStats.bytes + thumbsStats.bytes + queueStats.bytes + totalArchiveBytes;
+
+  return {
+    disk,
+    studioStorage: {
+      totalBytes: studioTotalBytes,
+      totalFormatted: formatBytes(studioTotalBytes),
+      camera: {
+        bytes: cameraStats.bytes + thumbsStats.bytes,
+        formatted: formatBytes(cameraStats.bytes + thumbsStats.bytes),
+        photoFiles: cameraStats.files,
+        thumbFiles: thumbsStats.files,
+      },
+      queue: {
+        bytes: queueStats.bytes,
+        formatted: queueStats.formatted,
+        folderCount: queueFolders.length,
+        folders: queueFolders,
+        isUploading: uploadProgress.isUploading,
+        activeFolder: uploadProgress.folderName || null,
+      },
+      archive: {
+        bytes: totalArchiveBytes,
+        formatted: formatBytes(totalArchiveBytes),
+        totalFiles: totalArchiveFiles,
+        sessionCount: totalArchiveSessions,
+        dateFolders: archiveDateFolders,
+      },
+    },
+    retentionPolicy: config,
+  };
+}
+
+// Background auto cleanup runner
+function runAutoCleanup() {
+  const config = readStorageConfig();
+  if (!config.autoCleanEnabled || !config.retentionDays || config.retentionDays <= 0) {
+    return;
+  }
+
+  try {
+    const archiveFolders = getArchiveDateFolders();
+    let freedBytes = 0;
+    let deletedCount = 0;
+
+    for (const item of archiveFolders) {
+      if (item.ageDays >= config.retentionDays) {
+        const targetPath = path.join(ARCHIVE_DIR, item.date);
+        try {
+          fs.rmSync(targetPath, { recursive: true, force: true });
+          freedBytes += item.bytes;
+          deletedCount++;
+          console.log(`[Storage] Auto-clean menghapus arsip lama: ${item.date} (${item.formatted})`);
+        } catch (e) {
+          console.error(`[Storage] Gagal menghapus arsip ${item.date}:`, e.message);
+        }
+      }
+    }
+
+    if (deletedCount > 0) {
+      console.log(`[Storage] Auto-clean selesai: ${deletedCount} tanggal dibersihkan, ${formatBytes(freedBytes)} ruang disk dibebaskan.`);
+    }
+
+    config.lastCleanedAt = new Date().toISOString();
+    writeStorageConfig(config);
+  } catch (err) {
+    console.error("[Storage] Error during auto cleanup:", err);
+  }
+}
+
+// Jalankan auto cleanup berkala setiap 6 jam
+setInterval(runAutoCleanup, 6 * 60 * 60 * 1000);
+// Jalankan 15 detik setelah server start
+setTimeout(runAutoCleanup, 15000);
+
+app.get("/api/storage-stats", (req, res) => {
+  try {
+    res.json(getFullStorageStats());
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post("/api/storage-policy", (req, res) => {
+  try {
+    const current = readStorageConfig();
+    const { autoCleanEnabled, retentionDays } = req.body;
+    const updated = {
+      ...current,
+      autoCleanEnabled: typeof autoCleanEnabled === "boolean" ? autoCleanEnabled : current.autoCleanEnabled,
+      retentionDays: typeof retentionDays === "number" ? Math.max(1, retentionDays) : current.retentionDays,
+    };
+    writeStorageConfig(updated);
+    res.json({ success: true, policy: updated });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post("/api/storage-clean", (req, res) => {
+  try {
+    const { action, days, date } = req.body;
+    let freedBytes = 0;
+    let deletedCount = 0;
+
+    if (action === "archive_by_days") {
+      const thresholdDays = Number(days) || 7;
+      const folders = getArchiveDateFolders();
+      for (const item of folders) {
+        if (item.ageDays >= thresholdDays) {
+          const target = path.join(ARCHIVE_DIR, item.date);
+          try {
+            fs.rmSync(target, { recursive: true, force: true });
+            freedBytes += item.bytes;
+            deletedCount++;
+          } catch (e) {
+            console.error(`[Storage] Gagal hapus ${item.date}:`, e);
+          }
+        }
+      }
+    } else if (action === "archive_date") {
+      if (!date) return res.status(400).json({ error: "Parameter 'date' diperlukan" });
+      const target = path.join(ARCHIVE_DIR, date);
+      if (fs.existsSync(target)) {
+        const stats = getDirectoryStats(target);
+        fs.rmSync(target, { recursive: true, force: true });
+        freedBytes += stats.bytes;
+        deletedCount++;
+      }
+    } else if (action === "archive_all") {
+      if (fs.existsSync(ARCHIVE_DIR)) {
+        const entries = fs.readdirSync(ARCHIVE_DIR);
+        for (const e of entries) {
+          const target = path.join(ARCHIVE_DIR, e);
+          const stats = getDirectoryStats(target);
+          try {
+            fs.rmSync(target, { recursive: true, force: true });
+            freedBytes += stats.bytes;
+            deletedCount++;
+          } catch (err) {
+            console.error(`[Storage] Gagal hapus ${e}:`, err);
+          }
+        }
+      }
+    } else if (action === "queue_stale") {
+      // Bersihkan folder di upload_queue yang TIDAK sedang diupload
+      if (fs.existsSync(UPLOAD_QUEUE_DIR)) {
+        const activeFolderName = uploadProgress.isUploading ? uploadProgress.folderName : null;
+        const entries = fs.readdirSync(UPLOAD_QUEUE_DIR, { withFileTypes: true });
+        for (const entry of entries) {
+          if (entry.isDirectory()) {
+            // Lindungi folder yang sedang diupload saat ini
+            if (activeFolderName && entry.name.includes(activeFolderName)) {
+              continue;
+            }
+            const target = path.join(UPLOAD_QUEUE_DIR, entry.name);
+            const stats = getDirectoryStats(target);
+            try {
+              fs.rmSync(target, { recursive: true, force: true });
+              freedBytes += stats.bytes;
+              deletedCount++;
+            } catch (err) {
+              console.error(`[Storage] Gagal hapus queue ${entry.name}:`, err);
+            }
+          }
+        }
+      }
+    } else if (action === "camera_all") {
+      // Kosongkan kamera & thumbnail
+      if (fs.existsSync(PHOTOS_DIR)) {
+        const files = fs.readdirSync(PHOTOS_DIR);
+        for (const f of files) {
+          if (f.match(/\.(jpg|jpeg|png|webp)$/i)) {
+            const p = path.join(PHOTOS_DIR, f);
+            try {
+              const stat = fs.statSync(p);
+              freedBytes += stat.size;
+              fs.unlinkSync(p);
+              deletedCount++;
+            } catch {}
+          }
+        }
+      }
+      if (fs.existsSync(THUMBS_DIR)) {
+        const thumbs = fs.readdirSync(THUMBS_DIR);
+        for (const t of thumbs) {
+          const p = path.join(THUMBS_DIR, t);
+          try {
+            const stat = fs.statSync(p);
+            freedBytes += stat.size;
+            fs.unlinkSync(p);
+          } catch {}
+        }
+      }
+    } else {
+      return res.status(400).json({ error: `Aksi '${action}' tidak dikenali` });
+    }
+
+    const config = readStorageConfig();
+    config.lastCleanedAt = new Date().toISOString();
+    writeStorageConfig(config);
+
+    res.json({
+      success: true,
+      action,
+      freedBytes,
+      freedFormatted: formatBytes(freedBytes),
+      deletedCount,
+      message: `Berhasil membersihkan ${formatBytes(freedBytes)} (${deletedCount} item dihapus).`,
+      stats: getFullStorageStats(),
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 
@@ -570,9 +1012,18 @@ let simulatedPrinterAlert = null;
 function fetchWindowsPrinterStatus() {
   return new Promise((resolve) => {
     const psScript = `
-$p = @(Get-CimInstance Win32_Printer | Select-Object Name, PrinterStatus, ExtendedPrinterStatus, DetectedErrorState, PrinterState, WorkOffline, PortName);
-$j = @(Get-CimInstance Win32_PrintJob | Select-Object Name, JobStatus, Status, Document);
-[PSCustomObject]@{ printers = $p; jobs = $j } | ConvertTo-Json -Depth 3 -Compress
+$ProgressPreference = 'SilentlyContinue'
+$printers = @(Get-CimInstance Win32_Printer | Select-Object Name, PrinterStatus, ExtendedPrinterStatus, DetectedErrorState, PrinterState, WorkOffline, PortName)
+$allJobs = @()
+foreach ($pr in $printers) {
+    try {
+        $pJobs = @(Get-PrintJob -PrinterName $pr.Name -ErrorAction SilentlyContinue | Select-Object Id, PrinterName, DocumentName, JobStatus, Position, TotalPages, PagesPrinted, Size, @{Name='SubmittedTimeEpoch';Expression={if ($_.SubmittedTime) { [double]([DateTimeOffset]$_.SubmittedTime).ToUnixTimeMilliseconds() } else { 0 }}})
+        if ($pJobs -and $pJobs.Count -gt 0) {
+            $allJobs += $pJobs
+        }
+    } catch {}
+}
+[PSCustomObject]@{ printers = $printers; jobs = $allJobs } | ConvertTo-Json -Depth 3 -Compress
 `;
     const b64 = Buffer.from(psScript, "utf16le").toString("base64");
     exec(`powershell -NoProfile -EncodedCommand ${b64}`, { windowsHide: true, timeout: 6000 }, (err, stdout) => {
@@ -604,24 +1055,36 @@ async function getDetailedPrinterStatus() {
   const mappedPrinters = printers.map((p) => {
     const printerState = p.PrinterState || 0;
     const detectedError = p.DetectedErrorState || 0;
+
+    const printerJobs = jobs.filter(
+      (j) => (j.PrinterName || "").toLowerCase() === (p.Name || "").toLowerCase() ||
+             (j.Name || "").toLowerCase().startsWith((p.Name || "").toLowerCase())
+    );
+
+    printerJobs.sort((a, b) => (a.Position || 0) - (b.Position || 0));
+    const activeJob = printerJobs[0];
+
     const isOffline = !!p.WorkOffline || (printerState & 128) !== 0 || p.PrinterStatus === 7;
-    
-    // Paper out checks (DetectedErrorState 4 or PrinterState bit 16)
-    const isPaperOut = detectedError === 4 || (printerState & 16) !== 0;
 
-    // Door / Cover / Output Tray closed checks (DetectedErrorState 7 or PrinterState bit 4194304)
-    const isDoorOpen = detectedError === 7 || (printerState & 4194304) !== 0;
-
-    // Paper jam checks (DetectedErrorState 8 or PrinterState bit 8)
-    const isPaperJam = detectedError === 8 || (printerState & 8) !== 0;
-
-    // User intervention
+    let isPaperOut = detectedError === 4 || (printerState & 16) !== 0;
+    let isDoorOpen = detectedError === 7 || (printerState & 4194304) !== 0;
+    let isPaperJam = detectedError === 8 || (printerState & 8) !== 0;
     const isUserIntervention = (printerState & 1048576) !== 0;
-
-    // Printing
     const isPrinting = (printerState & 1024) !== 0 || p.PrinterStatus === 4;
 
-    const printerJobs = jobs.filter((j) => (j.Name || "").toLowerCase().startsWith(p.Name.toLowerCase()));
+    // Check stalled jobs (tray closed or paper out)
+    // On photo printers (like Epson L8050), when the tray is closed or paper is out,
+    // the driver pauses paper feed and leaves the job at Position 1 with 0 pages printed.
+    let isStalled = false;
+    if (activeJob && !isOffline) {
+      const ageMs = activeJob.SubmittedTimeEpoch ? (now - activeJob.SubmittedTimeEpoch) : 10000;
+      if (ageMs > 3500 && (activeJob.PagesPrinted || 0) === 0) {
+        isStalled = true;
+        if (!isDoorOpen && !isPaperOut && !isPaperJam) {
+          isDoorOpen = true; // Tray closed / retracted!
+        }
+      }
+    }
 
     let statusCode = "ready";
     let statusText = "Ready";
@@ -629,12 +1092,12 @@ async function getDetailedPrinterStatus() {
     if (isOffline) {
       statusCode = "offline";
       statusText = "Offline";
+    } else if (isDoorOpen) {
+      statusCode = "door_open";
+      statusText = "Tray Tertutup / Belum Ditarik";
     } else if (isPaperOut) {
       statusCode = "paper_out";
       statusText = "Kertas Habis";
-    } else if (isDoorOpen) {
-      statusCode = "door_open";
-      statusText = "Penutup / Tray Tertutup";
     } else if (isPaperJam) {
       statusCode = "paper_jam";
       statusText = "Kertas Macet (Paper Jam)";
@@ -644,10 +1107,13 @@ async function getDetailedPrinterStatus() {
     } else if (isPrinting) {
       statusCode = "printing";
       statusText = "Sedang Mencetak";
+    } else if (printerJobs.length > 0) {
+      statusCode = "door_open";
+      statusText = "Tray Tertutup / Belum Ditarik";
     }
 
     const matchingProfiles = profiles.filter(
-      (prof) => prof.printerName.toLowerCase() === p.Name.toLowerCase()
+      (prof) => prof.printerName.toLowerCase() === (p.Name || "").toLowerCase()
     );
 
     return {
@@ -681,22 +1147,22 @@ async function getDetailedPrinterStatus() {
         const appliesList = p.profiles.flatMap((pr) => pr.appliesTo);
         const is4R = appliesList.includes("4r");
 
-        if (p.isPaperOut) {
+        if (p.isDoorOpen) {
+          activeAlert = {
+            type: "door_open",
+            title: is4R ? "Tray / Penutup Printer 4R Belum Ditarik" : `Tray Printer ${profileLabels} Belum Ditarik`,
+            customerMessage: "Tray penutup printer belum ditarik keluar. Foto kamu akan otomatis keluar setelah tray ditarik ya kak!",
+            adminMessage: `Penutup/tray keluaran pada printer "${p.name}" (${profileLabels}) belum ditarik keluar! Mohon tarik keluar tray printer agar foto dapat tercetak.`,
+            printerName: p.name,
+            profileLabel: profileLabels,
+          };
+          break;
+        } else if (p.isPaperOut) {
           activeAlert = {
             type: "paper_out",
             title: is4R ? "Kertas Printer 4R Habis" : `Kertas Printer ${profileLabels} Habis`,
             customerMessage: "Kertas foto sedang diisi ulang oleh staff. Mohon tunggu beberapa saat ya kak!",
             adminMessage: `Kertas pada printer "${p.name}" (${profileLabels}) telah habis! Mohon segera isi ulang kertas.`,
-            printerName: p.name,
-            profileLabel: profileLabels,
-          };
-          break;
-        } else if (p.isDoorOpen) {
-          activeAlert = {
-            type: "door_open",
-            title: is4R ? "Tray / Penutup Printer 4R Tertutup" : `Penutup Printer ${profileLabels} Belum Ditarik`,
-            customerMessage: "Tray penutup printer sedang dibuka/ditarik oleh staff. Foto kamu akan segera keluar!",
-            adminMessage: `Penutup/tray pada printer "${p.name}" (${profileLabels}) belum ditarik keluar.`,
             printerName: p.name,
             profileLabel: profileLabels,
           };
@@ -913,6 +1379,70 @@ app.delete("/api/printers/:id", (req, res) => {
   data.profiles.splice(idx, 1);
   writePrinters(data);
   res.json({ success: true });
+});
+
+// ─── KIOSK THEME CONFIG API ──────────────────────────────────────
+const KIOSK_THEME_JSON = path.join(__dirname, "public/kiosk-theme.json");
+
+const DEFAULT_KIOSK_THEME = {
+  presetId: "neo-brutalism",
+  name: "Neo-Brutalism (Pop Studio)",
+  backgroundColor: "#f3f4f6",
+  cardBackgroundColor: "#ffffff",
+  primaryColor: "#000000",
+  primaryTextColor: "#ffffff",
+  textColor: "#171717",
+  accentColor: "#fde047",
+  borderColor: "#000000",
+  borderRadius: "lg",
+  borderWidth: "thick",
+  shadowStyle: "none",
+  fontFamily: "space-grotesk",
+  studioName: "IGNOS STUDIO",
+  homeHeadline: "Kamu Habis Fotoan Dimana?",
+  homeSubheadline: "Pilih studio untuk mulai sesi foto kamu",
+  logoUrl: "",
+  enableBonusTutorial: true,
+  enableAddonsStep: true,
+  enableStoryQuestion: true,
+  freeEventMode: false,
+};
+
+function readKioskTheme() {
+  if (!fs.existsSync(KIOSK_THEME_JSON)) {
+    return DEFAULT_KIOSK_THEME;
+  }
+  try {
+    return { ...DEFAULT_KIOSK_THEME, ...JSON.parse(fs.readFileSync(KIOSK_THEME_JSON, "utf-8")) };
+  } catch {
+    return DEFAULT_KIOSK_THEME;
+  }
+}
+
+function writeKioskTheme(data) {
+  fs.writeFileSync(KIOSK_THEME_JSON, JSON.stringify(data, null, 2), "utf-8");
+}
+
+app.get("/api/kiosk-theme", (req, res) => {
+  res.json(readKioskTheme());
+});
+
+const saveKioskThemeHandler = (req, res) => {
+  try {
+    const updated = { ...readKioskTheme(), ...req.body };
+    writeKioskTheme(updated);
+    res.json({ success: true, theme: updated });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+app.put("/api/kiosk-theme", saveKioskThemeHandler);
+app.post("/api/kiosk-theme", saveKioskThemeHandler);
+
+app.post("/api/kiosk-theme/reset", (req, res) => {
+  writeKioskTheme(DEFAULT_KIOSK_THEME);
+  res.json({ success: true, theme: DEFAULT_KIOSK_THEME });
 });
 
 // ─────────────────────────────────────────────────────────────

@@ -1,6 +1,7 @@
 import { useLocation, useNavigate } from "react-router";
 import { ArrowRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { useKioskTheme } from "../../context/KioskThemeContext";
 
 export function AddOnQuestion() {
   const location = useLocation();
@@ -8,6 +9,43 @@ export function AddOnQuestion() {
   const a4Count: number = location.state?.a4Count ?? 0;
   const { t } = useTranslation();
   const navigate = useNavigate();
+
+  let themeConfig: any = null;
+  try {
+    themeConfig = useKioskTheme().theme;
+  } catch {}
+
+  const handleSkipOrFinish = () => {
+    const nextState = {
+      ...location.state,
+      peopleCount,
+      joinedBonus,
+      coupleMode,
+      totalPrint,
+      templates,
+      orders,
+      a4Count,
+      miscAddons: location.state?.miscAddons ?? [],
+    };
+
+    if (themeConfig && (themeConfig.enableStoryQuestion === false || themeConfig.freeEventMode)) {
+      navigate("/complete", {
+        state: {
+          ...nextState,
+          makeStory: true,
+          customerName: themeConfig.freeEventMode ? (themeConfig.studioName || "Event Guest") : "",
+          instagramUsernames: [],
+          extraCharge: 0,
+        },
+      });
+      return;
+    }
+
+    navigate("/story-question", {
+      state: nextState,
+    });
+  };
+
   const isVideo = (src: string) =>
     src.endsWith(".mp4") || src.endsWith(".webm");
 
@@ -246,21 +284,7 @@ export function AddOnQuestion() {
         {/* Skip Button */}
         <div className="flex justify-center mt-7">
           <button
-            onClick={() =>
-              navigate("/story-question", {
-                state: {
-                  ...location.state,
-                  peopleCount,
-                  joinedBonus,
-                  coupleMode,
-                  totalPrint,
-                  templates,
-                  orders,
-                  a4Count,
-                  miscAddons: location.state?.miscAddons ?? [],
-                },
-              })
-            }
+            onClick={handleSkipOrFinish}
             className="text-2xl font-bold border-4 border-black px-16 py-5 bg-white hover:bg-black hover:text-white transition-colors rounded-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1"
           >
             {t("addons.skip")}

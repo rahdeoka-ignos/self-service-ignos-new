@@ -5,6 +5,7 @@ import { BrutalistCard } from "../components/BrutalistCard";
 import { Navigation } from "../components/Navigation";
 import { useEffect, useState } from "react";
 import { BrutalistButton } from "../components/BrutalistButton";
+import { useKioskTheme } from "../../context/KioskThemeContext";
 
 export function BonusSelection() {
   const navigate = useNavigate();
@@ -14,6 +15,15 @@ export function BonusSelection() {
   const peopleCount = location.state?.peopleCount || 1;
   const skipBonus = location.state?.skipBonus;
   const coupleMode = location.state?.coupleMode ?? false;
+
+  let enableBonusTutorial = true;
+  try {
+    const { theme } = useKioskTheme();
+    if (typeof theme.enableBonusTutorial === "boolean") {
+      enableBonusTutorial = theme.enableBonusTutorial;
+    }
+  } catch {}
+
   const [showTimerModal, setShowTimerModal] = useState(false);
   const [duration, setDuration] = useState(() => {
     const saved = sessionStorage.getItem("session_timer_duration");
@@ -31,6 +41,19 @@ export function BonusSelection() {
   }, []);
 
   const handleJoinBonus = () => {
+    if (!enableBonusTutorial) {
+      sessionStorage.removeItem("session_timer_end");
+      sessionStorage.setItem("session_timer_duration", String(duration));
+      navigate("/templates", {
+        state: {
+          peopleCount,
+          joinedBonus: true,
+          coupleMode,
+          timerDuration: duration,
+        },
+      });
+      return;
+    }
     navigate("/bonus-guide", { state: { peopleCount, coupleMode } });
   };
 

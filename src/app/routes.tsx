@@ -1,4 +1,5 @@
-import { createBrowserRouter } from "react-router";
+import { createBrowserRouter, Outlet, useLocation } from "react-router";
+import { KioskPrinterAlertModal } from "./components/KioskPrinterAlertModal";
 import { Home } from "./screens/Home";
 import { PeopleCount } from "./screens/PeopleCount";
 import { BonusSelection } from "./screens/BonusSelection";
@@ -19,116 +20,152 @@ import { LoyaltyCard } from "./screens/LoyaltyCard";
 import { AdminDashboardPage } from "./screens/AdminDashboardPage";
 import { AdminMessagePage } from "./screens/AdminMessagePage";
 import { AdminTemplatePage } from "./screens/AdminTemplatePage";
+import { AdminTemplateEditorPage } from "./screens/AdminTemplateEditorPage";
 import { AdminPrinterPage } from "./screens/AdminPrinterPage";
+import { AdminKioskThemePage } from "./screens/AdminKioskThemePage";
+import { AdminStoragePage } from "./screens/AdminStoragePage";
 import { PasFotoPage } from "./screens/AddOns/PasFoto";
+import { KioskThemeProvider } from "../context/KioskThemeContext";
+
+function RootLayout() {
+  const location = useLocation();
+  const isAdmin = location.pathname.startsWith("/admin");
+  return (
+    <KioskThemeProvider>
+      <Outlet />
+      {!isAdmin && <KioskPrinterAlertModal />}
+    </KioskThemeProvider>
+  );
+}
 
 export const router = createBrowserRouter([
   {
-    path: "/",
-    Component: Home,
-  },
-  {
-    path: "/people-count",
-    Component: PeopleCount,
-  },
-  {
-    path: "/bonus",
-    Component: BonusSelection,
-  },
-  {
-    path: "/templates",
-    Component: TemplateSelection,
-  },
-  {
-    path: "/arrange-photos",
-    Component: PhotoArrangement,
-  },
-  {
-    path: "/bonus-guide",
-    Component: BonusGuide,
-  },
-  {
-    path: "/add-ons",
-    Component: AddOnQuestion,
-  },
-  {
-    path: "/arrange-photos-a4",
-    Component: PhotoArrangementA4,
-  },
-  {
-    path: "/bingkaiA4",
-    Component: BingkaiA4Page,
-  },
-  {
-    path: "/bingkai4R",
-    Component: BingkaiA4Page,
-  },
-  {
-    path: "/flower-hotwheels",
-    Component: FlowerHotwheelsPage,
-  },
-  {
-    path: "/cetak-bingkai3d-10r",
-    Component: FlowerHotwheelsPage,
-  },
-  {
-    path: "/cermin-foto-3d",
-    Component: FlowerHotwheelsPage,
-  },
-  {
-    path: "/boneka-tabung",
-    Component: FlowerHotwheelsPage,
-  },
-  {
-    path: "/puzzle-foto",
-    Component: FlowerHotwheelsPage,
-  },
-  {
-    path: "/keychain",
-    Component: KeychainOptions,
-  },
-  {
-    path: "/keychain-arrangement",
-    Component: KeychainArrangement,
-  },
-  {
-    path: "/id-card",
-    Component: IdCardOptions,
-  },
-  {
-    path: "/idcard-arrangement",
-    Component: IdCardArrangement,
-  },
-  {
-    path: "/story-question",
-    Component: StoryQuestion,
-  },
-  {
-    path: "/complete",
-    Component: CompletePage,
-  },
-  {
-    path: "/loyalty",
-    Component: LoyaltyCard,
-  },
-  {
-    path: "/admin",
-    Component: AdminDashboardPage,
-  },
-  {
-    path: "/admin/message",
-    Component: AdminMessagePage,
-  },
-  {
-    path: "/admin/templates",
-    Component: AdminTemplatePage,
-  },
-  {
-    path: "/admin/printers",
-    Component: AdminPrinterPage,
-  },
-  {
-    path: "/pasfoto",
-    Component: PasFotoPage,
+    element: <RootLayout />,
+    children: [
+      {
+        path: "/",
+        Component: Home,
+      },
+      {
+        path: "/people-count",
+        Component: PeopleCount,
+      },
+      {
+        path: "/bonus",
+        Component: BonusSelection,
+      },
+      {
+        path: "/templates",
+        Component: TemplateSelection,
+      },
+      {
+        path: "/arrange-photos",
+        Component: PhotoArrangement,
+      },
+      {
+        path: "/bonus-guide",
+        Component: BonusGuide,
+      },
+      {
+        path: "/add-ons",
+        Component: AddOnQuestion,
+      },
+      {
+        path: "/arrange-photos-a4",
+        Component: PhotoArrangementA4,
+      },
+      {
+        path: "/bingkaiA4",
+        Component: BingkaiA4Page,
+      },
+      {
+        path: "/bingkai4R",
+        Component: BingkaiA4Page,
+      },
+      {
+        path: "/flower-hotwheels",
+        Component: FlowerHotwheelsPage,
+      },
+      {
+        path: "/cetak-bingkai3d-10r",
+        Component: FlowerHotwheelsPage,
+      },
+      {
+        path: "/cermin-foto-3d",
+        Component: FlowerHotwheelsPage,
+      },
+      {
+        path: "/boneka-tabung",
+        Component: FlowerHotwheelsPage,
+      },
+      {
+        path: "/puzzle-foto",
+        Component: FlowerHotwheelsPage,
+      },
+      {
+        path: "/keychain",
+        Component: KeychainOptions,
+      },
+      {
+        path: "/keychain-arrangement",
+        Component: KeychainArrangement,
+      },
+      {
+        path: "/id-card",
+        Component: IdCardOptions,
+      },
+      {
+        path: "/idcard-arrangement",
+        Component: IdCardArrangement,
+      },
+      {
+        path: "/story-question",
+        Component: StoryQuestion,
+      },
+      {
+        path: "/complete",
+        Component: CompletePage,
+      },
+      {
+        path: "/loyalty",
+        Component: LoyaltyCard,
+      },
+      {
+        path: "/admin",
+        Component: AdminDashboardPage,
+      },
+      {
+        path: "/admin/message",
+        Component: AdminMessagePage,
+      },
+      {
+        path: "/admin/templates",
+        Component: AdminTemplatePage,
+      },
+      {
+        path: "/admin/templates/new",
+        Component: AdminTemplateEditorPage,
+      },
+      {
+        path: "/admin/templates/edit/:id",
+        Component: AdminTemplateEditorPage,
+      },
+      {
+        path: "/admin/printers",
+        Component: AdminPrinterPage,
+      },
+      {
+        path: "/admin/kiosk-theme",
+        Component: AdminKioskThemePage,
+      },
+      {
+        path: "/admin/storage",
+        Component: AdminStoragePage,
+      },
+      {
+        path: "/pasfoto",
+        Component: PasFotoPage,
+      },
+    ],
   },
 ]);
