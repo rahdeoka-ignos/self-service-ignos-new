@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { Layers, Pencil, Plus, Trash2 } from "lucide-react";
-import { BrutalistButton } from "../components/BrutalistButton";
 import { ImageWithFallback } from "../components/figma/ImageWithFallback";
 import { AdminLayout } from "../components/AdminLayout";
 import type {
@@ -48,37 +47,39 @@ export function AdminTemplatePage() {
 
   return (
     <AdminLayout>
-      <div className="p-8">
+      <div className="p-6 md:p-8 space-y-6">
         {/* ── Page Header ── */}
-        <div className="flex items-start justify-between mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
           <div>
-            <h1 className="text-4xl font-black leading-tight">Template Manager</h1>
-            <p className="text-gray-500 font-medium mt-1">
-              Kelola semua layout template foto studio
+            <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-zinc-950 leading-tight">
+              Template Manager
+            </h1>
+            <p className="text-zinc-500 text-xs md:text-sm mt-0.5">
+              Kelola semua tata letak dan desain template foto Ignos Studio
             </p>
           </div>
           <button
             onClick={() => navigate("/admin/templates/new")}
-            className="flex items-center gap-2 px-5 py-3 bg-black text-white font-bold border-4 border-black rounded-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,0.3)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all text-base"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-zinc-900 text-white font-medium rounded-lg hover:bg-black transition-colors text-xs shadow-xs cursor-pointer"
           >
-            <Plus size={18} strokeWidth={2.5} />
-            Tambah Template
+            <Plus size={14} strokeWidth={2} />
+            <span>Tambah Template</span>
           </button>
         </div>
 
         {/* ── Stats Bar ── */}
-        <div className="grid grid-cols-3 gap-4 mb-8">
-          <div className="bg-white border-4 border-black rounded-2xl p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-            <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Total Template</p>
-            <p className="text-3xl font-black">{totalTemplates}</p>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="bg-white border border-zinc-200 rounded-xl p-4 shadow-xs hover:border-zinc-300 transition-colors">
+            <p className="text-[11px] font-medium text-zinc-500 uppercase tracking-wider">Total Template</p>
+            <p className="text-2xl md:text-3xl font-bold text-zinc-950 mt-1">{totalTemplates}</p>
           </div>
-          <div className="bg-white border-4 border-black rounded-2xl p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-            <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Kategori</p>
-            <p className="text-3xl font-black">{data?.categories.length ?? 0}</p>
+          <div className="bg-white border border-zinc-200 rounded-xl p-4 shadow-xs hover:border-zinc-300 transition-colors">
+            <p className="text-[11px] font-medium text-zinc-500 uppercase tracking-wider">Kategori</p>
+            <p className="text-2xl md:text-3xl font-bold text-zinc-950 mt-1">{data?.categories.length ?? 0}</p>
           </div>
-          <div className="bg-white border-4 border-black rounded-2xl p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-            <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Custom Layout</p>
-            <p className="text-3xl font-black">
+          <div className="bg-white border border-zinc-200 rounded-xl p-4 shadow-xs hover:border-zinc-300 transition-colors">
+            <p className="text-[11px] font-medium text-zinc-500 uppercase tracking-wider">Custom Layout</p>
+            <p className="text-2xl md:text-3xl font-bold text-zinc-950 mt-1">
               {data
                 ? Object.values(data.templates)
                     .flat()
@@ -89,24 +90,24 @@ export function AdminTemplatePage() {
         </div>
 
         {/* ── Category Tabs ── */}
-        <div className="flex gap-2 mb-6 flex-wrap">
+        <div className="flex gap-1.5 border-b border-zinc-200 pb-3 flex-wrap">
           {data?.categories.map((cat) => (
             <button
               key={cat.id}
               onClick={() => setActiveCategory(cat.id)}
-              className={`flex items-center gap-2 px-5 py-2.5 font-bold border-2 border-black rounded-xl transition-all text-sm ${
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 font-medium rounded-lg transition-colors text-xs cursor-pointer ${
                 activeCategory === cat.id
-                  ? "bg-black text-white shadow-[2px_2px_0px_0px_rgba(0,0,0,0.3)]"
-                  : "bg-white text-black hover:bg-gray-50"
+                  ? "bg-zinc-900 text-white shadow-xs"
+                  : "text-zinc-600 hover:text-zinc-950 hover:bg-zinc-100"
               }`}
             >
-              <Layers size={14} strokeWidth={2.5} />
-              {cat.name}
+              <Layers size={13} strokeWidth={2} />
+              <span>{cat.name}</span>
               <span
-                className={`text-xs px-1.5 py-0.5 rounded-md font-black ${
+                className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full font-medium ${
                   activeCategory === cat.id
                     ? "bg-white/20 text-white"
-                    : "bg-gray-100 text-gray-500"
+                    : "bg-zinc-100 text-zinc-500"
                 }`}
               >
                 {data?.templates[cat.id]?.length ?? 0}
@@ -119,34 +120,34 @@ export function AdminTemplatePage() {
         {!data ? (
           <div className="flex items-center justify-center py-32">
             <div className="text-center">
-              <div className="w-12 h-12 border-4 border-black border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-              <p className="text-lg font-bold text-gray-400">Memuat templates...</p>
+              <div className="w-8 h-8 border-2 border-zinc-900 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+              <p className="text-sm font-medium text-zinc-500">Memuat template...</p>
             </div>
           </div>
         ) : currentTemplates.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-24 border-4 border-dashed border-black rounded-2xl bg-white">
-            <div className="w-16 h-16 bg-gray-100 border-4 border-black rounded-2xl flex items-center justify-center mb-4">
-              <Layers size={28} strokeWidth={2} className="text-gray-400" />
+          <div className="flex flex-col items-center justify-center py-20 border border-dashed border-zinc-300 rounded-xl bg-white text-center p-6">
+            <div className="w-12 h-12 bg-zinc-100 rounded-xl flex items-center justify-center mb-3 text-zinc-400">
+              <Layers size={22} strokeWidth={1.75} />
             </div>
-            <p className="text-xl font-bold text-gray-400 mb-2">Belum ada template</p>
-            <p className="text-sm text-gray-400 mb-6">Tambahkan template pertama untuk kategori ini</p>
+            <p className="text-sm font-semibold text-zinc-800 mb-1">Belum ada template</p>
+            <p className="text-xs text-zinc-400 mb-4">Tambahkan template pertama untuk kategori ini</p>
             <button
               onClick={() => navigate("/admin/templates/new")}
-              className="flex items-center gap-2 px-5 py-3 bg-black text-white font-bold border-4 border-black rounded-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,0.3)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-zinc-900 text-white font-medium rounded-lg hover:bg-black transition-colors text-xs cursor-pointer shadow-xs"
             >
-              <Plus size={18} strokeWidth={2.5} />
+              <Plus size={14} strokeWidth={2} />
               Tambah Template Pertama
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-5">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
             {currentTemplates.map((tpl) => (
               <div
                 key={tpl.id}
-                className="bg-white border-4 border-black rounded-2xl overflow-hidden shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:-translate-x-0.5 hover:-translate-y-0.5 transition-all group"
+                className="bg-white border border-zinc-200 rounded-xl overflow-hidden shadow-xs hover:border-zinc-300 hover:shadow-sm transition-all group flex flex-col justify-between"
               >
                 {/* Preview image */}
-                <div className="aspect-[2/3] bg-gray-100 border-b-4 border-black overflow-hidden relative">
+                <div className="aspect-[2/3] bg-zinc-100 border-b border-zinc-100 overflow-hidden relative">
                   <ImageWithFallback
                     src={tpl.previewTemplate}
                     alt={tpl.name}
@@ -154,14 +155,14 @@ export function AdminTemplatePage() {
                   />
                   {/* Layout badge */}
                   <div className="absolute top-2 left-2">
-                    <span className="text-[10px] font-black bg-black text-white px-2 py-0.5 rounded-md uppercase tracking-wide">
+                    <span className="text-[10px] font-semibold bg-zinc-900/80 backdrop-blur-xs text-white px-1.5 py-0.5 rounded uppercase tracking-wider">
                       {tpl.layout}
                     </span>
                   </div>
                   {/* Overlay indicator */}
                   {tpl.overlay && (
                     <div className="absolute top-2 right-2">
-                      <span className="text-[10px] font-black bg-white border-2 border-black text-black px-1.5 py-0.5 rounded-md">
+                      <span className="text-[10px] font-semibold bg-white/90 backdrop-blur-xs border border-zinc-200 text-zinc-800 px-1.5 py-0.5 rounded shadow-xs">
                         OVL
                       </span>
                     </div>
@@ -170,32 +171,32 @@ export function AdminTemplatePage() {
 
                 {/* Card body */}
                 <div className="p-3">
-                  <p className="font-black text-sm truncate mb-0.5">{tpl.name}</p>
+                  <p className="font-semibold text-xs text-zinc-950 truncate mb-0.5">{tpl.name}</p>
                   {tpl.slots ? (
-                    <p className="text-xs text-blue-600 font-bold mb-3">
+                    <p className="text-[11px] text-zinc-500 font-medium mb-2.5">
                       {tpl.slots.length} custom slot
                     </p>
                   ) : (
-                    <p className="text-xs text-gray-400 font-medium mb-3">
+                    <p className="text-[11px] text-zinc-400 font-normal mb-2.5">
                       Built-in layout
                     </p>
                   )}
 
                   {/* Actions */}
-                  <div className="flex gap-1.5">
+                  <div className="flex gap-1.5 pt-1 border-t border-zinc-100">
                     <button
                       onClick={() => navigate(`/admin/templates/edit/${tpl.id}`)}
-                      className="flex-1 flex items-center justify-center gap-1 border-2 border-black rounded-lg py-1.5 text-xs font-bold hover:bg-black hover:text-white transition-colors"
+                      className="flex-1 flex items-center justify-center gap-1 border border-zinc-200 rounded-md py-1 text-xs font-medium text-zinc-700 hover:bg-zinc-50 hover:text-zinc-950 transition-colors cursor-pointer"
                     >
-                      <Pencil size={11} strokeWidth={2.5} />
+                      <Pencil size={11} strokeWidth={2} />
                       Edit
                     </button>
                     <button
                       onClick={() => setDeleteConfirm(tpl)}
-                      className="flex-1 flex items-center justify-center gap-1 border-2 border-red-500 text-red-500 rounded-lg py-1.5 text-xs font-bold hover:bg-red-500 hover:text-white transition-colors"
+                      className="flex items-center justify-center border border-zinc-200 rounded-md px-2 py-1 text-xs font-medium text-zinc-400 hover:text-rose-600 hover:border-rose-200 hover:bg-rose-50 transition-colors cursor-pointer"
+                      title="Hapus template"
                     >
-                      <Trash2 size={11} strokeWidth={2.5} />
-                      Hapus
+                      <Trash2 size={12} strokeWidth={2} />
                     </button>
                   </div>
                 </div>
@@ -205,37 +206,33 @@ export function AdminTemplatePage() {
         )}
       </div>
 
-      
-
-      {/* ── Delete Confirm ── */}
+      {/* ── Delete Confirm Modal ── */}
       {deleteConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="bg-white border-4 border-black rounded-2xl shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] p-8 max-w-sm w-full">
-            <div className="w-12 h-12 bg-red-100 border-4 border-red-500 rounded-xl flex items-center justify-center mb-4">
-              <Trash2 size={22} className="text-red-500" strokeWidth={2.5} />
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
+          <div className="bg-white border border-zinc-200 rounded-2xl shadow-xl p-6 max-w-sm w-full animate-fadeIn">
+            <div className="w-10 h-10 bg-rose-50 border border-rose-200 rounded-xl flex items-center justify-center mb-3">
+              <Trash2 size={18} className="text-rose-600" strokeWidth={2} />
             </div>
-            <h3 className="text-2xl font-black mb-2">Hapus Template?</h3>
-            <p className="text-gray-600 mb-1">
-              Template <strong>&ldquo;{deleteConfirm.name}&rdquo;</strong> akan dihapus dari daftar.
+            <h3 className="text-base font-semibold text-zinc-950 mb-1">Hapus Template?</h3>
+            <p className="text-xs text-zinc-600 mb-1">
+              Template <strong>&ldquo;{deleteConfirm.name}&rdquo;</strong> akan dihapus dari daftar sistem.
             </p>
-            <p className="text-sm text-gray-400 mb-6">
-              File gambar di /public/templates/ tidak akan dihapus.
+            <p className="text-[11px] text-zinc-400 mb-5">
+              File gambar di folder /public/templates/ tidak akan terhapus secara fisik.
             </p>
-            <div className="flex gap-3">
-              <BrutalistButton
-                size="md"
-                className="flex-1 !bg-red-500 !border-red-700"
+            <div className="flex gap-2">
+              <button
+                className="flex-1 bg-rose-600 text-white rounded-lg text-xs font-medium hover:bg-rose-700 py-2 transition-colors cursor-pointer shadow-xs"
                 onClick={() => handleDelete(deleteConfirm)}
               >
                 Ya, Hapus
-              </BrutalistButton>
-              <BrutalistButton
-                size="md"
-                variant="outline"
+              </button>
+              <button
+                className="flex-1 bg-white text-zinc-800 border border-zinc-200 rounded-lg text-xs font-medium hover:bg-zinc-50 py-2 transition-colors cursor-pointer"
                 onClick={() => setDeleteConfirm(null)}
               >
                 Batal
-              </BrutalistButton>
+              </button>
             </div>
           </div>
         </div>

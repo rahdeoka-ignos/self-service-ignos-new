@@ -25,6 +25,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { Trans, useTranslation } from "react-i18next";
+import { useKioskTheme } from "../../../context/KioskThemeContext";
 
 type KeychainOrder = {
   id: string;
@@ -55,6 +56,13 @@ export function CompletePage() {
   ];
   // Di dalam komponen, tambah ref:
   const receiptRef = useRef<HTMLDivElement>(null);
+  let studioName = "IGNOS STUDIO";
+  let theme: any = null;
+  try {
+    const ctx = useKioskTheme();
+    theme = ctx.theme;
+    if (theme.studioName) studioName = theme.studioName;
+  } catch {}
 
   const autoUploadReceipt = async () => {
     try {
@@ -97,7 +105,7 @@ export function CompletePage() {
       // ── HEADER ──
       pdf.setFillColor(0, 0, 0);
       pdf.roundedRect(margin, y, contentW, 28, 4, 4, "F");
-      addText("IGNOS STUDIO", W / 2, y + 10, {
+      addText(studioName, W / 2, y + 10, {
         fontSize: 18,
         fontStyle: "bold",
         color: [255, 255, 255],
@@ -607,7 +615,7 @@ export function CompletePage() {
             {/* Header */}
             <div className="bg-black text-white px-8 py-6 text-center">
               <p className="text-3xl font-black tracking-widest uppercase">
-                IGNOS STUDIO
+                {studioName}
               </p>
               <p className="text-base text-gray-400 mt-1 tracking-[0.3em] uppercase">
                 Session Summary
@@ -824,24 +832,40 @@ export function CompletePage() {
             </div>
 
             {/* Kasir CTA */}
-            <div className="bg-black text-white px-8 py-6 flex items-center gap-5">
-              <div className="w-14 h-14 bg-yellow-300 rounded-full border-4 border-white flex items-center justify-center shrink-0">
-                <MapPin size={28} strokeWidth={2.5} className="text-black" />
+            {theme?.freeEventMode ? (
+              <div className="bg-emerald-600 text-white px-8 py-6 flex items-center gap-5">
+                <div className="w-14 h-14 bg-white rounded-full border-4 border-black flex items-center justify-center shrink-0">
+                  <span className="text-2xl">🎉</span>
+                </div>
+                <div className="flex-1">
+                  <p className="text-2xl font-bold">
+                    Sesi Foto Selesai (Free Event / Rental)
+                  </p>
+                  <p className="text-base text-emerald-100 mt-1">
+                    Sesi ini gratis untuk tamu undangan. Silakan ambil hasil cetak foto Anda!
+                  </p>
+                </div>
               </div>
-              <div className="flex-1">
-                <p className="text-2xl font-bold">
-                  {t("complete.cashier.title")}
-                </p>
-                <p className="text-lg text-gray-400">
-                  {t("complete.cashier.description")}
-                </p>
+            ) : (
+              <div className="bg-black text-white px-8 py-6 flex items-center gap-5">
+                <div className="w-14 h-14 bg-yellow-300 rounded-full border-4 border-white flex items-center justify-center shrink-0">
+                  <MapPin size={28} strokeWidth={2.5} className="text-black" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-2xl font-bold">
+                    {t("complete.cashier.title")}
+                  </p>
+                  <p className="text-lg text-gray-400">
+                    {t("complete.cashier.description")}
+                  </p>
+                </div>
+                <ArrowRight
+                  size={32}
+                  strokeWidth={2.5}
+                  className="text-yellow-300 shrink-0"
+                />
               </div>
-              <ArrowRight
-                size={32}
-                strokeWidth={2.5}
-                className="text-yellow-300 shrink-0"
-              />
-            </div>
+            )}
           </div>
         </div>
 

@@ -1,0 +1,23 @@
+{
+  "presetId": "neo-brutalism",
+  "name": "Neo-Brutalism (Pop Studio)",
+  "backgroundColor": "#f3f4f6",
+  "cardBackgroundColor": "#ffffff",
+  "primaryColor": "#000000",
+  "primaryTextColor": "#ffffff",
+  "textColor": "#171717",
+  "accentColor": "#fde047",
+  "borderColor": "#000000",
+  "borderRadius": "lg",
+  "borderWidth": "thick",
+  "shadowStyle": "none",
+  "fontFamily": "space-grotesk",
+  "studioName": "IGNOS STUDIO",
+  "homeHeadline": "Kamu Habis Fotoan Dimana?",
+  "homeSubheadline": "Pilih studio untuk mulai sesi foto kamu",
+  "logoUrl": "",
+  "enableBonusTutorial": true,
+  "enableAddonsStep": true,
+  "enableStoryQuestion": true,
+  "freeEventMode": false
+}

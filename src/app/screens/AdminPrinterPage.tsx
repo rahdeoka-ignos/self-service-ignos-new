@@ -1,8 +1,25 @@
 import { useEffect, useState } from "react";
-import { Plus, Printer, Trash2, Pencil, X, RefreshCw, AlertTriangle, CheckCircle2, AlertCircle, Ban, Play, ShieldAlert, FileText, Check } from "lucide-react";
+import {
+  Plus,
+  Printer,
+  Trash2,
+  Pencil,
+  X,
+  RefreshCw,
+  Ban,
+  Check,
+  CheckCircle2,
+  AlertTriangle,
+  FileText,
+} from "lucide-react";
 import { AdminLayout } from "../components/AdminLayout";
-import { BrutalistButton } from "../components/BrutalistButton";
-import type { PrinterProfile, PrintersData, ProductType, SystemPrinter, PrinterMonitorResponse, PrinterStatusInfo, PrinterAlertInfo } from "../../types/printer";
+import type {
+  PrinterProfile,
+  PrintersData,
+  ProductType,
+  SystemPrinter,
+  PrinterMonitorResponse,
+} from "../../types/printer";
 
 const API = "http://localhost:5000";
 
@@ -202,110 +219,137 @@ export function AdminPrinterPage() {
 
   return (
     <AdminLayout>
-      <div className="p-8">
-        <div className="flex items-start justify-between mb-8">
+      <div className="w-full max-w-[1620px] mx-auto px-6 md:px-9 py-8 space-y-6">
+        {/* ── 1. HEADER (Amara: dash-heading) ── */}
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-1">
           <div>
-            <h1 className="text-4xl font-black leading-tight">Printer Manager</h1>
-            <p className="text-gray-500 font-medium mt-1">
-              Kelola profil auto-print per jenis produk (media type diatur di Windows Printer Preferences)
+            <p className="text-[10px] tracking-[0.14em] text-[#999] uppercase font-medium">
+              HARDWARE DISPATCH & SPOOLER
+            </p>
+            <h1 className="text-[28px] sm:text-[34px] font-semibold tracking-[-0.045em] text-[#202020] leading-[1.25] mt-1.5">
+              Printer & Kertas
+            </h1>
+            <p className="text-[13px] text-[#888] leading-[1.8] mt-1">
+              Kelola profil auto-print per jenis produk dan monitor antrean cetak Windows Spooler.
             </p>
           </div>
+
           <button
+            type="button"
             onClick={openCreate}
-            className="flex items-center gap-2 px-5 py-3 bg-black text-white font-bold border-4 border-black rounded-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,0.3)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all text-base"
+            className="inline-flex items-center gap-2 px-3.5 py-2 bg-[#171717] text-white hover:bg-black rounded-[7px] text-[13px] font-medium transition-colors cursor-pointer shrink-0 self-start sm:self-auto"
           >
-            <Plus size={18} strokeWidth={2.5} />
-            Tambah Profil
+            <Plus size={14} strokeWidth={2} />
+            <span>Tambah Profil</span>
           </button>
         </div>
 
         {systemPrinterError && (
-          <div className="mb-6 p-4 border-4 border-black rounded-xl bg-yellow-100 font-bold text-sm">
-            ⚠ {systemPrinterError} — pastikan server.js jalan di Windows dan SumatraPDF terpasang.
+          <div className="p-3.5 border border-[#fed7aa] rounded-[9px] bg-[#fffaf5] text-[#9a3412] text-[13px]">
+            ⚠ {systemPrinterError} — pastikan server.js berjalan di Windows dan SumatraPDF terpasang.
           </div>
         )}
 
-        {/* ── LIVE PRINTER MONITOR CARD ── */}
-        <div className="bg-white border-4 border-black rounded-3xl p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] mb-8">
-          <div className="flex flex-col md:flex-row md:items-center justify-between pb-4 border-b-3 border-gray-200 gap-4 mb-6">
-            <div>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-black text-white rounded-xl flex items-center justify-center font-black">
-                  <Printer size={20} strokeWidth={2.5} />
-                </div>
-                <div>
-                  <h2 className="text-2xl font-black leading-tight flex items-center gap-2">
-                    <span>Live Printer Monitor</span>
-                    {monitorData?.hasError ? (
-                      <span className="bg-red-500 text-white text-xs font-black px-2.5 py-1 rounded-full uppercase tracking-wider animate-pulse flex items-center gap-1">
-                        <AlertTriangle size={12} strokeWidth={3} /> Ada Masalah
-                      </span>
-                    ) : (
-                      <span className="bg-green-100 text-green-800 border-2 border-green-500 text-xs font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider flex items-center gap-1">
-                        <CheckCircle2 size={12} strokeWidth={3} /> Normal
-                      </span>
-                    )}
+        {/* ── 2. LIVE PRINTER MONITOR PANEL (Amara: dash-panel) ── */}
+        <section
+          aria-label="Live Printer Monitor"
+          className="bg-white border border-[#e5e5e5] rounded-[14px] p-6 space-y-5"
+        >
+          {/* Header Row */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-4 border-b border-[#eee]">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-[8px] bg-[#f4f4f4] border border-[#e8e8e8] flex items-center justify-center text-[#444] shrink-0">
+                <Printer size={16} strokeWidth={1.5} />
+              </div>
+              <div>
+                <div className="flex items-center gap-2.5">
+                  <h2 className="text-[17px] font-semibold text-[#202020] tracking-[-0.03em]">
+                    Monitor Status Printer
                   </h2>
-                  <p className="text-xs text-gray-500 font-bold mt-0.5">
-                    Deteksi otomatis kertas habis, tray tertutup, dan antrean cetak Windows Spooler
-                  </p>
+                  {monitorData?.hasError ? (
+                    <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[5px] text-[11px] bg-[#fee2e2] text-[#991b1b] border border-[#fecaca]">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#ef4444] animate-pulse" />
+                      Ada Masalah
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[5px] text-[11px] bg-[#f1f1f1] text-[#444]">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#10b981]" />
+                      Normal
+                    </span>
+                  )}
                 </div>
+                <p className="text-[12px] text-[#888] mt-0.5">
+                  Deteksi otomatis kertas habis, tray tertutup, dan antrean cetak Windows Spooler
+                </p>
               </div>
             </div>
 
             <div className="flex items-center gap-2 flex-wrap">
-              {/* Clear spooler jobs */}
+              {/* Clear Spooler Jobs */}
               <button
+                type="button"
                 onClick={handleClearJobs}
                 disabled={clearingJobs}
-                className="flex items-center gap-1.5 px-3 py-2 bg-gray-100 hover:bg-red-50 hover:text-red-700 hover:border-red-500 border-2 border-black rounded-xl text-xs font-black transition-colors cursor-pointer shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white text-[#444] border border-[#e6e6e6] hover:bg-[#f4f4f4] hover:text-[#171717] rounded-[7px] text-[12px] font-medium transition-colors cursor-pointer disabled:opacity-40"
                 title="Batalkan antrean cetak yang macet di Windows"
               >
-                <Ban size={14} />
+                <Ban size={13} strokeWidth={1.5} />
                 <span>{clearingJobs ? "Membersihkan..." : "Bersihkan Antrean"}</span>
               </button>
 
-              {/* Refresh button */}
+              {/* Refresh Button */}
               <button
+                type="button"
                 onClick={fetchMonitorStatus}
                 disabled={monitorLoading}
-                className="flex items-center gap-1.5 px-3 py-2 bg-black text-white hover:bg-yellow-300 hover:text-black border-2 border-black rounded-xl text-xs font-black transition-colors cursor-pointer shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+                className="w-[32px] h-[32px] rounded-full border border-[#e6e6e6] bg-white hover:bg-[#f4f4f4] inline-flex items-center justify-center text-[#666] cursor-pointer transition-colors"
+                title="Perbarui status printer"
               >
-                <RefreshCw size={14} className={monitorLoading ? "animate-spin" : ""} />
-                <span>Refresh</span>
+                <RefreshCw
+                  size={14}
+                  strokeWidth={1.5}
+                  className={monitorLoading ? "animate-spin" : ""}
+                />
               </button>
             </div>
           </div>
 
-          {/* Active Alert Banner if any */}
+          {/* Active Alert Banner (Clean Editorial Amara Style) */}
           {monitorData?.alert && (
-            <div className="mb-6 p-4 border-3 border-black rounded-2xl bg-red-50 text-red-900 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
-              <div className="flex items-start gap-3">
-                <div className="w-10 h-10 bg-red-500 text-white rounded-xl flex items-center justify-center shrink-0 mt-0.5">
-                  <AlertTriangle size={22} strokeWidth={2.5} />
+            <div className="p-4 border border-[#e8e8e8] rounded-[10px] bg-[#fafafa] text-[#202020] space-y-2.5">
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <div className="flex items-center gap-2">
+                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[5px] text-[11px] bg-[#fee2e2] text-[#991b1b] border border-[#fecaca] font-medium">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#ef4444] animate-pulse" />
+                    Peringatan
+                  </span>
+                  <strong className="text-[13px] font-semibold text-[#202020]">
+                    {monitorData.alert.title}
+                  </strong>
                 </div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="font-black text-base">{monitorData.alert.title}</span>
-                    {monitorData.alert.isSimulated && (
-                      <span className="bg-yellow-300 text-black text-[10px] font-black px-2 py-0.5 rounded border border-black uppercase">
-                        Mode Simulasi
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-sm font-bold text-red-800 mb-2">
-                    {monitorData.alert.adminMessage}
-                  </p>
-                  <p className="text-xs bg-white/80 p-2.5 rounded-lg border border-red-300 text-gray-700 font-medium">
-                    <strong className="text-black">Teks di layar kiosk customer:</strong> "{monitorData.alert.customerMessage}"
-                  </p>
-                </div>
+
+                {monitorData.alert.isSimulated && (
+                  <span className="text-[10px] font-medium text-[#777] uppercase tracking-[0.08em] bg-[#f0f0f0] border border-[#e4e4e4] px-2 py-0.5 rounded">
+                    MODE SIMULASI
+                  </span>
+                )}
+              </div>
+
+              <p className="text-[13px] text-[#555] leading-relaxed">
+                {monitorData.alert.adminMessage}
+              </p>
+
+              <div className="bg-white border border-[#eee] rounded-[7px] p-2.5 text-[12px] text-[#666]">
+                <span className="text-[#999] block text-[11px] mb-0.5 uppercase tracking-wider font-medium">
+                  Teks di Layar Kiosk Customer:
+                </span>
+                <p className="font-medium text-[#333]">"{monitorData.alert.customerMessage}"</p>
               </div>
             </div>
           )}
 
-          {/* Grid of Monitored Printers */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+          {/* Monitored Printers Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             {(monitorData?.printers || []).map((pr) => {
               const hasProfiles = pr.profiles.length > 0;
               const isError = pr.statusCode !== "ready" && pr.statusCode !== "printing";
@@ -313,222 +357,288 @@ export function AdminPrinterPage() {
               return (
                 <div
                   key={pr.name}
-                  className={`border-3 rounded-2xl p-4 transition-all ${
-                    isError
-                      ? "bg-red-50/50 border-red-500 shadow-[3px_3px_0px_0px_rgba(239,68,68,1)]"
-                      : "bg-gray-50 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]"
-                  }`}
+                  className="bg-white border border-[#e8e8e8] rounded-[10px] p-4 hover:border-[#d0d0d0] transition-colors flex flex-col justify-between"
                 >
-                  <div className="flex items-start justify-between mb-2">
-                    <p className="font-black text-base truncate max-w-[200px]" title={pr.name}>
-                      {pr.name}
-                    </p>
-                    {/* Status Badge */}
-                    <span
-                      className={`text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider border ${
-                        pr.statusCode === "ready"
-                          ? "bg-green-100 text-green-800 border-green-600"
-                          : pr.statusCode === "printing"
-                            ? "bg-blue-100 text-blue-800 border-blue-600 animate-pulse"
-                            : pr.statusCode === "offline"
-                              ? "bg-gray-200 text-gray-700 border-gray-400"
-                              : "bg-red-500 text-white border-black animate-pulse"
-                      }`}
-                    >
-                      {pr.status}
-                    </span>
-                  </div>
+                  <div>
+                    <div className="flex items-start justify-between gap-2 mb-2">
+                      <p
+                        className="font-medium text-[13px] text-[#202020] truncate"
+                        title={pr.name}
+                      >
+                        {pr.name}
+                      </p>
 
-                  <div className="space-y-1 text-xs font-bold text-gray-600 mb-3">
-                    <p className="flex justify-between">
-                      <span className="text-gray-400 uppercase tracking-wider text-[10px]">Profil Ignos:</span>
-                      <span className="text-black">
-                        {hasProfiles ? pr.profiles.map((p) => p.label).join(", ") : "(Belum dipetakan)"}
+                      <span
+                        className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[5px] text-[11px] font-medium shrink-0 ${
+                          pr.statusCode === "ready"
+                            ? "bg-[#f1f1f1] text-[#444]"
+                            : pr.statusCode === "printing"
+                              ? "bg-[#e0f2fe] text-[#0369a1]"
+                              : "bg-[#f4f4f4] text-[#777]"
+                        }`}
+                      >
+                        <span
+                          className={`w-1.5 h-1.5 rounded-full ${
+                            pr.statusCode === "ready"
+                              ? "bg-[#10b981]"
+                              : pr.statusCode === "printing"
+                                ? "bg-[#0284c7]"
+                                : "bg-[#9ca3af]"
+                          }`}
+                        />
+                        {pr.status}
                       </span>
-                    </p>
-                    <p className="flex justify-between">
-                      <span className="text-gray-400 uppercase tracking-wider text-[10px]">Antrean Spooler:</span>
-                      <span className={pr.jobsCount > 0 ? "text-red-600 font-black" : "text-black"}>
-                        {pr.jobsCount} dokumen
-                      </span>
-                    </p>
+                    </div>
+
+                    <div className="space-y-1.5 text-[12px] pt-1 border-t border-[#f5f5f5]">
+                      <div className="flex justify-between">
+                        <span className="text-[#888]">Profil Ignos:</span>
+                        <span className="text-[#444] font-medium truncate ml-2">
+                          {hasProfiles
+                            ? pr.profiles.map((p) => p.label).join(", ")
+                            : "(Belum dipetakan)"}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-[#888]">Antrean Spooler:</span>
+                        <span
+                          className={`font-mono ${
+                            pr.jobsCount > 0 ? "text-[#b91c1c] font-semibold" : "text-[#444]"
+                          }`}
+                        >
+                          {pr.jobsCount} dokumen
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               );
             })}
           </div>
 
-          {/* ── TEST SIMULATOR CONTROLS ── */}
-          <div className="p-4 bg-yellow-50 border-2 border-yellow-400 rounded-2xl">
+          {/* ── 3. TEST SIMULATOR CONTROLS (Clean Monochrome Segmented Pills) ── */}
+          <div className="p-3.5 bg-[#fafafa] border border-[#e8e8e8] rounded-[10px]">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
-                <p className="text-xs font-black uppercase tracking-wider text-yellow-900 flex items-center gap-1.5">
-                  <Play size={14} className="text-yellow-700" />
-                  <span>Uji Coba Tampilan Peringatan Layar Kiosk:</span>
+                <p className="text-[12px] font-semibold text-[#202020]">
+                  Uji Coba Tampilan Modal di Layar Kiosk
                 </p>
-                <p className="text-[11px] text-yellow-800 font-medium">
+                <p className="text-[11px] text-[#888] mt-0.5">
                   Tes tampilan modal customer tanpa perlu sengaja membuat printer fisik error
                 </p>
               </div>
 
-              <div className="flex items-center gap-1.5 flex-wrap">
-                <button
-                  onClick={() => handleSimulateAlert("normal")}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-black border-2 border-black transition-all cursor-pointer ${
-                    simulatingType === "normal"
-                      ? "bg-black text-white shadow-none"
-                      : "bg-white text-black hover:bg-gray-100 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
-                  }`}
-                >
-                  ✓ Normal
-                </button>
-                <button
-                  onClick={() => handleSimulateAlert("paper_out")}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-black border-2 border-black transition-all cursor-pointer ${
-                    simulatingType === "paper_out"
-                      ? "bg-red-500 text-white shadow-none"
-                      : "bg-white text-red-600 hover:bg-red-50 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
-                  }`}
-                >
-                  ⚠️ Kertas Habis
-                </button>
-                <button
-                  onClick={() => handleSimulateAlert("door_open")}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-black border-2 border-black transition-all cursor-pointer ${
-                    simulatingType === "door_open"
-                      ? "bg-yellow-400 text-black shadow-none"
-                      : "bg-white text-black hover:bg-yellow-100 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
-                  }`}
-                >
-                  🚪 Tray Tertutup
-                </button>
-                <button
-                  onClick={() => handleSimulateAlert("paper_jam")}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-black border-2 border-black transition-all cursor-pointer ${
-                    simulatingType === "paper_jam"
-                      ? "bg-orange-500 text-white shadow-none"
-                      : "bg-white text-orange-600 hover:bg-orange-50 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
-                  }`}
-                >
-                  📄 Paper Jam
-                </button>
+              {/* Clean Segmented Control (Zero Emojis, Zero Rainbow Colors) */}
+              <div className="flex items-center gap-1 bg-[#ebebeb]/70 p-1 rounded-[8px] border border-[#e2e2e2] flex-wrap">
+                {[
+                  { id: "normal", label: "Normal" },
+                  { id: "paper_out", label: "Kertas Habis" },
+                  { id: "door_open", label: "Tray Tertutup" },
+                  { id: "paper_jam", label: "Paper Jam" },
+                ].map((item) => {
+                  const isActive = simulatingType === item.id;
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => handleSimulateAlert(item.id)}
+                      className={`px-3 py-1.5 rounded-[6px] text-[12px] font-medium transition-colors cursor-pointer ${
+                        isActive
+                          ? "bg-[#171717] text-white shadow-xs"
+                          : "text-[#666] hover:text-[#171717] hover:bg-white/60"
+                      }`}
+                    >
+                      {item.label}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </div>
+        </section>
+
+        {/* ── 4. STATS OVERVIEW CARDS (Amara Metric Cards) ── */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          <article className="bg-white border border-[#e5e5e5] rounded-[12px] p-5 hover:border-[#d0d0d0] transition-colors flex flex-col justify-between">
+            <span className="text-[10px] tracking-[0.14em] text-[#999] uppercase font-medium">
+              PROFIL PRINTER TERPASANG
+            </span>
+            <div className="mt-3">
+              <p className="text-[32px] leading-tight tracking-[-0.05em] font-semibold text-[#202020]">
+                {profiles.length}
+                <small className="text-[16px] text-[#aaa] font-normal tracking-[-0.02em] ml-1">
+                  profil
+                </small>
+              </p>
+              <p className="text-[12px] text-[#999] leading-[1.7] mt-1.5">
+                Profil auto-print terkonfigurasi untuk transaksi di kiosk
+              </p>
+            </div>
+          </article>
+
+          <article className="bg-white border border-[#e5e5e5] rounded-[12px] p-5 hover:border-[#d0d0d0] transition-colors flex flex-col justify-between">
+            <span className="text-[10px] tracking-[0.14em] text-[#999] uppercase font-medium">
+              PRINTER TERDETEKSI (WINDOWS)
+            </span>
+            <div className="mt-3">
+              <p className="text-[32px] leading-tight tracking-[-0.05em] font-semibold text-[#202020]">
+                {systemPrinters.length}
+                <small className="text-[16px] text-[#aaa] font-normal tracking-[-0.02em] ml-1">
+                  driver
+                </small>
+              </p>
+              <p className="text-[12px] text-[#999] leading-[1.7] mt-1.5">
+                Perangkat printer fisik/virtual aktif di sistem operasi Windows
+              </p>
+            </div>
+          </article>
         </div>
 
-        {/* ── STATS & PROFILES ── */}
-        <div className="grid grid-cols-2 gap-4 mb-8">
-          <div className="bg-white border-4 border-black rounded-2xl p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-            <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Total Profil</p>
-            <p className="text-3xl font-black">{profiles.length}</p>
+        {/* ── 5. PROFILES LIST (Amara Panel) ── */}
+        <section aria-label="Daftar Profil Printer" className="space-y-4">
+          <div className="flex items-center justify-between pb-1">
+            <h2 className="text-[18px] font-semibold text-[#202020] tracking-[-0.03em] flex items-center gap-2">
+              <span>Daftar Profil Auto-Print</span>
+              <span className="text-[12px] bg-[#f4f4f4] border border-[#e8e8e8] rounded-[5px] px-2 py-0.5 text-[#888] font-normal">
+                {profiles.length}
+              </span>
+            </h2>
           </div>
-          <div className="bg-white border-4 border-black rounded-2xl p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-            <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Printer Terdeteksi (Windows)</p>
-            <p className="text-3xl font-black">{systemPrinters.length}</p>
-          </div>
-        </div>
 
-        {!data ? (
-          <div className="flex items-center justify-center py-32">
-            <div className="text-center">
-              <div className="w-12 h-12 border-4 border-black border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-              <p className="text-lg font-bold text-gray-400">Memuat printer profiles...</p>
+          {!data ? (
+            <div className="flex items-center justify-center py-20 bg-white border border-[#e5e5e5] rounded-[14px]">
+              <div className="text-center">
+                <RefreshCw size={20} className="animate-spin text-[#999] mx-auto mb-2" />
+                <p className="text-[13px] text-[#888]">Memuat profil printer...</p>
+              </div>
             </div>
-          </div>
-        ) : profiles.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-24 border-4 border-dashed border-black rounded-2xl bg-white">
-            <div className="w-16 h-16 bg-gray-100 border-4 border-black rounded-2xl flex items-center justify-center mb-4">
-              <Printer size={28} strokeWidth={2} className="text-gray-400" />
-            </div>
-            <p className="text-lg font-bold text-gray-400 mb-1">Belum ada profil printer</p>
-            <p className="text-sm text-gray-400">Tambah profil untuk mengaktifkan auto-print</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {profiles.map((profile) => (
-              <div
-                key={profile.id}
-                className="bg-white border-4 border-black rounded-2xl p-5 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+          ) : profiles.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 border border-dashed border-[#dcdcdc] rounded-[14px] bg-white text-center p-6">
+              <div className="w-10 h-10 bg-[#f4f4f4] rounded-full flex items-center justify-center mb-3 text-[#888]">
+                <Printer size={18} strokeWidth={1.5} />
+              </div>
+              <p className="text-[14px] font-semibold text-[#202020] mb-0.5">
+                Belum ada profil printer
+              </p>
+              <p className="text-[12px] text-[#888] mb-4">
+                Tambah profil untuk mengaktifkan cetak otomatis foto dari kiosk
+              </p>
+              <button
+                type="button"
+                onClick={openCreate}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#171717] text-white hover:bg-black rounded-[7px] text-[12px] font-medium transition-colors cursor-pointer"
               >
-                <div className="flex items-start justify-between mb-3">
-                  <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center shrink-0">
-                    <Printer size={18} className="text-white" strokeWidth={2.5} />
+                <Plus size={14} strokeWidth={2} />
+                <span>Tambah Profil Pertama</span>
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+              {profiles.map((profile) => (
+                <div
+                  key={profile.id}
+                  className="bg-white border border-[#e5e5e5] rounded-[12px] p-4 hover:border-[#d0d0d0] transition-colors flex flex-col justify-between"
+                >
+                  <div>
+                    <div className="flex items-start justify-between mb-2">
+                      <div className="w-8 h-8 bg-[#f4f4f4] border border-[#e8e8e8] text-[#444] rounded-[7px] flex items-center justify-center shrink-0">
+                        <Printer size={15} strokeWidth={1.5} />
+                      </div>
+                      <div className="flex gap-1">
+                        <button
+                          type="button"
+                          onClick={() => openEdit(profile)}
+                          className="w-7 h-7 flex items-center justify-center rounded-md border border-[#e8e8e8] hover:bg-[#f4f4f4] text-[#666] hover:text-[#171717] transition-colors cursor-pointer"
+                          title="Edit profil"
+                        >
+                          <Pencil size={12} strokeWidth={1.5} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setDeleteConfirm(profile)}
+                          className="w-7 h-7 flex items-center justify-center rounded-md border border-[#e8e8e8] hover:bg-[#fee2e2] hover:border-[#fecaca] text-[#888] hover:text-[#b91c1c] transition-colors cursor-pointer"
+                          title="Hapus profil"
+                        >
+                          <Trash2 size={12} strokeWidth={1.5} />
+                        </button>
+                      </div>
+                    </div>
+
+                    <p className="font-semibold text-[14px] text-[#202020] mb-0.5">
+                      {profile.label}
+                    </p>
+                    <p className="text-[11px] text-[#888] font-mono mb-2.5 truncate">
+                      {profile.printerName}
+                    </p>
+
+                    <div className="flex flex-wrap gap-1 mb-3">
+                      {profile.appliesTo.map((type) => (
+                        <span
+                          key={type}
+                          className="text-[10px] font-medium px-2 py-0.5 bg-[#f4f4f4] text-[#555] border border-[#e8e8e8] rounded-[5px]"
+                        >
+                          {PRODUCT_TYPE_OPTIONS.find((o) => o.value === type)?.label || type}
+                        </span>
+                      ))}
+                    </div>
                   </div>
-                  <div className="flex gap-1">
-                    <button
-                      onClick={() => openEdit(profile)}
-                      className="w-8 h-8 flex items-center justify-center rounded-lg border-2 border-black hover:bg-black hover:text-white transition-colors"
-                    >
-                      <Pencil size={14} strokeWidth={2.5} />
-                    </button>
-                    <button
-                      onClick={() => setDeleteConfirm(profile)}
-                      className="w-8 h-8 flex items-center justify-center rounded-lg border-2 border-black hover:bg-red-500 hover:text-white hover:border-red-500 transition-colors"
-                    >
-                      <Trash2 size={14} strokeWidth={2.5} />
-                    </button>
+
+                  <div className="pt-2.5 border-t border-[#f5f5f5] text-[11px] text-[#888] flex justify-between">
+                    <span>Jumlah Cetak:</span>
+                    <span className="font-medium text-[#202020]">{profile.copies || 1} copy</span>
                   </div>
                 </div>
-                <p className="font-black text-lg leading-tight mb-1">{profile.label}</p>
-                <p className="text-xs text-gray-400 font-bold uppercase tracking-widest mb-3">
-                  {profile.printerName}
-                </p>
-                <div className="flex flex-wrap gap-1.5 mb-2">
-                  {profile.appliesTo.map((type) => (
-                    <span
-                      key={type}
-                      className="text-[10px] font-black px-2 py-1 bg-gray-100 border-2 border-black rounded-md uppercase"
-                    >
-                      {PRODUCT_TYPE_OPTIONS.find((o) => o.value === type)?.label || type}
-                    </span>
-                  ))}
-                </div>
-                <p className="text-xs text-gray-400 font-bold">Copies: {profile.copies || 1}</p>
-              </div>
-            ))}
-          </div>
-        )}
+              ))}
+            </div>
+          )}
+        </section>
+
+        {/* ── 6. FOOTER ── */}
+        <footer className="flex justify-between items-center text-[12px] text-[#aaa] pt-2 pb-6 border-t border-[#eee]">
+          <p>© 2026 Ignos Studio. Photobooth Station.</p>
+          <span className="hidden sm:inline">Tenang di depan. Tertata di balik layar.</span>
+        </footer>
       </div>
 
-      {/* ── Create/Edit Dialog ── */}
+      {/* ── Create/Edit Dialog (Clean Amara Dialog) ── */}
       {dialogOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-6">
-          <div className="bg-white border-4 border-black rounded-2xl shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] max-w-lg w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between p-5 border-b-4 border-black">
-              <h2 className="text-xl font-black">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center z-50 p-4">
+          <div className="bg-white border border-[#e5e5e5] rounded-[14px] shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto animate-fadeIn">
+            <div className="flex items-center justify-between p-5 border-b border-[#eee]">
+              <h2 className="text-[16px] font-semibold text-[#202020]">
                 {editProfile ? "Edit Profil Printer" : "Tambah Profil Printer"}
               </h2>
               <button
+                type="button"
                 onClick={() => setDialogOpen(false)}
-                className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100"
+                className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-[#f4f4f4] text-[#888] hover:text-[#202020] cursor-pointer"
               >
-                <X size={18} strokeWidth={2.5} />
+                <X size={15} strokeWidth={1.5} />
               </button>
             </div>
 
-            <div className="p-5 space-y-4">
+            <div className="p-5 space-y-4 text-[13px]">
               <div>
-                <label className="text-xs font-black uppercase tracking-widest text-gray-400 mb-1.5 block">
+                <label className="font-medium text-[#333] mb-1 block text-[12px]">
                   Nama Profil
                 </label>
                 <input
                   value={form.label}
                   onChange={(e) => setForm((f) => ({ ...f, label: e.target.value }))}
                   placeholder="Contoh: 4R Glossy"
-                  className="w-full px-4 py-2.5 border-2 border-black rounded-lg font-medium focus:outline-none focus:ring-2 focus:ring-black"
+                  className="w-full px-3 py-2 border border-[#e2e2e2] rounded-[7px] text-[13px] outline-none focus:border-[#999] bg-white transition-colors"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-black uppercase tracking-widest text-gray-400 mb-1.5 block">
+                <label className="font-medium text-[#333] mb-1 block text-[12px]">
                   Printer Windows
                 </label>
                 {systemPrinters.length > 0 ? (
                   <select
                     value={form.printerName}
                     onChange={(e) => setForm((f) => ({ ...f, printerName: e.target.value }))}
-                    className="w-full px-4 py-2.5 border-2 border-black rounded-lg font-medium focus:outline-none focus:ring-2 focus:ring-black"
+                    className="w-full px-3 py-2 border border-[#e2e2e2] rounded-[7px] text-[13px] outline-none focus:border-[#999] bg-white cursor-pointer"
                   >
                     <option value="">Pilih printer...</option>
                     {systemPrinters.map((p) => (
@@ -542,16 +652,16 @@ export function AdminPrinterPage() {
                     value={form.printerName}
                     onChange={(e) => setForm((f) => ({ ...f, printerName: e.target.value }))}
                     placeholder="Nama persis printer di Windows"
-                    className="w-full px-4 py-2.5 border-2 border-black rounded-lg font-medium focus:outline-none focus:ring-2 focus:ring-black"
+                    className="w-full px-3 py-2 border border-[#e2e2e2] rounded-[7px] text-[13px] outline-none focus:border-[#999] bg-white transition-colors"
                   />
                 )}
-                <p className="text-xs text-gray-400 mt-1.5">
-                  Media type (glossy/plain/dll) diatur lewat Windows Printer Preferences untuk instance printer ini, bukan dari sini.
+                <p className="text-[11px] text-[#888] mt-1">
+                  Media type (glossy/plain/dll) diatur lewat Windows Printer Preferences untuk instance printer ini.
                 </p>
               </div>
 
               <div>
-                <label className="text-xs font-black uppercase tracking-widest text-gray-400 mb-1.5 block">
+                <label className="font-medium text-[#333] mb-1.5 block text-[12px]">
                   Berlaku Untuk Produk
                 </label>
                 <div className="flex flex-wrap gap-1.5">
@@ -560,10 +670,10 @@ export function AdminPrinterPage() {
                       key={opt.value}
                       type="button"
                       onClick={() => toggleProductType(opt.value)}
-                      className={`text-xs font-bold px-3 py-1.5 border-2 border-black rounded-lg transition-colors ${
+                      className={`text-[12px] font-medium px-2.5 py-1 rounded-[6px] transition-colors cursor-pointer ${
                         form.appliesTo.includes(opt.value)
-                          ? "bg-black text-white"
-                          : "bg-white hover:bg-gray-50"
+                          ? "bg-[#171717] text-white shadow-xs"
+                          : "bg-[#f4f4f4] text-[#555] hover:bg-[#eaeaea]"
                       }`}
                     >
                       {opt.label}
@@ -573,7 +683,7 @@ export function AdminPrinterPage() {
               </div>
 
               <div>
-                <label className="text-xs font-black uppercase tracking-widest text-gray-400 mb-1.5 block">
+                <label className="font-medium text-[#333] mb-1 block text-[12px]">
                   Jumlah Copies
                 </label>
                 <input
@@ -583,57 +693,55 @@ export function AdminPrinterPage() {
                   onChange={(e) =>
                     setForm((f) => ({ ...f, copies: Math.max(1, Number(e.target.value) || 1) }))
                   }
-                  className="w-full px-4 py-2.5 border-2 border-black rounded-lg font-medium focus:outline-none focus:ring-2 focus:ring-black"
+                  className="w-full px-3 py-2 border border-[#e2e2e2] rounded-[7px] text-[13px] outline-none focus:border-[#999] bg-white transition-colors"
                 />
               </div>
             </div>
 
-            <div className="flex gap-3 p-5 border-t-4 border-black">
-              <BrutalistButton
-                size="sm"
-                variant="secondary"
+            <div className="flex gap-2.5 p-4 border-t border-[#eee] bg-[#fafafa]">
+              <button
+                type="button"
                 onClick={() => setDialogOpen(false)}
-                className="flex-1"
+                className="flex-1 bg-white text-[#555] border border-[#e2e2e2] hover:bg-[#f4f4f4] rounded-[7px] py-2 text-[12px] font-medium transition-colors cursor-pointer"
               >
                 Batal
-              </BrutalistButton>
-              <BrutalistButton
-                size="sm"
+              </button>
+              <button
+                type="button"
                 onClick={handleSave}
-                className="flex-1"
                 disabled={saving}
+                className="flex-1 bg-[#171717] text-white hover:bg-black rounded-[7px] py-2 text-[12px] font-medium transition-colors cursor-pointer disabled:opacity-50"
               >
-                {saving ? "Menyimpan..." : "Simpan"}
-              </BrutalistButton>
+                {saving ? "Menyimpan..." : "Simpan Profil"}
+              </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* ── Delete Confirm ── */}
+      {/* ── Delete Confirm Modal ── */}
       {deleteConfirm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-6">
-          <div className="bg-white border-4 border-black rounded-2xl shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] max-w-sm w-full p-6">
-            <h2 className="text-xl font-black mb-2">Hapus Profil?</h2>
-            <p className="text-gray-500 font-medium mb-6">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center z-50 p-4">
+          <div className="bg-white border border-[#e5e5e5] rounded-[14px] shadow-xl max-w-sm w-full p-5 animate-fadeIn">
+            <h2 className="text-[16px] font-semibold text-[#202020] mb-1">Hapus Profil?</h2>
+            <p className="text-[12px] text-[#666] mb-5 leading-relaxed">
               Profil "{deleteConfirm.label}" akan dihapus. Auto-print untuk produk terkait akan berhenti sampai profil baru dibuat.
             </p>
-            <div className="flex gap-3">
-              <BrutalistButton
-                size="sm"
-                variant="secondary"
-                onClick={() => setDeleteConfirm(null)}
-                className="flex-1"
-              >
-                Batal
-              </BrutalistButton>
-              <BrutalistButton
-                size="sm"
+            <div className="flex gap-2.5">
+              <button
+                type="button"
                 onClick={() => handleDelete(deleteConfirm)}
-                className="flex-1 bg-red-500! hover:bg-red-600! border-red-500!"
+                className="flex-1 bg-[#b91c1c] text-white hover:bg-[#991b1b] rounded-[7px] py-2 text-[12px] font-medium transition-colors cursor-pointer"
               >
                 Hapus
-              </BrutalistButton>
+              </button>
+              <button
+                type="button"
+                onClick={() => setDeleteConfirm(null)}
+                className="flex-1 bg-white text-[#555] border border-[#e2e2e2] hover:bg-[#f4f4f4] rounded-[7px] py-2 text-[12px] font-medium transition-colors cursor-pointer"
+              >
+                Batal
+              </button>
             </div>
           </div>
         </div>

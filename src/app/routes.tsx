@@ -22,16 +22,19 @@ import { AdminMessagePage } from "./screens/AdminMessagePage";
 import { AdminTemplatePage } from "./screens/AdminTemplatePage";
 import { AdminTemplateEditorPage } from "./screens/AdminTemplateEditorPage";
 import { AdminPrinterPage } from "./screens/AdminPrinterPage";
+import { AdminKioskThemePage } from "./screens/AdminKioskThemePage";
+import { AdminStoragePage } from "./screens/AdminStoragePage";
 import { PasFotoPage } from "./screens/AddOns/PasFoto";
+import { KioskThemeProvider } from "../context/KioskThemeContext";
 
 function RootLayout() {
   const location = useLocation();
   const isAdmin = location.pathname.startsWith("/admin");
   return (
-    <>
+    <KioskThemeProvider>
       <Outlet />
       {!isAdmin && <KioskPrinterAlertModal />}
-    </>
+    </KioskThemeProvider>
   );
 }
 
@@ -150,6 +153,14 @@ export const router = createBrowserRouter([
       {
         path: "/admin/printers",
         Component: AdminPrinterPage,
+      },
+      {
+        path: "/admin/kiosk-theme",
+        Component: AdminKioskThemePage,
+      },
+      {
+        path: "/admin/storage",
+        Component: AdminStoragePage,
       },
       {
         path: "/pasfoto",

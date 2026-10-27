@@ -13,6 +13,7 @@ import { TimerExpiredModal } from "../components/TimerExpiredModal";
 import { TimerBar } from "../components/TimerBar";
 import { PhotoArrangementTutorial } from "../components/PhotoArrangementTutorial";
 import type { CustomSlotDef } from "../../types/template";
+import { useKioskTheme } from "../../context/KioskThemeContext";
 
 import { preloadGallery, subscribeToProgress, type PreloadProgress } from "../../utils/photoPreloader";
 
@@ -110,6 +111,14 @@ const createFlippedImage = (
 export function PhotoArrangement() {
   const location = useLocation();
   const navigate = useNavigate();
+
+  let studioName = "IGNOS STUDIO";
+  let themeConfig: any = null;
+  try {
+    const { theme } = useKioskTheme();
+    themeConfig = theme;
+    if (theme.studioName) studioName = theme.studioName;
+  } catch {}
 
   const peopleCount = location.state?.peopleCount || 1;
   const joinedBonus = location.state?.joinedBonus || false;
@@ -261,16 +270,41 @@ export function PhotoArrangement() {
         },
       });
     } else {
-      // Alur sesi utama — kirim state lengkap
+      const mainState = {
+        ...location.state,
+        peopleCount,
+        joinedBonus,
+        coupleMode,
+        totalPrint,
+        templates: templates.map((tpl) => ({ layout: tpl.layout })),
+        orders: [],
+        a4Count: 0,
+        miscAddons: location.state?.miscAddons ?? [],
+      };
+
+      // Check theme flow toggles
+      if (themeConfig && themeConfig.enableAddonsStep === false) {
+        if (themeConfig.enableStoryQuestion === false || themeConfig.freeEventMode) {
+          navigate("/complete", {
+            state: {
+              ...mainState,
+              makeStory: true,
+              customerName: themeConfig.freeEventMode ? (themeConfig.studioName || "Event Guest") : "",
+              instagramUsernames: [],
+              extraCharge: 0,
+            },
+          });
+        } else {
+          navigate("/story-question", {
+            state: mainState,
+          });
+        }
+        return;
+      }
+
+      // Alur normal — kirim ke add-ons
       navigate("/add-ons", {
-        state: {
-          ...location.state,
-          peopleCount,
-          joinedBonus,
-          coupleMode,
-          totalPrint,
-          templates: templates.map((tpl) => ({ layout: tpl.layout })),
-        },
+        state: mainState,
       });
     }
   };
@@ -435,7 +469,7 @@ export function PhotoArrangement() {
           layout: templates[i].layout,
           background: templates[i].background,
           frameOverlay: templates[i].overlay,
-          watermark: "IGNOS STUDIO",
+          watermark: studioName,
           transforms: slotTransforms[i],
           uiSlotW: slotSize.w,
           uiSlotH: slotSize.h,
@@ -464,7 +498,7 @@ export function PhotoArrangement() {
         layout: templates[activeTemplate].layout,
         background: templates[activeTemplate].background,
         frameOverlay: templates[activeTemplate].overlay,
-        watermark: "IGNOS STUDIO",
+        watermark: studioName,
         preview: true,
         transforms: slotTransforms[activeTemplate],
         uiSlotW: slotSize.w,

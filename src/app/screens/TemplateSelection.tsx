@@ -153,14 +153,20 @@ export function TemplateSelection() {
                     interactive
                     selected={selectedCategory === category.id}
                     onClick={() => setSelectedCategory(category.id)}
-                    className="p-4 cursor-pointer !text-black"
+                    className="p-4 cursor-pointer relative"
                   >
                     <ImageWithFallback
                       src={category.image}
                       alt={category.name}
                       className="w-full h-24 object-cover rounded-lg mb-2 border-2 border-black"
                     />
-                    <p className="text-lg font-bold text-center">
+                    <p
+                      className={`text-lg font-bold text-center ${
+                        selectedCategory === category.id
+                          ? "text-white"
+                          : "text-black"
+                      }`}
+                    >
                       {category.name}
                     </p>
                   </BrutalistCard>
@@ -202,8 +208,15 @@ export function TemplateSelection() {
                             interactive
                             selected={isSelected}
                             onClick={() => handleTemplateSelect(template)}
-                            className={`p-6 cursor-pointer !text-black ${isSelected ? "scale-95" : "hover:scale-105"} transition-none! hover:!translate-x-0 hover:!translate-y-0 active:!translate-x-0 active:!translate-y-0 hover:!scale-100`}
+                            className={`p-6 cursor-pointer relative ${
+                              isSelected ? "scale-95" : "hover:scale-105"
+                            } transition-none! hover:!translate-x-0 hover:!translate-y-0 active:!translate-x-0 active:!translate-y-0 hover:!scale-100`}
                           >
+                            {isSelected && (
+                              <div className="absolute top-3 right-3 w-8 h-8 bg-yellow-300 text-black border-2 border-black rounded-full flex items-center justify-center font-black text-sm shadow-[2px_2px_0px_0px_#000] z-10">
+                                ✓
+                              </div>
+                            )}
                             <div className="aspect-4/6 bg-gray-200 rounded-lg mb-4 border-4 border-black flex items-center justify-center">
                               <ImageWithFallback
                                 src={template.previewTemplate}
@@ -211,7 +224,11 @@ export function TemplateSelection() {
                                 className="w-full h-full object-cover"
                               />
                             </div>
-                            <p className="text-xl font-bold text-center">
+                            <p
+                              className={`text-xl font-bold text-center ${
+                                isSelected ? "text-white" : "text-black"
+                              }`}
+                            >
                               {template.name}
                             </p>
                           </BrutalistCard>

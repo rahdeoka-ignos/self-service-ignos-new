@@ -5,9 +5,12 @@ import { BrutalistCard } from "../components/BrutalistCard";
 import { useEffect } from "react";
 import { BrutalistButton } from "../components/BrutalistButton";
 import { preloadGallery } from "../../utils/photoPreloader";
+import { useKioskTheme } from "../../context/KioskThemeContext";
 
 export function Home() {
   const navigate = useNavigate();
+  const { theme } = useKioskTheme();
+
   useEffect(() => {
     clearSessionData();
     preloadGallery(200);
@@ -36,8 +39,24 @@ export function Home() {
     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-8">
       <div className="max-w-7xl w-full">
         <div className="text-center mb-16">
-          <h1 className="text-7xl font-bold mb-6">IGNOS STUDIO</h1>
-          <p className="text-3xl text-gray-700">Kamu Habis Fotoan Dimana?</p>
+          {theme.logoUrl && (
+            <img
+              src={theme.logoUrl}
+              alt={theme.studioName}
+              className="h-16 mx-auto mb-5 object-contain"
+            />
+          )}
+          <h1 className="text-7xl font-bold mb-6 tracking-tight">
+            {theme.studioName || "IGNOS STUDIO"}
+          </h1>
+          <p className="text-3xl opacity-80">
+            {theme.homeHeadline || "Kamu Habis Fotoan Dimana?"}
+          </p>
+          {theme.homeSubheadline && (
+            <p className="text-xl opacity-60 mt-2">
+              {theme.homeSubheadline}
+            </p>
+          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-5xl mx-auto">
@@ -58,7 +77,6 @@ export function Home() {
                 />
               </div>
               <h2 className="text-4xl font-bold mb-4">{service.title}</h2>
-              {/* <p className="text-xl text-gray-600">{service.subtitle}</p> */}
               <BrutalistButton size="sm">Yuk Lanjut</BrutalistButton>
             </BrutalistCard>
           ))}

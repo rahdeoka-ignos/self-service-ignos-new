@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { Copy, Check, MessageCircle, Sparkles, User, Link } from "lucide-react";
+import { useNavigate } from "react-router";
+import { Copy, Check, MessageCircle, Sparkles, Camera, HardDrive } from "lucide-react";
 import { usePageTitle } from "../../hooks/usePageTitle";
 import { AdminLayout } from "../components/AdminLayout";
 
@@ -26,6 +27,7 @@ Terima kasih kak, ditunggu kedatangannya yang selanjutnya🙏😊`;
 
 export function AdminMessagePage() {
   usePageTitle("Kirim Softcopy");
+  const navigate = useNavigate();
   const [name, setName] = useState("");
   const [driveLink, setDriveLink] = useState("");
   const [message, setMessage] = useState("");
@@ -68,6 +70,31 @@ export function AdminMessagePage() {
     folderName?: string;
     webViewLink?: string;
   } | null>(null);
+
+  const [clearingPhotos, setClearingPhotos] = useState(false);
+  const handleClearPhotos = async () => {
+    if (
+      !confirm(
+        "Kosongkan foto jepretan di kamera aktif untuk sesi customer baru?\n\n(Catatan: Antrian upload sesi sebelumnya yang sedang berjalan di background tetap aman & tidak akan terhapus)."
+      )
+    ) {
+      return;
+    }
+    try {
+      setClearingPhotos(true);
+      const res = await fetch("http://localhost:5000/api/clear-photos", {
+        method: "POST",
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert(`Berhasil! ${data.cleared} foto dibersihkan dari folder kamera.`);
+      }
+    } catch {
+      alert("Gagal mengosongkan folder kamera.");
+    } finally {
+      setClearingPhotos(false);
+    }
+  };
 
   useEffect(() => {
     fetch("http://localhost:5000/api/latest-session-drive")
@@ -125,299 +152,345 @@ export function AdminMessagePage() {
 
   return (
     <AdminLayout>
-    <div className="p-8">
-      <div className="mb-8">
-        <h1 className="text-4xl font-black leading-tight">Kirim Softcopy</h1>
-        <p className="text-gray-500 font-medium mt-1">Generate pesan WhatsApp untuk customer</p>
-      </div>
-      <div className="max-w-4xl">
-
-        {/* ── LIVE UPLOAD STATUS PANEL ── */}
-        {uploadStatus && uploadStatus.total > 0 && (
-          <div className="bg-white border-4 border-black rounded-2xl p-6 shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] mb-8">
-            <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-              <div className="flex items-center gap-3">
-                <span className="relative flex h-4 w-4">
-                  {uploadStatus.isUploading && (
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75"></span>
-                  )}
-                  <span className={`relative inline-flex rounded-full h-4 w-4 ${uploadStatus.isUploading ? "bg-yellow-400" : "bg-green-500"}`}></span>
-                </span>
-                <h3 className="text-xl font-black">
-                  {uploadStatus.isUploading
-                    ? "Status Upload Google Drive (Live)"
-                    : "Upload Google Drive Selesai 100%"}
-                </h3>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-bold bg-gray-100 px-3 py-1.5 rounded-full border border-black">
-                  📁 {uploadStatus.folderName}
-                </span>
-                <span className={`text-xs font-black px-3 py-1.5 rounded-full border border-black ${uploadStatus.isUploading ? "bg-yellow-300" : "bg-green-300"}`}>
-                  {uploadStatus.uploaded} / {uploadStatus.total} Foto ({uploadStatus.percent}%)
-                </span>
-              </div>
-            </div>
-
-            {/* Progress Bar */}
-            <div className="space-y-1.5">
-              <div className="w-full bg-gray-200 h-5 rounded-full overflow-hidden border-2 border-black">
-                <div
-                  className={`h-full transition-all duration-300 flex items-center justify-center text-xs font-black text-black ${uploadStatus.isUploading ? "bg-yellow-400" : "bg-green-400"}`}
-                  style={{ width: `${Math.max(uploadStatus.percent, 8)}%` }}
-                >
-                  {uploadStatus.percent}%
-                </div>
-              </div>
-              <div className="flex justify-between items-center text-xs text-gray-600 mt-1 font-bold">
-                <span>
-                  {uploadStatus.isUploading
-                    ? `Sedang mengunggah: ${uploadStatus.currentFile || "..."}`
-                    : "✓ Semua foto telah berhasil tersimpan di Google Drive!"}
-                </span>
-                <span>{uploadStatus.uploaded} dari {uploadStatus.total} file selesai</span>
-              </div>
-            </div>
+      <div className="p-6 md:p-8 space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-zinc-950 leading-tight">
+              Kirim Softcopy
+            </h1>
+            <p className="text-zinc-500 text-xs md:text-sm mt-0.5">
+              Generate pesan WhatsApp, monitor status Google Drive, dan kelola sesi kamera
+            </p>
           </div>
-        )}
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* ── FORM ── */}
-          <div className="bg-white border-4 border-black rounded-2xl p-8 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-            <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-              <Sparkles size={22} strokeWidth={2.5} />
-              Input Data
-            </h2>
-
-            {/* Nama Customer */}
-            <div className="mb-5">
-              <label className="flex items-center gap-2 text-base font-bold mb-2 text-gray-700">
-                <User size={16} strokeWidth={2.5} />
-                Nama Customer
-              </label>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => {
-                  setName(e.target.value);
-                  if (errors.name)
-                    setErrors((p) => ({ ...p, name: undefined }));
-                }}
-                placeholder="Contoh: Sari"
-                className={`w-full border-4 rounded-xl px-4 py-3 text-lg font-medium outline-none transition-colors ${
-                  errors.name
-                    ? "border-red-500 bg-red-50"
-                    : "border-black focus:bg-gray-50"
-                }`}
-              />
-              {errors.name && (
-                <p className="text-red-500 text-sm font-bold mt-1">
-                  {errors.name}
-                </p>
-              )}
-            </div>
-
-            {/* Link Google Drive */}
-            <div className="mb-5">
-              <div className="flex items-center justify-between mb-2">
-                <label className="flex items-center gap-2 text-base font-bold text-gray-700">
-                  <Link size={16} strokeWidth={2.5} />
-                  Link Google Drive
-                </label>
-                {latestSession?.webViewLink && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setDriveLink(latestSession.webViewLink || "");
-                      if (latestSession.customerName) setName(latestSession.customerName);
-                    }}
-                    className="text-xs bg-yellow-300 hover:bg-yellow-400 font-bold px-2 py-1 border-2 border-black rounded-lg transition-colors cursor-pointer"
-                  >
-                    ⚡ Sesi Terakhir ({latestSession.customerName || "Tanpa Nama"})
-                  </button>
-                )}
-              </div>
-              <input
-                type="url"
-                value={driveLink}
-                onChange={(e) => {
-                  setDriveLink(e.target.value);
-                  if (errors.driveLink)
-                    setErrors((p) => ({ ...p, driveLink: undefined }));
-                }}
-                placeholder="https://drive.google.com/..."
-                className={`w-full border-4 rounded-xl px-4 py-3 text-lg font-medium outline-none transition-colors ${
-                  errors.driveLink
-                    ? "border-red-500 bg-red-50"
-                    : "border-black focus:bg-gray-50"
-                }`}
-              />
-              {errors.driveLink && (
-                <p className="text-red-500 text-sm font-bold mt-1">
-                  {errors.driveLink}
-                </p>
-              )}
-            </div>
-
-            <div className="mb-8">
-              <label className="flex items-center gap-2 text-base font-bold mb-2 text-gray-700">
-                <MessageCircle size={16} strokeWidth={2.5} />
-                Nomor WhatsApp Customer
-              </label>
-              <div className="flex items-center border-4 border-black rounded-xl overflow-hidden">
-                <span className="bg-gray-100 border-r-4 border-black px-4 py-3 text-lg font-bold text-gray-500 shrink-0">
-                  +62
-                </span>
-                <input
-                  type="tel"
-                  value={phone}
-                  onChange={(e) => {
-                    // Hanya angka
-                    const val = e.target.value.replace(/\D/g, "");
-                    setPhone(val);
-                    if (errors.phone)
-                      setErrors((p) => ({ ...p, phone: undefined }));
-                  }}
-                  placeholder="8123456789"
-                  className={`flex-1 px-4 py-3 text-lg font-medium outline-none transition-colors ${
-                    errors.phone ? "bg-red-50" : "focus:bg-gray-50"
-                  }`}
-                />
-              </div>
-              {errors.phone && (
-                <p className="text-red-500 text-sm font-bold mt-1">
-                  {errors.phone}
-                </p>
-              )}
-              <p className="text-xs text-gray-400 mt-1">
-                Tanpa angka 0 di depan. Contoh: 81234567890
-              </p>
-            </div>
-
-            {/* Generate Button */}
+          <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
             <button
-              onClick={handleGenerate}
-              className="w-full text-xl font-bold border-4 border-black px-6 py-4 bg-black text-white hover:bg-white hover:text-black transition-colors rounded-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 flex items-center justify-center gap-2"
+              onClick={() => navigate("/admin/storage")}
+              className="inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-zinc-200 text-zinc-700 hover:bg-zinc-50 hover:text-zinc-950 rounded-lg text-xs font-medium transition-colors shadow-2xs cursor-pointer"
+              title="Buka Manajemen Storage untuk membersihkan memori disk PC"
             >
-              <Sparkles size={20} strokeWidth={2.5} />
-              Generate Pesan
+              <HardDrive size={14} className="text-zinc-500" />
+              <span>Kelola Storage PC</span>
             </button>
-
-            {/* Action Buttons */}
-            {message && (
-              <div className="flex gap-3 mt-4">
-                <button
-                  onClick={handleCopy}
-                  className={`flex-1 text-base font-bold border-4 border-black px-4 py-3 rounded-xl transition-all flex items-center justify-center gap-2 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-0.5 hover:translate-y-0.5 ${
-                    copied
-                      ? "bg-green-400 text-black border-green-600"
-                      : "bg-white text-black hover:bg-gray-50"
-                  }`}
-                >
-                  {copied ? (
-                    <>
-                      <Check size={18} strokeWidth={3} />
-                      Tersalin!
-                    </>
-                  ) : (
-                    <>
-                      <Copy size={18} strokeWidth={2.5} />
-                      Copy Pesan
-                    </>
-                  )}
-                </button>
-
-                <button
-                  onClick={handleWhatsApp}
-                  className="flex-1 text-base font-bold border-4 border-black px-4 py-3 bg-green-500 text-white hover:bg-green-600 transition-colors rounded-xl shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-0.5 hover:translate-y-0.5 flex items-center justify-center gap-2"
-                >
-                  <MessageCircle size={18} strokeWidth={2.5} />
-                  Buka WhatsApp
-                </button>
-              </div>
-            )}
-            {message && (
-              <p className="text-xs text-orange-500 font-bold mt-2 text-center">
-                ⚡ Pesan otomatis ter-copy — langsung Ctrl+V di WhatsApp
-              </p>
-            )}
+            <button
+              onClick={handleClearPhotos}
+              disabled={clearingPhotos}
+              className="inline-flex items-center gap-2 px-3.5 py-2 bg-white border border-zinc-200 text-zinc-700 hover:bg-zinc-50 hover:text-zinc-950 rounded-lg text-xs font-medium transition-colors shadow-2xs cursor-pointer disabled:opacity-50"
+              title="Kosongkan kamera aktif tanpa mengganggu proses upload Google Drive"
+            >
+              <Camera size={14} className="text-zinc-500" />
+              <span>{clearingPhotos ? "Mengosongkan..." : "Kosongkan Kamera (Sesi Baru)"}</span>
+            </button>
           </div>
+        </div>
 
-          {/* ── PREVIEW ── */}
-          <div className="bg-white border-4 border-black rounded-2xl p-8 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-            <h2 className="text-2xl font-bold mb-6">Preview Pesan</h2>
-
-            {message ? (
-              <div className="relative">
-                {/* WhatsApp-style bubble */}
-                <div className="bg-gray-50 border-4 border-black rounded-2xl p-5 min-h-48">
-                  {/* WA header */}
-                  <div className="flex items-center gap-3 pb-3 mb-3 border-b-2 border-gray-200">
-                    <div className="w-9 h-9 bg-black rounded-full flex items-center justify-center shrink-0">
-                      <span className="text-white text-xs font-bold">IS</span>
-                    </div>
-                    <div>
-                      <p className="font-bold text-sm">Ignos Studio</p>
-                      <p className="text-xs text-gray-400">Preview pesan</p>
-                    </div>
-                  </div>
-
-                  {/* Message bubble */}
-                  <div className="bg-white border-2 border-gray-200 rounded-xl rounded-tl-none p-4 shadow-sm">
-                    <p className="text-sm leading-relaxed whitespace-pre-line text-gray-800 font-medium">
-                      {message}
-                    </p>
-                    <p className="text-xs text-gray-400 text-right mt-2">
-                      {new Date().toLocaleTimeString("id-ID", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </p>
-                  </div>
+        <div className="max-w-5xl space-y-6">
+          {/* ── LIVE UPLOAD STATUS PANEL ── */}
+          {uploadStatus && uploadStatus.total > 0 && (
+            <div className="bg-white border border-zinc-200 rounded-xl p-5 shadow-xs">
+              <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+                <div className="flex items-center gap-2.5">
+                  <span className="relative flex h-2.5 w-2.5">
+                    {uploadStatus.isUploading && (
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                    )}
+                    <span
+                      className={`relative inline-flex rounded-full h-2.5 w-2.5 ${
+                        uploadStatus.isUploading
+                          ? "bg-amber-500"
+                          : "bg-emerald-500"
+                      }`}
+                    ></span>
+                  </span>
+                  <h3 className="text-xs font-semibold text-zinc-950">
+                    {uploadStatus.isUploading
+                      ? "Status Upload Google Drive (Live)"
+                      : "Upload Google Drive Selesai (100%)"}
+                  </h3>
                 </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] font-medium bg-zinc-50 text-zinc-600 px-2.5 py-0.5 rounded-md border border-zinc-200">
+                    📁 {uploadStatus.folderName}
+                  </span>
+                  <span
+                    className={`text-[11px] font-mono font-medium px-2 py-0.5 rounded-md ${
+                      uploadStatus.isUploading
+                        ? "bg-amber-50 text-amber-800 border border-amber-200"
+                        : "bg-emerald-50 text-emerald-800 border border-emerald-200"
+                    }`}
+                  >
+                    {uploadStatus.uploaded} / {uploadStatus.total} File (
+                    {uploadStatus.percent}%)
+                  </span>
+                </div>
+              </div>
 
-                {/* Copy overlay hint */}
-                {copied && (
-                  <div className="absolute inset-0 bg-green-400/20 border-4 border-green-500 rounded-2xl flex items-center justify-center">
-                    <div className="bg-green-500 text-white font-bold text-xl px-6 py-3 rounded-xl border-4 border-black flex items-center gap-2">
-                      <Check size={24} strokeWidth={3} />
-                      Pesan tersalin!
-                    </div>
-                  </div>
+              {/* Progress Bar */}
+              <div className="space-y-1.5">
+                <div className="w-full bg-zinc-100 h-2 rounded-full overflow-hidden border border-zinc-200/60">
+                  <div
+                    className={`h-full transition-all duration-300 rounded-full ${
+                      uploadStatus.isUploading
+                        ? "bg-zinc-900"
+                        : "bg-emerald-600"
+                    }`}
+                    style={{ width: `${Math.max(uploadStatus.percent, 3)}%` }}
+                  />
+                </div>
+                <div className="flex justify-between items-center text-[11px] text-zinc-500 mt-1">
+                  <span>
+                    {uploadStatus.isUploading
+                      ? `Sedang mengunggah: ${uploadStatus.currentFile || "..."}`
+                      : "✓ Semua foto telah berhasil tersimpan di Google Drive!"}
+                  </span>
+                  <span className="font-mono">
+                    {uploadStatus.uploaded} dari {uploadStatus.total} file
+                    selesai
+                  </span>
+                </div>
+                <div className="mt-3 pt-2.5 border-t border-zinc-100 flex items-center justify-between text-[11px] text-zinc-400">
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                    Antrian Staging Terisolasi: File foto aman dari pembersihan kamera sesi berikutnya.
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+            {/* ── FORM ── */}
+            <div className="bg-white border border-zinc-200 rounded-xl p-5 md:p-6 shadow-xs">
+              <h2 className="text-sm font-semibold text-zinc-950 mb-4">
+                Input Data Customer
+              </h2>
+
+              {/* Nama Customer */}
+              <div className="mb-4">
+                <label className="block text-xs font-medium mb-1.5 text-zinc-700">
+                  Nama Customer
+                </label>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => {
+                    setName(e.target.value);
+                    if (errors.name)
+                      setErrors((p) => ({ ...p, name: undefined }));
+                  }}
+                  placeholder="Contoh: Sari"
+                  className={`w-full border rounded-lg px-3 py-2 text-xs font-medium outline-none transition-colors ${
+                    errors.name
+                      ? "border-rose-400 bg-rose-50/50"
+                      : "border-zinc-200 focus:border-zinc-400 bg-white"
+                  }`}
+                />
+                {errors.name && (
+                  <p className="text-rose-600 text-[11px] mt-1 font-medium">
+                    {errors.name}
+                  </p>
                 )}
               </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center min-h-48 text-gray-400 border-4 border-dashed border-gray-300 rounded-2xl">
-                <MessageCircle
-                  size={48}
-                  strokeWidth={1.5}
-                  className="mb-3 opacity-40"
+
+              {/* Link Google Drive */}
+              <div className="mb-4">
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-xs font-medium text-zinc-700">
+                    Link Google Drive
+                  </label>
+                  {latestSession?.webViewLink && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setDriveLink(latestSession.webViewLink || "");
+                        if (latestSession.customerName)
+                          setName(latestSession.customerName);
+                      }}
+                      className="text-[11px] bg-zinc-100 hover:bg-zinc-200 text-zinc-800 font-medium px-2 py-0.5 rounded-md border border-zinc-200 transition-colors cursor-pointer"
+                    >
+                      ⚡ Sesi Terakhir (
+                      {latestSession.customerName || "Tanpa Nama"})
+                    </button>
+                  )}
+                </div>
+                <input
+                  type="url"
+                  value={driveLink}
+                  onChange={(e) => {
+                    setDriveLink(e.target.value);
+                    if (errors.driveLink)
+                      setErrors((p) => ({ ...p, driveLink: undefined }));
+                  }}
+                  placeholder="https://drive.google.com/..."
+                  className={`w-full border rounded-lg px-3 py-2 text-xs font-medium outline-none transition-colors ${
+                    errors.driveLink
+                      ? "border-rose-400 bg-rose-50/50"
+                      : "border-zinc-200 focus:border-zinc-400 bg-white"
+                  }`}
                 />
-                <p className="font-bold text-lg">Pesan belum digenerate</p>
-                <p className="text-sm mt-1">
-                  Isi form lalu klik Generate Pesan
+                {errors.driveLink && (
+                  <p className="text-rose-600 text-[11px] mt-1 font-medium">
+                    {errors.driveLink}
+                  </p>
+                )}
+              </div>
+
+              {/* Nomor WhatsApp */}
+              <div className="mb-5">
+                <label className="block text-xs font-medium mb-1.5 text-zinc-700">
+                  Nomor WhatsApp Customer
+                </label>
+                <div className="flex items-center border border-zinc-200 rounded-lg overflow-hidden bg-white focus-within:border-zinc-400">
+                  <span className="bg-zinc-50 border-r border-zinc-200 px-3 py-2 text-xs font-mono font-medium text-zinc-500 shrink-0">
+                    +62
+                  </span>
+                  <input
+                    type="tel"
+                    value={phone}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/\D/g, "");
+                      setPhone(val);
+                      if (errors.phone)
+                        setErrors((p) => ({ ...p, phone: undefined }));
+                    }}
+                    placeholder="81234567890"
+                    className={`flex-1 px-3 py-2 text-xs font-medium outline-none ${
+                      errors.phone ? "bg-rose-50/50" : ""
+                    }`}
+                  />
+                </div>
+                {errors.phone && (
+                  <p className="text-rose-600 text-[11px] mt-1 font-medium">
+                    {errors.phone}
+                  </p>
+                )}
+                <p className="text-[11px] text-zinc-400 mt-1">
+                  Tanpa angka 0 di depan. Contoh: 81234567890
                 </p>
               </div>
-            )}
 
-            {/* Raw text area for easy copy */}
-            {message && (
-              <div className="mt-4">
-                <label className="text-sm font-bold text-gray-500 mb-2 block">
-                  Raw text (bisa di-select manual):
-                </label>
-                <textarea
-                  readOnly
-                  value={message}
-                  rows={10}
-                  className="w-full border-4 border-black rounded-xl px-4 py-3 text-sm font-medium bg-gray-50 resize-none outline-none leading-relaxed"
-                />
-              </div>
-            )}
+              {/* Generate Button */}
+              <button
+                onClick={handleGenerate}
+                className="w-full py-2.5 bg-zinc-900 text-white hover:bg-black transition-colors rounded-lg text-xs font-medium shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <span>Generate Pesan</span>
+              </button>
+
+              {/* Action Buttons */}
+              {message && (
+                <div className="flex gap-2.5 mt-3 pt-3 border-t border-zinc-100">
+                  <button
+                    onClick={handleCopy}
+                    className="flex-1 py-2 text-xs font-medium border border-zinc-200 rounded-lg bg-white text-zinc-800 hover:bg-zinc-50 transition-colors flex items-center justify-center gap-1.5 shadow-xs cursor-pointer"
+                  >
+                    {copied ? (
+                      <>
+                        <Check
+                          size={14}
+                          strokeWidth={2.5}
+                          className="text-emerald-600"
+                        />
+                        <span className="text-emerald-700 font-semibold">
+                          Tersalin!
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy size={13} strokeWidth={2} />
+                        <span>Copy Pesan</span>
+                      </>
+                    )}
+                  </button>
+
+                  <button
+                    onClick={handleWhatsApp}
+                    className="flex-1 py-2 text-xs font-medium rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition-colors shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <MessageCircle size={14} strokeWidth={2} />
+                    <span>Buka WhatsApp</span>
+                  </button>
+                </div>
+              )}
+              {message && (
+                <p className="text-[11px] text-zinc-500 font-medium mt-2 text-center">
+                  Pesan otomatis disalin ke clipboard saat membuka WhatsApp
+                </p>
+              )}
+            </div>
+
+            {/* ── PREVIEW ── */}
+            <div className="bg-white border border-zinc-200 rounded-xl p-5 md:p-6 shadow-xs">
+              <h2 className="text-sm font-semibold text-zinc-950 mb-4">
+                Preview Pesan WhatsApp
+              </h2>
+
+              {message ? (
+                <div className="space-y-3">
+                  {/* WhatsApp-style bubble */}
+                  <div className="bg-zinc-50 border border-zinc-200 rounded-xl p-4">
+                    {/* WA header */}
+                    <div className="flex items-center gap-2.5 pb-2.5 mb-2.5 border-b border-zinc-200">
+                      <div className="w-7 h-7 bg-zinc-900 rounded-full flex items-center justify-center shrink-0">
+                        <span className="text-white text-[10px] font-bold">
+                          IS
+                        </span>
+                      </div>
+                      <div>
+                        <p className="font-semibold text-xs text-zinc-950 leading-tight">
+                          Ignos Studio
+                        </p>
+                        <p className="text-[10px] text-zinc-400">
+                          Pesan Keluar
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Message bubble */}
+                    <div className="bg-white border border-zinc-200/80 rounded-xl rounded-tl-none p-3.5 shadow-xs">
+                      <p className="text-xs leading-relaxed whitespace-pre-line text-zinc-800 font-normal">
+                        {message}
+                      </p>
+                      <p className="text-[10px] text-zinc-400 text-right mt-2 font-mono">
+                        {new Date().toLocaleTimeString("id-ID", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Raw text area for easy copy */}
+                  <div>
+                    <label className="text-[11px] font-medium text-zinc-400 mb-1 block">
+                      Teks Mentah:
+                    </label>
+                    <textarea
+                      readOnly
+                      value={message}
+                      rows={6}
+                      className="w-full border border-zinc-200 rounded-lg px-3 py-2 text-xs font-mono text-zinc-700 bg-zinc-50 resize-none outline-none leading-relaxed"
+                    />
+                  </div>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center min-h-[260px] text-zinc-400 border border-dashed border-zinc-200 rounded-xl bg-zinc-50/50 text-center p-6">
+                  <MessageCircle
+                    size={32}
+                    strokeWidth={1.5}
+                    className="mb-2 text-zinc-300"
+                  />
+                  <p className="font-medium text-xs text-zinc-700">
+                    Pesan belum digenerate
+                  </p>
+                  <p className="text-[11px] text-zinc-400 mt-0.5">
+                    Lengkapi form di samping lalu klik "Generate Pesan"
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
-    </div>
     </AdminLayout>
   );
 }
