@@ -1237,6 +1237,30 @@ app.post("/api/camera-import/open-folder", (req, res) => {
   }
 });
 
+// Upload multiple photos via Drag & Drop atau File Picker manual
+app.post("/api/upload-photos", upload.array("photos", 500), async (req, res) => {
+  try {
+    const uploadedFiles = req.files || [];
+    let count = 0;
+    for (const f of uploadedFiles) {
+      try {
+        await generateThumbnail(path.basename(f.path));
+        count++;
+      } catch (thumbErr) {
+        console.warn(`[Upload] Failed thumb for ${f.originalname}:`, thumbErr.message);
+      }
+    }
+    console.log(`[Upload] Sukses menerima ${count} foto baru via Drag & Drop.`);
+    res.json({
+      success: true,
+      count,
+      message: `Berhasil mengunggah ${count} foto ke Kiosk!`,
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // ── Template API ──────────────────────────────────────────────
 
 app.get("/api/templates", (req, res) => {
