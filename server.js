@@ -831,6 +831,412 @@ app.post("/api/storage-clean", (req, res) => {
   }
 });
 
+// ── Smart Camera Importer API ──────────────────────────────────────
+
+const CAMERA_IMPORT_CONFIG_JSON = path.join(SESSIONS_DIR, "camera-import-config.json");
+
+const DEFAULT_CAMERA_IMPORT_CONFIG = {
+  selectedPreset: "studio",
+  presets: {
+    studio: {
+      id: "studio",
+      name: "Foto Studio (Fujifilm X-S10)",
+      path: "D:\\DCIM",
+      defaultMinutes: 30,
+    },
+    fotobox: {
+      id: "fotobox",
+      name: "Fotobox (Card Reader E:)",
+      path: "E:\\DCIM",
+      defaultMinutes: 30,
+    },
+    custom: {
+      id: "custom",
+      name: "Folder Kustom",
+      path: "",
+      defaultMinutes: 30,
+    },
+  },
+  lastImport: null,
+};
+
+function readCameraImportConfig() {
+  if (!fs.existsSync(CAMERA_IMPORT_CONFIG_JSON)) {
+    return DEFAULT_CAMERA_IMPORT_CONFIG;
+  }
+  try {
+    const raw = JSON.parse(fs.readFileSync(CAMERA_IMPORT_CONFIG_JSON, "utf-8"));
+    return {
+      ...DEFAULT_CAMERA_IMPORT_CONFIG,
+      ...raw,
+      presets: {
+        ...DEFAULT_CAMERA_IMPORT_CONFIG.presets,
+        ...(raw.presets || {}),
+      },
+    };
+  } catch {
+    return DEFAULT_CAMERA_IMPORT_CONFIG;
+  }
+}
+
+function writeCameraImportConfig(data) {
+  try {
+    if (!fs.existsSync(SESSIONS_DIR)) fs.mkdirSync(SESSIONS_DIR, { recursive: true });
+    fs.writeFileSync(CAMERA_IMPORT_CONFIG_JSON, JSON.stringify(data, null, 2), "utf-8");
+  } catch (err) {
+    console.error("[CameraImport] Gagal simpan config:", err);
+  }
+}
+
+// Menemukan folder DCIM atau folder kamera aktif (misal 263_FUJI, 264_FUJI, 100CANON)
+function resolveCameraFolders(rootPath) {
+  if (!rootPath || !fs.existsSync(rootPath)) return [];
+
+  // 1. Cek apakah folder yang diberikan langsung berisi file foto JPG
+  try {
+    const directFiles = fs.readdirSync(rootPath);
+    if (directFiles.some((f) => f.match(/\.(jpg|jpeg)$/i))) {
+      return [{ folderPath: rootPath, folderName: path.basename(rootPath) }];
+    }
+  } catch {}
+
+  // 2. Cek apakah di dalamnya ada folder DCIM
+  let targetDcim = rootPath;
+  const directDcim = path.join(rootPath, "DCIM");
+  if (fs.existsSync(directDcim)) {
+    targetDcim = directDcim;
+  }
+
+  // 3. Scan subfolder dalam DCIM
+  try {
+    const entries = fs.readdirSync(targetDcim, { withFileTypes: true });
+    const subDirs = entries
+      .filter((e) => e.isDirectory())
+      .map((e) => ({
+        folderPath: path.join(targetDcim, e.name),
+        folderName: e.name,
+      }))
+      // Sort numeric descending, misal 264_FUJI sebelum 263_FUJI
+      .sort((a, b) => b.folderName.localeCompare(a.folderName, undefined, { numeric: true }));
+
+    if (subDirs.length > 0) return subDirs;
+  } catch {}
+
+  return [];
+}
+
+// Scan file foto di folder kamera berdasarkan filter waktu
+function scanCameraPhotos(sourcePath, options = {}) {
+  const { minutes = 30, filter = "30_min", lastImportTimestamp = null } = options;
+  const folders = resolveCameraFolders(sourcePath);
+
+  if (folders.length === 0) {
+    return {
+      success: false,
+      error: `Folder sumber tidak terdeteksi atau belum dicolok: "${sourcePath}"`,
+      folders: [],
+      files: [],
+      totalFound: 0,
+    };
+  }
+
+  // Ambil folder terbaru (dan folder kedua jika ada, untuk menangani rollover 263 -> 264)
+  const foldersToScan = folders.slice(0, 2);
+  const now = Date.now();
+  let cutoffMs = 0;
+
+  if (filter === "30_min") cutoffMs = now - 30 * 60 * 1000;
+  else if (filter === "45_min") cutoffMs = now - 45 * 60 * 1000;
+  else if (filter === "60_min") cutoffMs = now - 60 * 60 * 1000;
+  else if (filter === "custom_min" && typeof minutes === "number") cutoffMs = now - minutes * 60 * 1000;
+  else if (filter === "since_last" && lastImportTimestamp) cutoffMs = new Date(lastImportTimestamp).getTime();
+
+  const isTodayOnly = filter === "today";
+  const todayDateStr = new Date().toDateString();
+
+  const matchedFiles = [];
+
+  for (const f of foldersToScan) {
+    try {
+      const items = fs.readdirSync(f.folderPath);
+      for (const item of items) {
+        if (!item.match(/\.(jpg|jpeg)$/i)) continue; // Hanya JPG (abaikan RAW .RAF/.CR3)
+
+        const fullPath = path.join(f.folderPath, item);
+        try {
+          const stat = fs.statSync(fullPath);
+          const mtimeMs = stat.mtimeMs;
+          const mtimeDate = new Date(mtimeMs);
+
+          // Cek filter waktu
+          if (cutoffMs > 0 && mtimeMs < cutoffMs) continue;
+          if (isTodayOnly && mtimeDate.toDateString() !== todayDateStr) continue;
+
+          matchedFiles.push({
+            name: item,
+            fullPath,
+            size: stat.size,
+            formattedSize: formatBytes(stat.size),
+            mtimeMs,
+            timeFormatted: mtimeDate.toLocaleTimeString("id-ID", {
+              hour: "2-digit",
+              minute: "2-digit",
+              second: "2-digit",
+            }),
+            folderName: f.folderName,
+          });
+        } catch {}
+      }
+    } catch {}
+  }
+
+  // Urutkan berdasarkan waktu pengambilan foto (tertua ke terbaru)
+  matchedFiles.sort((a, b) => a.mtimeMs - b.mtimeMs);
+
+  const totalBytes = matchedFiles.reduce((acc, f) => acc + f.size, 0);
+
+  // Ambil sampel preview: 3 foto awal dan 3 foto akhir
+  const previewFiles = [];
+  if (matchedFiles.length <= 6) {
+    previewFiles.push(...matchedFiles);
+  } else {
+    previewFiles.push(matchedFiles[0], matchedFiles[1], matchedFiles[2]);
+    previewFiles.push(
+      matchedFiles[matchedFiles.length - 3],
+      matchedFiles[matchedFiles.length - 2],
+      matchedFiles[matchedFiles.length - 1]
+    );
+  }
+
+  return {
+    success: true,
+    activeFolder: folders[0].folderName,
+    activeFolderPath: folders[0].folderPath,
+    totalFound: matchedFiles.length,
+    totalBytes,
+    formattedTotalSize: formatBytes(totalBytes),
+    earliestTime: matchedFiles.length > 0 ? matchedFiles[0].timeFormatted : null,
+    latestTime: matchedFiles.length > 0 ? matchedFiles[matchedFiles.length - 1].timeFormatted : null,
+    files: matchedFiles,
+    previews: previewFiles.map((pf) => ({
+      name: pf.name,
+      fullPath: pf.fullPath,
+      timeFormatted: pf.timeFormatted,
+      previewUrl: `/api/camera-import/thumbnail?filePath=${encodeURIComponent(pf.fullPath)}`,
+    })),
+  };
+}
+
+app.get("/api/camera-import/config", (req, res) => {
+  try {
+    const config = readCameraImportConfig();
+    // Tambahkan status koneksi live untuk masing-masing preset
+    const presetStatuses = {};
+    for (const [key, p] of Object.entries(config.presets)) {
+      const isConnected = !!(p.path && fs.existsSync(p.path));
+      const detectedFolders = isConnected ? resolveCameraFolders(p.path).map((f) => f.folderName) : [];
+      presetStatuses[key] = {
+        ...p,
+        isConnected,
+        detectedFolders,
+      };
+    }
+    res.json({
+      selectedPreset: config.selectedPreset,
+      presets: presetStatuses,
+      lastImport: config.lastImport,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post("/api/camera-import/config", (req, res) => {
+  try {
+    const current = readCameraImportConfig();
+    const updated = {
+      ...current,
+      ...req.body,
+      presets: {
+        ...current.presets,
+        ...(req.body.presets || {}),
+      },
+    };
+    writeCameraImportConfig(updated);
+    res.json({ success: true, config: updated });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post("/api/camera-import/scan", (req, res) => {
+  try {
+    const { presetId = "studio", customPath, filter = "30_min", minutes = 30 } = req.body;
+    const config = readCameraImportConfig();
+
+    let targetPath = "";
+    if (presetId === "custom" || customPath) {
+      targetPath = customPath || config.presets.custom?.path || "";
+    } else if (config.presets[presetId]) {
+      targetPath = config.presets[presetId].path;
+    }
+
+    if (!targetPath) {
+      return res.status(400).json({ success: false, error: "Path folder sumber belum ditentukan." });
+    }
+
+    const lastImportTime = config.lastImport?.timestamp || null;
+    const result = scanCameraPhotos(targetPath, {
+      filter,
+      minutes: Number(minutes) || 30,
+      lastImportTimestamp: lastImportTime,
+    });
+
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Endpoint streaming thumbnail cepat untuk preview foto kamera
+app.get("/api/camera-import/thumbnail", async (req, res) => {
+  try {
+    const filePath = req.query.filePath;
+    if (!filePath || !fs.existsSync(filePath)) {
+      return res.status(404).send("File not found");
+    }
+
+    // Buat thumbnail kecil on-the-fly (max lebar 260px) agar render modal instan
+    res.type("image/jpeg");
+    try {
+      const stream = sharp(filePath)
+        .resize({ width: 260, height: 260, fit: "inside" })
+        .jpeg({ quality: 75 });
+      stream.pipe(res);
+    } catch {
+      fs.createReadStream(filePath).pipe(res);
+    }
+  } catch (err) {
+    res.status(500).send(err.message);
+  }
+});
+
+app.post("/api/camera-import/import", async (req, res) => {
+  try {
+    const {
+      presetId = "studio",
+      customPath,
+      filter = "30_min",
+      minutes = 30,
+      clearExistingPhotos = true,
+    } = req.body;
+
+    const config = readCameraImportConfig();
+
+    let targetPath = "";
+    if (presetId === "custom" || customPath) {
+      targetPath = customPath || config.presets.custom?.path || "";
+    } else if (config.presets[presetId]) {
+      targetPath = config.presets[presetId].path;
+    }
+
+    if (!targetPath) {
+      return res.status(400).json({ success: false, error: "Path folder kamera belum ditentukan" });
+    }
+
+    const scan = scanCameraPhotos(targetPath, {
+      filter,
+      minutes: Number(minutes) || 30,
+      lastImportTimestamp: config.lastImport?.timestamp,
+    });
+
+    if (!scan.success || scan.files.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: scan.error || "Tidak ada foto baru yang ditemukan sesuai filter waktu.",
+      });
+    }
+
+    // 1. Kosongkan folder kamera aktif jika dipilih
+    if (clearExistingPhotos) {
+      if (fs.existsSync(PHOTOS_DIR)) {
+        const files = fs.readdirSync(PHOTOS_DIR);
+        for (const f of files) {
+          if (f.match(/\.(jpg|jpeg|png|webp)$/i)) {
+            try { fs.unlinkSync(path.join(PHOTOS_DIR, f)); } catch {}
+          }
+        }
+      }
+      if (fs.existsSync(THUMBS_DIR)) {
+        const thumbs = fs.readdirSync(THUMBS_DIR);
+        for (const t of thumbs) {
+          try { fs.unlinkSync(path.join(THUMBS_DIR, t)); } catch {}
+        }
+      }
+    }
+
+    // 2. Salin file-file foto ke public/photos
+    let copiedCount = 0;
+    let copiedBytes = 0;
+
+    for (const file of scan.files) {
+      const dest = path.join(PHOTOS_DIR, file.name);
+      try {
+        fs.copyFileSync(file.fullPath, dest);
+        copiedCount++;
+        copiedBytes += file.size;
+
+        // Generate thumbnail langsung untuk Kiosk
+        await generateThumbnail(file.name);
+      } catch (err) {
+        console.error(`[CameraImport] Gagal salin ${file.name}:`, err.message);
+      }
+    }
+
+    // 3. Catat riwayat import di config
+    config.lastImport = {
+      timestamp: new Date().toISOString(),
+      preset: presetId,
+      count: copiedCount,
+      bytes: copiedBytes,
+      formattedSize: formatBytes(copiedBytes),
+      firstFile: scan.files[0]?.name || null,
+      lastFile: scan.files[scan.files.length - 1]?.name || null,
+      earliestTime: scan.earliestTime,
+      latestTime: scan.latestTime,
+    };
+    writeCameraImportConfig(config);
+
+    console.log(`[CameraImport] Sukses import ${copiedCount} foto (${formatBytes(copiedBytes)}) dari ${presetId}.`);
+
+    res.json({
+      success: true,
+      count: copiedCount,
+      totalBytes: copiedBytes,
+      formattedSize: formatBytes(copiedBytes),
+      timeRange: `${scan.earliestTime} - ${scan.latestTime}`,
+      message: `Berhasil menyalin ${copiedCount} foto (${formatBytes(copiedBytes)}) ke Kiosk!`,
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Membuka folder public/photos di Windows Explorer asli
+app.post("/api/camera-import/open-folder", (req, res) => {
+  try {
+    const targetDir = PHOTOS_DIR.replace(/\//g, "\\");
+    exec(`explorer.exe "${targetDir}"`, (err) => {
+      if (err) {
+        console.warn("[CameraImport] explorer.exe warning:", err.message);
+      }
+    });
+    res.json({ success: true, path: targetDir });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ── Template API ──────────────────────────────────────────────
 
 app.get("/api/templates", (req, res) => {

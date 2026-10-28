@@ -108,7 +108,7 @@ export function AdminKioskThemePage() {
 
   return (
     <AdminLayout>
-      <div className="w-full max-w-[1620px] mx-auto px-6 md:px-9 py-8 space-y-6">
+      <div className="w-full p-6 md:p-8 space-y-6">
         {/* ── 1. HEADER (Amara: dash-heading) ── */}
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-1">
           <div>

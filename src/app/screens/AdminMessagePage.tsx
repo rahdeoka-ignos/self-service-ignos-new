@@ -3,6 +3,7 @@ import { useNavigate } from "react-router";
 import { Copy, Check, MessageCircle, Sparkles, Camera, HardDrive } from "lucide-react";
 import { usePageTitle } from "../../hooks/usePageTitle";
 import { AdminLayout } from "../components/AdminLayout";
+import { CameraImportModal } from "../components/CameraImportModal";
 
 const getSapaan = () => {
   const hour = new Date().getHours();
@@ -28,6 +29,7 @@ Terima kasih kak, ditunggu kedatangannya yang selanjutnya🙏😊`;
 export function AdminMessagePage() {
   usePageTitle("Kirim Softcopy");
   const navigate = useNavigate();
+  const [cameraImportOpen, setCameraImportOpen] = useState(false);
   const [name, setName] = useState("");
   const [driveLink, setDriveLink] = useState("");
   const [message, setMessage] = useState("");
@@ -164,6 +166,14 @@ export function AdminMessagePage() {
           </div>
           <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
             <button
+              onClick={() => setCameraImportOpen(true)}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-zinc-950 text-white hover:bg-zinc-800 rounded-lg text-xs font-semibold transition-colors shadow-2xs cursor-pointer"
+              title="Tarik foto otomatis dari kamera atau card reader"
+            >
+              <Camera size={14} />
+              <span>Tarik Foto Kamera</span>
+            </button>
+            <button
               onClick={() => navigate("/admin/storage")}
               className="inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-zinc-200 text-zinc-700 hover:bg-zinc-50 hover:text-zinc-950 rounded-lg text-xs font-medium transition-colors shadow-2xs cursor-pointer"
               title="Buka Manajemen Storage untuk membersihkan memori disk PC"
@@ -183,7 +193,7 @@ export function AdminMessagePage() {
           </div>
         </div>
 
-        <div className="max-w-5xl space-y-6">
+        <div className="w-full space-y-6">
           {/* ── LIVE UPLOAD STATUS PANEL ── */}
           {uploadStatus && uploadStatus.total > 0 && (
             <div className="bg-white border border-zinc-200 rounded-xl p-5 shadow-xs">
@@ -491,6 +501,11 @@ export function AdminMessagePage() {
           </div>
         </div>
       </div>
+
+      <CameraImportModal
+        isOpen={cameraImportOpen}
+        onClose={() => setCameraImportOpen(false)}
+      />
     </AdminLayout>
   );
 }
