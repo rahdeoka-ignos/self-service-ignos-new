@@ -1,10 +1,308 @@
 [
   {
-    "id": "SES-1793089475477",
-    "timestamp": "2026-10-27T08:24:35.477Z",
+    "id": "SES-1793274328253",
+    "timestamp": "2026-10-29T11:45:28.253Z",
+    "date": "2026-10-29",
+    "time": "19.45",
+    "customerName": "sccedaniii",
+    "peopleCount": 3,
+    "coupleMode": true,
+    "joinedBonus": false,
+    "makeStory": true,
+    "softcopyType": "story_free",
+    "softcopyCharge": 0,
+    "prints": {
+      "regular": 3,
+      "bonus": 0,
+      "total": 3
+    },
+    "a4Count": 0,
+    "miscAddons": [],
+    "basePrice": 50000,
+    "totalAddonsPrice": 0,
+    "totalPrice": 50000,
+    "driveFolderName": "IGNOS STUDIO - 19.45 (sccedaniii)",
+    "driveWebViewLink": "https://drive.google.com/drive/folders/1Fh1CwG-BW4kmYvhMm7ByVaqYla6NEisw"
+  },
+  {
+    "id": "SES-1793271981981",
+    "timestamp": "2026-10-29T11:06:21.981Z",
+    "date": "2026-10-29",
+    "time": "19.06",
+    "customerName": "_praseetiiaa",
+    "peopleCount": 2,
+    "coupleMode": true,
+    "joinedBonus": true,
+    "makeStory": true,
+    "softcopyType": "story_free",
+    "softcopyCharge": 0,
+    "prints": {
+      "regular": 2,
+      "bonus": 2,
+      "total": 4
+    },
+    "a4Count": 0,
+    "miscAddons": [],
+    "basePrice": 50000,
+    "totalAddonsPrice": 0,
+    "totalPrice": 50000,
+    "driveFolderName": "IGNOS STUDIO - 19.06 (_praseetiiaa)",
+    "driveWebViewLink": "https://drive.google.com/drive/folders/1YyvmJUWF8QK40G1XokPhhqAo1-lJra5X"
+  },
+  {
+    "id": "SES-1793270935867",
+    "timestamp": "2026-10-29T10:48:55.867Z",
+    "date": "2026-10-29",
+    "time": "18.48",
+    "customerName": "idal",
+    "peopleCount": 4,
+    "coupleMode": false,
+    "joinedBonus": false,
+    "makeStory": true,
+    "softcopyType": "story_free",
+    "softcopyCharge": 0,
+    "prints": {
+      "regular": 4,
+      "bonus": 0,
+      "total": 4
+    },
+    "a4Count": 0,
+    "miscAddons": [
+      {
+        "name": "Kotak Plastik",
+        "qty": 1
+      }
+    ],
+    "basePrice": 50000,
+    "totalAddonsPrice": 15000,
+    "totalPrice": 65000,
+    "driveFolderName": "IGNOS STUDIO - 18.48 (idal)",
+    "driveWebViewLink": "https://drive.google.com/drive/folders/1Orpj4CIB1U_EbSNCfMSBOTEY6Qs8L-c5"
+  },
+  {
+    "id": "SES-1793191289063",
+    "timestamp": "2026-10-28T12:41:29.063Z",
+    "date": "2026-10-28",
+    "time": "20.41",
+    "customerName": "alliin.jpg",
+    "peopleCount": 3,
+    "coupleMode": true,
+    "joinedBonus": false,
+    "makeStory": true,
+    "softcopyType": "story_free",
+    "softcopyCharge": 0,
+    "prints": {
+      "regular": 3,
+      "bonus": 0,
+      "total": 3
+    },
+    "a4Count": 0,
+    "miscAddons": [],
+    "basePrice": 50000,
+    "totalAddonsPrice": 0,
+    "totalPrice": 50000,
+    "driveFolderName": "IGNOS STUDIO - 20.41 (alliin.jpg)",
+    "driveWebViewLink": "https://drive.google.com/drive/folders/1TnTrtHpUqlzLMFqy8eoEEACnSvS5tywW"
+  },
+  {
+    "id": "SES-1793184669480",
+    "timestamp": "2026-10-28T10:51:09.480Z",
+    "date": "2026-10-28",
+    "time": "18.51",
+    "customerName": "sabinaptrrii",
+    "peopleCount": 6,
+    "coupleMode": true,
+    "joinedBonus": true,
+    "makeStory": true,
+    "softcopyType": "story_free",
+    "softcopyCharge": 0,
+    "prints": {
+      "regular": 6,
+      "bonus": 6,
+      "total": 12
+    },
+    "a4Count": 0,
+    "miscAddons": [],
+    "basePrice": 50000,
+    "totalAddonsPrice": 0,
+    "totalPrice": 50000,
+    "driveFolderName": "IGNOS STUDIO - 18.51 (sabinaptrrii)",
+    "driveWebViewLink": "https://drive.google.com/drive/folders/17addK6_hUIFEcaUeU0VdHzfBrnuU6ivn"
+  },
+  {
+    "id": "SES-1793181009368",
+    "timestamp": "2026-10-28T09:50:09.367Z",
+    "date": "2026-10-28",
+    "time": "17.50",
+    "customerName": "astariynt_",
+    "peopleCount": 3,
+    "coupleMode": false,
+    "joinedBonus": false,
+    "makeStory": true,
+    "softcopyType": "story_free",
+    "softcopyCharge": 0,
+    "prints": {
+      "regular": 3,
+      "bonus": 0,
+      "total": 3
+    },
+    "a4Count": 2,
+    "miscAddons": [
+      {
+        "name": "Kotak Plastik",
+        "qty": 1
+      },
+      {
+        "name": "Bingkai A4 - Putih",
+        "qty": 1
+      },
+      {
+        "name": "Bingkai A4 - Putih",
+        "qty": 2
+      }
+    ],
+    "basePrice": 50000,
+    "totalAddonsPrice": 100000,
+    "totalPrice": 150000,
+    "driveFolderName": "IGNOS STUDIO - 17.49 (astariynt_)",
+    "driveWebViewLink": "https://drive.google.com/drive/folders/11f1dWQTjzxOk-TylgE7YxRZdIbWAZMNW"
+  },
+  {
+    "id": "SES-1793175039762",
+    "timestamp": "2026-10-28T08:10:39.762Z",
+    "date": "2026-10-28",
+    "time": "16.10",
+    "customerName": "hndradinataa_",
+    "peopleCount": 2,
+    "coupleMode": true,
+    "joinedBonus": false,
+    "makeStory": true,
+    "softcopyType": "story_free",
+    "softcopyCharge": 0,
+    "prints": {
+      "regular": 2,
+      "bonus": 0,
+      "total": 2
+    },
+    "a4Count": 0,
+    "miscAddons": [],
+    "basePrice": 50000,
+    "totalAddonsPrice": 0,
+    "totalPrice": 50000,
+    "driveFolderName": "IGNOS STUDIO - 16.10 (hndradinataa_)",
+    "driveWebViewLink": "https://drive.google.com/drive/folders/1mSIaFoGf8qBmBp5AdxLfqe3J3z_rcOj-"
+  },
+  {
+    "id": "SES-1793169776376",
+    "timestamp": "2026-10-28T06:42:56.376Z",
+    "date": "2026-10-28",
+    "time": "14.42",
+    "customerName": "dianarahmaa___",
+    "peopleCount": 2,
+    "coupleMode": false,
+    "joinedBonus": false,
+    "makeStory": true,
+    "softcopyType": "story_free",
+    "softcopyCharge": 0,
+    "prints": {
+      "regular": 2,
+      "bonus": 0,
+      "total": 2
+    },
+    "a4Count": 0,
+    "miscAddons": [],
+    "basePrice": 50000,
+    "totalAddonsPrice": 0,
+    "totalPrice": 50000,
+    "driveFolderName": "IGNOS STUDIO - 14.42 (dianarahmaa___)",
+    "driveWebViewLink": "https://drive.google.com/drive/folders/19HPscGhewRozppXbnf_444d3iL_8RKVG"
+  },
+  {
+    "id": "SES-1793165228448",
+    "timestamp": "2026-10-28T05:27:08.448Z",
+    "date": "2026-10-28",
+    "time": "13.27",
+    "customerName": "ramamiantara",
+    "peopleCount": 2,
+    "coupleMode": false,
+    "joinedBonus": false,
+    "makeStory": true,
+    "softcopyType": "story_free",
+    "softcopyCharge": 0,
+    "prints": {
+      "regular": 2,
+      "bonus": 0,
+      "total": 2
+    },
+    "a4Count": 0,
+    "miscAddons": [],
+    "basePrice": 50000,
+    "totalAddonsPrice": 0,
+    "totalPrice": 50000,
+    "driveFolderName": "IGNOS STUDIO - 13.27 (ramamiantara)",
+    "driveWebViewLink": "https://drive.google.com/drive/folders/1nHyOG2EQUQG5JHzLM_n6-a__Xad1YkoM"
+  },
+  {
+    "id": "SES-1793155538384",
+    "timestamp": "2026-10-28T02:45:38.384Z",
+    "date": "2026-10-28",
+    "time": "10.45",
+    "customerName": "ayuwullaann_",
+    "peopleCount": 2,
+    "coupleMode": true,
+    "joinedBonus": true,
+    "makeStory": true,
+    "softcopyType": "story_free",
+    "softcopyCharge": 0,
+    "prints": {
+      "regular": 2,
+      "bonus": 2,
+      "total": 4
+    },
+    "a4Count": 0,
+    "miscAddons": [
+      {
+        "name": "Cetak Foto 4R",
+        "qty": 1
+      }
+    ],
+    "basePrice": 50000,
+    "totalAddonsPrice": 15000,
+    "totalPrice": 65000,
+    "driveFolderName": "IGNOS STUDIO - 10.45 (ayuwullaann_)",
+    "driveWebViewLink": "https://drive.google.com/drive/folders/1VtUwSfXtg7zGQHHkPQezoVuHFqB9HXWq"
+  },
+  {
+    "id": "SES-1793105670304",
+    "timestamp": "2026-10-27T12:54:30.304Z",
     "date": "2026-10-27",
-    "time": "16.24",
-    "customerName": "Dek Adi",
+    "time": "20.54",
+    "customerName": "dyaasecoond",
+    "peopleCount": 2,
+    "coupleMode": false,
+    "joinedBonus": false,
+    "makeStory": true,
+    "softcopyType": "story_free",
+    "softcopyCharge": 0,
+    "prints": {
+      "regular": 2,
+      "bonus": 0,
+      "total": 2
+    },
+    "a4Count": 0,
+    "miscAddons": [],
+    "basePrice": 50000,
+    "totalAddonsPrice": 0,
+    "totalPrice": 50000,
+    "driveFolderName": "IGNOS STUDIO - 20.54 (dyaasecoond)",
+    "driveWebViewLink": "https://drive.google.com/drive/folders/172e0fidpXWy7blryo99OJrB627RmgG4z"
+  },
+  {
+    "id": "SES-1793091421844",
+    "timestamp": "2026-10-27T08:57:01.844Z",
+    "date": "2026-10-27",
+    "time": "16.57",
+    "customerName": "ini test",
     "peopleCount": 2,
     "coupleMode": false,
     "joinedBonus": false,
@@ -21,8 +319,8 @@
     "basePrice": 50000,
     "totalAddonsPrice": 0,
     "totalPrice": 75000,
-    "driveFolderName": "IGNOS STUDIO - 16.24 (Dek Adi)",
-    "driveWebViewLink": "https://drive.google.com/drive/folders/1NCmY4p7BwtEGlRWTAjRNBUvPqGXj-Gje"
+    "driveFolderName": "IGNOS STUDIO - 16.56 (ini test)",
+    "driveWebViewLink": "https://drive.google.com/drive/folders/13dw7NK86MgL5QHIHkeaYCYT_npaG7FTi"
   },
   {
     "id": "SES-1793080549108",
