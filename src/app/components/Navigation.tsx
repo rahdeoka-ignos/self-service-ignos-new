@@ -1,8 +1,10 @@
+import { useState } from "react";
 import { useNavigate } from "react-router";
 import { ArrowLeft } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { BrutalistButton } from "./BrutalistButton";
 import { useKioskTheme } from "../../context/KioskThemeContext";
+import { CameraImportModal } from "./CameraImportModal";
 
 interface NavigationProps {
   currentStep: number;
@@ -17,6 +19,7 @@ export function Navigation({
 }: NavigationProps) {
   const navigate = useNavigate();
   const { i18n } = useTranslation();
+  const [cameraImportOpen, setCameraImportOpen] = useState(false);
 
   let studioName = "IGNOS STUDIO";
   let logoUrl = "";
@@ -74,33 +77,46 @@ export function Navigation({
               {i18n.language === "id" ? "🇮🇩 ID" : "🇬🇧 EN"}
             </BrutalistButton>
 
-            {logoUrl ? (
-              <img
-                src={logoUrl}
-                alt={studioName}
-                className="h-10 max-w-[160px] object-contain shrink-0"
-              />
-            ) : (
-              <div className="flex flex-col text-left leading-none shrink-0 select-none">
-                {studioName.trim().includes(" ") ? (
-                  <>
-                    <span className="text-xl md:text-2xl font-black tracking-widest leading-none">
-                      {studioName.trim().substring(0, studioName.trim().lastIndexOf(" "))}
+            {/* Secret Staff Double Click Trigger */}
+            <div
+              onDoubleClick={() => setCameraImportOpen(true)}
+              className="cursor-default select-none shrink-0"
+              title={studioName}
+            >
+              {logoUrl ? (
+                <img
+                  src={logoUrl}
+                  alt={studioName}
+                  className="h-10 max-w-[160px] object-contain shrink-0"
+                />
+              ) : (
+                <div className="flex flex-col text-left leading-none shrink-0 select-none">
+                  {studioName.trim().includes(" ") ? (
+                    <>
+                      <span className="text-xl md:text-2xl font-black tracking-widest leading-none">
+                        {studioName.trim().substring(0, studioName.trim().lastIndexOf(" "))}
+                      </span>
+                      <span className="text-xl md:text-2xl font-black tracking-widest leading-none mt-0.5">
+                        {studioName.trim().substring(studioName.trim().lastIndexOf(" ") + 1)}
+                      </span>
+                    </>
+                  ) : (
+                    <span className="text-2xl font-black tracking-widest leading-none">
+                      {studioName}
                     </span>
-                    <span className="text-xl md:text-2xl font-black tracking-widest leading-none mt-0.5">
-                      {studioName.trim().substring(studioName.trim().lastIndexOf(" ") + 1)}
-                    </span>
-                  </>
-                ) : (
-                  <span className="text-2xl font-black tracking-widest leading-none">
-                    {studioName}
-                  </span>
-                )}
-              </div>
-            )}
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
+
+      {/* Secret Camera Import Modal */}
+      <CameraImportModal
+        isOpen={cameraImportOpen}
+        onClose={() => setCameraImportOpen(false)}
+      />
     </>
   );
 }

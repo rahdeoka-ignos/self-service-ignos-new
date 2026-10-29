@@ -12,7 +12,10 @@ import {
   Bell,
   Palette,
   HardDrive,
+  Maximize2,
+  Minimize2,
 } from "lucide-react";
+import { CameraImportModal } from "./CameraImportModal";
 
 const NAV_WORKSPACE = [
   {
@@ -58,8 +61,26 @@ const NAV_PREFERENCES = [
 
 export function AdminLayout({ children }: { children: React.ReactNode }) {
   const [printerAlert, setPrinterAlert] = useState<any>(null);
+  const [cameraImportOpen, setCameraImportOpen] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const handleFsChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener("fullscreenchange", handleFsChange);
+    return () => document.removeEventListener("fullscreenchange", handleFsChange);
+  }, []);
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(() => {});
+    } else {
+      document.exitFullscreen().catch(() => {});
+    }
+  };
 
   useEffect(() => {
     let isMounted = true;
@@ -206,7 +227,16 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
             <span className="text-[#333] font-medium">{getPageTitle()}</span>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setCameraImportOpen(true)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#171717] hover:bg-[#333] text-white rounded-[7px] text-[12px] font-medium transition-colors cursor-pointer shadow-2xs"
+              title="Tarik foto otomatis dari kamera atau card reader"
+            >
+              <Camera size={13} strokeWidth={2} />
+              <span>Tarik Foto Kamera</span>
+            </button>
+
             <button
               onClick={() => navigate("/")}
               className="hidden sm:inline-flex items-center gap-1.5 text-[13px] text-[#777] hover:text-[#171717] transition-colors cursor-pointer mr-1"
@@ -225,6 +255,18 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
                 <span className="w-2 h-2 rounded-full bg-[#ef4444] absolute top-2 right-2 border border-white" />
               </button>
             )}
+
+            <button
+              onClick={toggleFullscreen}
+              className="w-[34px] h-[34px] rounded-full border border-[#e6e6e6] bg-white hover:bg-[#f4f4f4] flex items-center justify-center text-[#666] hover:text-[#171717] transition-colors cursor-pointer"
+              title={isFullscreen ? "Keluar Layar Penuh (Exit Fullscreen)" : "Layar Penuh (Fullscreen)"}
+            >
+              {isFullscreen ? (
+                <Minimize2 size={14} strokeWidth={1.75} />
+              ) : (
+                <Maximize2 size={14} strokeWidth={1.75} />
+              )}
+            </button>
 
             <div
               className="w-[32px] h-[32px] rounded-full bg-[#171717] text-white flex items-center justify-center text-[12px] font-medium tracking-[0.03em] select-none"
@@ -272,6 +314,12 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
           {children}
         </main>
       </div>
+
+      {/* Smart Camera Ingest Modal */}
+      <CameraImportModal
+        isOpen={cameraImportOpen}
+        onClose={() => setCameraImportOpen(false)}
+      />
     </div>
   );
 }

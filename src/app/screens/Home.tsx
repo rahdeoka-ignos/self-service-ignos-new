@@ -2,14 +2,16 @@ import { clearSessionData } from "../../utils/sessionTracker";
 import { useNavigate } from "react-router";
 import { Camera, Users } from "lucide-react";
 import { BrutalistCard } from "../components/BrutalistCard";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { BrutalistButton } from "../components/BrutalistButton";
 import { preloadGallery } from "../../utils/photoPreloader";
 import { useKioskTheme } from "../../context/KioskThemeContext";
+import { CameraImportModal } from "../components/CameraImportModal";
 
 export function Home() {
   const navigate = useNavigate();
   const { theme } = useKioskTheme();
+  const [cameraImportOpen, setCameraImportOpen] = useState(false);
 
   useEffect(() => {
     clearSessionData();
@@ -38,7 +40,12 @@ export function Home() {
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-8">
       <div className="max-w-7xl w-full">
-        <div className="text-center mb-16">
+        {/* Secret Double Click Trigger for Staff */}
+        <div
+          onDoubleClick={() => setCameraImportOpen(true)}
+          className="text-center mb-16 cursor-default select-none"
+          title={theme.studioName || "IGNOS STUDIO"}
+        >
           {theme.logoUrl && (
             <img
               src={theme.logoUrl}
@@ -82,6 +89,12 @@ export function Home() {
           ))}
         </div>
       </div>
+
+      {/* Secret Camera Import Modal */}
+      <CameraImportModal
+        isOpen={cameraImportOpen}
+        onClose={() => setCameraImportOpen(false)}
+      />
     </div>
   );
 }
