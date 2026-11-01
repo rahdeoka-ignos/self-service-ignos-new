@@ -2,6 +2,8 @@ import { useLocation, useNavigate } from "react-router";
 import { ArrowRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useKioskTheme } from "../../context/KioskThemeContext";
+import { usePricing } from "../../context/PricingContext";
+import { DEFAULT_PRICING } from "../../types/pricing";
 
 export function AddOnQuestion() {
   const location = useLocation();
@@ -49,137 +51,42 @@ export function AddOnQuestion() {
   const isVideo = (src: string) =>
     src.endsWith(".mp4") || src.endsWith(".webm");
 
-  const addons = [
-    {
-      id: "4r-print",
-      title: "Cetak Foto 4R",
-      price: 10000,
-      description:
-        "Cetak foto ukuran 4R dengan hasil tajam, warna akurat, dan kertas premium.",
-      image: "/addons/cetak4r.mp4",
-      path: "/people-count",
-      state: {
-        serviceId: "photo-studio",
-        skipBonus: true,
-        destination: "templates",
-        disableModal: true,
-      },
-    },
-    {
-      id: "10r-print",
-      title: "Cetak Foto A4",
-      price: 20000,
-      description: "Cetak foto ukuran A4 (10R) dengan kualitas tinggi.",
-      image: "/addons/cetaka4.mp4",
-      path: "/people-count",
-      state: {
-        serviceId: "photo-studio",
-        skipBonus: true,
-        destination: "arrange-photos-a4",
-        disableModal: true,
-      },
-    },
-    {
-      id: "keychain",
-      title: "Gantungan Kunci",
-      price: 15000,
-      description: "Ubah foto favoritmu jadi gantungan kunci unik dan lucu.",
-      image: "/addons/keychain.mp4",
-      path: "/keychain",
-      state: {},
-    },
-    {
-      id: "id-card",
-      title: "ID Card",
-      price: 15000,
-      description: "Cetak foto menjadi ID card custom dengan desain menarik.",
-      image: "/addons/idcard.mp4",
-      path: "/id-card",
-      state: {},
-    },
-    {
-      id: "bingkai-4r",
-      title: "Bingkai 4R",
-      price: 25000,
-      description: "Percantik foto 4R dengan bingkai estetik siap pajang.",
-      image: "/addons/bingkai4r.mp4",
-      path: "/bingkai4r",
-      state: {},
-    },
-    {
-      id: "bingkai-a4",
-      title: "Bingkai A4",
-      price: 40000,
-      description: "Bingkai elegan untuk foto A4, cocok untuk dekorasi.",
-      image: "/addons/bingkaia4.mp4",
-      path: "/bingkaiA4",
-      state: {},
-    },
-    {
-      id: "flower-hotwheels",
-      title: "Flower Hotwheels",
-      price: 45000,
-      description:
-        "Dekorasi unik dengan bunga / miniatur, cocok untuk hadiah spesial.",
-      image: "/addons/hotwheel.mp4",
-      path: "/flower-hotwheels",
-      state: {},
-    },
-    {
-      id: "cetak-bingkai3d-10r",
-      title: "Cetak Bingkai 3D 10R",
-      price: 90000,
-      description: "Foto 10R dengan efek bingkai 3D premium.",
-      image: "/addons/bingkai3d.mp4",
-      path: "/cetak-bingkai3d-10r",
-      state: {},
-    },
-    {
-      id: "boneka-tabung",
-      title: "Boneka Tabung",
-      price: 60000,
-      description: "Boneka custom dengan foto pilihan, cocok untuk kado.",
-      image: "/addons/boneka.mp4",
-      path: "/boneka-tabung",
-      state: {},
-    },
-    {
-      id: "puzzle-foto",
-      title: "Puzzle Foto",
-      price: 90000,
-      isPreorder: true,
-      description: "Foto jadi puzzle seru, cocok untuk hadiah unik (PO).",
-      image: "/addons/puzzel.mp4",
-      path: "/puzzle-foto",
-      state: {},
-    },
-    {
-      id: "photo-calender",
-      title: "Photo Calender",
-      price: 90000,
-      isPreorder: false,
-      description: "Photo Calender cocok untuk blablabla.",
-      image: "/addons/kalender.mp4",
-      path: "/photo-calender",
-      state: {},
-    },
-    {
-      id: "cermin-foto-3d",
-      title: "Cermin Foto 3D",
-      price: 70000,
-      description: "Cermin custom dengan efek foto 3D yang estetik.",
-      image: "/addons/cerminfoto.mp4",
-      path: "/cermin-foto-3d",
-      state: {},
-    },
-  ];
+  const { pricing, formatPrice } = usePricing();
 
-  const formatPrice = (price: number) =>
-    new Intl.NumberFormat("id-ID", {
-      style: "currency",
-      currency: "IDR",
-      maximumFractionDigits: 0,
-    }).format(price);
+  const rawAddons = pricing?.addons && pricing.addons.length > 0 ? pricing.addons : DEFAULT_PRICING.addons;
+
+  const addons = rawAddons
+    .filter((addon) => addon.enabled !== false)
+    .map((addon) => {
+      let state: any = {};
+      let price = addon.price;
+
+      if (addon.id === "4r-print") {
+        price = pricing?.prints?.print4rPrice ?? addon.price;
+        state = {
+          serviceId: "photo-studio",
+          skipBonus: true,
+          destination: "templates",
+          disableModal: true,
+        };
+      } else if (addon.id === "10r-print") {
+        price = pricing?.prints?.printA4Price ?? addon.price;
+        state = {
+          serviceId: "photo-studio",
+          skipBonus: true,
+          destination: "arrange-photos-a4",
+          disableModal: true,
+        };
+      }
+
+      return {
+        ...addon,
+        price,
+        state,
+        image: addon.image || "/addons/cetak4r.mp4",
+        path: addon.path || "/add-ons",
+      };
+    });
 
   const joinedBonus = location.state?.joinedBonus ?? false;
   const coupleMode = location.state?.coupleMode ?? false;

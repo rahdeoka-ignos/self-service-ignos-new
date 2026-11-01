@@ -4,37 +4,8 @@ import { BrutalistCard } from "../../components/BrutalistCard";
 import { BrutalistButton } from "../../components/BrutalistButton";
 import { Navigation } from "../../components/Navigation";
 import { Minus, Plus, ShoppingBag } from "lucide-react";
-
-const KEYCHAIN_OPTIONS = [
-  {
-    id: "kotak-plastik",
-    name: "Kotak Plastik",
-    price: 15000,
-    description: "Full Foto",
-    image: "/addons/keychain-kotak-plastik.png",
-  },
-  {
-    id: "kotak-metal",
-    name: "Kotak Metal",
-    price: 30000,
-    description: "Full Foto",
-    image: "/addons/keychain-kotak-metal.png",
-  },
-  {
-    id: "oval-metal",
-    name: "Oval Metal",
-    price: 30000,
-    description: "Full Foto",
-    image: "/addons/keychain-oval-metal.png",
-  },
-  {
-    id: "love-metal",
-    name: "Love Metal",
-    price: 30000,
-    description: "Full Foto",
-    image: "/addons/keychain-love-metal.png",
-  },
-];
+import { usePricing } from "../../../context/PricingContext";
+import { DEFAULT_PRICING } from "../../../types/pricing";
 
 export type KeychainOrder = {
   id: string;
@@ -47,39 +18,37 @@ export type KeychainOrder = {
 export function KeychainOptions() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { pricing, formatPrice } = usePricing();
 
-  const [quantities, setQuantities] = useState<{ [id: string]: number }>(
-    Object.fromEntries(KEYCHAIN_OPTIONS.map((o) => [o.id, 0])),
-  );
+  const keychainList = (
+    pricing?.keychains && pricing.keychains.length > 0
+      ? pricing.keychains
+      : DEFAULT_PRICING.keychains
+  ).filter((k) => k.enabled !== false);
+
+  const [quantities, setQuantities] = useState<{ [id: string]: number }>({});
 
   const setQty = (id: string, val: number) => {
     setQuantities((prev) => ({ ...prev, [id]: Math.max(0, val) }));
   };
 
-  const formatPrice = (price: number) =>
-    new Intl.NumberFormat("id-ID", {
-      style: "currency",
-      currency: "IDR",
-      maximumFractionDigits: 0,
-    }).format(price);
-
   const totalQty = Object.values(quantities).reduce((a, b) => a + b, 0);
 
-  const totalPrice = KEYCHAIN_OPTIONS.reduce(
+  const totalPrice = keychainList.reduce(
     (sum, opt) => sum + opt.price * (quantities[opt.id] || 0),
     0,
   );
 
   const handleNext = () => {
-    const orders: KeychainOrder[] = KEYCHAIN_OPTIONS.filter(
-      (opt) => quantities[opt.id] > 0,
-    ).map((opt) => ({
-      id: opt.id,
-      name: opt.name,
-      price: opt.price,
-      qty: quantities[opt.id],
-      image: opt.image,
-    }));
+    const orders: KeychainOrder[] = keychainList
+      .filter((opt) => (quantities[opt.id] || 0) > 0)
+      .map((opt) => ({
+        id: opt.id,
+        name: opt.name,
+        price: opt.price,
+        qty: quantities[opt.id] || 0,
+        image: opt.image || "",
+      }));
 
     navigate("/keychain-arrangement", {
       state: {
@@ -107,8 +76,8 @@ export function KeychainOptions() {
 
           {/* Options Grid */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-10">
-            {KEYCHAIN_OPTIONS.map((opt) => {
-              const qty = quantities[opt.id];
+            {keychainList.map((opt) => {
+              const qty = quantities[opt.id] || 0;
               const isSelected = qty > 0;
               return (
                 <div
@@ -148,7 +117,7 @@ export function KeychainOptions() {
                   <div className="p-5 flex flex-col flex-1">
                     <h2 className="text-xl font-bold mb-0.5">{opt.name}</h2>
                     <p className="text-gray-500 text-base mb-1">
-                      {opt.description}
+                      {opt.subtitle || (opt as any).description || "Full Foto"}
                     </p>
                     <p className="text-lg font-bold mb-5">
                       {formatPrice(opt.price)}
@@ -193,7 +162,7 @@ export function KeychainOptions() {
                 <h3 className="text-2xl font-bold">Ringkasan Pesanan</h3>
               </div>
               <div className="space-y-2">
-                {KEYCHAIN_OPTIONS.filter((o) => quantities[o.id] > 0).map(
+                {keychainList.filter((o) => (quantities[o.id] || 0) > 0).map(
                   (opt) => (
                     <div
                       key={opt.id}

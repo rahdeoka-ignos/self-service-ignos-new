@@ -31,6 +31,8 @@ import {
   ZoomIn,
 } from "lucide-react";
 import { AdminLayout } from "../components/AdminLayout";
+import { AdminConfirmModal } from "../components/AdminConfirmModal";
+import { usePageTitle } from "../../hooks/usePageTitle";
 import type {
   CustomSlotDef,
   LayoutType,
@@ -106,6 +108,25 @@ export function AdminTemplateEditorPage() {
   const { id } = useParams<{ id?: string }>();
   const isEdit = Boolean(id);
   const navigate = useNavigate();
+
+  usePageTitle(isEdit ? `Edit Template: ${id} — Ignos` : "Tambah Template Baru — Ignos");
+
+  const [modalConfig, setModalConfig] = useState<{
+    isOpen: boolean;
+    title: string;
+    category?: string;
+    description: string;
+    confirmText?: string;
+    cancelText?: string;
+    isDangerous?: boolean;
+    variant?: "danger" | "warning" | "info" | "success";
+    singleButton?: boolean;
+    onConfirm?: () => Promise<void> | void;
+  }>({
+    isOpen: false,
+    title: "",
+    description: "",
+  });
 
   const [categories, setCategories] = useState<TemplateCategory[]>([]);
   const [loading, setLoading] = useState(true);
@@ -265,8 +286,15 @@ export function AdminTemplateEditorPage() {
               setExistingOverlayUrl(found.overlay);
             }
           } else {
-            alert(`Template dengan ID "${id}" tidak ditemukan.`);
-            navigate("/admin/templates");
+            setModalConfig({
+              isOpen: true,
+              title: "Template Tidak Ditemukan",
+              category: "Pemeriksaan Template",
+              description: `Template dengan ID "${id}" tidak ditemukan dalam sistem.`,
+              singleButton: true,
+              variant: "warning",
+              onConfirm: () => navigate("/admin/templates"),
+            });
           }
         } else {
           if (data.categories?.length > 0) {
@@ -275,7 +303,14 @@ export function AdminTemplateEditorPage() {
         }
       } catch (err: any) {
         console.error(err);
-        alert(err.message);
+        setModalConfig({
+          isOpen: true,
+          title: "Gagal Memuat Template",
+          category: "Kendala Server",
+          description: err.message || "Terjadi kesalahan saat memuat data template.",
+          singleButton: true,
+          variant: "warning",
+        });
       } finally {
         if (isMounted) setLoading(false);
       }
@@ -1420,21 +1455,7 @@ export function AdminTemplateEditorPage() {
   const gridStep = SNAP_GRID * SCALE_X; // 20px in editor
 
   // Save template handler
-  const handleSave = async () => {
-    if (!name.trim()) return alert("Nama template wajib diisi");
-    if (!isEdit && !backgroundFile) {
-      return alert("File background wajib diupload untuk template baru.");
-    }
-    if (layout === "custom" && slots.length === 0) {
-      if (
-        !confirm(
-          "Layout custom dipilih tapi belum ada slot yang ditambahkan. Tetap simpan?",
-        )
-      ) {
-        return;
-      }
-    }
-
+  const executeSave = async () => {
     setSaving(true);
     try {
       if (creatingCategory && newCategoryId && newCategoryName) {
@@ -1475,7 +1496,14 @@ export function AdminTemplateEditorPage() {
         });
         if (!res.ok) {
           const err = await res.json();
-          alert(err.error || "Gagal membuat template baru");
+          setModalConfig({
+            isOpen: true,
+            title: "Gagal Membuat Template",
+            category: "Kendala Server",
+            description: err.error || "Gagal membuat template baru pada sistem.",
+            singleButton: true,
+            variant: "warning",
+          });
           return;
         }
       }
@@ -1498,10 +1526,58 @@ export function AdminTemplateEditorPage() {
       navigate("/admin/templates");
     } catch (err: any) {
       console.error(err);
-      alert("Gagal menyimpan template: " + err.message);
+      setModalConfig({
+        isOpen: true,
+        title: "Gagal Menyimpan Template",
+        category: "Kendala Penyimpanan",
+        description: "Terjadi kesalahan saat menyimpan template: " + err.message,
+        singleButton: true,
+        variant: "warning",
+      });
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleSave = async () => {
+    if (!name.trim()) {
+      setModalConfig({
+        isOpen: true,
+        title: "Nama Template Diperlukan",
+        category: "Validasi Form",
+        description: "Mohon isi nama template sebelum melanjutkan penyimpanan.",
+        singleButton: true,
+        variant: "warning",
+      });
+      return;
+    }
+    if (!isEdit && !backgroundFile) {
+      setModalConfig({
+        isOpen: true,
+        title: "Background Diperlukan",
+        category: "Validasi Form",
+        description: "File gambar background frame wajib diunggah untuk template baru.",
+        singleButton: true,
+        variant: "warning",
+      });
+      return;
+    }
+    if (layout === "custom" && slots.length === 0) {
+      setModalConfig({
+        isOpen: true,
+        title: "Simpan Tanpa Slot Foto?",
+        category: "Konfirmasi Tata Letak",
+        description: "Layout kustom dipilih tetapi belum ada slot yang ditambahkan. Apakah Anda yakin ingin tetap menyimpannya?",
+        confirmText: "Tetap Simpan",
+        cancelText: "Batal",
+        onConfirm: () => {
+          executeSave();
+        },
+      });
+      return;
+    }
+
+    await executeSave();
   };
 
   if (loading) {
@@ -2534,11 +2610,21 @@ export function AdminTemplateEditorPage() {
                     <button
                       type="button"
                       onClick={() => {
-                        if (confirm("Hapus semua slot yang ada?")) {
-                          pushSnapshot();
-                          setSlots([]);
-                          setSelectedSlots([]);
-                        }
+                        setModalConfig({
+                          isOpen: true,
+                          title: "Hapus Semua Slot Foto?",
+                          category: "Reset Kanvas",
+                          description: `Seluruh (${slots.length}) slot foto yang telah diatur pada kanvas akan dihapus permanen.`,
+                          confirmText: "Hapus Semua",
+                          cancelText: "Batal",
+                          isDangerous: true,
+                          variant: "danger",
+                          onConfirm: () => {
+                            pushSnapshot();
+                            setSlots([]);
+                            setSelectedSlots([]);
+                          },
+                        });
                       }}
                       className="text-xs text-rose-600 hover:text-rose-700 font-medium cursor-pointer transition-colors"
                     >
@@ -2953,6 +3039,21 @@ export function AdminTemplateEditorPage() {
             </div>
           </div>
         )}
+
+        {/* ── Standard Admin Confirmation Modal conforming to GEMINI.md ── */}
+        <AdminConfirmModal
+          isOpen={modalConfig.isOpen}
+          onClose={() => setModalConfig((prev) => ({ ...prev, isOpen: false }))}
+          onConfirm={modalConfig.onConfirm}
+          title={modalConfig.title}
+          category={modalConfig.category}
+          description={modalConfig.description}
+          confirmText={modalConfig.confirmText}
+          cancelText={modalConfig.cancelText}
+          isDangerous={modalConfig.isDangerous}
+          variant={modalConfig.variant}
+          singleButton={modalConfig.singleButton}
+        />
       </div>
     </AdminLayout>
   );

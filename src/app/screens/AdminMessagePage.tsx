@@ -1,19 +1,21 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router";
 import {
   Copy,
   Check,
   MessageCircle,
-  Sparkles,
   Camera,
   HardDrive,
-  AlertTriangle,
   ExternalLink,
   RefreshCw,
+  Send,
 } from "lucide-react";
 import { usePageTitle } from "../../hooks/usePageTitle";
 import { AdminLayout } from "../components/AdminLayout";
+import { AdminConfirmModal } from "../components/AdminConfirmModal";
 import { CameraImportModal } from "../components/CameraImportModal";
+
+const API = "http://localhost:5000";
 
 const getSapaan = () => {
   const hour = new Date().getHours();
@@ -23,10 +25,8 @@ const getSapaan = () => {
   return "Selamat Malam";
 };
 
-const generateMessage = (
-  name: string,
-  driveLink: string,
-) => `Halo Kakak ${name} ${getSapaan()}✨
+const generateMessage = (name: string, driveLink: string) =>
+  `Halo Kakak ${name} ${getSapaan()}✨
 Berikut kami kirimkan link G-Drive softcopy foto hari ini, silahkan dicek ya kak.
 
 ${driveLink}
@@ -37,8 +37,9 @@ Mohon segera disimpan dikarenakan link akan expired dalam waktu 7 hari
 Terima kasih kak, ditunggu kedatangannya yang selanjutnya🙏😊`;
 
 export function AdminMessagePage() {
-  usePageTitle("Kirim Softcopy");
+  usePageTitle("Pesan Softcopy — Ignos");
   const navigate = useNavigate();
+
   const [cameraImportOpen, setCameraImportOpen] = useState(false);
   const [name, setName] = useState("");
   const [driveLink, setDriveLink] = useState("");
@@ -50,6 +51,7 @@ export function AdminMessagePage() {
     driveLink?: string;
     phone?: string;
   }>({});
+
   const [uploadStatus, setUploadStatus] = useState<{
     isUploading: boolean;
     folderName: string;
@@ -59,23 +61,6 @@ export function AdminMessagePage() {
     percent: number;
     currentFile: string;
   } | null>(null);
-
-  useEffect(() => {
-    const fetchStatus = () => {
-      fetch("http://localhost:5000/api/gdrive-upload-status")
-        .then((r) => r.json())
-        .then((data) => {
-          if (data && data.total > 0) {
-            setUploadStatus(data);
-          }
-        })
-        .catch(() => {});
-    };
-
-    fetchStatus();
-    const interval = setInterval(fetchStatus, 2000);
-    return () => clearInterval(interval);
-  }, []);
 
   const [latestSession, setLatestSession] = useState<{
     customerName?: string;
@@ -100,99 +85,53 @@ export function AdminMessagePage() {
 
   const [uploadingQueue, setUploadingQueue] = useState(false);
   const [authorizingDrive, setAuthorizingDrive] = useState(false);
+  const [clearingPhotos, setClearingPhotos] = useState(false);
+
+  // Standard modal state conforming to GEMINI.md Rule 5
+  const [modalConfig, setModalConfig] = useState<{
+    isOpen: boolean;
+    title: string;
+    category?: string;
+    description: string;
+    confirmText?: string;
+    cancelText?: string;
+    isDangerous?: boolean;
+    variant?: "danger" | "warning" | "info" | "success";
+    singleButton?: boolean;
+    onConfirm?: () => Promise<void> | void;
+  }>({
+    isOpen: false,
+    title: "",
+    description: "",
+  });
+
+  const fetchUploadStatus = () => {
+    fetch(`${API}/api/gdrive-upload-status`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (data && data.total > 0) {
+          setUploadStatus(data);
+        }
+      })
+      .catch(() => {});
+  };
 
   const checkGdriveStatus = () => {
-    fetch("http://localhost:5000/api/gdrive-auth-status")
+    fetch(`${API}/api/gdrive-auth-status`)
       .then((r) => r.json())
       .then((d) => setGdriveAuthStatus(d))
       .catch(() =>
         setGdriveAuthStatus({ connected: false, error: "Server offline" }),
       );
 
-    fetch("http://localhost:5000/api/gdrive-pending-queue")
+    fetch(`${API}/api/gdrive-pending-queue`)
       .then((r) => r.json())
       .then((d) => setPendingQueue(d.queue || []))
       .catch(() => {});
   };
 
-  useEffect(() => {
-    checkGdriveStatus();
-    const iv = setInterval(checkGdriveStatus, 4000);
-    return () => clearInterval(iv);
-  }, []);
-
-  const handleTriggerAuth = async () => {
-    try {
-      setAuthorizingDrive(true);
-      const res = await fetch("http://localhost:5000/api/gdrive-trigger-auth", {
-        method: "POST",
-      });
-      const data = await res.json();
-      alert(
-        data.message ||
-          "Jendela browser otorisasi Google Drive telah dibuka. Silakan izinkan akses akun Google.",
-      );
-    } catch {
-      alert("Gagal memicu otorisasi Google Drive.");
-    } finally {
-      setTimeout(() => setAuthorizingDrive(false), 3000);
-    }
-  };
-
-  const handleUploadPendingQueue = async () => {
-    if (
-      !confirm(
-        `Unggah ${pendingQueue.length} folder sesi di antrian lokal ke Google Drive sekarang?`,
-      )
-    )
-      return;
-    try {
-      setUploadingQueue(true);
-      const res = await fetch(
-        "http://localhost:5000/api/gdrive-upload-pending",
-        { method: "POST" },
-      );
-      const data = await res.json();
-      if (data.success) {
-        alert(data.message);
-        checkGdriveStatus();
-      } else {
-        alert("Gagal mengunggah: " + (data.error || "Unknown error"));
-      }
-    } catch (err: any) {
-      alert("Error saat mengunggah antrian: " + err.message);
-    } finally {
-      setUploadingQueue(false);
-    }
-  };
-
-  const [clearingPhotos, setClearingPhotos] = useState(false);
-  const handleClearPhotos = async () => {
-    if (
-      !confirm(
-        "Kosongkan foto jepretan di kamera aktif untuk sesi customer baru?\n\n(Catatan: Antrian upload sesi sebelumnya yang sedang berjalan di background tetap aman & tidak akan terhapus).",
-      )
-    ) {
-      return;
-    }
-    try {
-      setClearingPhotos(true);
-      const res = await fetch("http://localhost:5000/api/clear-photos", {
-        method: "POST",
-      });
-      const data = await res.json();
-      if (data.success) {
-        alert(`Berhasil! ${data.cleared} foto dibersihkan dari folder kamera.`);
-      }
-    } catch {
-      alert("Gagal mengosongkan folder kamera.");
-    } finally {
-      setClearingPhotos(false);
-    }
-  };
-
-  useEffect(() => {
-    fetch("http://localhost:5000/api/latest-session-drive")
+  const fetchLatestSession = () => {
+    fetch(`${API}/api/latest-session-drive`)
       .then((res) => res.json())
       .then((data) => {
         if (data?.webViewLink) {
@@ -204,24 +143,170 @@ export function AdminMessagePage() {
         }
       })
       .catch(() => {});
+  };
+
+  useEffect(() => {
+    fetchUploadStatus();
+    checkGdriveStatus();
+    fetchLatestSession();
+
+    const intervalStatus = setInterval(fetchUploadStatus, 2500);
+    const intervalAuth = setInterval(checkGdriveStatus, 5000);
+
+    return () => {
+      clearInterval(intervalStatus);
+      clearInterval(intervalAuth);
+    };
   }, []);
+
+  const handleTriggerAuth = async () => {
+    try {
+      setAuthorizingDrive(true);
+      const res = await fetch(`${API}/api/gdrive-trigger-auth`, {
+        method: "POST",
+      });
+      const data = await res.json();
+      setModalConfig({
+        isOpen: true,
+        title: "Otorisasi Google Drive",
+        category: "Koneksi Cloud",
+        description:
+          data.message ||
+          "Jendela browser otorisasi Google Drive telah dibuka. Silakan izinkan akses akun Google Drive studio.",
+        singleButton: true,
+        variant: "info",
+      });
+    } catch {
+      setModalConfig({
+        isOpen: true,
+        title: "Gagal Memicu Otorisasi",
+        category: "Kendala Server",
+        description: "Tidak dapat membuka otorisasi Google Drive. Pastikan backend server.js berjalan.",
+        singleButton: true,
+        variant: "warning",
+      });
+    } finally {
+      setTimeout(() => setAuthorizingDrive(false), 2500);
+    }
+  };
+
+  const handleUploadPendingQueue = () => {
+    setModalConfig({
+      isOpen: true,
+      title: `Unggah ${pendingQueue.length} Antrian Sesi?`,
+      category: "Sinkronisasi Google Drive",
+      description: `Folder sesi foto dari antrean staging lokal PC akan segera diunggah ke Google Drive pelanggan.`,
+      confirmText: "Mulai Unggah",
+      cancelText: "Batal",
+      variant: "info",
+      onConfirm: async () => {
+        try {
+          setUploadingQueue(true);
+          const res = await fetch(`${API}/api/gdrive-upload-pending`, {
+            method: "POST",
+          });
+          const data = await res.json();
+          if (data.success) {
+            setModalConfig({
+              isOpen: true,
+              title: "Antrean Berhasil Diproses",
+              category: "Upload Google Drive",
+              description: data.message || "Seluruh antrean foto sedang diunggah di latar belakang.",
+              singleButton: true,
+              variant: "success",
+            });
+            checkGdriveStatus();
+          } else {
+            setModalConfig({
+              isOpen: true,
+              title: "Gagal Mengunggah Antrean",
+              category: "Kendala Cloud",
+              description: data.error || "Terjadi kesalahan saat memproses antrean upload.",
+              singleButton: true,
+              variant: "warning",
+            });
+          }
+        } catch (err: any) {
+          setModalConfig({
+            isOpen: true,
+            title: "Gagal Mengirim Perintah",
+            category: "Kendala Server",
+            description: "Error saat menghubungi backend: " + err.message,
+            singleButton: true,
+            variant: "warning",
+          });
+        } finally {
+          setUploadingQueue(false);
+        }
+      },
+    });
+  };
+
+  const handleClearPhotos = () => {
+    setModalConfig({
+      isOpen: true,
+      title: "Kosongkan Foto Kamera?",
+      category: "Persiapan Sesi Baru",
+      description:
+        "Foto jepretan di folder kamera aktif akan dibersihkan agar siap digunakan oleh customer berikutnya. (File antrian upload Google Drive di background tetap aman & terlindungi).",
+      confirmText: "Kosongkan Kamera",
+      cancelText: "Batal",
+      isDangerous: true,
+      variant: "warning",
+      onConfirm: async () => {
+        try {
+          setClearingPhotos(true);
+          const res = await fetch(`${API}/api/clear-photos`, {
+            method: "POST",
+          });
+          const data = await res.json();
+          if (data.success) {
+            setModalConfig({
+              isOpen: true,
+              title: "Kamera Siap Dipakai",
+              category: "Pembersihan Selesai",
+              description: `Berhasil mengosongkan ${data.cleared} foto dari folder kamera aktif.`,
+              singleButton: true,
+              variant: "success",
+            });
+          } else {
+            setModalConfig({
+              isOpen: true,
+              title: "Gagal Mengosongkan",
+              category: "Kendala Sistem",
+              description: "Tidak dapat membersihkan foto dari folder kamera.",
+              singleButton: true,
+              variant: "warning",
+            });
+          }
+        } catch (err: any) {
+          setModalConfig({
+            isOpen: true,
+            title: "Gagal Menghubungi Server",
+            category: "Kendala Jaringan",
+            description: err.message,
+            singleButton: true,
+            variant: "warning",
+          });
+        } finally {
+          setClearingPhotos(false);
+        }
+      },
+    });
+  };
 
   const validate = () => {
     const newErrors: { name?: string; driveLink?: string; phone?: string } = {};
-    if (!name.trim()) newErrors.name = "Nama customer tidak boleh kosong";
-    if (!driveLink.trim())
-      newErrors.driveLink = "Link Google Drive tidak boleh kosong";
-    if (!phone.trim()) newErrors.phone = "Nomor telepon tidak boleh kosong";
+    if (!name.trim()) newErrors.name = "Nama customer wajib diisi";
+    if (!driveLink.trim()) newErrors.driveLink = "Link Google Drive wajib diisi";
+    if (!phone.trim()) newErrors.phone = "Nomor WhatsApp wajib diisi";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleGenerate = () => {
     if (!validate()) return;
-
     const msg = generateMessage(name.trim(), driveLink.trim());
-
-    // 🔥 normalize unicode
     setMessage(msg.normalize("NFC"));
   };
 
@@ -234,229 +319,266 @@ export function AdminMessagePage() {
 
   const handleWhatsApp = async () => {
     if (!message || !phone) return;
-
     const cleanNumber = phone.replace(/^0/, "");
     const number = `62${cleanNumber}`;
-
-    // Copy ke clipboard dulu
     await navigator.clipboard.writeText(message);
-
-    // Buka WhatsApp tanpa ?text parameter
     window.open(`https://wa.me/${number}`, "_blank");
   };
 
   return (
     <AdminLayout>
-      <div className="p-6 md:p-8 space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
+      <div className="w-full p-6 md:p-8 space-y-8">
+        {/* ── 1. HEADER & CONTROL ACTIONS ── */}
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 pb-6 border-b border-[#e8e8e8]">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-zinc-950 leading-tight">
-              Kirim Softcopy
+            <p className="text-[10px] tracking-[0.14em] text-[#999] uppercase font-medium">
+              PENGIRIMAN & CLOUD DISK
+            </p>
+            <h1 className="text-[28px] sm:text-[34px] font-semibold tracking-[-0.04em] text-[#202020] leading-[1.25] mt-1.5">
+              Pesan Softcopy & Google Drive
             </h1>
-            <p className="text-zinc-500 text-xs md:text-sm mt-0.5">
-              Generate pesan WhatsApp, monitor status Google Drive, dan kelola
-              sesi kamera
+            <p className="text-[13px] text-[#777] leading-[1.8] mt-1 max-w-2xl">
+              Generate format pesan WhatsApp, pantau antrean upload Google Drive, serta kelola sinkronisasi sesi kamera.
             </p>
           </div>
-          <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
+
+          <div className="flex items-center gap-2.5 shrink-0 flex-wrap">
             <button
+              type="button"
               onClick={() => setCameraImportOpen(true)}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-zinc-950 text-white hover:bg-zinc-800 rounded-lg text-xs font-semibold transition-colors shadow-2xs cursor-pointer"
-              title="Tarik foto otomatis dari kamera atau card reader"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#171717] text-white hover:bg-black rounded-[7px] text-[12px] font-medium transition-colors cursor-pointer shadow-xs"
             >
-              <Camera size={14} />
+              <Camera size={13} />
               <span>Tarik Foto Kamera</span>
             </button>
+
             <button
+              type="button"
               onClick={() => navigate("/admin/storage")}
-              className="inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-zinc-200 text-zinc-700 hover:bg-zinc-50 hover:text-zinc-950 rounded-lg text-xs font-medium transition-colors shadow-2xs cursor-pointer"
-              title="Buka Manajemen Storage untuk membersihkan memori disk PC"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white border border-[#e6e6e6] text-[#444] hover:bg-[#f6f6f6] hover:text-[#171717] rounded-[7px] text-[12px] font-medium transition-colors cursor-pointer"
             >
-              <HardDrive size={14} className="text-zinc-500" />
-              <span>Kelola Storage PC</span>
+              <HardDrive size={13} />
+              <span>Storage PC</span>
             </button>
+
             <button
+              type="button"
               onClick={handleClearPhotos}
               disabled={clearingPhotos}
-              className="inline-flex items-center gap-2 px-3.5 py-2 bg-white border border-zinc-200 text-zinc-700 hover:bg-zinc-50 hover:text-zinc-950 rounded-lg text-xs font-medium transition-colors shadow-2xs cursor-pointer disabled:opacity-50"
-              title="Kosongkan kamera aktif tanpa mengganggu proses upload Google Drive"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white border border-[#e6e6e6] text-[#444] hover:bg-[#f6f6f6] hover:text-[#171717] rounded-[7px] text-[12px] font-medium transition-colors cursor-pointer disabled:opacity-40"
+              title="Bersihkan folder jepretan kamera aktif untuk sesi customer baru"
             >
-              <Camera size={14} className="text-zinc-500" />
-              <span>
-                {clearingPhotos
-                  ? "Mengosongkan..."
-                  : "Kosongkan Kamera (Sesi Baru)"}
-              </span>
+              <RefreshCw size={13} className={clearingPhotos ? "animate-spin" : ""} />
+              <span>{clearingPhotos ? "Mengosongkan..." : "Reset Kamera"}</span>
             </button>
           </div>
         </div>
 
-        <div className="w-full space-y-6">
-          {/* ── GOOGLE DRIVE AUTH STATUS BANNER ── */}
+        {/* ── 2. 4 EXECUTIVE STATUS METRICS ── */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="bg-white border border-[#e8e8e8] rounded-[10px] p-5 space-y-3">
+            <span className="text-[12px] font-medium text-[#777]">Koneksi Google Drive</span>
+            <div>
+              <div className="text-[22px] font-semibold text-[#171717] tracking-tight flex items-center gap-2">
+                <span
+                  className={`w-2 h-2 rounded-full ${
+                    gdriveAuthStatus?.connected ? "bg-[#10b981]" : "bg-[#f59e0b]"
+                  }`}
+                />
+                <span>
+                  {gdriveAuthStatus?.connected
+                    ? "Terhubung"
+                    : gdriveAuthStatus?.isTokenExpired
+                      ? "Perlu Login Ulang"
+                      : "Terputus"}
+                </span>
+              </div>
+              <p className="text-[11px] text-[#888] mt-0.5">
+                {gdriveAuthStatus?.connected
+                  ? `Folder cloud: ${gdriveAuthStatus.folderName || "Aktif"}`
+                  : "Token kedaluwarsa atau server offline"}
+              </p>
+            </div>
+            <div className="pt-2 border-t border-[#f2f2f2] flex items-center justify-between text-[11px] text-[#888]">
+              <span>Otorisasi: {gdriveAuthStatus?.connected ? "Valid" : "Perlu Aksi"}</span>
+            </div>
+          </div>
+
+          <div className="bg-white border border-[#e8e8e8] rounded-[10px] p-5 space-y-3">
+            <span className="text-[12px] font-medium text-[#777]">Antrean Upload Disk</span>
+            <div>
+              <div className="text-[26px] font-semibold text-[#171717] font-mono tracking-tight">
+                {pendingQueue.length}
+                <span className="text-[14px] text-[#888] font-normal font-sans ml-1">sesi</span>
+              </div>
+              <p className="text-[11px] text-[#888] mt-0.5">
+                {pendingQueue.length > 0
+                  ? "Tersimpan aman di folder antrean lokal"
+                  : "Seluruh foto telah terunggah ke cloud"}
+              </p>
+            </div>
+            <div className="pt-2 border-t border-[#f2f2f2] flex items-center justify-between text-[11px] text-[#888]">
+              <span>Staging Antrean: Aman</span>
+            </div>
+          </div>
+
+          <div className="bg-white border border-[#e8e8e8] rounded-[10px] p-5 space-y-3">
+            <span className="text-[12px] font-medium text-[#777]">Sesi Customer Terakhir</span>
+            <div>
+              <div className="text-[22px] font-semibold text-[#171717] truncate tracking-tight">
+                {latestSession?.customerName || "Belum Ada"}
+              </div>
+              <p className="text-[11px] text-[#888] mt-0.5 truncate">
+                {latestSession?.webViewLink ? "Link Drive siap dibagikan" : "Menunggu sesi Kiosk"}
+              </p>
+            </div>
+            <div className="pt-2 border-t border-[#f2f2f2] flex items-center justify-between text-[11px] text-[#888]">
+              <span>Status: {latestSession?.webViewLink ? "Tersedia" : "Standby"}</span>
+            </div>
+          </div>
+
+          <div className="bg-white border border-[#e8e8e8] rounded-[10px] p-5 space-y-3">
+            <span className="text-[12px] font-medium text-[#777]">Format Pesan WhatsApp</span>
+            <div>
+              <div className="text-[22px] font-semibold text-[#171717] tracking-tight">
+                {message ? "Pesan Siap" : "Form Input"}
+              </div>
+              <p className="text-[11px] text-[#888] mt-0.5">
+                {message ? "Teks telah digenerate" : "Lengkapi form customer"}
+              </p>
+            </div>
+            <div className="pt-2 border-t border-[#f2f2f2] flex items-center justify-between text-[11px] text-[#888]">
+              <span>Auto-copy clipboard: Aktif</span>
+            </div>
+          </div>
+        </div>
+
+        {/* ── 3. GOOGLE DRIVE BANNERS & LIVE UPLOAD PROGRESS ── */}
+        <div className="space-y-4">
+          {/* Drive Auth Warning Banner */}
           {gdriveAuthStatus && !gdriveAuthStatus.connected && (
-            <div className="bg-amber-50 border-2 border-amber-300 rounded-xl p-4.5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs">
-              <div className="flex items-start gap-3">
-                <div className="w-9 h-9 rounded-lg bg-amber-100 flex items-center justify-center text-amber-700 shrink-0 mt-0.5">
-                  <AlertTriangle size={18} />
-                </div>
-                <div>
-                  <h4 className="text-sm font-bold text-amber-950">
+            <div className="p-5 border border-[#e8e8e8] rounded-[10px] bg-[#fafafa] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-[#f59e0b]" />
+                  <strong className="text-[14px] font-semibold text-[#202020]">
                     {gdriveAuthStatus.isTokenExpired
                       ? "Token Google Drive Kedaluwarsa (Perlu Login Ulang)"
                       : "Koneksi Google Drive Terputus"}
-                  </h4>
-                  <p className="text-xs text-amber-800 mt-0.5 leading-relaxed">
-                    {gdriveAuthStatus.isTokenExpired
-                      ? "Masa aktif login Google Drive telah habis (7 hari limit mode testing). Klik tombol di samping untuk login ulang agar foto sesi otomatis ter-upload ke Google Drive."
-                      : `Koneksi Google Drive bermasalah: ${gdriveAuthStatus.error || "Periksa koneksi internet"}. Foto customer saat ini aman disimpan di antrian lokal PC.`}
-                  </p>
+                  </strong>
                 </div>
+                <p className="text-[12px] text-[#777] mt-1 leading-[1.6] max-w-2xl">
+                  {gdriveAuthStatus.isTokenExpired
+                    ? "Masa aktif login Google Drive telah habis. Klik tombol di samping untuk login ulang agar foto sesi otomatis ter-upload ke Google Drive pelanggan."
+                    : `Koneksi Google Drive bermasalah (${gdriveAuthStatus.error || "Periksa koneksi internet"}). Foto sesi saat ini aman disimpan di antrean lokal PC.`}
+                </p>
               </div>
+
               <button
                 type="button"
                 onClick={handleTriggerAuth}
                 disabled={authorizingDrive}
-                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-semibold text-xs rounded-lg transition-colors shrink-0 shadow-xs cursor-pointer disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#171717] text-white hover:bg-black rounded-[7px] text-[12px] font-medium transition-colors cursor-pointer shrink-0 disabled:opacity-50 shadow-xs"
               >
-                <ExternalLink size={14} />
-                <span>
-                  {authorizingDrive
-                    ? "Membuka Browser..."
-                    : "Login Ulang Google Drive"}
-                </span>
+                <ExternalLink size={13} />
+                <span>{authorizingDrive ? "Membuka Browser..." : "Login Ulang Drive"}</span>
               </button>
             </div>
           )}
 
-          {/* ── PENDING QUEUE BANNER ── */}
+          {/* Pending Queue Banner */}
           {pendingQueue.length > 0 && (
-            <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-4.5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs">
-              <div className="flex items-start gap-3">
-                <div className="w-9 h-9 rounded-lg bg-blue-100 flex items-center justify-center text-blue-700 shrink-0 mt-0.5">
-                  <HardDrive size={18} />
+            <div className="p-5 border border-[#e8e8e8] rounded-[10px] bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-[#0284c7]" />
+                  <strong className="text-[14px] font-semibold text-[#202020]">
+                    Ada {pendingQueue.length} Antrean Sesi Foto di Disk PC
+                  </strong>
                 </div>
-                <div>
-                  <h4 className="text-sm font-bold text-blue-950">
-                    Ada {pendingQueue.length} Antrian Sesi Foto Tersimpan di
-                    Disk PC
-                  </h4>
-                  <p className="text-xs text-blue-800 mt-0.5 leading-relaxed">
-                    Foto dari sesi customer sebelumnya (
-                    {pendingQueue
-                      .map(
-                        (q) =>
-                          `${q.sessionInfo?.customerName || q.folderName} (${q.fileCount} foto)`,
-                      )
-                      .join(", ")}
-                    ) tersimpan aman di disk lokal PC dan siap diunggah ke
-                    Google Drive.
-                  </p>
-                </div>
+                <p className="text-[12px] text-[#777] mt-1 leading-[1.6]">
+                  Foto dari sesi customer sebelumnya tersimpan aman di disk lokal PC dan siap diunggah ke Google Drive.
+                </p>
               </div>
+
               <button
                 type="button"
                 onClick={handleUploadPendingQueue}
                 disabled={uploadingQueue || !gdriveAuthStatus?.connected}
-                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-lg transition-colors shrink-0 shadow-xs cursor-pointer disabled:opacity-50"
-                title={
-                  !gdriveAuthStatus?.connected
-                    ? "Harap login ulang Google Drive terlebih dahulu"
-                    : "Unggah semua antrian sesi sekarang"
-                }
+                className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#171717] text-white hover:bg-black rounded-[7px] text-[12px] font-medium transition-colors cursor-pointer shrink-0 disabled:opacity-40 shadow-xs"
               >
-                <span>
-                  {uploadingQueue
-                    ? "Mengunggah Antrian..."
-                    : "Unggah Antrian ke Drive"}
-                </span>
+                <HardDrive size={13} />
+                <span>{uploadingQueue ? "Mengunggah Antrean..." : "Unggah Antrean ke Drive"}</span>
               </button>
             </div>
           )}
 
-          {/* ── LIVE UPLOAD STATUS PANEL ── */}
+          {/* Live Upload Status Panel */}
           {uploadStatus && uploadStatus.total > 0 && (
-            <div className="bg-white border border-zinc-200 rounded-xl p-5 shadow-xs">
-              <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
-                <div className="flex items-center gap-2.5">
-                  <span className="relative flex h-2.5 w-2.5">
-                    {uploadStatus.isUploading && (
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                    )}
-                    <span
-                      className={`relative inline-flex rounded-full h-2.5 w-2.5 ${
-                        uploadStatus.isUploading
-                          ? "bg-amber-500"
-                          : "bg-emerald-500"
-                      }`}
-                    ></span>
-                  </span>
-                  <h3 className="text-xs font-semibold text-zinc-950">
+            <div className="bg-white border border-[#e8e8e8] rounded-[10px] p-5 space-y-3">
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <div className="flex items-center gap-2">
+                  <span
+                    className={`w-2 h-2 rounded-full ${
+                      uploadStatus.isUploading ? "bg-[#f59e0b]" : "bg-[#10b981]"
+                    }`}
+                  />
+                  <h3 className="text-[13px] font-semibold text-[#202020]">
                     {uploadStatus.isUploading
                       ? "Status Upload Google Drive (Live)"
                       : "Upload Google Drive Selesai (100%)"}
                   </h3>
                 </div>
+
                 <div className="flex items-center gap-2">
-                  <span className="text-[11px] font-medium bg-zinc-50 text-zinc-600 px-2.5 py-0.5 rounded-md border border-zinc-200">
-                    📁 {uploadStatus.folderName}
+                  <span className="text-[11px] font-mono text-[#555] bg-[#f5f5f5] px-2 py-0.5 rounded-[4px]">
+                    {uploadStatus.folderName}
                   </span>
-                  <span
-                    className={`text-[11px] font-mono font-medium px-2 py-0.5 rounded-md ${
-                      uploadStatus.isUploading
-                        ? "bg-amber-50 text-amber-800 border border-amber-200"
-                        : "bg-emerald-50 text-emerald-800 border border-emerald-200"
-                    }`}
-                  >
-                    {uploadStatus.uploaded} / {uploadStatus.total} File (
-                    {uploadStatus.percent}%)
+                  <span className="text-[11px] font-mono text-[#202020] font-medium">
+                    {uploadStatus.uploaded} / {uploadStatus.total} File ({uploadStatus.percent}%)
                   </span>
                 </div>
               </div>
 
               {/* Progress Bar */}
-              <div className="space-y-1.5">
-                <div className="w-full bg-zinc-100 h-2 rounded-full overflow-hidden border border-zinc-200/60">
-                  <div
-                    className={`h-full transition-all duration-300 rounded-full ${
-                      uploadStatus.isUploading
-                        ? "bg-zinc-900"
-                        : "bg-emerald-600"
-                    }`}
-                    style={{ width: `${Math.max(uploadStatus.percent, 3)}%` }}
-                  />
-                </div>
-                <div className="flex justify-between items-center text-[11px] text-zinc-500 mt-1">
-                  <span>
-                    {uploadStatus.isUploading
-                      ? `Sedang mengunggah: ${uploadStatus.currentFile || "..."}`
-                      : "✓ Semua foto telah berhasil tersimpan di Google Drive!"}
-                  </span>
-                  <span className="font-mono">
-                    {uploadStatus.uploaded} dari {uploadStatus.total} file
-                    selesai
-                  </span>
-                </div>
-                <div className="mt-3 pt-2.5 border-t border-zinc-100 flex items-center justify-between text-[11px] text-zinc-400">
-                  <span className="flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                    Antrian Staging Terisolasi: File foto aman dari pembersihan
-                    kamera sesi berikutnya.
-                  </span>
-                </div>
+              <div className="w-full bg-[#f0f0f0] h-1.5 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-[#171717] transition-all duration-300 rounded-full"
+                  style={{ width: `${Math.max(uploadStatus.percent, 3)}%` }}
+                />
+              </div>
+
+              <div className="flex justify-between items-center text-[11px] text-[#888]">
+                <span>
+                  {uploadStatus.isUploading
+                    ? `Mengunggah: ${uploadStatus.currentFile || "..."}`
+                    : "Semua foto berhasil terunggah ke Google Drive."}
+                </span>
+                <span className="font-mono">
+                  {uploadStatus.uploaded} dari {uploadStatus.total} file
+                </span>
               </div>
             </div>
           )}
+        </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-            {/* ── FORM ── */}
-            <div className="bg-white border border-zinc-200 rounded-xl p-5 md:p-6 shadow-xs">
-              <h2 className="text-sm font-semibold text-zinc-950 mb-4">
+        {/* ── 4. TWO-COLUMN: INPUT FORM (6 cols) & WA PREVIEW (6 cols) ── */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          {/* Column 1: Input Data Customer (6 cols) */}
+          <div className="lg:col-span-6 bg-white border border-[#e8e8e8] rounded-[12px] p-6 sm:p-8 space-y-6">
+            <div className="pb-4 border-b border-[#f0f0f0]">
+              <h2 className="text-[17px] font-semibold text-[#202020] tracking-[-0.02em]">
                 Input Data Customer
               </h2>
+              <p className="text-[13px] text-[#888] leading-[1.7] mt-0.5">
+                Masukkan identitas dan link folder Google Drive untuk generate pesan softcopy.
+              </p>
+            </div>
 
+            <div className="space-y-4 text-[13px]">
               {/* Nama Customer */}
-              <div className="mb-4">
-                <label className="block text-xs font-medium mb-1.5 text-zinc-700">
+              <div>
+                <label className="font-medium text-[#444] mb-1.5 block text-[12px]">
                   Nama Customer
                 </label>
                 <input
@@ -464,27 +586,24 @@ export function AdminMessagePage() {
                   value={name}
                   onChange={(e) => {
                     setName(e.target.value);
-                    if (errors.name)
-                      setErrors((p) => ({ ...p, name: undefined }));
+                    if (errors.name) setErrors((p) => ({ ...p, name: undefined }));
                   }}
-                  placeholder="Contoh: Sari"
-                  className={`w-full border rounded-lg px-3 py-2 text-xs font-medium outline-none transition-colors ${
+                  placeholder="Contoh: Sarah"
+                  className={`w-full px-3 py-2 border rounded-[7px] text-[13px] outline-none transition-colors ${
                     errors.name
-                      ? "border-rose-400 bg-rose-50/50"
-                      : "border-zinc-200 focus:border-zinc-400 bg-white"
+                      ? "border-[#ef4444] bg-[#fef2f2]"
+                      : "border-[#e0e0e0] focus:border-[#171717] bg-white"
                   }`}
                 />
                 {errors.name && (
-                  <p className="text-rose-600 text-[11px] mt-1 font-medium">
-                    {errors.name}
-                  </p>
+                  <p className="text-[#dc2626] text-[11px] mt-1 font-medium">{errors.name}</p>
                 )}
               </div>
 
               {/* Link Google Drive */}
-              <div className="mb-4">
+              <div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <label className="text-xs font-medium text-zinc-700">
+                  <label className="font-medium text-[#444] text-[12px]">
                     Link Google Drive
                   </label>
                   {latestSession?.webViewLink && (
@@ -492,13 +611,11 @@ export function AdminMessagePage() {
                       type="button"
                       onClick={() => {
                         setDriveLink(latestSession.webViewLink || "");
-                        if (latestSession.customerName)
-                          setName(latestSession.customerName);
+                        if (latestSession.customerName) setName(latestSession.customerName);
                       }}
-                      className="text-[11px] bg-zinc-100 hover:bg-zinc-200 text-zinc-800 font-medium px-2 py-0.5 rounded-md border border-zinc-200 transition-colors cursor-pointer"
+                      className="text-[11px] text-[#555] hover:text-[#171717] bg-[#f5f5f5] hover:bg-[#eaeaea] px-2 py-0.5 rounded-[4px] border border-[#e2e2e2] transition-colors cursor-pointer"
                     >
-                      ⚡ Sesi Terakhir (
-                      {latestSession.customerName || "Tanpa Nama"})
+                      ⚡ Isi dari Sesi Terakhir ({latestSession.customerName || "Customer"})
                     </button>
                   )}
                 </div>
@@ -507,30 +624,27 @@ export function AdminMessagePage() {
                   value={driveLink}
                   onChange={(e) => {
                     setDriveLink(e.target.value);
-                    if (errors.driveLink)
-                      setErrors((p) => ({ ...p, driveLink: undefined }));
+                    if (errors.driveLink) setErrors((p) => ({ ...p, driveLink: undefined }));
                   }}
-                  placeholder="https://drive.google.com/..."
-                  className={`w-full border rounded-lg px-3 py-2 text-xs font-medium outline-none transition-colors ${
+                  placeholder="https://drive.google.com/drive/folders/..."
+                  className={`w-full px-3 py-2 border rounded-[7px] text-[13px] outline-none font-mono transition-colors ${
                     errors.driveLink
-                      ? "border-rose-400 bg-rose-50/50"
-                      : "border-zinc-200 focus:border-zinc-400 bg-white"
+                      ? "border-[#ef4444] bg-[#fef2f2]"
+                      : "border-[#e0e0e0] focus:border-[#171717] bg-white"
                   }`}
                 />
                 {errors.driveLink && (
-                  <p className="text-rose-600 text-[11px] mt-1 font-medium">
-                    {errors.driveLink}
-                  </p>
+                  <p className="text-[#dc2626] text-[11px] mt-1 font-medium">{errors.driveLink}</p>
                 )}
               </div>
 
               {/* Nomor WhatsApp */}
-              <div className="mb-5">
-                <label className="block text-xs font-medium mb-1.5 text-zinc-700">
+              <div>
+                <label className="font-medium text-[#444] mb-1.5 block text-[12px]">
                   Nomor WhatsApp Customer
                 </label>
-                <div className="flex items-center border border-zinc-200 rounded-lg overflow-hidden bg-white focus-within:border-zinc-400">
-                  <span className="bg-zinc-50 border-r border-zinc-200 px-3 py-2 text-xs font-mono font-medium text-zinc-500 shrink-0">
+                <div className="flex items-center border border-[#e0e0e0] focus-within:border-[#171717] rounded-[7px] overflow-hidden bg-white">
+                  <span className="bg-[#f7f7f7] border-r border-[#e0e0e0] px-3 py-2 text-[12px] font-mono text-[#666] shrink-0 font-medium">
                     +62
                   </span>
                   <input
@@ -539,147 +653,145 @@ export function AdminMessagePage() {
                     onChange={(e) => {
                       const val = e.target.value.replace(/\D/g, "");
                       setPhone(val);
-                      if (errors.phone)
-                        setErrors((p) => ({ ...p, phone: undefined }));
+                      if (errors.phone) setErrors((p) => ({ ...p, phone: undefined }));
                     }}
                     placeholder="81234567890"
-                    className={`flex-1 px-3 py-2 text-xs font-medium outline-none ${
-                      errors.phone ? "bg-rose-50/50" : ""
-                    }`}
+                    className="flex-1 px-3 py-2 text-[13px] outline-none font-mono"
                   />
                 </div>
                 {errors.phone && (
-                  <p className="text-rose-600 text-[11px] mt-1 font-medium">
-                    {errors.phone}
-                  </p>
+                  <p className="text-[#dc2626] text-[11px] mt-1 font-medium">{errors.phone}</p>
                 )}
-                <p className="text-[11px] text-zinc-400 mt-1">
-                  Tanpa angka 0 di depan. Contoh: 81234567890
+                <p className="text-[11px] text-[#888] mt-1">
+                  Ketik tanpa angka 0 di depan (contoh: 81234567890)
                 </p>
               </div>
 
               {/* Generate Button */}
               <button
+                type="button"
                 onClick={handleGenerate}
-                className="w-full py-2.5 bg-zinc-900 text-white hover:bg-black transition-colors rounded-lg text-xs font-medium shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
+                className="w-full py-2.5 bg-[#171717] text-white hover:bg-black rounded-[7px] text-[12px] font-medium transition-colors cursor-pointer shadow-xs"
               >
-                <span>Generate Pesan</span>
+                <span>Generate Format Pesan</span>
               </button>
 
-              {/* Action Buttons */}
+              {/* Quick Actions after generated */}
               {message && (
-                <div className="flex gap-2.5 mt-3 pt-3 border-t border-zinc-100">
+                <div className="flex gap-2.5 pt-3 border-t border-[#f0f0f0]">
                   <button
+                    type="button"
                     onClick={handleCopy}
-                    className="flex-1 py-2 text-xs font-medium border border-zinc-200 rounded-lg bg-white text-zinc-800 hover:bg-zinc-50 transition-colors flex items-center justify-center gap-1.5 shadow-xs cursor-pointer"
+                    className="flex-1 py-2 text-[12px] font-medium border border-[#e2e2e2] rounded-[7px] bg-white text-[#333] hover:bg-[#f6f6f6] hover:text-[#171717] transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
                   >
                     {copied ? (
                       <>
-                        <Check
-                          size={14}
-                          strokeWidth={2.5}
-                          className="text-emerald-600"
-                        />
-                        <span className="text-emerald-700 font-semibold">
-                          Tersalin!
-                        </span>
+                        <Check size={13} className="text-[#10b981]" />
+                        <span className="text-[#10b981] font-semibold">Tersalin</span>
                       </>
                     ) : (
                       <>
-                        <Copy size={13} strokeWidth={2} />
-                        <span>Copy Pesan</span>
+                        <Copy size={13} />
+                        <span>Salin Pesan</span>
                       </>
                     )}
                   </button>
 
                   <button
+                    type="button"
                     onClick={handleWhatsApp}
-                    className="flex-1 py-2 text-xs font-medium rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition-colors shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
+                    className="flex-1 py-2 text-[12px] font-medium rounded-[7px] bg-[#10b981] text-white hover:bg-[#059669] transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
                   >
-                    <MessageCircle size={14} strokeWidth={2} />
+                    <Send size={13} />
                     <span>Buka WhatsApp</span>
                   </button>
                 </div>
               )}
-              {message && (
-                <p className="text-[11px] text-zinc-500 font-medium mt-2 text-center">
-                  Pesan otomatis disalin ke clipboard saat membuka WhatsApp
-                </p>
-              )}
-            </div>
-
-            {/* ── PREVIEW ── */}
-            <div className="bg-white border border-zinc-200 rounded-xl p-5 md:p-6 shadow-xs">
-              <h2 className="text-sm font-semibold text-zinc-950 mb-4">
-                Preview Pesan WhatsApp
-              </h2>
-
-              {message ? (
-                <div className="space-y-3">
-                  {/* WhatsApp-style bubble */}
-                  <div className="bg-zinc-50 border border-zinc-200 rounded-xl p-4">
-                    {/* WA header */}
-                    <div className="flex items-center gap-2.5 pb-2.5 mb-2.5 border-b border-zinc-200">
-                      <div className="w-7 h-7 bg-zinc-900 rounded-full flex items-center justify-center shrink-0">
-                        <span className="text-white text-[10px] font-bold">
-                          IS
-                        </span>
-                      </div>
-                      <div>
-                        <p className="font-semibold text-xs text-zinc-950 leading-tight">
-                          Ignos Studio
-                        </p>
-                        <p className="text-[10px] text-zinc-400">
-                          Pesan Keluar
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Message bubble */}
-                    <div className="bg-white border border-zinc-200/80 rounded-xl rounded-tl-none p-3.5 shadow-xs">
-                      <p className="text-xs leading-relaxed whitespace-pre-line text-zinc-800 font-normal">
-                        {message}
-                      </p>
-                      <p className="text-[10px] text-zinc-400 text-right mt-2 font-mono">
-                        {new Date().toLocaleTimeString("id-ID", {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Raw text area for easy copy */}
-                  <div>
-                    <label className="text-[11px] font-medium text-zinc-400 mb-1 block">
-                      Teks Mentah:
-                    </label>
-                    <textarea
-                      readOnly
-                      value={message}
-                      rows={6}
-                      className="w-full border border-zinc-200 rounded-lg px-3 py-2 text-xs font-mono text-zinc-700 bg-zinc-50 resize-none outline-none leading-relaxed"
-                    />
-                  </div>
-                </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center min-h-[260px] text-zinc-400 border border-dashed border-zinc-200 rounded-xl bg-zinc-50/50 text-center p-6">
-                  <MessageCircle
-                    size={32}
-                    strokeWidth={1.5}
-                    className="mb-2 text-zinc-300"
-                  />
-                  <p className="font-medium text-xs text-zinc-700">
-                    Pesan belum digenerate
-                  </p>
-                  <p className="text-[11px] text-zinc-400 mt-0.5">
-                    Lengkapi form di samping lalu klik "Generate Pesan"
-                  </p>
-                </div>
-              )}
             </div>
           </div>
+
+          {/* Column 2: WhatsApp Preview (6 cols) */}
+          <div className="lg:col-span-6 bg-white border border-[#e8e8e8] rounded-[12px] p-6 sm:p-8 space-y-6">
+            <div className="pb-4 border-b border-[#f0f0f0]">
+              <h2 className="text-[17px] font-semibold text-[#202020] tracking-[-0.02em]">
+                Pratinjau Pesan WhatsApp
+              </h2>
+              <p className="text-[13px] text-[#888] leading-[1.7] mt-0.5">
+                Simulasi tampilan teks yang akan diterima oleh customer di ponsel mereka.
+              </p>
+            </div>
+
+            {message ? (
+              <div className="space-y-4">
+                {/* Bubble Container */}
+                <div className="bg-[#f7f7f7] border border-[#e8e8e8] rounded-[10px] p-4">
+                  {/* Sender Header */}
+                  <div className="flex items-center gap-2.5 pb-2.5 mb-2.5 border-b border-[#e2e2e2]">
+                    <div className="w-7 h-7 bg-[#171717] rounded-full flex items-center justify-center shrink-0">
+                      <span className="text-white text-[10px] font-semibold">IG</span>
+                    </div>
+                    <div>
+                      <p className="font-semibold text-[13px] text-[#202020] leading-tight">
+                        Ignos Studio
+                      </p>
+                      <p className="text-[10px] text-[#888]">Pesan Keluar</p>
+                    </div>
+                  </div>
+
+                  {/* Message Bubble */}
+                  <div className="bg-white border border-[#e0e0e0] rounded-[10px] rounded-tl-none p-4 shadow-2xs">
+                    <p className="text-[12px] leading-relaxed whitespace-pre-line text-[#202020]">
+                      {message}
+                    </p>
+                    <p className="text-[10px] text-[#999] text-right mt-2 font-mono">
+                      {new Date().toLocaleTimeString("id-ID", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Raw Textbox */}
+                <div>
+                  <label className="text-[11px] font-medium text-[#777] mb-1 block">
+                    Teks Mentah (Clipboard):
+                  </label>
+                  <textarea
+                    readOnly
+                    value={message}
+                    rows={6}
+                    className="w-full border border-[#e0e0e0] rounded-[7px] px-3 py-2 text-[12px] font-mono text-[#444] bg-[#fafafa] resize-none outline-none leading-relaxed"
+                  />
+                </div>
+              </div>
+            ) : (
+              <div className="py-20 text-center space-y-2 border border-dashed border-[#e5e5e5] rounded-[10px] bg-[#fafafa] p-6">
+                <p className="text-[14px] font-medium text-[#202020]">
+                  Pesan belum digenerate
+                </p>
+                <p className="text-[12px] text-[#888] max-w-sm mx-auto">
+                  Lengkapi nama customer, link Google Drive, dan nomor WhatsApp di form sebelah kiri, lalu klik tombol "Generate Format Pesan".
+                </p>
+              </div>
+            )}
+          </div>
         </div>
+
+        {/* ── Standard Admin Confirmation Modal Conforming to GEMINI.md Rule 5 ── */}
+        <AdminConfirmModal
+          isOpen={modalConfig.isOpen}
+          onClose={() => setModalConfig((prev) => ({ ...prev, isOpen: false }))}
+          onConfirm={modalConfig.onConfirm}
+          title={modalConfig.title}
+          category={modalConfig.category}
+          description={modalConfig.description}
+          confirmText={modalConfig.confirmText}
+          cancelText={modalConfig.cancelText}
+          isDangerous={modalConfig.isDangerous}
+          variant={modalConfig.variant}
+          singleButton={modalConfig.singleButton}
+        />
       </div>
 
       <CameraImportModal

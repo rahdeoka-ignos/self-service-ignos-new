@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { Trans, useTranslation } from "react-i18next";
 import { useKioskTheme } from "../../../context/KioskThemeContext";
+import { usePricing } from "../../../context/PricingContext";
 
 type KeychainOrder = {
   id: string;
@@ -62,6 +63,14 @@ export function CompletePage() {
     const ctx = useKioskTheme();
     theme = ctx.theme;
     if (theme.studioName) studioName = theme.studioName;
+  } catch {}
+
+  let softcopyCharge = 25000;
+  try {
+    const { pricing } = usePricing();
+    if (pricing?.session?.softcopyCharge != null) {
+      softcopyCharge = pricing.session.softcopyCharge;
+    }
   } catch {}
 
   const autoUploadReceipt = async () => {
@@ -382,7 +391,7 @@ export function CompletePage() {
           coupleMode,
           joinedBonus,
           makeStory,
-          extraCharge: location.state?.extraCharge ?? (makeStory ? 0 : 25000),
+          extraCharge: location.state?.extraCharge ?? (makeStory ? 0 : softcopyCharge),
           totalPrint,
           regularPrint,
           bonusPrint,

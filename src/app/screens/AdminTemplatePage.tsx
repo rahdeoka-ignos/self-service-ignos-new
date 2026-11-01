@@ -1,8 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router";
-import { Layers, Pencil, Plus, Trash2 } from "lucide-react";
+import { Plus, Pencil, Trash2, RefreshCw, Search } from "lucide-react";
 import { ImageWithFallback } from "../components/figma/ImageWithFallback";
 import { AdminLayout } from "../components/AdminLayout";
+import { AdminConfirmModal } from "../components/AdminConfirmModal";
+import { usePageTitle } from "../../hooks/usePageTitle";
 import type {
   TemplateEntry,
   TemplatesData,
@@ -10,22 +12,33 @@ import type {
 
 const API = "http://localhost:5000";
 
-// ── Main Page ────────────────────────────────────────────────
 export function AdminTemplatePage() {
+  usePageTitle("Kelola Template Foto — Ignos");
   const navigate = useNavigate();
+
   const [data, setData] = useState<TemplatesData | null>(null);
+  const [loading, setLoading] = useState(false);
   const [activeCategory, setActiveCategory] = useState("basic");
   const [deleteConfirm, setDeleteConfirm] = useState<TemplateEntry | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [layoutFilter, setLayoutFilter] = useState<string>("all");
 
-  const fetchData = () => {
-    fetch(`${API}/api/templates`)
-      .then((r) => r.json())
-      .then((d: TemplatesData) => {
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch(`${API}/api/templates`);
+      if (res.ok) {
+        const d: TemplatesData = await res.json();
         setData(d);
         if (!d.templates[activeCategory] && d.categories.length > 0) {
           setActiveCategory(d.categories[0].id);
         }
-      });
+      }
+    } catch (err) {
+      console.error("Gagal memuat template:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -33,170 +46,307 @@ export function AdminTemplatePage() {
   }, []);
 
   const handleDelete = async (tpl: TemplateEntry) => {
-    await fetch(`${API}/api/templates/${tpl.id}?deleteFiles=false`, {
-      method: "DELETE",
-    });
-    setDeleteConfirm(null);
-    fetchData();
+    try {
+      await fetch(`${API}/api/templates/${tpl.id}?deleteFiles=false`, {
+        method: "DELETE",
+      });
+      setDeleteConfirm(null);
+      fetchData();
+    } catch (err) {
+      console.error("Gagal menghapus template:", err);
+    }
   };
 
-  const currentTemplates = data?.templates[activeCategory] || [];
-  const totalTemplates = data
-    ? Object.values(data.templates).reduce((s, arr) => s + arr.length, 0)
-    : 0;
+  const totalTemplates = useMemo(() => {
+    if (!data) return 0;
+    return Object.values(data.templates).reduce((sum, list) => sum + list.length, 0);
+  }, [data]);
+
+  const customLayoutCount = useMemo(() => {
+    if (!data) return 0;
+    return Object.values(data.templates)
+      .flat()
+      .filter((t) => t.layout === "custom").length;
+  }, [data]);
+
+  const standardLayoutCount = useMemo(() => {
+    return totalTemplates - customLayoutCount;
+  }, [totalTemplates, customLayoutCount]);
+
+  const currentCategoryObj = useMemo(() => {
+    return data?.categories.find((c) => c.id === activeCategory);
+  }, [data, activeCategory]);
+
+  const filteredTemplates = useMemo(() => {
+    if (!data) return [];
+    let list = data.templates[activeCategory] || [];
+
+    if (layoutFilter === "custom") {
+      list = list.filter((t) => t.layout === "custom");
+    } else if (layoutFilter === "builtin") {
+      list = list.filter((t) => t.layout !== "custom");
+    }
+
+    if (!searchQuery.trim()) return list;
+    const q = searchQuery.toLowerCase();
+    return list.filter((t) => t.name.toLowerCase().includes(q));
+  }, [data, activeCategory, layoutFilter, searchQuery]);
 
   return (
     <AdminLayout>
-      <div className="p-6 md:p-8 space-y-6">
-        {/* ── Page Header ── */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
+      <div className="w-full p-6 md:p-8 space-y-8">
+        {/* ── 1. HEADER & ACTIONS ── */}
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 pb-6 border-b border-[#e8e8e8]">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-zinc-950 leading-tight">
-              Template Manager
+            <p className="text-[10px] tracking-[0.14em] text-[#999] uppercase font-medium">
+              KATALOG & TATA LETAK FOTO
+            </p>
+            <h1 className="text-[28px] sm:text-[34px] font-semibold tracking-[-0.04em] text-[#202020] leading-[1.25] mt-1.5">
+              Koleksi Template Bilik
             </h1>
-            <p className="text-zinc-500 text-xs md:text-sm mt-0.5">
-              Kelola semua tata letak dan desain template foto Ignos Studio
+            <p className="text-[13px] text-[#777] leading-[1.8] mt-1 max-w-2xl">
+              Atur desain frame grafis, slot penempatan foto, serta layout cetak yang tersedia untuk customer di bilik foto.
             </p>
           </div>
-          <button
-            onClick={() => navigate("/admin/templates/new")}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-zinc-900 text-white font-medium rounded-lg hover:bg-black transition-colors text-xs shadow-xs cursor-pointer"
-          >
-            <Plus size={14} strokeWidth={2} />
-            <span>Tambah Template</span>
-          </button>
-        </div>
 
-        {/* ── Stats Bar ── */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="bg-white border border-zinc-200 rounded-xl p-4 shadow-xs hover:border-zinc-300 transition-colors">
-            <p className="text-[11px] font-medium text-zinc-500 uppercase tracking-wider">Total Template</p>
-            <p className="text-2xl md:text-3xl font-bold text-zinc-950 mt-1">{totalTemplates}</p>
-          </div>
-          <div className="bg-white border border-zinc-200 rounded-xl p-4 shadow-xs hover:border-zinc-300 transition-colors">
-            <p className="text-[11px] font-medium text-zinc-500 uppercase tracking-wider">Kategori</p>
-            <p className="text-2xl md:text-3xl font-bold text-zinc-950 mt-1">{data?.categories.length ?? 0}</p>
-          </div>
-          <div className="bg-white border border-zinc-200 rounded-xl p-4 shadow-xs hover:border-zinc-300 transition-colors">
-            <p className="text-[11px] font-medium text-zinc-500 uppercase tracking-wider">Custom Layout</p>
-            <p className="text-2xl md:text-3xl font-bold text-zinc-950 mt-1">
-              {data
-                ? Object.values(data.templates)
-                    .flat()
-                    .filter((t) => t.layout === "custom").length
-                : 0}
-            </p>
-          </div>
-        </div>
-
-        {/* ── Category Tabs ── */}
-        <div className="flex gap-1.5 border-b border-zinc-200 pb-3 flex-wrap">
-          {data?.categories.map((cat) => (
+          <div className="flex items-center gap-2.5 shrink-0">
             <button
-              key={cat.id}
-              onClick={() => setActiveCategory(cat.id)}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 font-medium rounded-lg transition-colors text-xs cursor-pointer ${
-                activeCategory === cat.id
-                  ? "bg-zinc-900 text-white shadow-xs"
-                  : "text-zinc-600 hover:text-zinc-950 hover:bg-zinc-100"
-              }`}
+              type="button"
+              onClick={fetchData}
+              disabled={loading}
+              className="w-[34px] h-[34px] rounded-[7px] border border-[#e6e6e6] bg-white hover:bg-[#f6f6f6] inline-flex items-center justify-center text-[#666] cursor-pointer transition-colors"
+              title="Segarkan data template"
             >
-              <Layers size={13} strokeWidth={2} />
-              <span>{cat.name}</span>
-              <span
-                className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full font-medium ${
-                  activeCategory === cat.id
-                    ? "bg-white/20 text-white"
-                    : "bg-zinc-100 text-zinc-500"
-                }`}
-              >
-                {data?.templates[cat.id]?.length ?? 0}
-              </span>
+              <RefreshCw size={13} className={loading ? "animate-spin text-[#888]" : "text-[#888]"} />
             </button>
-          ))}
-        </div>
 
-        {/* ── Template Grid ── */}
-        {!data ? (
-          <div className="flex items-center justify-center py-32">
-            <div className="text-center">
-              <div className="w-8 h-8 border-2 border-zinc-900 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-              <p className="text-sm font-medium text-zinc-500">Memuat template...</p>
-            </div>
-          </div>
-        ) : currentTemplates.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 border border-dashed border-zinc-300 rounded-xl bg-white text-center p-6">
-            <div className="w-12 h-12 bg-zinc-100 rounded-xl flex items-center justify-center mb-3 text-zinc-400">
-              <Layers size={22} strokeWidth={1.75} />
-            </div>
-            <p className="text-sm font-semibold text-zinc-800 mb-1">Belum ada template</p>
-            <p className="text-xs text-zinc-400 mb-4">Tambahkan template pertama untuk kategori ini</p>
             <button
+              type="button"
               onClick={() => navigate("/admin/templates/new")}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-zinc-900 text-white font-medium rounded-lg hover:bg-black transition-colors text-xs cursor-pointer shadow-xs"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#171717] text-white hover:bg-black rounded-[7px] text-[12px] font-medium transition-colors cursor-pointer shadow-xs"
             >
-              <Plus size={14} strokeWidth={2} />
-              Tambah Template Pertama
+              <Plus size={13} />
+              <span>Tambah Template</span>
             </button>
+          </div>
+        </div>
+
+        {/* ── 2. 4 EXECUTIVE KPI CARDS ── */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="bg-white border border-[#e8e8e8] rounded-[10px] p-5 space-y-3">
+            <span className="text-[12px] font-medium text-[#777]">Total Desain Frame</span>
+            <div>
+              <div className="text-[26px] font-semibold text-[#171717] font-mono tracking-tight">
+                {totalTemplates}
+                <span className="text-[14px] text-[#888] font-normal font-sans ml-1">desain</span>
+              </div>
+              <p className="text-[11px] text-[#888] mt-0.5">
+                Akumulasi seluruh kategori aktif
+              </p>
+            </div>
+            <div className="pt-2 border-t border-[#f2f2f2] flex items-center justify-between text-[11px] text-[#888]">
+              <span>Format Cetak 4R (2400×3600px)</span>
+            </div>
+          </div>
+
+          <div className="bg-white border border-[#e8e8e8] rounded-[10px] p-5 space-y-3">
+            <span className="text-[12px] font-medium text-[#777]">Kategori Bilik Foto</span>
+            <div>
+              <div className="text-[26px] font-semibold text-[#171717] font-mono tracking-tight">
+                {data?.categories.length ?? 0}
+                <span className="text-[14px] text-[#888] font-normal font-sans ml-1">grup</span>
+              </div>
+              <p className="text-[11px] text-[#888] mt-0.5">
+                Pilihan tema untuk pengunjung
+              </p>
+            </div>
+            <div className="pt-2 border-t border-[#f2f2f2] flex items-center justify-between text-[11px] text-[#888]">
+              <span>Kategori: {currentCategoryObj?.name || "Semua"}</span>
+            </div>
+          </div>
+
+          <div className="bg-white border border-[#e8e8e8] rounded-[10px] p-5 space-y-3">
+            <span className="text-[12px] font-medium text-[#777]">Custom Layout Canvas</span>
+            <div>
+              <div className="text-[26px] font-semibold text-[#171717] font-mono tracking-tight">
+                {customLayoutCount}
+                <span className="text-[14px] text-[#888] font-normal font-sans ml-1">frame</span>
+              </div>
+              <p className="text-[11px] text-[#888] mt-0.5">
+                Slot koordinat presisi & rotasi bebas
+              </p>
+            </div>
+            <div className="pt-2 border-t border-[#f2f2f2] flex items-center justify-between text-[11px] text-[#888]">
+              <span>Kanvas Interaktif</span>
+            </div>
+          </div>
+
+          <div className="bg-white border border-[#e8e8e8] rounded-[10px] p-5 space-y-3">
+            <span className="text-[12px] font-medium text-[#777]">Grid Standar Otomatis</span>
+            <div>
+              <div className="text-[26px] font-semibold text-[#171717] font-mono tracking-tight">
+                {standardLayoutCount}
+                <span className="text-[14px] text-[#888] font-normal font-sans ml-1">frame</span>
+              </div>
+              <p className="text-[11px] text-[#888] mt-0.5">
+                Susunan 1, 2, 4, 6, 8 slot foto
+              </p>
+            </div>
+            <div className="pt-2 border-t border-[#f2f2f2] flex items-center justify-between text-[11px] text-[#888]">
+              <span>Distribusi simetris</span>
+            </div>
+          </div>
+        </div>
+
+        {/* ── 3. CATEGORY TABS (TYPOGRAPHY-FIRST) & FILTER BAR ── */}
+        <div className="border-b border-[#e8e8e8] flex flex-col md:flex-row md:items-center justify-between gap-4">
+          {/* Typography-First Navigation Tabs conforming to GEMINI.md Rule 2 */}
+          <div className="flex items-center gap-6 overflow-x-auto scrollbar-none">
+            {data?.categories.map((cat) => {
+              const count = data.templates[cat.id]?.length ?? 0;
+              const isActive = activeCategory === cat.id;
+              return (
+                <button
+                  key={cat.id}
+                  type="button"
+                  onClick={() => {
+                    setActiveCategory(cat.id);
+                    setSearchQuery("");
+                  }}
+                  className={`pb-3 text-[14px] transition-colors cursor-pointer whitespace-nowrap ${
+                    isActive
+                      ? "border-b-2 border-[#171717] font-semibold text-[#171717]"
+                      : "border-b-2 border-transparent font-medium text-[#777] hover:text-[#171717]"
+                  }`}
+                >
+                  {cat.name}
+                  <span className="ml-1.5 text-[11px] font-mono text-[#999]">({count})</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Quick Filter & Search */}
+          <div className="flex items-center gap-2.5 pb-2.5 shrink-0">
+            <div className="flex items-center gap-2 border border-[#e0e0e0] focus-within:border-[#171717] rounded-[7px] px-3 py-1.5 bg-white text-[12px] transition-colors w-full sm:w-56">
+              <Search size={13} className="text-[#999] shrink-0" />
+              <input
+                type="search"
+                placeholder="Cari nama template..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full border-0 outline-none text-[#202020] placeholder:text-[#aaa] text-[12px] p-0"
+              />
+            </div>
+
+            <select
+              value={layoutFilter}
+              onChange={(e) => setLayoutFilter(e.target.value)}
+              className="border border-[#e0e0e0] focus:border-[#171717] rounded-[7px] px-3 py-1.5 text-[12px] text-[#444] bg-white outline-none cursor-pointer"
+            >
+              <option value="all">Semua Layout</option>
+              <option value="custom">Custom Slot Saja</option>
+              <option value="builtin">Grid Standar</option>
+            </select>
+          </div>
+        </div>
+
+        {/* ── 4. TEMPLATE CARDS GRID ── */}
+        {!data && loading ? (
+          <div className="py-24 text-center space-y-2">
+            <div className="w-6 h-6 border-2 border-[#171717] border-t-transparent rounded-full animate-spin mx-auto" />
+            <p className="text-[13px] text-[#888]">Memuat daftar template...</p>
+          </div>
+        ) : filteredTemplates.length === 0 ? (
+          <div className="py-20 text-center space-y-3 border border-dashed border-[#e5e5e5] rounded-[10px] bg-white p-8">
+            <p className="text-[15px] font-medium text-[#202020]">Belum ada template yang sesuai</p>
+            <p className="text-[13px] text-[#888] max-w-md mx-auto">
+              {searchQuery || layoutFilter !== "all"
+                ? "Tidak ada template yang cocok dengan filter atau kata kunci pencarian Anda."
+                : `Kategori "${currentCategoryObj?.name || activeCategory}" belum memiliki template foto aktif.`}
+            </p>
+            {searchQuery || layoutFilter !== "all" ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setSearchQuery("");
+                  setLayoutFilter("all");
+                }}
+                className="inline-flex items-center gap-1 text-[12px] font-medium text-[#171717] hover:underline cursor-pointer"
+              >
+                Reset filter pencarian
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => navigate("/admin/templates/new")}
+                className="mt-2 inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#171717] text-white hover:bg-black rounded-[7px] text-[12px] font-medium transition-colors cursor-pointer shadow-xs"
+              >
+                <Plus size={13} />
+                <span>Tambah Template Pertama</span>
+              </button>
+            )}
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-            {currentTemplates.map((tpl) => (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-5">
+            {filteredTemplates.map((tpl) => (
               <div
                 key={tpl.id}
-                className="bg-white border border-zinc-200 rounded-xl overflow-hidden shadow-xs hover:border-zinc-300 hover:shadow-sm transition-all group flex flex-col justify-between"
+                className="bg-white border border-[#e8e8e8] hover:border-[#cfcfcf] rounded-[10px] overflow-hidden shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between group"
               >
-                {/* Preview image */}
-                <div className="aspect-[2/3] bg-zinc-100 border-b border-zinc-100 overflow-hidden relative">
+                {/* Preview Frame (4R 2:3 ratio) */}
+                <div className="aspect-[2/3] bg-[#f5f5f5] relative overflow-hidden flex items-center justify-center border-b border-[#f0f0f0]">
                   <ImageWithFallback
                     src={tpl.previewTemplate}
                     alt={tpl.name}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-300"
                   />
-                  {/* Layout badge */}
+
+                  {/* Layout Badge */}
                   <div className="absolute top-2 left-2">
-                    <span className="text-[10px] font-semibold bg-zinc-900/80 backdrop-blur-xs text-white px-1.5 py-0.5 rounded uppercase tracking-wider">
-                      {tpl.layout}
+                    <span className="text-[10px] font-medium font-mono bg-[#171717]/85 backdrop-blur-xs text-white px-2 py-0.5 rounded-[4px] uppercase tracking-wider">
+                      {tpl.layout === "custom" ? "Custom" : `${tpl.layout} Slot`}
                     </span>
                   </div>
-                  {/* Overlay indicator */}
+
+                  {/* Overlay Tag */}
                   {tpl.overlay && (
                     <div className="absolute top-2 right-2">
-                      <span className="text-[10px] font-semibold bg-white/90 backdrop-blur-xs border border-zinc-200 text-zinc-800 px-1.5 py-0.5 rounded shadow-xs">
-                        OVL
+                      <span className="text-[10px] font-medium bg-white/90 backdrop-blur-xs border border-[#e2e2e2] text-[#333] px-1.5 py-0.5 rounded-[4px]">
+                        Overlay
                       </span>
                     </div>
                   )}
                 </div>
 
-                {/* Card body */}
-                <div className="p-3">
-                  <p className="font-semibold text-xs text-zinc-950 truncate mb-0.5">{tpl.name}</p>
-                  {tpl.slots ? (
-                    <p className="text-[11px] text-zinc-500 font-medium mb-2.5">
-                      {tpl.slots.length} custom slot
+                {/* Details & Actions */}
+                <div className="p-3.5 space-y-3">
+                  <div>
+                    <h3 className="font-medium text-[13px] text-[#202020] truncate" title={tpl.name}>
+                      {tpl.name}
+                    </h3>
+                    <p className="text-[11px] text-[#888] font-mono mt-0.5">
+                      {tpl.slots ? `${tpl.slots.length} custom slot` : "Built-in layout"}
                     </p>
-                  ) : (
-                    <p className="text-[11px] text-zinc-400 font-normal mb-2.5">
-                      Built-in layout
-                    </p>
-                  )}
+                  </div>
 
                   {/* Actions */}
-                  <div className="flex gap-1.5 pt-1 border-t border-zinc-100">
+                  <div className="flex items-center gap-1.5 pt-2 border-t border-[#f2f2f2]">
                     <button
+                      type="button"
                       onClick={() => navigate(`/admin/templates/edit/${tpl.id}`)}
-                      className="flex-1 flex items-center justify-center gap-1 border border-zinc-200 rounded-md py-1 text-xs font-medium text-zinc-700 hover:bg-zinc-50 hover:text-zinc-950 transition-colors cursor-pointer"
+                      className="flex-1 inline-flex items-center justify-center gap-1.5 py-1.5 px-2 bg-white hover:bg-[#f6f6f6] border border-[#e2e2e2] text-[#333] hover:text-[#171717] text-[12px] font-medium rounded-[6px] transition-colors cursor-pointer"
                     >
-                      <Pencil size={11} strokeWidth={2} />
-                      Edit
+                      <Pencil size={11} />
+                      <span>Edit</span>
                     </button>
                     <button
+                      type="button"
                       onClick={() => setDeleteConfirm(tpl)}
-                      className="flex items-center justify-center border border-zinc-200 rounded-md px-2 py-1 text-xs font-medium text-zinc-400 hover:text-rose-600 hover:border-rose-200 hover:bg-rose-50 transition-colors cursor-pointer"
+                      className="w-7 h-7 inline-flex items-center justify-center border border-[#e2e2e2] hover:border-[#fca5a5] hover:bg-[#fef2f2] text-[#999] hover:text-[#dc2626] rounded-[6px] transition-colors cursor-pointer"
                       title="Hapus template"
                     >
-                      <Trash2 size={12} strokeWidth={2} />
+                      <Trash2 size={12} />
                     </button>
                   </div>
                 </div>
@@ -204,39 +354,21 @@ export function AdminTemplatePage() {
             ))}
           </div>
         )}
-      </div>
 
-      {/* ── Delete Confirm Modal ── */}
-      {deleteConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
-          <div className="bg-white border border-zinc-200 rounded-2xl shadow-xl p-6 max-w-sm w-full animate-fadeIn">
-            <div className="w-10 h-10 bg-rose-50 border border-rose-200 rounded-xl flex items-center justify-center mb-3">
-              <Trash2 size={18} className="text-rose-600" strokeWidth={2} />
-            </div>
-            <h3 className="text-base font-semibold text-zinc-950 mb-1">Hapus Template?</h3>
-            <p className="text-xs text-zinc-600 mb-1">
-              Template <strong>&ldquo;{deleteConfirm.name}&rdquo;</strong> akan dihapus dari daftar sistem.
-            </p>
-            <p className="text-[11px] text-zinc-400 mb-5">
-              File gambar di folder /public/templates/ tidak akan terhapus secara fisik.
-            </p>
-            <div className="flex gap-2">
-              <button
-                className="flex-1 bg-rose-600 text-white rounded-lg text-xs font-medium hover:bg-rose-700 py-2 transition-colors cursor-pointer shadow-xs"
-                onClick={() => handleDelete(deleteConfirm)}
-              >
-                Ya, Hapus
-              </button>
-              <button
-                className="flex-1 bg-white text-zinc-800 border border-zinc-200 rounded-lg text-xs font-medium hover:bg-zinc-50 py-2 transition-colors cursor-pointer"
-                onClick={() => setDeleteConfirm(null)}
-              >
-                Batal
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+        {/* ── Standard Admin Confirmation Modal conforming to GEMINI.md Rule 5 ── */}
+        <AdminConfirmModal
+          isOpen={!!deleteConfirm}
+          onClose={() => setDeleteConfirm(null)}
+          onConfirm={() => deleteConfirm && handleDelete(deleteConfirm)}
+          title={`Hapus Template "${deleteConfirm?.name}"?`}
+          category="Konfirmasi Hapus Template"
+          description={`Template foto ini akan dihapus dari daftar pilihan Kiosk untuk kategori "${currentCategoryObj?.name || activeCategory}". File template master di server tidak akan terhapus fisik.`}
+          confirmText="Hapus Template"
+          cancelText="Batal"
+          isDangerous={true}
+          variant="danger"
+        />
+      </div>
     </AdminLayout>
   );
 }

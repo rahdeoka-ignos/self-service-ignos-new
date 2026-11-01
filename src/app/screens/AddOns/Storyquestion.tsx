@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { BrutalistButton } from "../../components/BrutalistButton";
 import { Trans, useTranslation } from "react-i18next";
+import { usePricing } from "../../../context/PricingContext";
 
 export function StoryQuestion() {
   const navigate = useNavigate();
@@ -21,6 +22,8 @@ export function StoryQuestion() {
   const serviceId: string = location.state?.serviceId ?? "photo-box";
   const coupleMode: boolean = location.state?.coupleMode ?? false;
   const keychainOrders = location.state?.orders ?? [];
+  const { pricing, formatPrice } = usePricing();
+  const softcopyCharge = pricing?.session?.softcopyCharge ?? 25000;
 
   console.log("StoryQuestion peopleCount:", peopleCount);
   console.log("Full state:", location.state);
@@ -94,17 +97,12 @@ export function StoryQuestion() {
         customerName:
           choice === "yes" ? (usernames[0]?.trim() || "") : trimmedCustomerName,
         instagramUsernames: finalUsernames,
-        extraCharge: choice === "no" ? 25000 : 0,
+        extraCharge: choice === "no" ? softcopyCharge : 0,
       },
     });
   };
 
-  const formatPrice = (price: number) =>
-    new Intl.NumberFormat("id-ID", {
-      style: "currency",
-      currency: "IDR",
-      maximumFractionDigits: 0,
-    }).format(price);
+// formatPrice provided by usePricing
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -212,7 +210,7 @@ export function StoryQuestion() {
                 className={`text-lg font-bold px-5 py-2 border-2 rounded-full transition-colors mt-1
                 ${choice === "no" ? "border-white text-white" : "border-black group-hover:border-white"}`}
               >
-                + {formatPrice(25000)}
+                + {formatPrice(softcopyCharge)}
               </span>
             </button>
           </div>
@@ -299,7 +297,7 @@ export function StoryQuestion() {
                     {t("story.extraCharge.description")}
                   </p>
                 </div>
-                <p className="text-4xl font-bold">{formatPrice(25000)}</p>
+                <p className="text-4xl font-bold">{formatPrice(softcopyCharge)}</p>
               </div>
 
               {/* Customer Name input */}

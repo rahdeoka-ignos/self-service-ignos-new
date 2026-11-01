@@ -375,13 +375,22 @@ app.post("/api/upload-session-gdrive", async (req, res) => {
     const minutes = now.getMinutes().toString().padStart(2, "0");
     const timeStr = `${hours}.${minutes}`;
 
+    const pricing = readPricing();
     const addonsTotal = (miscAddons || []).reduce((sum, item) => {
-      const price = item.price || 15000;
-      return sum + (price * (item.qty || 1));
+      const price = Number(item.price) || 15000;
+      return sum + (price * (Number(item.qty) || 1));
     }, 0);
-    const a4Total = (Number(a4Count) || 0) * 20000;
-    const softcopyTotal = makeStory ? 0 : (Number(extraCharge) || 25000);
-    const sessionBasePrice = Number(basePrice) || 50000;
+    const singleA4Price = Number(pricing?.prints?.printA4Price) || 20000;
+    const a4Total = (Number(a4Count) || 0) * singleA4Price;
+    const defaultSoftcopyCharge = Number(pricing?.session?.softcopyCharge) || 25000;
+    const softcopyTotal = makeStory ? 0 : (extraCharge !== undefined ? Number(extraCharge) : defaultSoftcopyCharge);
+
+    const count = Number(peopleCount) || 1;
+    const incPeople = Number(pricing?.session?.includedPeople) || 2;
+    const extraPersonPrice = Number(pricing?.session?.extraPersonPrice) || 15000;
+    const extraPeopleCount = Math.max(0, count - incPeople);
+    const computedBasePrice = (Number(pricing?.session?.basePrice) || 50000) + (extraPeopleCount * extraPersonPrice);
+    const sessionBasePrice = basePrice !== undefined && basePrice !== null ? Number(basePrice) : computedBasePrice;
     const finalTotalPrice = sessionBasePrice + addonsTotal + a4Total + softcopyTotal;
 
     // ─── 1. SESSION STAGING QUEUE (ISOLASI FILE SESI PERTAMA KALI) ─────────
@@ -2437,6 +2446,93 @@ app.post("/api/kiosk-theme/reset", (req, res) => {
   writeKioskTheme(DEFAULT_KIOSK_THEME);
   res.json({ success: true, theme: DEFAULT_KIOSK_THEME });
 });
+
+// ─── PRICING CONFIG API ──────────────────────────────────────────
+const PRICING_JSON = path.join(SESSIONS_DIR, "pricing.json");
+
+const DEFAULT_PRICING = {
+  currency: "IDR",
+  currencySymbol: "Rp",
+  session: {
+    basePrice: 50000,
+    includedPeople: 2,
+    extraPersonPrice: 15000,
+    softcopyCharge: 25000,
+  },
+  prints: {
+    print4rPrice: 10000,
+    printA4Price: 20000,
+  },
+  keychains: [
+    { id: "kotak-plastik", name: "Kotak Plastik", subtitle: "Full Foto", price: 15000, enabled: true, image: "/addons/keychain-kotak-plastik.png" },
+    { id: "kotak-metal", name: "Kotak Metal", subtitle: "Full Foto", price: 30000, enabled: true, image: "/addons/keychain-kotak-metal.png" },
+    { id: "oval-metal", name: "Oval Metal", subtitle: "Full Foto", price: 30000, enabled: true, image: "/addons/keychain-oval-metal.png" },
+    { id: "love-metal", name: "Love Metal", subtitle: "Full Foto", price: 30000, enabled: true, image: "/addons/keychain-love-metal.png" },
+  ],
+  idCards: [
+    { id: "portrait-full", name: "ID Card Portrait", subtitle: "Full Foto", price: 35000, enabled: true, image: "/addons/idcard-portrait-full.png", orientation: "portrait" },
+    { id: "landscape-full", name: "ID Card Landscape", subtitle: "Full Foto", price: 35000, enabled: true, image: "/addons/idcard-landscape-full.png", orientation: "landscape" },
+    { id: "landscape-blue", name: "ID Card Landscape", subtitle: "Design Biru", price: 35000, enabled: true, image: "/addons/idcard-blue.png", orientation: "landscape" },
+    { id: "landscape-red", name: "ID Card Landscape", subtitle: "Design Merah", price: 35000, enabled: true, image: "/addons/idcard-red.png", orientation: "landscape" },
+  ],
+  addons: [
+    { id: "4r-print", title: "Cetak Foto 4R", price: 10000, enabled: true, description: "Cetak foto ukuran 4R dengan hasil tajam, warna akurat, dan kertas premium.", image: "/addons/cetak4r.mp4", path: "/people-count" },
+    { id: "10r-print", title: "Cetak Foto A4", price: 20000, enabled: true, description: "Cetak foto ukuran A4 (10R) dengan kualitas tinggi.", image: "/addons/cetaka4.mp4", path: "/people-count" },
+    { id: "keychain", title: "Gantungan Kunci", price: 15000, enabled: true, description: "Ubah foto favoritmu jadi gantungan kunci unik dan lucu.", image: "/addons/keychain.mp4", path: "/keychain" },
+    { id: "id-card", title: "ID Card", price: 35000, enabled: true, description: "Cetak foto menjadi ID card custom dengan desain menarik.", image: "/addons/idcard.mp4", path: "/id-card" },
+    { id: "bingkai-4r", title: "Bingkai 4R", price: 25000, enabled: true, description: "Percantik foto 4R dengan bingkai estetik siap pajang.", image: "/addons/bingkai4r.mp4", path: "/bingkai4r" },
+    { id: "bingkai-a4", title: "Bingkai A4", price: 40000, enabled: true, description: "Bingkai elegan untuk foto A4, cocok untuk dekorasi.", image: "/addons/bingkaia4.mp4", path: "/bingkaiA4" },
+    { id: "flower-hotwheels", title: "Flower Hotwheels", price: 45000, enabled: true, description: "Dekorasi unik dengan bunga / miniatur, cocok untuk hadiah spesial.", image: "/addons/hotwheel.mp4", path: "/flower-hotwheels" },
+    { id: "cetak-bingkai3d-10r", title: "Cetak Bingkai 3D 10R", price: 90000, enabled: true, description: "Foto 10R dengan efek bingkai 3D premium.", image: "/addons/bingkai3d.mp4", path: "/cetak-bingkai3d-10r" },
+    { id: "boneka-tabung", title: "Boneka Tabung", price: 60000, enabled: true, description: "Boneka custom dengan foto pilihan, cocok untuk kado.", image: "/addons/boneka.mp4", path: "/boneka-tabung" },
+    { id: "puzzle-foto", title: "Puzzle Foto", price: 90000, enabled: true, isPreorder: true, description: "Foto jadi puzzle seru, cocok untuk hadiah unik (PO).", image: "/addons/puzzel.mp4", path: "/puzzle-foto" },
+    { id: "photo-calender", title: "Photo Calender", price: 90000, enabled: true, isPreorder: false, description: "Photo Calender custom dengan foto pilihan.", image: "/addons/kalender.mp4", path: "/photo-calender" },
+    { id: "cermin-foto-3d", title: "Cermin Foto 3D", price: 70000, enabled: true, description: "Cermin custom dengan efek foto 3D yang estetik.", image: "/addons/cerminfoto.mp4", path: "/cermin-foto-3d" },
+  ],
+};
+
+function readPricing() {
+  if (!fs.existsSync(PRICING_JSON)) {
+    return DEFAULT_PRICING;
+  }
+  try {
+    return { ...DEFAULT_PRICING, ...JSON.parse(fs.readFileSync(PRICING_JSON, "utf-8")) };
+  } catch {
+    return DEFAULT_PRICING;
+  }
+}
+
+function writePricing(data) {
+  try {
+    if (!fs.existsSync(SESSIONS_DIR)) fs.mkdirSync(SESSIONS_DIR, { recursive: true });
+    fs.writeFileSync(PRICING_JSON, JSON.stringify(data, null, 2), "utf-8");
+  } catch (err) {
+    console.error("[Pricing] Gagal simpan pricing.json:", err);
+  }
+}
+
+app.get("/api/pricing", (req, res) => {
+  res.json(readPricing());
+});
+
+const savePricingHandler = (req, res) => {
+  try {
+    const updated = { ...readPricing(), ...req.body };
+    writePricing(updated);
+    res.json({ success: true, pricing: updated });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+app.put("/api/pricing", savePricingHandler);
+app.post("/api/pricing", savePricingHandler);
+
+app.post("/api/pricing/reset", (req, res) => {
+  writePricing(DEFAULT_PRICING);
+  res.json({ success: true, pricing: DEFAULT_PRICING });
+});
+
 
 // ─────────────────────────────────────────────────────────────
 

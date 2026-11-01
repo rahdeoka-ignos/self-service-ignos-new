@@ -4,41 +4,8 @@ import { BrutalistCard } from "../../components/BrutalistCard";
 import { BrutalistButton } from "../../components/BrutalistButton";
 import { Navigation } from "../../components/Navigation";
 import { Minus, Plus } from "lucide-react";
-
-const IDCARD_OPTIONS = [
-  {
-    id: "portrait-full",
-    name: "ID Card Portrait",
-    subtitle: "Full Foto",
-    price: 35000,
-    image: "/addons/idcard-portrait-full.png",
-    orientation: "portrait" as const,
-  },
-  {
-    id: "landscape-full",
-    name: "ID Card Landscape",
-    subtitle: "Full Foto",
-    price: 35000,
-    image: "/addons/idcard-landscape-full.png",
-    orientation: "landscape" as const,
-  },
-  {
-    id: "landscape-blue",
-    name: "ID Card Landscape",
-    subtitle: "Design Biru",
-    price: 35000,
-    image: "/addons/idcard-blue.png",
-    orientation: "landscape" as const,
-  },
-  {
-    id: "landscape-red",
-    name: "ID Card Landscape",
-    subtitle: "Design Merah",
-    price: 35000,
-    image: "/addons/idcard-red.png",
-    orientation: "landscape" as const,
-  },
-];
+import { usePricing } from "../../../context/PricingContext";
+import { DEFAULT_PRICING } from "../../../types/pricing";
 
 export type IdCardOrder = {
   id: string;
@@ -53,41 +20,39 @@ export type IdCardOrder = {
 export function IdCardOptions() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { pricing, formatPrice } = usePricing();
 
-  const [quantities, setQuantities] = useState<{ [id: string]: number }>(
-    Object.fromEntries(IDCARD_OPTIONS.map((o) => [o.id, 0])),
-  );
+  const idCardList = (
+    pricing?.idCards && pricing.idCards.length > 0
+      ? pricing.idCards
+      : DEFAULT_PRICING.idCards
+  ).filter((c) => c.enabled !== false);
+
+  const [quantities, setQuantities] = useState<{ [id: string]: number }>({});
 
   const setQty = (id: string, val: number) => {
     setQuantities((prev) => ({ ...prev, [id]: Math.max(0, val) }));
   };
 
-  const formatPrice = (price: number) =>
-    new Intl.NumberFormat("id-ID", {
-      style: "currency",
-      currency: "IDR",
-      maximumFractionDigits: 0,
-    }).format(price);
-
   const totalQty = Object.values(quantities).reduce((a, b) => a + b, 0);
 
-  const totalPrice = IDCARD_OPTIONS.reduce(
+  const totalPrice = idCardList.reduce(
     (sum, opt) => sum + opt.price * (quantities[opt.id] || 0),
     0,
   );
 
   const handleNext = () => {
-    const orders: IdCardOrder[] = IDCARD_OPTIONS.filter(
-      (opt) => quantities[opt.id] > 0,
-    ).map((opt) => ({
-      id: opt.id,
-      name: opt.name,
-      subtitle: opt.subtitle,
-      price: opt.price,
-      qty: quantities[opt.id],
-      image: opt.image,
-      orientation: opt.orientation,
-    }));
+    const orders: IdCardOrder[] = idCardList
+      .filter((opt) => (quantities[opt.id] || 0) > 0)
+      .map((opt) => ({
+        id: opt.id,
+        name: opt.name,
+        subtitle: opt.subtitle || "",
+        price: opt.price,
+        qty: quantities[opt.id] || 0,
+        image: opt.image || "",
+        orientation: opt.orientation || "portrait",
+      }));
 
     navigate("/idcard-arrangement", {
       state: {
@@ -115,8 +80,8 @@ export function IdCardOptions() {
 
           {/* Options Grid */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
-            {IDCARD_OPTIONS.map((opt) => {
-              const qty = quantities[opt.id];
+            {idCardList.map((opt) => {
+              const qty = quantities[opt.id] || 0;
               return (
                 <BrutalistCard
                   key={opt.id}
@@ -174,7 +139,7 @@ export function IdCardOptions() {
             <div className="border-4 border-black bg-white p-6 mb-8 rounded-xl">
               <h3 className="text-2xl font-bold mb-3">Ringkasan Pesanan</h3>
               <div className="space-y-2">
-                {IDCARD_OPTIONS.filter((o) => quantities[o.id] > 0).map(
+                {idCardList.filter((o) => (quantities[o.id] || 0) > 0).map(
                   (opt) => (
                     <div key={opt.id} className="flex justify-between text-xl">
                       <span>

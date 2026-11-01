@@ -14,6 +14,7 @@ import {
   HardDrive,
   Maximize2,
   Minimize2,
+  Tag,
 } from "lucide-react";
 import { CameraImportModal } from "./CameraImportModal";
 
@@ -23,6 +24,12 @@ const NAV_WORKSPACE = [
     label: "Dashboard",
     icon: LayoutDashboard,
     desc: "Ringkasan sesi & omset",
+  },
+  {
+    path: "/admin/pricing",
+    label: "Harga & Paket",
+    icon: Tag,
+    desc: "Tarif sesi & add-ons",
   },
   {
     path: "/admin/templates",
@@ -104,6 +111,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
 
   const getPageTitle = () => {
     if (location.pathname === "/admin") return "Dashboard";
+    if (location.pathname.startsWith("/admin/pricing")) return "Harga & Paket";
     if (location.pathname.startsWith("/admin/templates")) return "Templates";
     if (location.pathname.startsWith("/admin/kiosk-theme")) return "Tema & Alur Kiosk";
     if (location.pathname.startsWith("/admin/printers")) return "Printers";
@@ -113,7 +121,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <div className="flex h-screen bg-[#fafafa] overflow-hidden text-[#202020] antialiased font-['Manrope',sans-serif]">
+    <div className="fixed inset-0 flex bg-[#fafafa] overflow-hidden text-[#202020] antialiased font-['Manrope',sans-serif]">
       {/* ── Sidebar (Amara Villa Minimal Style) ── */}
       <aside className="w-[236px] bg-white border-r border-[#e8e8e8] flex flex-col shrink-0 h-full overflow-y-auto">
         {/* Brand row */}
@@ -193,10 +201,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
                     />
                     <span className="truncate">{label}</span>
                     {path === "/admin/printers" && printerAlert && (
-                      <span className="ml-auto bg-[#fee2e2] text-[#991b1b] border border-[#fecaca] text-[10px] font-medium px-1.5 py-0.2 rounded shrink-0 flex items-center gap-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#ef4444] animate-pulse" />
-                        Alert
-                      </span>
+                      <span className="ml-auto w-1.5 h-1.5 rounded-full bg-[#ef4444] shrink-0" title="Printer Perlu Perhatian" />
                     )}
                   </button>
                 );
@@ -281,10 +286,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
         {printerAlert && (
           <div className="bg-white border-b border-[#e8e8e8] px-6 md:px-8 py-2.5 flex items-center justify-between gap-4 text-[13px] shrink-0 transition-all">
             <div className="flex items-center gap-3 min-w-0">
-              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[5px] text-[10px] tracking-[0.06em] font-semibold bg-[#fee2e2] text-[#991b1b] border border-[#fecaca] uppercase shrink-0">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#ef4444] animate-pulse" />
-                Peringatan
-              </span>
+              <span className="w-2 h-2 rounded-full bg-[#ef4444] shrink-0" />
               <div className="flex items-center gap-2 min-w-0 truncate">
                 <strong className="text-[13px] font-semibold text-[#202020] shrink-0">
                   {printerAlert.title}

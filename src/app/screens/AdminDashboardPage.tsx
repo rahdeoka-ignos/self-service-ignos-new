@@ -1,9 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
 import {
-  Users,
-  Printer,
-  DollarSign,
-  Gift,
   Calendar,
   RefreshCw,
   Copy,
@@ -11,15 +7,12 @@ import {
   ExternalLink,
   Trash2,
   FileText,
-  Clock,
   Search,
   ArrowUpRight,
-  Info,
-  Camera,
-  ShoppingBag,
-  Sparkles,
 } from "lucide-react";
 import { AdminLayout } from "../components/AdminLayout";
+import { AdminConfirmModal } from "../components/AdminConfirmModal";
+import { usePageTitle } from "../../hooks/usePageTitle";
 import type { SessionsResponse, SessionRecord } from "../../types/session";
 
 const API = "http://localhost:5000";
@@ -55,6 +48,8 @@ function getInitials(name: string): string {
 }
 
 export function AdminDashboardPage() {
+  usePageTitle("Dashboard Operasional — Ignos");
+
   const todayStr = useMemo(() => {
     const now = new Date();
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
@@ -68,12 +63,30 @@ export function AdminDashboardPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [packageFilter, setPackageFilter] = useState<string>("all");
 
+  // Reusable modal state conforming to GEMINI.md
+  const [modalConfig, setModalConfig] = useState<{
+    isOpen: boolean;
+    title: string;
+    category?: string;
+    description: string;
+    confirmText?: string;
+    cancelText?: string;
+    isDangerous?: boolean;
+    variant?: "danger" | "warning" | "info" | "success";
+    singleButton?: boolean;
+    onConfirm?: () => Promise<void> | void;
+  }>({
+    isOpen: false,
+    title: "",
+    description: "",
+  });
+
   const greetingTime = useMemo(() => {
     const hour = new Date().getHours();
-    if (hour < 11) return "pagi";
-    if (hour < 15) return "siang";
-    if (hour < 18) return "sore";
-    return "malam";
+    if (hour < 11) return "Pagi";
+    if (hour < 15) return "Siang";
+    if (hour < 18) return "Sore";
+    return "Malam";
   }, []);
 
   const fetchSessions = async (date = selectedDate) => {
@@ -97,16 +110,43 @@ export function AdminDashboardPage() {
     return () => clearInterval(interval);
   }, [selectedDate]);
 
-  const handleDeleteSession = async (id: string, name: string) => {
-    if (!confirm(`Hapus riwayat sesi customer "${name}"?`)) return;
-    try {
-      const res = await fetch(`${API}/api/sessions/${id}`, { method: "DELETE" });
-      if (res.ok) {
-        fetchSessions(selectedDate);
-      }
-    } catch (err) {
-      alert("Gagal menghapus sesi: " + err);
-    }
+  const handleDeleteSession = (id: string, name: string) => {
+    setModalConfig({
+      isOpen: true,
+      title: `Hapus Sesi "${name}"?`,
+      category: "Konfirmasi Penghapusan Sesi",
+      description: `Riwayat transaksi sesi ID ${id} atas nama "${name}" akan dihapus permanen dari rekap lokal studio.`,
+      confirmText: "Hapus Sesi",
+      cancelText: "Batal",
+      isDangerous: true,
+      variant: "danger",
+      onConfirm: async () => {
+        try {
+          const res = await fetch(`${API}/api/sessions/${id}`, { method: "DELETE" });
+          if (res.ok) {
+            fetchSessions(selectedDate);
+          } else {
+            setModalConfig({
+              isOpen: true,
+              title: "Gagal Menghapus Sesi",
+              category: "Terjadi Kendala",
+              description: "Server tidak dapat menghapus file rekaman sesi ini. Coba periksa koneksi backend.",
+              singleButton: true,
+              variant: "warning",
+            });
+          }
+        } catch (err: any) {
+          setModalConfig({
+            isOpen: true,
+            title: "Koneksi Backend Terputus",
+            category: "Kendala Jaringan",
+            description: "Tidak dapat menghubungi server lokal port 5000: " + err.message,
+            singleButton: true,
+            variant: "warning",
+          });
+        }
+      },
+    });
   };
 
   const handleCopyWhatsAppText = () => {
@@ -141,7 +181,14 @@ export function AdminDashboardPage() {
 
   const handlePrintClosingReceipt = async () => {
     if (!data || data.sessions.length === 0) {
-      alert("Belum ada data sesi untuk dicetak struk rekapnya!");
+      setModalConfig({
+        isOpen: true,
+        title: "Belum Ada Transaksi",
+        category: "Struk Closing Kasir",
+        description: "Tidak ada riwayat sesi customer pada tanggal yang dipilih untuk dicetak struk rekapnya.",
+        singleButton: true,
+        variant: "info",
+      });
       return;
     }
     try {
@@ -197,7 +244,6 @@ export function AdminDashboardPage() {
       y += 6;
 
       drawRow("TOTAL OMSET:", formatRupiah(data.summary.totalOmset), true);
-
       y += 4;
       pdf.line(margin, y, W - margin, y);
       y += 6;
@@ -232,9 +278,23 @@ export function AdminDashboardPage() {
         body: formData,
       });
 
-      alert("Struk Rekap Shift berhasil dikirim ke printer struk!");
+      setModalConfig({
+        isOpen: true,
+        title: "Struk Berhasil Dikirim",
+        category: "Cetak Rekap Shift",
+        description: "File struk rekap harian telah berhasil dikirimkan ke antrian printer thermal kasir.",
+        singleButton: true,
+        variant: "success",
+      });
     } catch (err: any) {
-      alert("Gagal mencetak struk: " + err.message);
+      setModalConfig({
+        isOpen: true,
+        title: "Gagal Mencetak Struk",
+        category: "Kendala Printer",
+        description: "Terjadi kesalahan saat memproses cetak struk: " + err.message,
+        singleButton: true,
+        variant: "warning",
+      });
     } finally {
       setPrintingReceipt(false);
     }
@@ -272,501 +332,360 @@ export function AdminDashboardPage() {
 
   return (
     <AdminLayout>
-      <div className="w-full p-6 md:p-8 space-y-6">
-        {/* ── 1. GREETING & DATE (Amara: dash-heading) ── */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-1">
+      <div className="w-full p-6 md:p-8 space-y-8">
+        {/* ── 1. HEADER & CONTROL BAR ── */}
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 pb-6 border-b border-[#e8e8e8]">
           <div>
             <p className="text-[10px] tracking-[0.14em] text-[#999] uppercase font-medium">
-              A LITTLE CARE, IN EVERY DETAIL.
+              OPERASIONAL & LAPORAN HARIAN
             </p>
-            <h1 className="text-[28px] sm:text-[34px] font-semibold tracking-[-0.045em] text-[#202020] leading-[1.25] mt-1.5">
+            <h1 className="text-[28px] sm:text-[34px] font-semibold tracking-[-0.04em] text-[#202020] leading-[1.25] mt-1.5">
               Selamat {greetingTime}, Admin.
             </h1>
-            <p className="text-[13px] text-[#888] leading-[1.8] mt-1">
-              Ini ringkasan aktivitas sesi foto, pemakaian kertas, dan omset Ignos Studio. Semuanya dalam satu tempat.
+            <p className="text-[13px] text-[#777] leading-[1.8] mt-1 max-w-2xl">
+              Ringkasan performa penjualan, pemakaian lembar foto, serta log transaksi Kiosk hari ini.
             </p>
           </div>
 
-          {/* Date Indicator (Amara: dash-date) */}
-          <div className="flex items-center gap-2 text-[13px] text-[#666] bg-white border border-[#e8e8e8] rounded-[8px] px-3.5 py-2 shrink-0 self-start md:self-auto">
-            <Calendar size={15} strokeWidth={1.5} className="text-[#888]" />
-            <time className="font-medium text-[#444]">{formatDateIndo(selectedDate)}</time>
-            <span className="text-[11px] text-[#aaa] border-l border-[#ddd] pl-2 font-normal">WIB</span>
+          {/* Quick Date Selector & Action Buttons */}
+          <div className="flex items-center gap-2.5 flex-wrap shrink-0">
+            {/* Quick date pills */}
+            <div className="flex items-center gap-1 bg-[#f0f0f0] p-1 rounded-[7px] border border-[#e5e5e5]">
+              <button
+                type="button"
+                onClick={() => setSelectedDate(todayStr)}
+                className={`px-3 py-1.5 rounded-[5px] text-[12px] font-medium transition-colors cursor-pointer ${
+                  selectedDate === todayStr
+                    ? "bg-white text-[#171717] shadow-2xs font-semibold"
+                    : "text-[#666] hover:text-[#171717]"
+                }`}
+              >
+                Hari Ini
+              </button>
+              {data?.allAvailableDates
+                ?.filter((d) => d !== todayStr)
+                .slice(0, 2)
+                .map((d) => (
+                  <button
+                    key={d}
+                    type="button"
+                    onClick={() => setSelectedDate(d)}
+                    className={`px-3 py-1.5 rounded-[5px] text-[12px] font-medium transition-colors cursor-pointer ${
+                      selectedDate === d
+                        ? "bg-white text-[#171717] shadow-2xs font-semibold"
+                        : "text-[#666] hover:text-[#171717]"
+                    }`}
+                  >
+                    {d.slice(5)}
+                  </button>
+                ))}
+            </div>
+
+            {/* Date Picker Input */}
+            <label className="flex items-center gap-2 border border-[#e2e2e2] bg-white rounded-[7px] px-3 py-1.5 text-[12px] text-[#555] cursor-pointer hover:border-[#ccc] transition-colors">
+              <Calendar size={13} className="text-[#888]" />
+              <input
+                type="date"
+                value={selectedDate}
+                onChange={(e) => setSelectedDate(e.target.value)}
+                className="border-0 bg-transparent text-[12px] text-[#444] outline-none cursor-pointer p-0 font-medium"
+              />
+            </label>
+
+            {/* Salin WA */}
+            <button
+              type="button"
+              onClick={handleCopyWhatsAppText}
+              disabled={!data || data.sessions.length === 0}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white border border-[#e6e6e6] text-[#444] hover:bg-[#f6f6f6] hover:text-[#171717] rounded-[7px] text-[12px] font-medium transition-colors cursor-pointer disabled:opacity-40"
+              title="Salin rekap penjualan ke format pesan WhatsApp"
+            >
+              {copied ? <Check size={13} className="text-[#10b981]" /> : <Copy size={13} />}
+              <span>{copied ? "Tersalin" : "Salin WA"}</span>
+            </button>
+
+            {/* Cetak Struk */}
+            <button
+              type="button"
+              onClick={handlePrintClosingReceipt}
+              disabled={printingReceipt || !data || data.sessions.length === 0}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#171717] text-white hover:bg-black rounded-[7px] text-[12px] font-medium transition-colors cursor-pointer disabled:opacity-40 shadow-xs"
+              title="Cetak struk rekap shift ke printer kasir"
+            >
+              <FileText size={13} />
+              <span>{printingReceipt ? "Mencetak..." : "Cetak Struk"}</span>
+            </button>
+
+            {/* Refresh Button */}
+            <button
+              type="button"
+              onClick={() => fetchSessions(selectedDate)}
+              disabled={loading}
+              className="w-[34px] h-[34px] rounded-[7px] border border-[#e6e6e6] bg-white hover:bg-[#f6f6f6] inline-flex items-center justify-center text-[#666] cursor-pointer transition-colors"
+              title="Segarkan data sesi"
+            >
+              <RefreshCw size={13} className={loading ? "animate-spin text-[#888]" : "text-[#888]"} />
+            </button>
           </div>
         </div>
 
-        {/* ── 2. SYSTEM NOTICE BANNER (Amara: demo-notice) ── */}
-        <div className="flex items-center gap-2.5 border border-[#e8e8e8] rounded-[9px] px-3.5 py-2.5 bg-white text-[13px] text-[#888] leading-[1.8]">
-          <Info size={15} strokeWidth={1.5} className="text-[#888] shrink-0" />
-          <p className="min-w-0 truncate">
-            <strong className="font-medium text-[#333]">Mode Operasional Kiosk.</strong>{" "}
-            Data transaksi, pemakaian kertas, dan tautan Google Drive otomatis tersinkronisasi saat sesi customer selesai.
-          </p>
-          <span className="text-[10px] tracking-[0.08em] text-[#777] ml-auto uppercase font-medium whitespace-nowrap pl-4 hidden sm:inline">
-            LIVE TERMINAL
-          </span>
-        </div>
-
-        {/* ── 3. OVERVIEW CONTROLS (Amara: overview-top) ── */}
-        <section aria-label="Ringkasan Harian" className="space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-1">
-            <div className="flex items-center gap-3">
-              <h2 className="text-[18px] font-semibold text-[#202020] tracking-[-0.03em]">
-                Ringkasan Harian
-              </h2>
-              <span className="text-[13px] text-[#999] border-l border-[#ddd] pl-3">
-                {formatDateIndo(selectedDate)}
-              </span>
-            </div>
-
-            <div className="flex items-center gap-2.5 flex-wrap">
-              {/* Quick Date Buttons */}
-              <div className="flex items-center gap-1 bg-[#f4f4f4] p-1 rounded-[7px] border border-[#e8e8e8]">
-                <button
-                  type="button"
-                  onClick={() => setSelectedDate(todayStr)}
-                  className={`px-2.5 py-1 rounded-[5px] text-[12px] font-medium transition-colors cursor-pointer ${
-                    selectedDate === todayStr
-                      ? "bg-white text-[#202020] shadow-xs"
-                      : "text-[#666] hover:text-[#171717]"
-                  }`}
-                >
-                  Hari Ini
-                </button>
-                {data?.allAvailableDates
-                  ?.filter((d) => d !== todayStr)
-                  .slice(0, 2)
-                  .map((d) => (
-                    <button
-                      key={d}
-                      type="button"
-                      onClick={() => setSelectedDate(d)}
-                      className={`px-2.5 py-1 rounded-[5px] text-[12px] font-medium transition-colors cursor-pointer ${
-                        selectedDate === d
-                          ? "bg-white text-[#202020] shadow-xs"
-                          : "text-[#666] hover:text-[#171717]"
-                      }`}
-                    >
-                      {d.slice(5)}
-                    </button>
-                  ))}
-              </div>
-
-              {/* Period Field Date Picker (Amara: period-field) */}
-              <label className="flex items-center gap-2 border border-[#e2e2e2] bg-white rounded-[7px] px-2.5 py-1 text-[13px] text-[#555] cursor-pointer hover:border-[#ccc] transition-colors">
-                <Calendar size={14} strokeWidth={1.5} className="text-[#888]" />
-                <input
-                  type="date"
-                  value={selectedDate}
-                  onChange={(e) => setSelectedDate(e.target.value)}
-                  className="border-0 bg-transparent text-[13px] text-[#555] outline-none cursor-pointer p-0"
-                />
-              </label>
-
-              {/* Salin WA Button */}
-              <button
-                type="button"
-                onClick={handleCopyWhatsAppText}
-                disabled={!data || data.sessions.length === 0}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-[#e6e6e6] text-[#333] hover:bg-[#f4f4f4] hover:text-[#171717] rounded-[7px] text-[12px] font-medium transition-colors cursor-pointer disabled:opacity-40"
-                title="Salin rekap ke format WhatsApp"
-              >
-                {copied ? <Check size={13} strokeWidth={2} /> : <Copy size={13} strokeWidth={1.5} />}
-                <span>{copied ? "Tersalin" : "Salin WA"}</span>
-              </button>
-
-              {/* Cetak Struk Rekap */}
-              <button
-                type="button"
-                onClick={handlePrintClosingReceipt}
-                disabled={printingReceipt || !data || data.sessions.length === 0}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#171717] text-white hover:bg-black rounded-[7px] text-[12px] font-medium transition-colors cursor-pointer disabled:opacity-40"
-                title="Cetak struk rekap thermal 80mm"
-              >
-                <FileText size={13} strokeWidth={1.5} />
-                <span>{printingReceipt ? "Mencetak..." : "Cetak Struk"}</span>
-              </button>
-
-              {/* Refresh Button (Amara: dash-icon-button) */}
-              <button
-                type="button"
-                onClick={() => fetchSessions(selectedDate)}
-                disabled={loading}
-                className="w-[32px] h-[32px] rounded-full border border-[#e6e6e6] bg-white hover:bg-[#f4f4f4] inline-flex items-center justify-center text-[#666] cursor-pointer transition-colors"
-                title="Perbarui data"
-              >
-                <RefreshCw size={14} strokeWidth={1.5} className={loading ? "animate-spin" : ""} />
-              </button>
-            </div>
-          </div>
-
-          {/* ── 4. 4 METRIC CARDS (Amara: metric-grid & metric-card) ── */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3.5">
-            {/* Card 1: Estimasi Nilai Omset */}
-            <article className="bg-white border border-[#e5e5e5] rounded-[12px] p-5 min-h-[155px] flex flex-col justify-between hover:border-[#d0d0d0] transition-colors">
-              <div className="flex justify-between items-center text-[13px] text-[#888] leading-none">
-                <span>Estimasi nilai omset</span>
-                <DollarSign size={16} strokeWidth={1.5} className="text-[#888]" />
-              </div>
-              <div>
-                <p className="text-[32px] leading-tight tracking-[-0.05em] font-semibold text-[#202020] mt-3.5">
-                  {formatRupiah(data?.summary.totalOmset ?? 0)}
-                </p>
-                <div className="h-[3px] bg-[#eee] rounded-[5px] overflow-hidden mt-3.5">
-                  <span
-                    className="block h-full bg-[#202020] rounded-[5px] transition-all duration-500"
-                    style={{
-                      width: `${Math.min(100, Math.round(((data?.summary.totalOmset ?? 0) / 2500000) * 100))}%`,
-                    }}
-                  />
-                </div>
-                <p className="text-[12px] text-[#999] leading-[1.7] mt-2">
-                  Sesi dasar + addon + softcopy di periode ini
-                </p>
-              </div>
-            </article>
-
-            {/* Card 2: Total Sesi Foto */}
-            <article className="bg-white border border-[#e5e5e5] rounded-[12px] p-5 min-h-[155px] flex flex-col justify-between hover:border-[#d0d0d0] transition-colors">
-              <div className="flex justify-between items-center text-[13px] text-[#888] leading-none">
-                <span>Total sesi foto</span>
-                <Users size={16} strokeWidth={1.5} className="text-[#888]" />
-              </div>
-              <div>
-                <p className="text-[32px] leading-tight tracking-[-0.05em] font-semibold text-[#202020] mt-3.5">
-                  {data?.summary.totalSessions ?? 0}
-                  <small className="text-[16px] text-[#aaa] font-normal tracking-[-0.02em] ml-1">
-                    sesi
-                  </small>
-                </p>
-                <div className="h-[3px] bg-[#eee] rounded-[5px] overflow-hidden mt-3.5">
-                  <span
-                    className="block h-full bg-[#202020] rounded-[5px] transition-all duration-500"
-                    style={{
-                      width: `${Math.min(100, (data?.summary.totalSessions ?? 0) * 5)}%`,
-                    }}
-                  />
-                </div>
-                <p className="text-[12px] text-[#999] leading-[1.7] mt-2">
-                  Total {data?.summary.totalPeople ?? 0} orang berfoto
-                </p>
-              </div>
-            </article>
-
-            {/* Card 3: Kertas Foto 4R Terpakai */}
-            <article className="bg-white border border-[#e5e5e5] rounded-[12px] p-5 min-h-[155px] flex flex-col justify-between hover:border-[#d0d0d0] transition-colors">
-              <div className="flex justify-between items-center text-[13px] text-[#888] leading-none">
-                <span>Kertas foto terpakai</span>
-                <Printer size={16} strokeWidth={1.5} className="text-[#888]" />
-              </div>
-              <div>
-                <p className="text-[32px] leading-tight tracking-[-0.05em] font-semibold text-[#202020] mt-3.5">
-                  {data?.summary.totalPrints.total4R ?? 0}
-                  <small className="text-[16px] text-[#aaa] font-normal tracking-[-0.02em] ml-1">
-                    lembar
-                  </small>
-                </p>
-                <div className="h-[3px] bg-[#eee] rounded-[5px] overflow-hidden mt-3.5">
-                  <span
-                    className="block h-full bg-[#202020] rounded-[5px] transition-all duration-500"
-                    style={{
-                      width: `${Math.min(100, ((data?.summary.totalPrints.total4R ?? 0) / 100) * 100)}%`,
-                    }}
-                  />
-                </div>
-                <p className="text-[12px] text-[#999] leading-[1.7] mt-2 truncate">
-                  {data?.summary.totalPrints.regular ?? 0} reguler + {data?.summary.totalPrints.bonus ?? 0} bonus
-                  {(data?.summary.totalPrints.a4 ?? 0) > 0 && ` · ${data?.summary.totalPrints.a4} A4`}
-                </p>
-              </div>
-            </article>
-
-            {/* Card 4: Softcopy Story & Bayar */}
-            <article className="bg-white border border-[#e5e5e5] rounded-[12px] p-5 min-h-[155px] flex flex-col justify-between hover:border-[#d0d0d0] transition-colors">
-              <div className="flex justify-between items-center text-[13px] text-[#888] leading-none">
-                <span>Softcopy story & bayar</span>
-                <Gift size={16} strokeWidth={1.5} className="text-[#888]" />
-              </div>
-              <div>
-                <p className="text-[32px] leading-tight tracking-[-0.05em] font-semibold text-[#202020] mt-3.5">
-                  {data?.summary.softcopy.storyFree ?? 0}
-                  <small className="text-[16px] text-[#aaa] font-normal tracking-[-0.02em] mx-1">
-                    /
-                  </small>
-                  {data?.summary.softcopy.paid ?? 0}
-                </p>
-                <div className="h-[3px] bg-[#eee] rounded-[5px] overflow-hidden mt-3.5">
-                  <span
-                    className="block h-full bg-[#202020] rounded-[5px] transition-all duration-500"
-                    style={{
-                      width: `${
-                        (data?.summary.softcopy.storyFree ?? 0) + (data?.summary.softcopy.paid ?? 0) > 0
-                          ? Math.round(
-                              ((data?.summary.softcopy.storyFree ?? 0) /
-                                ((data?.summary.softcopy.storyFree ?? 0) + (data?.summary.softcopy.paid ?? 0))) *
-                                100,
-                            )
-                          : 0
-                      }%`,
-                    }}
-                  />
-                </div>
-                <p className="text-[12px] text-[#999] leading-[1.7] mt-2">
-                  {data?.summary.softcopy.storyFree ?? 0} Story gratis · {data?.summary.softcopy.paid ?? 0} Bayar ({formatRupiah(data?.summary.softcopy.paidRevenue ?? 0)})
-                </p>
-              </div>
-            </article>
-          </div>
-        </section>
-
-        {/* ── 5. MIDDLE PANELS: ADD-ONS & LATEST ACTIVITY (Amara: dash-middle-grid) ── */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
-          {/* Panel 1: Rincian Layanan & Addons (8 cols) */}
-          <section className="lg:col-span-7 bg-white border border-[#e5e5e5] rounded-[14px] p-6 flex flex-col justify-between">
+        {/* ── 2. 4 EXECUTIVE KPI CARDS ── */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Card 1: Omset */}
+          <div className="bg-white border border-[#e8e8e8] rounded-[10px] p-5 space-y-3">
+            <span className="text-[12px] font-medium text-[#777]">Total Omset Hari Ini</span>
             <div>
-              <div className="flex items-center justify-between pb-4 border-b border-[#eee]">
+              <div className="text-[26px] font-semibold text-[#171717] font-mono tracking-tight">
+                {formatRupiah(data?.summary.totalOmset ?? 0)}
+              </div>
+              <p className="text-[11px] text-[#888] mt-0.5">
+                Akumulasi seluruh paket, cetak & add-ons
+              </p>
+            </div>
+            <div className="pt-2 border-t border-[#f2f2f2] flex items-center justify-between text-[11px] text-[#888]">
+              <span>Rata-rata: {data?.summary.totalSessions ? formatRupiah(Math.round((data.summary.totalOmset ?? 0) / data.summary.totalSessions)) : "Rp 0"} / sesi</span>
+            </div>
+          </div>
+
+          {/* Card 2: Total Sesi Foto */}
+          <div className="bg-white border border-[#e8e8e8] rounded-[10px] p-5 space-y-3">
+            <span className="text-[12px] font-medium text-[#777]">Total Sesi Foto</span>
+            <div>
+              <div className="text-[26px] font-semibold text-[#171717] font-mono tracking-tight">
+                {data?.summary.totalSessions ?? 0}
+                <span className="text-[14px] text-[#888] font-normal font-sans ml-1">sesi</span>
+              </div>
+              <p className="text-[11px] text-[#888] mt-0.5">
+                Total {data?.summary.totalPeople ?? 0} pengunjung terlayani
+              </p>
+            </div>
+            <div className="pt-2 border-t border-[#f2f2f2] flex items-center justify-between text-[11px] text-[#888]">
+              <span>Couple: {data?.sessions.filter((s) => s.coupleMode).length ?? 0}</span>
+              <span>Grup: {data?.sessions.filter((s) => !s.coupleMode).length ?? 0}</span>
+            </div>
+          </div>
+
+          {/* Card 3: Lembaran Kertas Terpakai */}
+          <div className="bg-white border border-[#e8e8e8] rounded-[10px] p-5 space-y-3">
+            <span className="text-[12px] font-medium text-[#777]">Kertas Foto Terpakai</span>
+            <div>
+              <div className="text-[26px] font-semibold text-[#171717] font-mono tracking-tight">
+                {data?.summary.totalPrints.total4R ?? 0}
+                <span className="text-[14px] text-[#888] font-normal font-sans ml-1">lbr</span>
+              </div>
+              <p className="text-[11px] text-[#888] mt-0.5">
+                {data?.summary.totalPrints.regular ?? 0} reguler + {data?.summary.totalPrints.bonus ?? 0} bonus
+              </p>
+            </div>
+            <div className="pt-2 border-t border-[#f2f2f2] flex items-center justify-between text-[11px] text-[#888]">
+              <span>Cetak 4R: {data?.summary.totalPrints.total4R ?? 0}</span>
+              <span>Cetak A4: {data?.summary.totalPrints.a4 ?? 0}</span>
+            </div>
+          </div>
+
+          {/* Card 4: Softcopy Story & Bayar */}
+          <div className="bg-white border border-[#e8e8e8] rounded-[10px] p-5 space-y-3">
+            <span className="text-[12px] font-medium text-[#777]">Klaim Softcopy Drive</span>
+            <div>
+              <div className="text-[26px] font-semibold text-[#171717] font-mono tracking-tight">
+                {data?.summary.softcopy.storyFree ?? 0}
+                <span className="text-[16px] text-[#aaa] font-normal mx-1">/</span>
+                {data?.summary.softcopy.paid ?? 0}
+              </div>
+              <p className="text-[11px] text-[#888] mt-0.5">
+                {data?.summary.softcopy.storyFree ?? 0} promo story · {data?.summary.softcopy.paid ?? 0} berbayar
+              </p>
+            </div>
+            <div className="pt-2 border-t border-[#f2f2f2] flex items-center justify-between text-[11px] text-[#888]">
+              <span>Pendapatan Softcopy:</span>
+              <span className="font-mono text-[#171717] font-medium">{formatRupiah(data?.summary.softcopy.paidRevenue ?? 0)}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* ── 3. MIDDLE PANELS: ADD-ONS BREAKDOWN & RECENT SESSION ── */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+          {/* Panel 1: Rincian Penjualan Add-Ons (7 cols) */}
+          <div className="lg:col-span-7 bg-white border border-[#e8e8e8] rounded-[12px] p-6 sm:p-8 flex flex-col justify-between space-y-6">
+            <div>
+              <div className="pb-4 border-b border-[#f0f0f0] flex items-center justify-between">
                 <div>
-                  <p className="text-[10px] tracking-[0.12em] text-[#999] uppercase font-medium">
-                    SERVICE & ADD-ONS BREAKDOWN
-                  </p>
-                  <h2 className="text-[20px] font-semibold text-[#202020] tracking-[-0.035em] mt-1">
-                    Rincian Add-ons & Sesi
+                  <h2 className="text-[17px] font-semibold text-[#202020] tracking-[-0.02em]">
+                    Penjualan Add-Ons & Merchandise
                   </h2>
+                  <p className="text-[13px] text-[#888] leading-[1.7] mt-0.5">
+                    Rincian barang tambahan yang dibeli pengunjung di luar paket dasar.
+                  </p>
                 </div>
-                <span className="text-[12px] bg-[#f4f4f4] border border-[#e8e8e8] rounded-[5px] px-2.5 py-1 text-[#666] font-medium">
-                  {data?.summary.addonsSummary?.length ?? 0} Jenis Add-on
+                <span className="text-[12px] text-[#888] font-normal shrink-0">
+                  {data?.summary.addonsSummary?.length ?? 0} jenis item
                 </span>
               </div>
 
-              {/* Addons List */}
-              <div className="py-4">
+              <div className="py-2">
                 {(data?.summary.addonsSummary?.length ?? 0) > 0 ? (
-                  <div className="space-y-2.5">
+                  <div className="divide-y divide-[#f2f2f2]">
                     {data?.summary.addonsSummary.map((item) => (
                       <div
                         key={item.name}
-                        className="flex items-center justify-between p-3 rounded-[9px] bg-[#fafafa] border border-[#ebebeb] hover:bg-[#f6f6f6] transition-colors"
+                        className="py-3.5 flex items-center justify-between gap-4"
                       >
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-[7px] bg-white border border-[#e5e5e5] flex items-center justify-center text-[#555]">
-                            <ShoppingBag size={14} strokeWidth={1.5} />
-                          </div>
-                          <div>
-                            <strong className="text-[13px] font-medium text-[#202020] block">
-                              {item.name}
-                            </strong>
-                            <span className="text-[11px] text-[#888] block">
-                              Terjual {item.qty} item pada sesi hari ini
-                            </span>
-                          </div>
+                        <div className="min-w-0">
+                          <span className="text-[13px] font-medium text-[#202020] block">
+                            {item.name}
+                          </span>
+                          <span className="text-[11px] text-[#888] block mt-0.5">
+                            Terjual {item.qty} pcs pada sesi hari ini
+                          </span>
                         </div>
-
-                        <div className="text-right">
-                          <span className="text-[13px] font-semibold text-[#202020] block font-mono">
+                        <div className="text-right shrink-0">
+                          <span className="text-[13px] font-semibold text-[#202020] font-mono block">
                             {formatRupiah(item.revenue)}
                           </span>
-                          <span className="text-[10px] bg-[#eee] text-[#555] px-1.5 py-0.5 rounded font-mono">
-                            {item.qty}x
+                          <span className="text-[11px] text-[#888] font-mono">
+                            {item.qty} item
                           </span>
                         </div>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <div className="py-8 text-center text-[#999]">
-                    <ShoppingBag size={24} strokeWidth={1.5} className="mx-auto mb-2 text-[#ccc]" />
-                    <p className="text-[13px] font-medium text-[#666]">
-                      Belum ada add-on tambahan yang terjual hari ini.
-                    </p>
-                    <p className="text-[11px] text-[#aaa] mt-0.5">
-                      Penjualan add-on seperti cetak ekstra dan bingkai akan tampil di sini.
+                  <div className="py-10 text-center space-y-1">
+                    <p className="text-[13px] font-medium text-[#202020]">Belum ada add-ons terjual</p>
+                    <p className="text-[12px] text-[#888]">
+                      Penjualan gantungan kunci, cetak ekstra, dan bingkai akan tercatat di sini.
                     </p>
                   </div>
                 )}
               </div>
             </div>
 
-            {/* Quick summary footer stats */}
-            <div className="pt-4 border-t border-[#eee] grid grid-cols-3 gap-3 text-[12px]">
-              <div>
-                <span className="text-[#888] block text-[11px]">Rasio Couple</span>
-                <strong className="text-[#202020] font-medium text-[13px]">
-                  {data?.sessions.length
-                    ? `${Math.round(
-                        (data.sessions.filter((s) => s.coupleMode).length / data.sessions.length) * 100,
-                      )}%`
-                    : "0%"}
-                </strong>
-              </div>
-              <div>
-                <span className="text-[#888] block text-[11px]">Story Gratis</span>
-                <strong className="text-[#202020] font-medium text-[13px]">
-                  {data?.summary.softcopy.storyFree ?? 0} Sesi
-                </strong>
-              </div>
-              <div>
-                <span className="text-[#888] block text-[11px]">Rata-rata 4R</span>
-                <strong className="text-[#202020] font-medium text-[13px]">
-                  {data?.summary.totalSessions
-                    ? `${(
-                        (data.summary.totalPrints.total4R ?? 0) /
-                        (data.summary.totalSessions || 1)
-                      ).toFixed(1)} lbr/sesi`
-                    : "0 lbr"}
-                </strong>
-              </div>
+            <div className="pt-4 border-t border-[#f0f0f0] flex items-center justify-between text-[12px] text-[#777]">
+              <span>Rasio Customer Couple: <strong className="text-[#202020] font-medium font-mono">{data?.sessions.length ? `${Math.round((data.sessions.filter((s) => s.coupleMode).length / data.sessions.length) * 100)}%` : "0%"}</strong></span>
+              <span>Rata-rata 4R: <strong className="text-[#202020] font-medium font-mono">{data?.summary.totalSessions ? `${((data.summary.totalPrints.total4R ?? 0) / (data.summary.totalSessions || 1)).toFixed(1)} lbr` : "0 lbr"}</strong></span>
             </div>
-          </section>
+          </div>
 
-          {/* Panel 2: Latest Activity Spotlight (Amara: activity-panel) (5 cols) */}
-          <aside className="lg:col-span-5 bg-white border border-[#e5e5e5] rounded-[14px] overflow-hidden flex flex-col justify-between">
-            {/* Top Photo / Branding Header */}
-            <div className="h-[120px] bg-gradient-to-br from-[#171717] via-[#262626] to-[#3a3a3a] relative p-5 flex flex-col justify-between text-white">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] tracking-[0.14em] text-white/70 uppercase font-medium">
-                  IGNOS PHOTOBOOTH STATION
-                </span>
-                <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center">
-                  <Camera size={13} className="text-white" strokeWidth={1.5} />
-                </div>
-              </div>
-              <p className="text-[12px] font-medium text-white/90">
-                Satu senyuman. Banyak kenangan.
-              </p>
-            </div>
-
-            {/* Body */}
-            <div className="p-5 flex-1 flex flex-col justify-between">
-              <div>
-                <div className="flex items-center justify-between gap-2 pb-3">
-                  <p className="text-[10px] tracking-[0.12em] text-[#999] uppercase font-medium">
-                    SESI TERAKHIR DI STUDIO
+          {/* Panel 2: Aktivitas Sesi Terakhir (5 cols) */}
+          <div className="lg:col-span-5 bg-white border border-[#e8e8e8] rounded-[12px] p-6 sm:p-8 flex flex-col justify-between space-y-6">
+            <div>
+              <div className="pb-4 border-b border-[#f0f0f0] flex items-center justify-between">
+                <div>
+                  <h2 className="text-[17px] font-semibold text-[#202020] tracking-[-0.02em]">
+                    Aktivitas Sesi Terakhir
+                  </h2>
+                  <p className="text-[13px] text-[#888] leading-[1.7] mt-0.5">
+                    Transaksi pengunjung paling akhir di terminal Kiosk.
                   </p>
-                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[5px] text-[11px] bg-[#f1f1f1] text-[#555]">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#10b981]" />
-                    {latestSession ? "Selesai" : "Standby"}
-                  </span>
                 </div>
-
-                {latestSession ? (
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-[36px] h-[36px] rounded-full bg-[#f1f1f1] text-[#555] font-semibold text-[13px] flex items-center justify-center shrink-0">
-                        {getInitials(latestSession.customerName)}
-                      </div>
-                      <div className="min-w-0">
-                        <h3 className="text-[15px] font-medium text-[#202020] truncate">
-                          {latestSession.customerName}
-                        </h3>
-                        <p className="text-[12px] text-[#888] truncate">
-                          {latestSession.coupleMode ? "Couple Mode" : `${latestSession.peopleCount} Orang`} · {latestSession.prints.total} lembar 4R
-                        </p>
-                      </div>
-                    </div>
-
-                    <dl className="text-[13px] space-y-1.5 pt-1">
-                      <div className="flex justify-between py-1 border-b border-[#f5f5f5]">
-                        <dt className="text-[#888]">Waktu Sesi</dt>
-                        <dd className="font-mono text-[#444] font-medium">{latestSession.time} WIB</dd>
-                      </div>
-                      <div className="flex justify-between py-1 border-b border-[#f5f5f5]">
-                        <dt className="text-[#888]">Format Softcopy</dt>
-                        <dd className="text-[#444]">{latestSession.makeStory ? "Story Gratis" : "Softcopy Bayar"}</dd>
-                      </div>
-                      <div className="flex justify-between py-1">
-                        <dt className="text-[#888]">Total Transaksi</dt>
-                        <dd className="font-semibold text-[#202020] font-mono">{formatRupiah(latestSession.totalPrice)}</dd>
-                      </div>
-                    </dl>
-                  </div>
-                ) : (
-                  <div className="py-6 text-center text-[#999]">
-                    <Clock size={20} strokeWidth={1.5} className="mx-auto mb-1.5 text-[#ccc]" />
-                    <p className="text-[13px] text-[#666]">Belum ada sesi di terminal hari ini.</p>
-                  </div>
-                )}
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#10b981]" />
+                  <span className="text-[12px] text-[#666] font-medium">{latestSession ? "Selesai" : "Standby"}</span>
+                </div>
               </div>
 
-              {latestSession?.driveWebViewLink && (
-                <a
-                  href={latestSession.driveWebViewLink}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="w-full mt-4 flex items-center justify-between text-[13px] text-[#444] hover:text-[#171717] pt-3 border-t border-[#eee] transition-colors"
-                >
-                  <span>Buka arsip foto Google Drive</span>
-                  <ArrowUpRight size={15} strokeWidth={1.5} />
-                </a>
+              {latestSession ? (
+                <div className="py-3 space-y-4">
+                  <div className="flex items-center gap-3">
+                    <span className="w-9 h-9 rounded-full bg-[#f1f1f1] text-[#202020] font-semibold text-[13px] flex items-center justify-center shrink-0">
+                      {getInitials(latestSession.customerName)}
+                    </span>
+                    <div className="min-w-0">
+                      <h3 className="text-[15px] font-medium text-[#202020] truncate">
+                        {latestSession.customerName}
+                      </h3>
+                      <p className="text-[12px] text-[#888] truncate">
+                        {latestSession.coupleMode ? "Couple Mode" : `${latestSession.peopleCount} Orang`} · {latestSession.prints.total} lembar 4R
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="divide-y divide-[#f2f2f2] text-[13px]">
+                    <div className="py-2.5 flex justify-between">
+                      <span className="text-[#888]">Waktu Transaksi</span>
+                      <span className="font-mono text-[#202020] font-medium">{latestSession.time} WIB</span>
+                    </div>
+                    <div className="py-2.5 flex justify-between">
+                      <span className="text-[#888]">Status Softcopy</span>
+                      <span className="text-[#202020]">{latestSession.makeStory ? "Promo Story (Gratis)" : "Softcopy Berbayar"}</span>
+                    </div>
+                    <div className="py-2.5 flex justify-between">
+                      <span className="text-[#888]">Total Tagihan</span>
+                      <span className="font-semibold text-[#202020] font-mono">{formatRupiah(latestSession.totalPrice)}</span>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="py-12 text-center text-[#888] text-[13px]">
+                  Belum ada sesi tercatat di terminal hari ini.
+                </div>
               )}
             </div>
-          </aside>
+
+            {latestSession?.driveWebViewLink && (
+              <a
+                href={latestSession.driveWebViewLink}
+                target="_blank"
+                rel="noreferrer"
+                className="w-full flex items-center justify-between text-[12px] font-medium text-[#202020] hover:underline pt-4 border-t border-[#f0f0f0] transition-colors"
+              >
+                <span>Buka folder Google Drive sesi ini</span>
+                <ArrowUpRight size={14} />
+              </a>
+            )}
+          </div>
         </div>
 
-        {/* ── 6. LOG TRANSAKSI TABLE (Amara: reservations-panel & bookings-table) ── */}
-        <section
-          id="reservasi"
-          aria-labelledby="reservations-heading"
-          className="bg-white border border-[#e5e5e5] rounded-[14px] overflow-hidden"
-        >
-          {/* Table Header Controls */}
-          <div className="p-5 sm:p-6 border-b border-[#eee] flex flex-col md:flex-row md:items-center justify-between gap-4">
+        {/* ── 4. LOG TRANSAKSI TABLE (Clean & Spacious) ── */}
+        <div className="bg-white border border-[#e8e8e8] rounded-[12px] p-6 sm:p-8 space-y-6">
+          <div className="pb-4 border-b border-[#f0f0f0] flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <p className="text-[10px] tracking-[0.14em] text-[#999] uppercase font-medium">
-                THE PEOPLE BEHIND EACH SESSION
-              </p>
-              <h2
-                id="reservations-heading"
-                className="text-[20px] font-semibold text-[#202020] tracking-[-0.035em] mt-1 flex items-center gap-2.5"
-              >
-                <span>Log Transaksi Sesi Foto</span>
-                <span className="text-[12px] tracking-normal bg-[#f4f4f4] border border-[#e8e8e8] rounded-[5px] px-2 py-0.5 text-[#888] font-normal">
-                  {filteredSessionsList.length}
+              <div className="flex items-center gap-2.5">
+                <h2 className="text-[17px] font-semibold text-[#202020] tracking-[-0.02em]">
+                  Log Transaksi Sesi Foto
+                </h2>
+                <span className="text-[12px] text-[#888] font-normal">
+                  ({filteredSessionsList.length} dari {data?.sessions.length ?? 0} sesi)
                 </span>
-              </h2>
-              <p className="text-[13px] text-[#888] mt-1">
-                Semua sesi foto dan arsip cetak yang tercatat dari terminal kiosk.
+              </div>
+              <p className="text-[13px] text-[#888] leading-[1.7] mt-0.5">
+                Daftar rekaman sesi foto, jumlah cetak kertas, dan tautan Google Drive per customer.
               </p>
             </div>
 
-            {/* Filter & Search controls (Amara: table-controls) */}
-            <div className="flex items-center gap-2.5 flex-wrap">
-              {/* Search Field (Amara: search-field) */}
-              <label className="flex items-center gap-2 border border-[#e3e3e3] rounded-[7px] px-2.5 py-1.5 bg-white text-[13px] w-full sm:w-60 focus-within:border-[#999] transition-colors">
-                <Search size={14} strokeWidth={1.5} className="text-[#aaa]" />
+            {/* Filter & Search Bar */}
+            <div className="flex items-center gap-2.5 flex-wrap shrink-0">
+              <div className="flex items-center gap-2 border border-[#e0e0e0] focus-within:border-[#171717] rounded-[7px] px-3 py-1.5 bg-white text-[12px] transition-colors w-full sm:w-56">
+                <Search size={13} className="text-[#999] shrink-0" />
                 <input
                   type="search"
-                  placeholder="Cari nama atau jam..."
+                  placeholder="Cari nama / jam..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="border-0 outline-none w-full text-[13px] bg-transparent text-[#333] placeholder:text-[#aaa]"
+                  className="w-full border-0 outline-none text-[#202020] placeholder:text-[#aaa] text-[12px] p-0"
                 />
-              </label>
+              </div>
 
-              {/* Package filter select */}
               <select
                 value={packageFilter}
                 onChange={(e) => setPackageFilter(e.target.value)}
-                className="border border-[#e3e3e3] rounded-[7px] px-2.5 py-1.5 text-[13px] text-[#666] bg-white outline-none cursor-pointer hover:border-[#ccc]"
-                aria-label="Filter paket sesi"
+                className="border border-[#e0e0e0] focus:border-[#171717] rounded-[7px] px-3 py-1.5 text-[12px] text-[#444] bg-white outline-none cursor-pointer"
               >
                 <option value="all">Semua Paket</option>
                 <option value="couple">Couple Mode</option>
-                <option value="group">Personal / Group</option>
+                <option value="group">Personal / Grup</option>
                 <option value="story">Story Gratis</option>
                 <option value="paid">Softcopy Bayar</option>
               </select>
             </div>
           </div>
 
-          {/* Table Container (Amara: table-scroll & bookings-table) */}
+          {/* Table */}
           {filteredSessionsList.length === 0 ? (
-            <div className="py-16 text-center">
-              <Search size={24} strokeWidth={1.5} className="text-[#aaa] mx-auto mb-2" />
-              <h3 className="text-[18px] font-semibold text-[#202020] tracking-[-0.03em]">
-                Belum ada yang cocok.
-              </h3>
-              <p className="text-[13px] text-[#888] mt-1">
-                Coba kata kunci pencarian atau ganti filter tanggal di atas.
+            <div className="py-16 text-center space-y-1">
+              <p className="text-[14px] font-medium text-[#202020]">Belum ada sesi yang cocok</p>
+              <p className="text-[12px] text-[#888]">
+                Coba ubah kata kunci pencarian atau pilih filter tanggal lain di atas.
               </p>
               {(searchQuery || packageFilter !== "all") && (
                 <button
@@ -775,126 +694,125 @@ export function AdminDashboardPage() {
                     setSearchQuery("");
                     setPackageFilter("all");
                   }}
-                  className="mt-3.5 text-[13px] text-[#171717] font-medium border-b border-[#202020] pb-0.5 cursor-pointer hover:opacity-75"
+                  className="mt-2 text-[12px] text-[#171717] font-medium hover:underline cursor-pointer"
                 >
-                  Reset filter
+                  Reset filter pencarian
                 </button>
               )}
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full border-collapse text-left min-w-[700px]">
+              <table className="w-full border-collapse text-left min-w-[720px]">
                 <thead>
-                  <tr className="bg-[#fafafa] border-t border-b border-[#eee] text-[12px] font-normal text-[#999]">
-                    <th className="py-3 px-5 whitespace-nowrap">Customer</th>
-                    <th className="py-3 px-4 whitespace-nowrap">Waktu</th>
-                    <th className="py-3 px-4 whitespace-nowrap">Paket Sesi</th>
-                    <th className="py-3 px-4 whitespace-nowrap">Kertas Cetak</th>
-                    <th className="py-3 px-4 whitespace-nowrap">Softcopy</th>
-                    <th className="py-3 px-4 whitespace-nowrap">Add-ons</th>
-                    <th className="py-3 px-4 text-right whitespace-nowrap">Total</th>
-                    <th className="py-3 px-4 text-center whitespace-nowrap">Drive</th>
-                    <th className="py-3 px-4 text-center whitespace-nowrap">
-                      <span className="sr-only">Aksi</span>
-                    </th>
+                  <tr className="border-b border-[#eee] text-[11px] font-medium text-[#999] uppercase tracking-[0.06em]">
+                    <th className="py-3 px-4 font-medium">Customer</th>
+                    <th className="py-3 px-4 font-medium">Waktu</th>
+                    <th className="py-3 px-4 font-medium">Paket Sesi</th>
+                    <th className="py-3 px-4 font-medium">Cetak Foto</th>
+                    <th className="py-3 px-4 font-medium">Softcopy</th>
+                    <th className="py-3 px-4 font-medium">Add-ons</th>
+                    <th className="py-3 px-4 text-right font-medium">Total</th>
+                    <th className="py-3 px-4 text-center font-medium">Drive</th>
+                    <th className="py-3 px-4 text-center font-medium">Aksi</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#f0f0f0] text-[13px]">
+                <tbody className="divide-y divide-[#f2f2f2] text-[13px]">
                   {filteredSessionsList.map((s) => (
                     <tr key={s.id} className="hover:bg-[#fafafa] transition-colors">
-                      {/* Customer (Amara: table-guest style with avatar) */}
-                      <td className="py-3.5 px-5">
-                        <div className="flex items-center gap-3">
-                          <span className="w-8 h-8 rounded-full bg-[#f1f1f1] text-[#666] font-medium text-[12px] flex items-center justify-center shrink-0">
+                      {/* Customer */}
+                      <td className="py-3.5 px-4">
+                        <div className="flex items-center gap-2.5">
+                          <span className="w-7 h-7 rounded-full bg-[#f1f1f1] text-[#444] font-medium text-[11px] flex items-center justify-center shrink-0">
                             {getInitials(s.customerName)}
                           </span>
                           <div className="min-w-0">
-                            <strong className="text-[14px] font-medium text-[#202020] block truncate">
+                            <span className="font-medium text-[#202020] block truncate">
                               {s.customerName}
-                            </strong>
-                            <small className="text-[11px] text-[#aaa] font-mono block mt-0.5">
-                              {s.id} · {s.coupleMode ? "Couple" : `${s.peopleCount} tamu`}
-                            </small>
+                            </span>
+                            <span className="text-[11px] text-[#aaa] font-mono block">
+                              {s.id}
+                            </span>
                           </div>
                         </div>
                       </td>
 
                       {/* Time */}
                       <td className="py-3.5 px-4 whitespace-nowrap">
-                        <span className="text-[#444] font-medium block">
+                        <span className="font-mono text-[#444] text-[12px] block">
                           {s.time} WIB
                         </span>
-                        <small className="text-[11px] text-[#aaa] block mt-0.5">
+                        <span className="text-[11px] text-[#aaa] block">
                           {selectedDate}
-                        </small>
+                        </span>
                       </td>
 
-                      {/* Paket Sesi (Amara status-badge) */}
+                      {/* Paket Sesi */}
                       <td className="py-3.5 px-4 whitespace-nowrap">
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[5px] text-[11px] bg-[#f1f1f1] text-[#444]">
-                          <span className="w-1.5 h-1.5 rounded-full bg-[#555]" />
+                        <span className="text-[12px] text-[#444]">
                           {s.coupleMode ? "Couple Mode" : `${s.peopleCount} Orang`}
                         </span>
                       </td>
 
                       {/* Prints */}
                       <td className="py-3.5 px-4 whitespace-nowrap">
-                        <span className="text-[#333] font-medium">
-                          {s.prints?.total ?? s.peopleCount} lembar
+                        <span className="text-[#202020] font-mono text-[12px]">
+                          {s.prints?.total ?? s.peopleCount} lbr 4R
                         </span>
-                        <small className="text-[11px] text-[#aaa] block mt-0.5">
-                          {s.prints?.regular ?? s.peopleCount} reg + {s.prints?.bonus ?? 0} bonus
-                        </small>
+                        {s.prints?.bonus > 0 && (
+                          <span className="text-[11px] text-[#aaa] block">
+                            +{s.prints.bonus} bonus
+                          </span>
+                        )}
                       </td>
 
                       {/* Softcopy */}
                       <td className="py-3.5 px-4 whitespace-nowrap">
                         {s.makeStory ? (
-                          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[5px] text-[11px] bg-[#ecfdf5] text-[#065f46]">
+                          <div className="flex items-center gap-1.5 text-[12px] text-[#10b981]">
                             <span className="w-1.5 h-1.5 rounded-full bg-[#10b981]" />
-                            Story Gratis
-                          </span>
+                            <span>Story Gratis</span>
+                          </div>
                         ) : (
-                          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[5px] text-[11px] bg-[#fffbeb] text-[#92400e]">
+                          <div className="flex items-center gap-1.5 text-[12px] text-[#888]">
                             <span className="w-1.5 h-1.5 rounded-full bg-[#f59e0b]" />
-                            +Rp 25.000 Bayar
-                          </span>
+                            <span>Softcopy Bayar</span>
+                          </div>
                         )}
                       </td>
 
                       {/* Addons */}
                       <td className="py-3.5 px-4">
                         {s.miscAddons?.length > 0 ? (
-                          <div className="flex flex-col gap-0.5">
+                          <div className="flex flex-col gap-0.5 text-[11px] text-[#666]">
                             {s.miscAddons.map((a, i) => (
-                              <span key={i} className="text-[11px] text-[#666]">
+                              <span key={i}>
                                 {a.name} ({a.qty}x)
                               </span>
                             ))}
                           </div>
                         ) : (
-                          <span className="text-[#aaa] text-[12px]">—</span>
+                          <span className="text-[#ccc] text-[12px]">—</span>
                         )}
                       </td>
 
                       {/* Total */}
                       <td className="py-3.5 px-4 text-right whitespace-nowrap">
-                        <span className="font-semibold text-[#202020] font-mono text-[14px]">
+                        <span className="font-semibold text-[#202020] font-mono text-[13px]">
                           {formatRupiah(s.totalPrice)}
                         </span>
                       </td>
 
-                      {/* Google Drive Link (Amara circular detail button) */}
+                      {/* Google Drive Link */}
                       <td className="py-3.5 px-4 text-center whitespace-nowrap">
                         {s.driveWebViewLink ? (
                           <a
                             href={s.driveWebViewLink}
                             target="_blank"
                             rel="noreferrer"
-                            className="w-7 h-7 rounded-full border border-[#e7e7e7] inline-flex items-center justify-center text-[#666] hover:bg-[#171717] hover:text-white hover:border-[#171717] transition-all"
-                            title="Buka Folder Google Drive"
+                            className="w-7 h-7 rounded-[5px] border border-[#e0e0e0] inline-flex items-center justify-center text-[#666] hover:bg-[#171717] hover:text-white hover:border-[#171717] transition-all"
+                            title="Buka Folder Google Drive Customer"
                           >
-                            <ExternalLink size={12} strokeWidth={1.5} />
+                            <ExternalLink size={12} />
                           </a>
                         ) : (
                           <span className="text-[#ccc] text-[11px]">—</span>
@@ -906,10 +824,10 @@ export function AdminDashboardPage() {
                         <button
                           type="button"
                           onClick={() => handleDeleteSession(s.id, s.customerName)}
-                          className="w-7 h-7 rounded-full text-[#aaa] hover:text-[#dc2626] hover:bg-[#fef2f2] inline-flex items-center justify-center transition-colors cursor-pointer"
-                          title="Hapus sesi"
+                          className="w-7 h-7 rounded-[5px] text-[#aaa] hover:text-[#dc2626] hover:bg-[#fef2f2] inline-flex items-center justify-center transition-colors cursor-pointer"
+                          title="Hapus rekaman sesi ini"
                         >
-                          <Trash2 size={13} strokeWidth={1.5} />
+                          <Trash2 size={13} />
                         </button>
                       </td>
                     </tr>
@@ -918,23 +836,22 @@ export function AdminDashboardPage() {
               </table>
             </div>
           )}
+        </div>
 
-          {/* Table Footer (Amara: table-footer) */}
-          <div className="flex justify-between items-center px-6 py-4 border-t border-[#eee] text-[12px] text-[#aaa]">
-            <span>
-              Menampilkan {filteredSessionsList.length} dari {data?.sessions.length ?? 0} sesi foto
-            </span>
-            <span className="text-[11px] tracking-[0.1em] uppercase hidden sm:inline">
-              IGNOS · SINGLE KIOSK BOOTH
-            </span>
-          </div>
-        </section>
-
-        {/* ── 7. DASHBOARD FOOTER (Amara: dash-footer) ── */}
-        <footer className="flex justify-between items-center text-[12px] text-[#aaa] pt-2 pb-6 border-t border-[#eee]">
-          <p>© 2026 Ignos Studio. Photobooth Station.</p>
-          <span className="hidden sm:inline">Tenang di depan. Tertata di balik layar.</span>
-        </footer>
+        {/* ── Standard Admin Confirmation Modal ── */}
+        <AdminConfirmModal
+          isOpen={modalConfig.isOpen}
+          onClose={() => setModalConfig((prev) => ({ ...prev, isOpen: false }))}
+          onConfirm={modalConfig.onConfirm}
+          title={modalConfig.title}
+          category={modalConfig.category}
+          description={modalConfig.description}
+          confirmText={modalConfig.confirmText}
+          cancelText={modalConfig.cancelText}
+          isDangerous={modalConfig.isDangerous}
+          variant={modalConfig.variant}
+          singleButton={modalConfig.singleButton}
+        />
       </div>
     </AdminLayout>
   );
