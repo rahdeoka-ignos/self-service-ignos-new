@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Ignos Studio — Generator Lisensi Sewa (Vendor Tool)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #09090b;
+      --card-bg: #141417;
+      --card-border: #27272a;
+      --text: #f4f4f5;
+      --text-muted: #a1a1aa;
+      --accent: #ffffff;
+      --accent-text: #09090b;
+      --wa: #25d366;
+      --wa-hover: #20ba59;
+      --danger: #ef4444;
+      --success: #10b981;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 16px 16px 40px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 520px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+      padding: 20px 0 10px;
+    }
+
+    .badge-vendor {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #e4e4e7;
+      margin-bottom: 10px;
+    }
+
+    .badge-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: var(--success);
+    }
+
+    .header h1 {
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    .header p {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* Navigation Tabs */
+    .tab-bar {
+      display: flex;
+      background: #18181b;
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 4px;
+      gap: 4px;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .tab-btn.active {
+      background: #27272a;
+      color: #fff;
+    }
+
+    /* Card */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group label {
+      font-size: 12px;
+      font-weight: 700;
+      color: #d4d4d8;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .input-text, .select-input {
+      width: 100%;
+      background: #09090b;
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-size: 14px;
+      color: #fff;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.15s ease;
+    }
+
+    .input-text:focus, .select-input:focus {
+      border-color: #71717a;
+    }
+
+    .input-text::placeholder {
+      color: #52525b;
+    }
+
+    /* Duration Quick Pills */
+    .pills-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .pill-btn {
+      background: #09090b;
+      border: 1px solid var(--card-border);
+      color: var(--text-muted);
+      padding: 10px 6px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.15s ease;
+    }
+
+    .pill-btn.active {
+      background: #27272a;
+      border-color: #52525b;
+      color: #fff;
+    }
+
+    /* Button Primary */
+    .btn-primary {
+      background: var(--accent);
+      color: var(--accent-text);
+      border: none;
+      border-radius: 12px;
+      padding: 14px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: opacity 0.15s ease;
+      width: 100%;
+    }
+
+    .btn-primary:active {
+      opacity: 0.85;
+    }
+
+    /* Result Box */
+    .result-section {
+      display: none;
+      flex-direction: column;
+      gap: 14px;
+      border-top: 1px solid var(--card-border);
+      padding-top: 16px;
+    }
+
+    .key-box {
+      background: #09090b;
+      border: 1px solid #3f3f46;
+      border-radius: 10px;
+      padding: 12px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: #38bdf8;
+      word-break: break-all;
+      line-height: 1.5;
+      max-height: 120px;
+      overflow-y: auto;
+    }
+
+    .meta-summary {
+      background: #18181b;
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-size: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .meta-row {
+      display: flex;
+      justify-content: space-between;
+      color: var(--text-muted);
+    }
+
+    .meta-row span:last-child {
+      color: #fff;
+      font-weight: 600;
+    }
+
+    /* Action buttons in result */
+    .actions-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .btn-wa {
+      background: var(--wa);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 12px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      text-decoration: none;
+      transition: background 0.15s ease;
+    }
+
+    .btn-wa:active {
+      background: var(--wa-hover);
+    }
+
+    .btn-secondary {
+      background: #27272a;
+      color: #fff;
+      border: 1px solid #3f3f46;
+      border-radius: 10px;
+      padding: 12px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .btn-secondary:active {
+      background: #3f3f46;
+    }
+
+    /* Secret settings accordion */
+    .secret-toggle {
+      font-size: 11px;
+      color: #71717a;
+      text-align: center;
+      cursor: pointer;
+      padding-top: 4px;
+    }
+
+    .secret-box {
+      display: none;
+      background: #09090b;
+      border: 1px dashed #3f3f46;
+      border-radius: 10px;
+      padding: 12px;
+      margin-top: 8px;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: #ffffff;
+      color: #000;
+      padding: 10px 20px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      z-index: 9999;
+      pointer-events: none;
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- Header -->
+    <header class="header">
+      <div class="badge-vendor">
+        <span class="badge-dot"></span>
+        IGNOS VENDOR PORTAL
+      </div>
+      <h1>Generator Lisensi Sewa</h1>
+      <p>Buat kode perpanjangan sewa B2B untuk owner photo studio</p>
+    </header>
+
+    <!-- Tab Bar -->
+    <div class="tab-bar">
+      <button class="tab-btn active" id="tabGenBtn" onclick="switchTab('generate')">Buat Lisensi Baru</button>
+      <button class="tab-btn" id="tabVerifyBtn" onclick="switchTab('verify')">Inspeksi Kode</button>
+    </div>
+
+    <!-- TAB 1: GENERATE LISENSI -->
+    <main id="generateTab" class="card">
+      <!-- Input Nama Klien -->
+      <div class="form-group">
+        <label for="clientName">Nama Studio Klien *</label>
+        <input type="text" id="clientName" class="input-text" placeholder="Contoh: Lumen Studio Bali" autocomplete="off" />
+      </div>
+
+      <!-- Input No WA Klien (Opsional) -->
+      <div class="form-group">
+        <label for="clientWa">Nomor WhatsApp Klien (Opsional)</label>
+        <input type="tel" id="clientWa" class="input-text" placeholder="Contoh: 08123456789 atau 628123..." />
+      </div>
+
+      <!-- Pilihan Durasi -->
+      <div class="form-group">
+        <label>Durasi Masa Sewa</label>
+        <div class="pills-grid">
+          <button type="button" class="pill-btn" onclick="selectDuration(7, 'Paket Uji Coba (7 Hari)', this)">7 Hari</button>
+          <button type="button" class="pill-btn" onclick="selectDuration(14, 'Paket 2 Minggu (14 Hari)', this)">14 Hari</button>
+          <button type="button" class="pill-btn active" onclick="selectDuration(30, 'Paket Bulanan (30 Hari)', this)">1 Bulan</button>
+          <button type="button" class="pill-btn" onclick="selectDuration(90, 'Paket 3 Bulan (90 Hari)', this)">3 Bulan</button>
+          <button type="button" class="pill-btn" onclick="selectDuration(180, 'Paket 6 Bulan (180 Hari)', this)">6 Bulan</button>
+          <button type="button" class="pill-btn" onclick="selectDuration(365, 'Paket Tahunan (365 Hari)', this)">1 Tahun</button>
+        </div>
+      </div>
+
+      <!-- Custom Hari -->
+      <div class="form-group" id="customDaysGroup" style="display: none;">
+        <label for="customDaysInput">Jumlah Hari Khusus</label>
+        <input type="number" id="customDaysInput" class="input-text" min="1" max="1825" placeholder="Masukkan jumlah hari (contoh: 45)" />
+      </div>
+
+      <!-- Generate Button -->
+      <button type="button" class="btn-primary" onclick="generateLicense()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-6 4l3 3m5 0l-8.5 8.5a2.121 2.121 0 0 1-3 0L7 17l-4 4-2-2 4-4-2.5-2.5a2.121 2.121 0 0 1 0-3L11 3.5a2.121 2.121 0 0 1 3 0L17 6.5"/></svg>
+        Generate Kode Lisensi
+      </button>
+
+      <!-- Result Box -->
+      <div id="resultSection" class="result-section">
+        <div class="meta-summary">
+          <div class="meta-row">
+            <span>Studio:</span>
+            <span id="resClient">—</span>
+          </div>
+          <div class="meta-row">
+            <span>Paket:</span>
+            <span id="resPlan">—</span>
+          </div>
+          <div class="meta-row">
+            <span>Berlaku Hingga:</span>
+            <span id="resExpiry">—</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Kode Lisensi (Salin & Kirim ke Klien)</label>
+          <div class="key-box" id="resKeyText">IGNOS-V1...</div>
+        </div>
+
+        <div class="actions-grid">
+          <button type="button" class="btn-secondary" onclick="copyLicenseKey()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            Salin Kode
+          </button>
+          <a id="btnSendWa" href="#" target="_blank" class="btn-wa">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+            Kirim WhatsApp
+          </a>
+        </div>
+      </div>
+
+      <!-- Secret configuration accordion -->
+      <div class="secret-toggle" onclick="toggleSecretBox()">
+        ⚙️ Pengaturan Kunci Rahasia Sistem (Klik untuk Ubah)
+      </div>
+      <div class="secret-box" id="secretBox">
+        <div class="form-group">
+          <label for="secretInput">Master Secret Key (Wajib Sama dengan Server)</label>
+          <input type="text" id="secretInput" class="input-text" value="IGNOS_STUDIO_RENTAL_SECRET_2026" />
+        </div>
+      </div>
+    </main>
+
+    <!-- TAB 2: INSPEKSI KODE -->
+    <main id="verifyTab" class="card" style="display: none;">
+      <div class="form-group">
+        <label for="inspectKeyInput">Tempel Kode Lisensi di Sini</label>
+        <textarea id="inspectKeyInput" class="input-text" rows="4" placeholder="IGNOS-V1.eyJjbGllbnQi..."></textarea>
+      </div>
+
+      <button type="button" class="btn-primary" onclick="inspectLicense()">
+        Periksa Keabsahan Lisensi
+      </button>
+
+      <div id="inspectResult" style="display: none;" class="meta-summary">
+        <div class="meta-row">
+          <span>Status Tanda Tangan:</span>
+          <span id="inspStatus">—</span>
+        </div>
+        <div class="meta-row">
+          <span>Nama Studio:</span>
+          <span id="inspClient">—</span>
+        </div>
+        <div class="meta-row">
+          <span>Paket:</span>
+          <span id="inspPlan">—</span>
+        </div>
+        <div class="meta-row">
+          <span>Dibuat Pada:</span>
+          <span id="inspCreated">—</span>
+        </div>
+        <div class="meta-row">
+          <span>Kadaluwarsa:</span>
+          <span id="inspExpiry">—</span>
+        </div>
+        <div class="meta-row">
+          <span>Sisa Masa Aktif:</span>
+          <span id="inspDaysLeft">—</span>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="toast">Kode berhasil disalin!</div>
+
+  <script>
+    let selectedDays = 30;
+    let selectedPlanName = "Paket Bulanan (30 Hari)";
+    let generatedRawKey = "";
+    let generatedFormattedMsg = "";
+
+    function selectDuration(days, planName, elem) {
+      selectedDays = days;
+      selectedPlanName = planName;
+      document.querySelectorAll('.pill-btn').forEach(btn => btn.classList.remove('active'));
+      if (elem) elem.classList.add('active');
+    }
+
+    function switchTab(tab) {
+      if (tab === 'generate') {
+        document.getElementById('generateTab').style.display = 'flex';
+        document.getElementById('verifyTab').style.display = 'none';
+        document.getElementById('tabGenBtn').classList.add('active');
+        document.getElementById('tabVerifyBtn').classList.remove('active');
+      } else {
+        document.getElementById('generateTab').style.display = 'none';
+        document.getElementById('verifyTab').style.display = 'flex';
+        document.getElementById('tabGenBtn').classList.remove('active');
+        document.getElementById('tabVerifyBtn').classList.add('active');
+      }
+    }
+
+    function toggleSecretBox() {
+      const box = document.getElementById('secretBox');
+      box.style.display = box.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.innerText = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2200);
+    }
+
+    // Base64URL helper
+    function base64UrlEncode(str) {
+      const utf8Bytes = new TextEncoder().encode(str);
+      let binary = '';
+      for (let i = 0; i < utf8Bytes.length; i++) {
+        binary += String.fromCharCode(utf8Bytes[i]);
+      }
+      return btoa(binary)
+        .replace(/\+/g, '-')
+        .replace(/\//g, '_')
+        .replace(/=+$/, '');
+    }
+
+    function base64UrlDecode(str) {
+      str = str.replace(/-/g, '+').replace(/_/g, '/');
+      while (str.length % 4) str += '=';
+      const binary = atob(str);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) {
+        bytes[i] = binary.charCodeAt(i);
+      }
+      return new TextDecoder().decode(bytes);
+    }
+
+    // Cryptographic HMAC-SHA256 using Browser Web Crypto
+    async function computeHmacSha256(dataStr, secretStr) {
+      const enc = new TextEncoder();
+      const key = await window.crypto.subtle.importKey(
+        "raw",
+        enc.encode(secretStr),
+        { name: "HMAC", hash: "SHA-256" },
+        false,
+        ["sign"]
+      );
+      const signature = await window.crypto.subtle.sign("HMAC", key, enc.encode(dataStr));
+      const hashArray = Array.from(new Uint8Array(signature));
+      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    async function generateLicense() {
+      const clientName = document.getElementById('clientName').value.trim();
+      const secret = document.getElementById('secretInput').value.trim() || 'IGNOS_STUDIO_RENTAL_SECRET_2026';
+
+      if (!clientName) {
+        showToast("⚠️ Masukkan nama studio klien!");
+        document.getElementById('clientName').focus();
+        return;
+      }
+
+      const now = Date.now();
+      const exp = now + (selectedDays * 24 * 60 * 60 * 1000);
+
+      const payload = {
+        client: clientName,
+        plan: selectedPlanName,
+        created: now,
+        exp: exp,
+        days: selectedDays
+      };
+
+      const payloadJson = JSON.stringify(payload);
+      const b64 = base64UrlEncode(payloadJson);
+      const signature = await computeHmacSha256(b64, secret);
+
+      const licenseKey = `IGNOS-V1.${b64}.${signature}`;
+      generatedRawKey = licenseKey;
+
+      const expiryDateObj = new Date(exp);
+      const expiryFormatted = expiryDateObj.toLocaleDateString('id-ID', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+      });
+
+      // Update UI
+      document.getElementById('resClient').innerText = clientName;
+      document.getElementById('resPlan').innerText = selectedPlanName;
+      document.getElementById('resExpiry').innerText = expiryFormatted;
+      document.getElementById('resKeyText').innerText = licenseKey;
+      document.getElementById('resultSection').style.display = 'flex';
+
+      // Prepare WhatsApp message
+      const rawWa = document.getElementById('clientWa').value.trim().replace(/[^0-9]/g, '');
+      let cleanWa = rawWa;
+      if (cleanWa.startsWith('08')) {
+        cleanWa = '628' + cleanWa.substring(2);
+      }
+
+      generatedFormattedMsg = 
+`Halo *${clientName}*,
+Terima kasih atas pembayaran sewa software Ignos Self-Service.
+
+Berikut adalah kode lisensi perpanjangan sewa studio Anda:
+━━━━━━━━━━━━━━━━━━━━
+${licenseKey}
+━━━━━━━━━━━━━━━━━━━━
+📌 *Paket:* ${selectedPlanName}
+⏳ *Masa Aktif:* ${selectedDays} Hari
+📅 *Berlaku Hingga:* ${expiryFormatted}
+
+*Cara Aktivasi di PC Studio:*
+1. Buka Admin Portal Ignos di PC studio
+2. Masuk ke menu *Lisensi Sewa*
+3. Tempel kode di atas pada kolom aktivasi & klik *Aktifkan Lisensi*
+
+Jika ada kendala, hubungi kami sewaktu-waktu. Sukses selalu untuk studio Anda! ✨`;
+
+      const encodedMsg = encodeURIComponent(generatedFormattedMsg);
+      const waUrl = cleanWa 
+        ? `https://wa.me/${cleanWa}?text=${encodedMsg}`
+        : `https://api.whatsapp.com/send?text=${encodedMsg}`;
+
+      document.getElementById('btnSendWa').href = waUrl;
+
+      showToast("✨ Lisensi berhasil dibuat!");
+      document.getElementById('resultSection').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function copyLicenseKey() {
+      if (!generatedRawKey) return;
+      navigator.clipboard.writeText(generatedRawKey).then(() => {
+        showToast("📋 Kode lisensi disalin!");
+      }).catch(() => {
+        showToast("Gagal menyalin otomatis");
+      });
+    }
+
+    async function inspectLicense() {
+      const rawKey = document.getElementById('inspectKeyInput').value.trim();
+      const secret = document.getElementById('secretInput').value.trim() || 'IGNOS_STUDIO_RENTAL_SECRET_2026';
+      const resultBox = document.getElementById('inspectResult');
+
+      if (!rawKey) {
+        showToast("⚠️ Tempelkan kode lisensi dahulu!");
+        return;
+      }
+
+      const parts = rawKey.split('.');
+      if (parts.length !== 3 || parts[0] !== 'IGNOS-V1') {
+        showToast("❌ Format bukan lisensi IGNOS-V1");
+        return;
+      }
+
+      try {
+        const [prefix, b64, sig] = parts;
+        const expectedSig = await computeHmacSha256(b64, secret);
+        const isValid = sig.toLowerCase() === expectedSig.toLowerCase();
+
+        const jsonStr = base64UrlDecode(b64);
+        const payload = JSON.parse(jsonStr);
+
+        resultBox.style.display = 'flex';
+        const now = Date.now();
+        const diffMs = payload.exp - now;
+        const daysLeft = Math.floor(diffMs / (24 * 60 * 60 * 1000));
+
+        const statusElem = document.getElementById('inspStatus');
+        if (isValid) {
+          statusElem.innerText = "✅ SAH & ASLI (Tanda Tangan Valid)";
+          statusElem.style.color = "#10b981";
+        } else {
+          statusElem.innerText = "❌ PALSU / SUDAH DIMODIFIKASI";
+          statusElem.style.color = "#ef4444";
+        }
+
+        document.getElementById('inspClient').innerText = payload.client || '—';
+        document.getElementById('inspPlan').innerText = payload.plan || '—';
+        document.getElementById('inspCreated').innerText = new Date(payload.created).toLocaleDateString('id-ID');
+        document.getElementById('inspExpiry').innerText = new Date(payload.exp).toLocaleDateString('id-ID', {
+          weekday: 'long',
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric'
+        });
+        document.getElementById('inspDaysLeft').innerText = daysLeft > 0 ? `${daysLeft} Hari Tersisa` : 'Sudah Kedaluwarsa';
+      } catch (err) {
+        showToast("Gagal membaca kode: " + err.message);
+      }
+    }
+  </script>
+</body>
+</html>

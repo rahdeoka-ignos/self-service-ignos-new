@@ -16,9 +16,11 @@ import {
   Minimize2,
   Tag,
   Building2,
+  ShieldCheck,
 } from "lucide-react";
 import { CameraImportModal } from "./CameraImportModal";
 import { useBranding } from "../../context/BrandingContext";
+import { useLicense } from "../../context/LicenseContext";
 
 const NAV_WORKSPACE = [
   {
@@ -49,6 +51,12 @@ const NAV_PREFERENCES = [
     desc: "Profil, logo & struk",
   },
   {
+    path: "/admin/license",
+    label: "Lisensi Sewa",
+    icon: ShieldCheck,
+    desc: "Masa aktif & aktivasi",
+  },
+  {
     path: "/admin/kiosk-theme",
     label: "Tema & Alur Kiosk",
     icon: Palette,
@@ -76,6 +84,7 @@ const NAV_PREFERENCES = [
 
 export function AdminLayout({ children }: { children: React.ReactNode }) {
   const { branding } = useBranding();
+  const { license, isLocked, isWarning } = useLicense();
   const [printerAlert, setPrinterAlert] = useState<any>(null);
   const [cameraImportOpen, setCameraImportOpen] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -122,6 +131,8 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
     if (location.pathname === "/admin") return "Dashboard";
     if (location.pathname.startsWith("/admin/pricing")) return "Harga & Paket";
     if (location.pathname.startsWith("/admin/templates")) return "Templates";
+    if (location.pathname.startsWith("/admin/branding")) return "Identitas Studio";
+    if (location.pathname.startsWith("/admin/license")) return "Lisensi Sewa";
     if (location.pathname.startsWith("/admin/kiosk-theme")) return "Tema & Alur Kiosk";
     if (location.pathname.startsWith("/admin/printers")) return "Printers";
     if (location.pathname.startsWith("/admin/message")) return "Pesan Softcopy";
@@ -219,6 +230,14 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
                     <span className="truncate">{label}</span>
                     {path === "/admin/printers" && printerAlert && (
                       <span className="ml-auto w-1.5 h-1.5 rounded-full bg-[#ef4444] shrink-0" title="Printer Perlu Perhatian" />
+                    )}
+                    {path === "/admin/license" && (isLocked || isWarning) && (
+                      <span
+                        className={`ml-auto w-1.5 h-1.5 rounded-full shrink-0 ${
+                          isLocked ? "bg-[#ef4444]" : "bg-[#f59e0b]"
+                        }`}
+                        title={isLocked ? "Lisensi Perlu Diperpanjang" : "Lisensi Mendekati Jatuh Tempo"}
+                      />
                     )}
                   </button>
                 );

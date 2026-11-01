@@ -1,3 +1,5 @@
+import crypto from "crypto";
+import os from "os";
 import { exec, execSync } from "child_process";
 import express from "express";
 import fs from "fs";
@@ -2687,6 +2689,223 @@ app.post("/api/branding/logo", uploadBrandingLogo.single("logo"), (req, res) => 
 
 
 // ─────────────────────────────────────────────────────────────
+
+// ─────────────────────────────────────────────────────────────
+// IGNOS RENTAL LICENSE SYSTEM (B2B Offline Cryptographic Verification)
+// ─────────────────────────────────────────────────────────────
+const LICENSE_FILE = path.join(__dirname, "data/license.json");
+const LICENSE_SECRET = process.env.IGNOS_LICENSE_SECRET || "IGNOS_STUDIO_RENTAL_SECRET_2026";
+const VENDOR_SUPPORT_PHONE = process.env.IGNOS_VENDOR_PHONE || "6281234567890";
+
+function readLicenseRecord() {
+  try {
+    if (fs.existsSync(LICENSE_FILE)) {
+      const raw = fs.readFileSync(LICENSE_FILE, "utf-8");
+      return JSON.parse(raw);
+    }
+  } catch (err) {
+    console.error("Error reading license.json:", err.message);
+  }
+  return null;
+}
+
+function writeLicenseRecord(record) {
+  try {
+    const dir = path.dirname(LICENSE_FILE);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(LICENSE_FILE, JSON.stringify(record, null, 2), "utf-8");
+  } catch (err) {
+    console.error("Error writing license.json:", err.message);
+  }
+}
+
+function verifyLicenseKey(keyStr) {
+  if (!keyStr || typeof keyStr !== "string") {
+    return { valid: false, error: "Kode lisensi kosong." };
+  }
+  const cleanKey = keyStr.trim();
+  const parts = cleanKey.split(".");
+  if (parts.length !== 3 || parts[0] !== "IGNOS-V1") {
+    return { valid: false, error: "Format kode lisensi tidak valid (Wajib format IGNOS-V1)." };
+  }
+
+  const [prefix, b64Payload, signature] = parts;
+
+  // Calculate expected HMAC
+  const expectedSig = crypto
+    .createHmac("sha256", LICENSE_SECRET)
+    .update(b64Payload)
+    .digest("hex");
+
+  if (signature.toLowerCase() !== expectedSig.toLowerCase()) {
+    return { valid: false, error: "Tanda tangan digital tidak cocok atau lisensi telah dimanipulasi." };
+  }
+
+  try {
+    const jsonStr = Buffer.from(b64Payload, "base64url").toString("utf-8");
+    const payload = JSON.parse(jsonStr);
+    if (!payload.client || !payload.exp) {
+      return { valid: false, error: "Struktur isi lisensi tidak lengkap." };
+    }
+    return { valid: true, payload };
+  } catch (err) {
+    return { valid: false, error: "Gagal membaca payload lisensi: " + err.message };
+  }
+}
+
+function calculateLicenseStatus() {
+  const record = readLicenseRecord();
+  const now = Date.now();
+  const hostname = os.hostname();
+  const platform = os.platform();
+
+  if (!record || !record.licenseKey) {
+    return {
+      isValid: false,
+      isExpired: true,
+      isClockTampered: false,
+      status: "unregistered",
+      clientName: "Belum Terdaftar",
+      plan: "Tanpa Lisensi Aktif",
+      daysLeft: 0,
+      hoursLeft: 0,
+      machineInfo: { hostname, platform },
+      supportContact: {
+        name: "Vendor Ignos Studio",
+        phone: VENDOR_SUPPORT_PHONE,
+        whatsappUrl: "https://wa.me/" + VENDOR_SUPPORT_PHONE + "?text=" + encodeURIComponent("Halo Vendor Ignos, saya ingin aktivasi lisensi software studio."),
+      },
+      lastVerifiedAt: now,
+    };
+  }
+
+  const verification = verifyLicenseKey(record.licenseKey);
+  if (!verification.valid) {
+    return {
+      isValid: false,
+      isExpired: true,
+      isClockTampered: false,
+      status: "unregistered",
+      clientName: record.clientName || "Tidak Diketahui",
+      plan: "Lisensi Rusak / Tidak Sah",
+      daysLeft: 0,
+      hoursLeft: 0,
+      machineInfo: { hostname, platform },
+      supportContact: {
+        name: "Vendor Ignos Studio",
+        phone: VENDOR_SUPPORT_PHONE,
+        whatsappUrl: "https://wa.me/" + VENDOR_SUPPORT_PHONE + "?text=" + encodeURIComponent("Halo Vendor Ignos, lisensi studio kami tidak sah."),
+      },
+      lastVerifiedAt: now,
+    };
+  }
+
+  const { payload } = verification;
+  const lastVerified = record.lastVerifiedAt || 0;
+
+  // Anti-rollback jam Windows: toleransi 5 menit untuk sinkronisasi NTP
+  let isClockTampered = false;
+  if (lastVerified > 0 && now < lastVerified - (5 * 60 * 1000)) {
+    isClockTampered = true;
+  }
+
+  const expTime = payload.exp;
+  const diffMs = expTime - now;
+  const daysLeft = Math.max(0, Math.floor(diffMs / (24 * 60 * 60 * 1000)));
+  const hoursLeft = Math.max(0, Math.floor(diffMs / (60 * 60 * 1000)));
+  const isExpired = diffMs <= 0 || isClockTampered;
+
+  let status = "active";
+  if (isClockTampered) {
+    status = "clock_tampered";
+  } else if (isExpired) {
+    status = "expired";
+  } else if (daysLeft <= 3) {
+    status = "warning_expiring_soon";
+  }
+
+  // Perbarui lastVerifiedAt jika jam bergerak maju normal
+  if (!isClockTampered && now > lastVerified) {
+    record.lastVerifiedAt = now;
+    writeLicenseRecord(record);
+  }
+
+  return {
+    isValid: !isExpired && !isClockTampered,
+    isExpired,
+    isClockTampered,
+    status,
+    clientName: payload.client,
+    plan: payload.plan || "Paket Sewa",
+    activatedAt: record.activatedAt,
+    expiresAt: new Date(expTime).toISOString(),
+    daysLeft,
+    hoursLeft,
+    machineInfo: { hostname, platform },
+    supportContact: {
+      name: "Vendor Ignos Studio",
+      phone: VENDOR_SUPPORT_PHONE,
+      whatsappUrl: "https://wa.me/" + VENDOR_SUPPORT_PHONE + "?text=" + encodeURIComponent("Halo Vendor Ignos, saya dari *" + payload.client + "* ingin perpanjang lisensi sewa software."),
+    },
+    lastVerifiedAt: record.lastVerifiedAt || now,
+  };
+}
+
+// GET /api/license/status
+app.get("/api/license/status", (req, res) => {
+  try {
+    const status = calculateLicenseStatus();
+    res.json(status);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/license/activate
+app.post("/api/license/activate", (req, res) => {
+  try {
+    const { licenseKey } = req.body;
+    if (!licenseKey) {
+      return res.status(400).json({ success: false, message: "Kode lisensi wajib diisi." });
+    }
+
+    const verification = verifyLicenseKey(licenseKey);
+    if (!verification.valid) {
+      return res.status(400).json({ success: false, message: verification.error });
+    }
+
+    const { payload } = verification;
+    const now = Date.now();
+
+    if (now >= payload.exp) {
+      return res.status(400).json({
+        success: false,
+        message: "Kode lisensi ini sudah kedaluwarsa sejak " + new Date(payload.exp).toLocaleDateString("id-ID"),
+      });
+    }
+
+    const newRecord = {
+      licenseKey: licenseKey.trim(),
+      clientName: payload.client,
+      plan: payload.plan || "Paket Sewa Studio",
+      activatedAt: new Date(now).toISOString(),
+      expiresAt: new Date(payload.exp).toISOString(),
+      lastVerifiedAt: now,
+      notes: payload.notes || "Aktivasi manual via Admin Portal",
+    };
+
+    writeLicenseRecord(newRecord);
+    const updatedStatus = calculateLicenseStatus();
+
+    res.json({
+      success: true,
+      message: "Lisensi berhasil diaktifkan untuk " + payload.client + "! Berlaku hingga " + new Date(payload.exp).toLocaleDateString("id-ID") + ".",
+      status: updatedStatus,
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
 
 // Watch PHOTOS_DIR for new files and generate thumbnails immediately
 function startFileWatcher() {
