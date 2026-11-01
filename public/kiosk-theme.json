@@ -1,5 +1,5 @@
 {
-  "presetId": "neo-brutalism",
+  "presetId": "custom",
   "name": "Neo-Brutalism (Pop Studio)",
   "backgroundColor": "#f3f4f6",
   "cardBackgroundColor": "#ffffff",
@@ -14,7 +14,7 @@
   "fontFamily": "space-grotesk",
   "studioName": "IGNOS STUDIO",
   "homeHeadline": "Kamu Habis Fotoan Dimana?",
-  "homeSubheadline": "Pilih studio untuk mulai sesi foto kamu",
+  "homeSubheadline": "",
   "logoUrl": "",
   "enableBonusTutorial": true,
   "enableAddonsStep": true,

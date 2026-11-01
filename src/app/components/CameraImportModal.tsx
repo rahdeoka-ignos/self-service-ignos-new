@@ -129,6 +129,12 @@ export function CameraImportModal({
   // Upload & Progress state
   const [importing, setImporting] = useState(false);
   const [uploadPercent, setUploadPercent] = useState<number>(0);
+  const [importSuccessData, setImportSuccessData] = useState<{
+    count: number;
+    folder: string;
+    sourceName: string;
+    timestamp: string;
+  } | null>(null);
   const [statusMessage, setStatusMessage] = useState<{
     type: "success" | "error";
     text: string;
@@ -431,7 +437,7 @@ export function CameraImportModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 backdrop-blur-xs p-4 animate-in fade-in font-['Manrope',sans-serif]">
-      <div className="bg-white border border-[#e8e8e8] rounded-[14px] max-w-2xl w-full shadow-2xl flex flex-col max-h-[92vh] overflow-hidden text-[#202020]">
+      <div className="bg-white border border-[#e8e8e8] rounded-[14px] max-w-2xl w-full shadow-2xl flex flex-col max-h-[92vh] overflow-hidden text-[#202020] relative">
         
         {/* Header (Amara Villa Clean Style) */}
         <div className="px-6 py-4.5 border-b border-[#e8e8e8] flex items-center justify-between bg-white shrink-0">
@@ -479,7 +485,109 @@ export function CameraImportModal({
         </div>
 
         {/* Content Body */}
+        {/* Progress Transfer Overlay */}
+        {importing && (
+          <div className="absolute inset-0 bg-white/94 backdrop-blur-xs z-50 flex flex-col items-center justify-center p-6 text-center space-y-4 animate-in fade-in duration-200">
+            <div className="w-16 h-16 rounded-full bg-[#f4f4f5] border border-[#e4e4e7] flex items-center justify-center text-[#171717] shadow-sm">
+              <RefreshCw size={28} className="animate-spin text-[#171717]" />
+            </div>
+
+            <div className="space-y-1.5 max-w-sm">
+              <h4 className="text-[17px] font-bold text-[#171717]">
+                Menyalin Foto ke Kiosk...
+              </h4>
+              <p className="text-[12px] text-[#666] leading-relaxed">
+                Sedang mentransfer <strong>{scanResult?.totalFound || draggedFiles.length} foto</strong> melalui USB dan membuat thumbnail instan.
+              </p>
+            </div>
+
+            <div className="w-72 h-2 bg-[#f0f0f0] rounded-full overflow-hidden relative">
+              <div className="h-full bg-[#171717] rounded-full w-2/3 animate-pulse"></div>
+            </div>
+
+            <p className="text-[11px] text-[#888] flex items-center gap-1.5 bg-[#fafafa] px-3 py-1.5 rounded-[6px] border border-[#eee]">
+              <span>⚠️ Harap tidak mencabut kabel kamera atau menutup jendela ini.</span>
+            </p>
+          </div>
+        )}
+
         <div className="p-6 overflow-y-auto space-y-5 bg-white">
+          {importSuccessData ? (
+            <div className="py-6 px-4 flex flex-col items-center justify-center text-center space-y-6 animate-in fade-in zoom-in-95 duration-200">
+              <div className="relative">
+                <div className="w-20 h-20 rounded-full bg-[#ecfdf5] border-2 border-[#a7f3d0] flex items-center justify-center text-[#059669] shadow-sm">
+                  <CheckCircle2 size={44} strokeWidth={2.2} />
+                </div>
+                <div className="absolute -bottom-1 -right-1 bg-[#10b981] text-white p-1 rounded-full shadow">
+                  <Sparkles size={14} />
+                </div>
+              </div>
+
+              <div className="space-y-1.5 max-w-md">
+                <h3 className="text-xl font-bold text-[#171717] tracking-tight">
+                  Semua Foto Selesai Di-Import!
+                </h3>
+                <p className="text-[13px] text-[#666] leading-relaxed">
+                  Sebanyak <strong className="text-[#171717] font-semibold">{importSuccessData.count} foto</strong> dari <strong>{importSuccessData.sourceName}</strong> telah berhasil disalin dan siap dipilih customer di galeri Kiosk.
+                </p>
+              </div>
+
+              {/* Summary Details Box */}
+              <div className="w-full max-w-md bg-[#fafafa] border border-[#e8e8e8] rounded-[12px] p-4 text-left text-[12px] space-y-2.5">
+                <div className="flex items-center justify-between pb-2 border-b border-[#f0f0f0]">
+                  <span className="text-[#777]">Folder Kamera</span>
+                  <span className="font-mono font-medium text-[#171717] bg-white px-2 py-0.5 rounded border border-[#e4e4e7]">
+                    📁 {importSuccessData.folder}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between pb-2 border-b border-[#f0f0f0]">
+                  <span className="text-[#777]">Total Foto Baru</span>
+                  <span className="font-semibold text-[#059669] bg-[#ecfdf5] px-2 py-0.5 rounded border border-[#a7f3d0]">
+                    ✓ {importSuccessData.count} Foto Siap Cetak
+                  </span>
+                </div>
+                <div className="flex items-center justify-between pb-2 border-b border-[#f0f0f0]">
+                  <span className="text-[#777]">Waktu Selesai</span>
+                  <span className="font-mono text-[#555]">{importSuccessData.timestamp} WIB</span>
+                </div>
+                <div className="flex items-center justify-between pt-0.5">
+                  <span className="text-[#777]">Status Galeri Kiosk</span>
+                  <span className="text-[#059669] font-medium flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-[#10b981] animate-pulse"></span>
+                    Terupdate & Siap Pakai
+                  </span>
+                </div>
+              </div>
+
+              {/* Quick Action Buttons */}
+              <div className="flex flex-col sm:flex-row items-center gap-2.5 w-full max-w-md pt-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setImportSuccessData(null);
+                    onClose();
+                  }}
+                  className="w-full py-2.5 px-4 bg-[#171717] hover:bg-[#333] text-white rounded-[8px] text-[13px] font-medium transition-all shadow-sm cursor-pointer flex items-center justify-center gap-2"
+                >
+                  <span>Lihat Foto di Galeri Kiosk</span>
+                  <ArrowRight size={14} />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setImportSuccessData(null);
+                    handleScan(selectedPresetId, timeFilter);
+                  }}
+                  className="w-full py-2.5 px-4 bg-white border border-[#e0e0e0] text-[#555] hover:text-[#171717] hover:bg-[#fafafa] rounded-[8px] text-[13px] font-medium transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                >
+                  <RefreshCw size={13} />
+                  <span>Import Sesi Lain</span>
+                </button>
+              </div>
+            </div>
+          ) : (
+            <>
           {/* Status Message Alert */}
           {statusMessage && (
             <div
@@ -856,6 +964,8 @@ export function CameraImportModal({
               className="w-4 h-4 rounded text-[#171717] border-[#d4d4d8] focus:ring-0 cursor-pointer accent-[#171717]"
             />
           </div>
+            </>
+          )}
         </div>
 
         {/* Footer Actions (Clean Amara Style, NO ICONS on Action Button) */}

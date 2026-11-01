@@ -1,0 +1,33 @@
+{
+  "selectedPreset": "studio",
+  "presets": {
+    "studio": {
+      "id": "studio",
+      "name": "Foto Studio (Fujifilm X-S10)",
+      "path": "This PC\\X-S10\\External Memory\\DCIM",
+      "defaultMinutes": 30,
+      "isConnected": true
+    },
+    "fotobox": {
+      "id": "fotobox",
+      "name": "Fotobox (Card Reader E:)",
+      "path": "E:\\DCIM",
+      "defaultMinutes": 30,
+      "isConnected": false
+    },
+    "custom": {
+      "id": "custom",
+      "name": "Folder Kustom",
+      "path": "This PC\\X-S10\\External Memory\\DCIM",
+      "defaultMinutes": 30,
+      "isConnected": true
+    }
+  },
+  "lastImport": {
+    "timestamp": "2026-10-29T13:33:45.620Z",
+    "preset": "studio",
+    "count": 156,
+    "bytes": 0,
+    "formattedSize": "156 Foto"
+  }
+}
