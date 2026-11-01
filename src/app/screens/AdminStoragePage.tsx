@@ -15,6 +15,8 @@ import {
   XCircle,
   Database,
   Sliders,
+  FolderOpen,
+  Image,
 } from "lucide-react";
 import { AdminLayout } from "../components/AdminLayout";
 import { usePageTitle } from "../../hooks/usePageTitle";
@@ -27,6 +29,14 @@ interface DateFolderStat {
   sessionCount: number;
   sessionNames: string[];
   ageDays: number;
+}
+
+interface CameraCacheItem {
+  name: string;
+  size: number;
+  formattedSize: string;
+  mtime: string;
+  timeFormatted: string;
 }
 
 interface StorageStats {
@@ -47,6 +57,12 @@ interface StorageStats {
       formatted: string;
       photoFiles: number;
       thumbFiles: number;
+    };
+    cameraCache?: {
+      bytes: number;
+      formatted: string;
+      files: number;
+      items: CameraCacheItem[];
     };
     queue: {
       bytes: number;
@@ -130,8 +146,9 @@ export function AdminStoragePage() {
     action: string;
     days?: number;
     date?: string;
+    fileName?: string;
   }) => {
-    setCleaningAction(payload.action + (payload.date || payload.days || ""));
+    setCleaningAction(payload.action + (payload.fileName || payload.date || payload.days || ""));
     setFeedback(null);
     try {
       const res = await fetch(`${API}/api/storage-clean`, {
@@ -163,6 +180,18 @@ export function AdminStoragePage() {
       });
     } finally {
       setCleaningAction(null);
+    }
+  };
+
+  const handleOpenFolder = async (target: "camera_cache" | "photos" | "archive" = "camera_cache") => {
+    try {
+      await fetch(`${API}/api/camera-import/open-folder`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ target }),
+      });
+    } catch (err) {
+      console.error("Gagal membuka folder:", err);
     }
   };
 
@@ -311,7 +340,8 @@ export function AdminStoragePage() {
             </div>
             <div className="pt-2 border-t border-zinc-100 flex items-center justify-between text-[11px] text-zinc-500">
               <span>Arsip: {stats?.studioStorage.archive.formatted || "0 B"}</span>
-              <span>Kamera: {stats?.studioStorage.camera.formatted || "0 B"}</span>
+              <span>Kiosk: {stats?.studioStorage.camera.formatted || "0 B"}</span>
+              <span>Cache: {stats?.studioStorage.cameraCache?.formatted || "0 B"}</span>
             </div>
           </div>
 
@@ -438,6 +468,28 @@ export function AdminStoragePage() {
                 <div className="text-[11px] font-semibold text-zinc-700 uppercase tracking-wider">
                   Aksi Tambahan:
                 </div>
+
+                {/* Clean Camera Cache (MTP) */}
+                <button
+                  onClick={() => {
+                    setConfirmModal({
+                      title: "Kosongkan Cache Foto Kamera?",
+                      description: "Semua file foto sampel preview kamera yang tersimpan sementara di storage/camera_cache akan dihapus untuk mengosongkan ruang disk.",
+                      confirmText: "Kosongkan Cache Kamera",
+                      action: () => handleClean({ action: "camera_cache" }),
+                    });
+                  }}
+                  disabled={!!cleaningAction || (stats?.studioStorage.cameraCache?.files ?? 0) === 0}
+                  className="w-full flex items-center justify-between px-3 py-2 bg-zinc-50 hover:bg-zinc-100 text-zinc-800 border border-zinc-200 rounded-lg text-xs font-medium transition-colors cursor-pointer disabled:opacity-50"
+                >
+                  <span className="flex items-center gap-2">
+                    <Camera size={14} className="text-zinc-500" />
+                    <span>Kosongkan Cache Kamera (MTP)</span>
+                  </span>
+                  <span className="text-[11px] font-mono text-zinc-500">
+                    {stats?.studioStorage.cameraCache?.formatted || "0 B"} ({stats?.studioStorage.cameraCache?.files || 0})
+                  </span>
+                </button>
 
                 {/* Clean Camera & Thumbs */}
                 <button
@@ -568,8 +620,125 @@ export function AdminStoragePage() {
             </div>
           </div>
 
-          {/* Right Column: Breakdown of Archive Folders by Date (col-span-2) */}
-          <div className="lg:col-span-2 space-y-4">
+          {/* Right Column: Camera Cache & Archive by Date (col-span-2) */}
+          <div className="lg:col-span-2 space-y-5">
+            {/* Box: Camera Cache Manager */}
+            <div className="bg-white border border-zinc-200 rounded-xl p-5 shadow-2xs space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-lg bg-zinc-100 flex items-center justify-center text-zinc-700 shrink-0">
+                    <Camera size={16} />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h2 className="text-sm font-semibold text-zinc-950">
+                        Cache Foto Kamera (Preview MTP)
+                      </h2>
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-600 border border-zinc-200">
+                        storage/camera_cache
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-zinc-500">
+                      Sampel foto sementara dari kabel USB kamera untuk tampilan pratinjau thumbnail sebelum di-import.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
+                  <button
+                    onClick={() => handleOpenFolder("camera_cache")}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-white border border-zinc-200 text-zinc-700 hover:bg-zinc-50 rounded-lg text-xs font-medium transition-colors shadow-2xs cursor-pointer"
+                    title="Buka folder storage/camera_cache di File Explorer Windows"
+                  >
+                    <FolderOpen size={13} className="text-zinc-500" />
+                    <span>Buka Folder</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setConfirmModal({
+                        title: "Kosongkan Semua Cache Foto Kamera?",
+                        description: "Semua file foto sampel yang ada di dalam folder storage/camera_cache akan dihapus permanen. Tindakan ini aman dan tidak akan menghapus arsip atau foto customer di kiosk.",
+                        confirmText: "Kosongkan Cache Kamera",
+                        action: () => handleClean({ action: "camera_cache" }),
+                      });
+                    }}
+                    disabled={!!cleaningAction || (stats?.studioStorage.cameraCache?.files ?? 0) === 0}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-rose-50 border border-rose-200 text-rose-700 hover:bg-rose-100 rounded-lg text-xs font-semibold transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed shadow-2xs"
+                  >
+                    <Trash2 size={13} />
+                    <span>Kosongkan Cache ({stats?.studioStorage.cameraCache?.files || 0})</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Cache file list or empty state */}
+              {(!stats?.studioStorage.cameraCache?.items || stats.studioStorage.cameraCache.items.length === 0) ? (
+                <div className="p-5 rounded-lg border border-dashed border-zinc-200 text-center space-y-1 bg-zinc-50/50">
+                  <div className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-emerald-100 text-emerald-600 mb-0.5">
+                    <CheckCircle2 size={15} />
+                  </div>
+                  <p className="text-xs font-medium text-zinc-700">Folder cache kamera bersih (0 foto)</p>
+                  <p className="text-[11px] text-zinc-400">
+                    Tidak ada file sampah yang tersimpan. Foto akan terisi sampel baru saat melakukan scan kamera via USB.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-2.5">
+                  <div className="flex items-center justify-between text-[11px] text-zinc-500 px-0.5">
+                    <span>
+                      Total di folder: <b className="text-zinc-900">{stats.studioStorage.cameraCache.items.length} file</b>
+                    </span>
+                    <span className="font-mono">
+                      Ukuran disk: <b className="text-zinc-900">{stats.studioStorage.cameraCache.formatted}</b>
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 max-h-72 overflow-y-auto pr-1">
+                    {stats.studioStorage.cameraCache.items.map((file) => (
+                      <div
+                        key={file.name}
+                        className="group relative flex items-center gap-2.5 p-2 rounded-xl border border-zinc-200 bg-white hover:border-zinc-300 hover:shadow-xs transition-all"
+                      >
+                        <div className="w-8 h-8 rounded-lg bg-zinc-100 flex items-center justify-center text-zinc-500 shrink-0 border border-zinc-200/70">
+                          <Camera size={14} />
+                        </div>
+
+                        <div className="min-w-0 flex-1 space-y-0.5">
+                          <div className="text-xs font-semibold text-zinc-900 truncate font-mono" title={file.name}>
+                            {file.name}
+                          </div>
+                          <div className="text-[10px] text-zinc-500 font-mono">
+                            {file.formattedSize}
+                          </div>
+                          <div className="text-[10px] text-zinc-400 flex items-center gap-1">
+                            <Clock size={10} />
+                            <span>{file.timeFormatted}</span>
+                          </div>
+                        </div>
+
+                        <button
+                          onClick={() => {
+                            setConfirmModal({
+                              title: `Hapus foto ${file.name}?`,
+                              description: `File sampel "${file.name}" (${file.formattedSize}) akan dihapus dari storage/camera_cache.`,
+                              confirmText: "Hapus Foto Ini",
+                              action: () => handleClean({ action: "camera_cache_file", fileName: file.name }),
+                            });
+                          }}
+                          disabled={!!cleaningAction}
+                          className="p-1.5 text-zinc-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer shrink-0"
+                          title="Hapus foto ini dari cache"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
             <div className="bg-white border border-zinc-200 rounded-xl p-5 shadow-2xs space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">

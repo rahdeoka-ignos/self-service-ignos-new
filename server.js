@@ -11,7 +11,7 @@ const { print, getPrinters } = pdfToPrinter;
 // Disable sharp cache to release file locks on Windows
 sharp.cache(false);
 import { fileURLToPath } from "url";
-import { createCustomerFolder, uploadMultipleFiles } from "./gdrive.js";
+import { createCustomerFolder, uploadMultipleFiles, testFolderAccess, PARENT_FOLDER_ID } from "./gdrive.js";
 
 const app = express();
 app.use(cors());
@@ -25,9 +25,11 @@ const PHOTOS_DIR = path.join(__dirname, "public/photos");
 const THUMBS_DIR = path.join(__dirname, "public/thumbnails");
 const UPLOAD_QUEUE_DIR = path.join(__dirname, "storage/upload_queue");
 const ARCHIVE_DIR = path.join(__dirname, "storage/archive");
+const CAMERA_CACHE_DIR = path.join(__dirname, "storage/camera_cache");
 
 if (!fs.existsSync(UPLOAD_QUEUE_DIR)) fs.mkdirSync(UPLOAD_QUEUE_DIR, { recursive: true });
 if (!fs.existsSync(ARCHIVE_DIR)) fs.mkdirSync(ARCHIVE_DIR, { recursive: true });
+if (!fs.existsSync(CAMERA_CACHE_DIR)) fs.mkdirSync(CAMERA_CACHE_DIR, { recursive: true });
 const TEMPLATES_DIR = path.join(__dirname, "public/templates");
 const TEMPLATES_JSON = path.join(TEMPLATES_DIR, "templates.json");
 const PRINTERS_JSON = path.join(__dirname, "public/printers.json");
@@ -86,6 +88,7 @@ if (!fs.existsSync(THUMBS_DIR)) {
 // serve images
 app.use("/photos", express.static(PHOTOS_DIR));
 app.use("/thumbs", express.static(THUMBS_DIR));
+app.use("/camera-cache", express.static(CAMERA_CACHE_DIR));
 
 // upload hasil print
 const storage = multer.diskStorage({
@@ -177,6 +180,175 @@ app.get("/api/latest-session-drive", (req, res) => {
   res.json(latestDriveSession || { success: false, message: "Belum ada sesi Google Drive" });
 });
 
+app.get("/api/gdrive-auth-status", async (req, res) => {
+  try {
+    const folderInfo = await testFolderAccess();
+    res.json({
+      connected: true,
+      folderName: folderInfo?.name || "Root",
+      parentFolderId: PARENT_FOLDER_ID,
+    });
+  } catch (err) {
+    const errMsg = err?.message || String(err);
+    const isTokenExpired =
+      errMsg.includes("invalid_grant") ||
+      errMsg.includes("Token has been expired") ||
+      errMsg.includes("revoked");
+    res.json({
+      connected: false,
+      isTokenExpired,
+      error: errMsg,
+    });
+  }
+});
+
+app.post("/api/gdrive-trigger-auth", (req, res) => {
+  try {
+    const authScriptPath = path.join(__dirname, "auth_gdrive.cjs");
+    if (!fs.existsSync(authScriptPath)) {
+      return res.status(404).json({ error: "Script auth_gdrive.cjs tidak ditemukan" });
+    }
+    console.log("[GDrive] Menjalankan auth_gdrive.cjs untuk login ulang Google Drive...");
+    exec(`node "${authScriptPath}"`, (err, stdout, stderr) => {
+      if (err) {
+        console.error("[GDrive] Error saat auth_gdrive.cjs:", err.message);
+      } else {
+        console.log("[GDrive] auth_gdrive.cjs selesai:", stdout);
+      }
+    });
+    res.json({
+      success: true,
+      message: "Browser otorisasi Google Drive sedang dibuka di komputer kasir...",
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get("/api/gdrive-pending-queue", (req, res) => {
+  try {
+    if (!fs.existsSync(UPLOAD_QUEUE_DIR)) {
+      return res.json({ queue: [] });
+    }
+    const folders = fs.readdirSync(UPLOAD_QUEUE_DIR).filter((f) => {
+      const fullPath = path.join(UPLOAD_QUEUE_DIR, f);
+      return fs.statSync(fullPath).isDirectory();
+    });
+
+    const queue = folders.map((folderName) => {
+      const folderPath = path.join(UPLOAD_QUEUE_DIR, folderName);
+      const files = fs.readdirSync(folderPath);
+      let sessionInfo = null;
+      const infoPath = path.join(folderPath, "session_info.json");
+      if (fs.existsSync(infoPath)) {
+        try {
+          sessionInfo = JSON.parse(fs.readFileSync(infoPath, "utf8"));
+        } catch {}
+      }
+      return {
+        folderName,
+        folderPath,
+        fileCount: files.filter((f) => f.match(/\.(jpg|jpeg|png|webp)$/i)).length,
+        sessionInfo,
+      };
+    });
+
+    res.json({ queue });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post("/api/gdrive-upload-pending", async (req, res) => {
+  try {
+    const { folderName } = req.body || {};
+    if (!fs.existsSync(UPLOAD_QUEUE_DIR)) {
+      return res.status(400).json({ error: "Folder upload queue tidak ditemukan" });
+    }
+
+    const targetFolders = folderName
+      ? [folderName]
+      : fs.readdirSync(UPLOAD_QUEUE_DIR).filter((f) => {
+          const fullPath = path.join(UPLOAD_QUEUE_DIR, f);
+          return fs.statSync(fullPath).isDirectory();
+        });
+
+    if (targetFolders.length === 0) {
+      return res.json({ success: true, message: "Tidak ada antrian tertunda", uploadedCount: 0 });
+    }
+
+    const results = [];
+    for (const folder of targetFolders) {
+      const folderPath = path.join(UPLOAD_QUEUE_DIR, folder);
+      if (!fs.existsSync(folderPath)) continue;
+
+      let sessionInfo = null;
+      const infoPath = path.join(folderPath, "session_info.json");
+      if (fs.existsSync(infoPath)) {
+        try { sessionInfo = JSON.parse(fs.readFileSync(infoPath, "utf8")); } catch {}
+      }
+
+      const custName = sessionInfo?.customerName || folder.split("_").slice(1).join("_") || "Customer";
+      const files = fs.readdirSync(folderPath)
+        .filter((f) => f.match(/\.(jpg|jpeg|png|webp)$/i))
+        .map((f) => path.join(folderPath, f));
+
+      console.log(`[GDrive Queue] Memproses antrian: ${folder} (${files.length} file)...`);
+      const folderResult = await createCustomerFolder(custName);
+      console.log(`[GDrive Queue] Folder Drive dibuat: ${folderResult.folderName}`);
+
+      latestDriveSession = {
+        customerName: custName,
+        folderName: folderResult.folderName,
+        webViewLink: folderResult.webViewLink,
+        createdAt: new Date().toISOString(),
+      };
+
+      // Upload file-file sesi
+      await uploadMultipleFiles(files, folderResult.photosFolderId || folderResult.folderId);
+
+      // Pindahkan folder antrian ke arsip harian
+      const now = new Date();
+      const dateFolder = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+      const archiveDestDir = path.join(ARCHIVE_DIR, dateFolder, folder);
+      try {
+        fs.mkdirSync(path.dirname(archiveDestDir), { recursive: true });
+        fs.renameSync(folderPath, archiveDestDir);
+        console.log(`[GDrive Queue] Folder diarsipkan ke: ${archiveDestDir}`);
+      } catch {
+        try { fs.rmSync(folderPath, { recursive: true, force: true }); } catch {}
+      }
+
+      // Update session di sessions.json jika ada
+      try {
+        const allSessions = readSessions();
+        const found = allSessions.find((s) => s.id === sessionInfo?.id || s.customerName === custName);
+        if (found) {
+          found.driveFolderName = folderResult.folderName;
+          found.driveWebViewLink = folderResult.webViewLink;
+          found.driveStatus = "uploaded";
+          writeSessions(allSessions);
+        }
+      } catch {}
+
+      results.push({
+        folder,
+        folderResult,
+        filesUploaded: files.length,
+      });
+    }
+
+    res.json({
+      success: true,
+      message: `Berhasil mengunggah ${results.length} antrian sesi ke Google Drive!`,
+      results,
+    });
+  } catch (err) {
+    console.error("[GDrive Queue] Gagal memproses antrian:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.post("/api/upload-session-gdrive", async (req, res) => {
   try {
     const {
@@ -197,72 +369,24 @@ app.post("/api/upload-session-gdrive", async (req, res) => {
     } = req.body;
 
     const cleanCustomerName = customerName ? customerName.replace(/^@+/, "").trim() : "";
+    const now = new Date();
+    const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+    const hours = now.getHours().toString().padStart(2, "0");
+    const minutes = now.getMinutes().toString().padStart(2, "0");
+    const timeStr = `${hours}.${minutes}`;
 
-    console.log(`[GDrive] Membuat folder Google Drive untuk sesi: "${cleanCustomerName || "Tanpa Nama"}"...`);
-    const folderResult = await createCustomerFolder(cleanCustomerName);
-    console.log(`[GDrive] Folder dibuat: ${folderResult.folderName} (${folderResult.webViewLink})`);
+    const addonsTotal = (miscAddons || []).reduce((sum, item) => {
+      const price = item.price || 15000;
+      return sum + (price * (item.qty || 1));
+    }, 0);
+    const a4Total = (Number(a4Count) || 0) * 20000;
+    const softcopyTotal = makeStory ? 0 : (Number(extraCharge) || 25000);
+    const sessionBasePrice = Number(basePrice) || 50000;
+    const finalTotalPrice = sessionBasePrice + addonsTotal + a4Total + softcopyTotal;
 
-    latestDriveSession = {
-      customerName: cleanCustomerName,
-      folderName: folderResult.folderName,
-      webViewLink: folderResult.webViewLink,
-      createdAt: new Date().toISOString(),
-    };
-
-    // Auto-record session in persistent storage
-    try {
-      const now = new Date();
-      const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
-      const hours = now.getHours().toString().padStart(2, "0");
-      const minutes = now.getMinutes().toString().padStart(2, "0");
-      const timeStr = `${hours}.${minutes}`;
-
-      const addonsTotal = (miscAddons || []).reduce((sum, item) => {
-        const price = item.price || 15000;
-        return sum + (price * (item.qty || 1));
-      }, 0);
-      const a4Total = (Number(a4Count) || 0) * 20000;
-      const softcopyTotal = makeStory ? 0 : (Number(extraCharge) || 25000);
-      const sessionBasePrice = Number(basePrice) || 50000;
-      const finalTotalPrice = sessionBasePrice + addonsTotal + a4Total + softcopyTotal;
-
-      const newSessionRecord = {
-        id: `SES-${Date.now()}`,
-        timestamp: now.toISOString(),
-        date: dateStr,
-        time: timeStr,
-        customerName: cleanCustomerName || "Customer",
-        peopleCount: Number(peopleCount) || 1,
-        coupleMode: Boolean(coupleMode),
-        joinedBonus: Boolean(joinedBonus),
-        makeStory: Boolean(makeStory),
-        softcopyType: makeStory ? "story_free" : "paid",
-        softcopyCharge: softcopyTotal,
-        prints: {
-          regular: Number(regularPrint) || Number(peopleCount) || 1,
-          bonus: Number(bonusPrint) || (joinedBonus ? Number(peopleCount) : 0),
-          total: Number(totalPrint) || (joinedBonus ? (Number(peopleCount) * 2) : Number(peopleCount)),
-        },
-        a4Count: Number(a4Count) || 0,
-        miscAddons: miscAddons || [],
-        basePrice: sessionBasePrice,
-        totalAddonsPrice: addonsTotal + a4Total,
-        totalPrice: finalTotalPrice,
-        driveFolderName: folderResult.folderName,
-        driveWebViewLink: folderResult.webViewLink,
-      };
-
-      const allSessions = readSessions();
-      allSessions.unshift(newSessionRecord);
-      writeSessions(allSessions);
-      console.log(`[Session] Recorded session for ${cleanCustomerName}: Total Rp ${finalTotalPrice}`);
-    } catch (saveErr) {
-      console.error("[Session] Gagal menyimpan data sesi:", saveErr.message);
-    }
-
-    // ─── 1. SESSION STAGING QUEUE (ISOLASI FILE SESI) ─────────
-    // Buat folder staging terpisah di storage/upload_queue agar file sesi ini
-    // TIDAK HILANG / RUSAK meskipun folder public/photos dihapus untuk customer berikutnya.
+    // ─── 1. SESSION STAGING QUEUE (ISOLASI FILE SESI PERTAMA KALI) ─────────
+    // Dibuat PERTAMA agar file foto tidak pernah hilang meskipun Google Drive offline
+    const sessionId = `SES-${Date.now()}`;
     const safeSessionDirName = `${Date.now()}_${cleanCustomerName || "Session"}`.replace(/[/\\?%*:|"<>]/g, "_");
     const sessionStagingDir = path.join(UPLOAD_QUEUE_DIR, safeSessionDirName);
     fs.mkdirSync(sessionStagingDir, { recursive: true });
@@ -281,7 +405,7 @@ app.post("/api/upload-session-gdrive", async (req, res) => {
       return destPath;
     }
 
-    // A. Simpan data:image base64 (seperti print composite/layout) langsung ke staging folder
+    // A. Simpan data:image base64 langsung ke staging folder
     const uniqueItems = Array.from(new Set([...rawPhotos, ...printFiles]));
     for (const item of uniqueItems) {
       if (!item) continue;
@@ -299,8 +423,6 @@ app.post("/api/upload-session-gdrive", async (req, res) => {
     }
 
     // B. Pindahkan SEMUA foto jepretan kamera dari public/photos ke staging folder
-    // Semua file foto yang ada di PHOTOS_DIR adalah jepretan sesi customer ini.
-    // Dengan memindahkannya, PHOTOS_DIR langsung KOSONG seketika untuk customer berikutnya!
     if (fs.existsSync(PHOTOS_DIR)) {
       const existingPhotos = fs.readdirSync(PHOTOS_DIR);
       for (const f of existingPhotos) {
@@ -321,73 +443,171 @@ app.post("/api/upload-session-gdrive", async (req, res) => {
     console.log(`[GDrive] ${filePathsToUpload.length} foto berhasil diisolasi ke antrian: ${sessionStagingDir}`);
     console.log(`[GDrive] Folder ${PHOTOS_DIR} kini telah bersih dan siap untuk sesi berikutnya.`);
 
-    // Inisialisasi progress untuk dipantau admin & frontend
-    uploadProgress = {
-      isUploading: true,
-      folderName: folderResult.folderName,
-      webViewLink: folderResult.webViewLink,
-      customerName: cleanCustomerName,
-      total: filePathsToUpload.length,
-      uploaded: 0,
-      percent: 0,
-      currentFile: filePathsToUpload.length > 0 ? path.basename(filePathsToUpload[0]) : "",
-      files: filePathsToUpload.map((p) => ({
-        name: path.basename(p),
-        status: "pending",
-      })),
-      updatedAt: new Date().toISOString(),
+    // ─── 2. SIMPAN METADATA SESI SECARA LOKAL ──────────────────────
+    const sessionMeta = {
+      id: sessionId,
+      timestamp: now.toISOString(),
+      date: dateStr,
+      time: timeStr,
+      customerName: cleanCustomerName || "Customer",
+      peopleCount: Number(peopleCount) || 1,
+      coupleMode: Boolean(coupleMode),
+      joinedBonus: Boolean(joinedBonus),
+      makeStory: Boolean(makeStory),
+      softcopyType: makeStory ? "story_free" : "paid",
+      softcopyCharge: softcopyTotal,
+      prints: {
+        regular: Number(regularPrint) || Number(peopleCount) || 1,
+        bonus: Number(bonusPrint) || (joinedBonus ? Number(peopleCount) : 0),
+        total: Number(totalPrint) || (joinedBonus ? (Number(peopleCount) * 2) : Number(peopleCount)),
+      },
+      a4Count: Number(a4Count) || 0,
+      miscAddons: miscAddons || [],
+      basePrice: sessionBasePrice,
+      totalAddonsPrice: addonsTotal + a4Total,
+      totalPrice: finalTotalPrice,
+      totalFiles: filePathsToUpload.length,
+      stagingDir: safeSessionDirName,
+      status: "queued",
     };
 
-    // Kirim response link ke frontend secepatnya (di bawah 1 detik)
-    res.json({
-      success: true,
-      folderId: folderResult.folderId,
-      folderName: folderResult.folderName,
-      webViewLink: folderResult.webViewLink,
-      totalFiles: filePathsToUpload.length,
-    });
+    try {
+      fs.writeFileSync(path.join(sessionStagingDir, "session_info.json"), JSON.stringify(sessionMeta, null, 2), "utf8");
+    } catch {}
 
-    // Background upload dengan update real-time progress
-    (async () => {
-      try {
-        console.log(`[GDrive] Mengunggah ${filePathsToUpload.length} file ke ${folderResult.folderName}...`);
-        await uploadMultipleFiles(
-          filePathsToUpload,
-          folderResult.photosFolderId || folderResult.folderId,
-          (uploadedCount, totalCount, fileName, status) => {
-            const fileItem = uploadProgress.files.find((f) => f.name === fileName);
-            if (fileItem) fileItem.status = status;
-            uploadProgress.uploaded = (status === "done" || status === "failed") ? uploadedCount : uploadProgress.uploaded;
-            uploadProgress.percent = Math.round((uploadProgress.uploaded / totalCount) * 100);
-            uploadProgress.currentFile = status === "uploading" ? fileName : "";
-            uploadProgress.updatedAt = new Date().toISOString();
-          }
-        );
-        uploadProgress.isUploading = false;
-        uploadProgress.percent = 100;
-        uploadProgress.currentFile = "";
-        uploadProgress.updatedAt = new Date().toISOString();
-        console.log(`[GDrive] Selesai! Semua ${filePathsToUpload.length} file berhasil diunggah ke ${folderResult.folderName}.`);
+    // ─── 3. HUBUNGI GOOGLE DRIVE DENGAN PERLINDUNGAN TRY/CATCH ──────
+    let folderResult = null;
+    let driveError = null;
 
-        // Setelah upload selesai 100%, pindahkan staging folder ke arsip lokal harian sebagai cadangan
+    try {
+      console.log(`[GDrive] Mencoba membuat folder Google Drive untuk sesi: "${cleanCustomerName || "Tanpa Nama"}"...`);
+      folderResult = await createCustomerFolder(cleanCustomerName);
+      console.log(`[GDrive] Folder dibuat: ${folderResult.folderName} (${folderResult.webViewLink})`);
+    } catch (err) {
+      driveError = err?.message || "Gagal menghubungkan Google Drive";
+      console.error("[GDrive] Gagal membuat folder Google Drive (Disimpan aman di antrian lokal):", driveError);
+    }
+
+    // Simpan data transaksi di sessions.json
+    try {
+      const recordToSave = {
+        ...sessionMeta,
+        driveFolderName: folderResult ? folderResult.folderName : "Antrian Lokal (Drive Belum Login)",
+        driveWebViewLink: folderResult ? folderResult.webViewLink : "",
+        driveStatus: folderResult ? "ready" : "offline_pending",
+        driveError: driveError || null,
+      };
+      const allSessions = readSessions();
+      allSessions.unshift(recordToSave);
+      writeSessions(allSessions);
+      console.log(`[Session] Recorded session for ${cleanCustomerName}: Total Rp ${finalTotalPrice}`);
+    } catch (saveErr) {
+      console.error("[Session] Gagal menyimpan data sesi:", saveErr.message);
+    }
+
+    // ─── 4. RESPON KE FRONTEND (KIOSK) ────────────────────────────
+    if (folderResult) {
+      latestDriveSession = {
+        customerName: cleanCustomerName,
+        folderName: folderResult.folderName,
+        webViewLink: folderResult.webViewLink,
+        createdAt: new Date().toISOString(),
+      };
+
+      uploadProgress = {
+        isUploading: true,
+        folderName: folderResult.folderName,
+        webViewLink: folderResult.webViewLink,
+        customerName: cleanCustomerName,
+        total: filePathsToUpload.length,
+        uploaded: 0,
+        percent: 0,
+        currentFile: filePathsToUpload.length > 0 ? path.basename(filePathsToUpload[0]) : "",
+        files: filePathsToUpload.map((p) => ({
+          name: path.basename(p),
+          status: "pending",
+        })),
+        updatedAt: new Date().toISOString(),
+      };
+
+      res.json({
+        success: true,
+        folderId: folderResult.folderId,
+        folderName: folderResult.folderName,
+        webViewLink: folderResult.webViewLink,
+        totalFiles: filePathsToUpload.length,
+      });
+
+      // Background upload Google Drive
+      (async () => {
         try {
-          const now = new Date();
-          const dateFolder = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
-          const archiveDestDir = path.join(ARCHIVE_DIR, dateFolder, safeSessionDirName);
-          fs.mkdirSync(path.dirname(archiveDestDir), { recursive: true });
-          fs.renameSync(sessionStagingDir, archiveDestDir);
-          console.log(`[GDrive] Sesi diarsipkan di disk lokal: ${archiveDestDir}`);
-        } catch (archiveErr) {
-          try { fs.rmSync(sessionStagingDir, { recursive: true, force: true }); } catch {}
+          console.log(`[GDrive] Mengunggah ${filePathsToUpload.length} file ke ${folderResult.folderName}...`);
+          await uploadMultipleFiles(
+            filePathsToUpload,
+            folderResult.photosFolderId || folderResult.folderId,
+            (uploadedCount, totalCount, fileName, status) => {
+              const fileItem = uploadProgress.files.find((f) => f.name === fileName);
+              if (fileItem) fileItem.status = status;
+              uploadProgress.uploaded = (status === "done" || status === "failed") ? uploadedCount : uploadProgress.uploaded;
+              uploadProgress.percent = Math.round((uploadProgress.uploaded / totalCount) * 100);
+              uploadProgress.currentFile = status === "uploading" ? fileName : "";
+              uploadProgress.updatedAt = new Date().toISOString();
+            }
+          );
+          uploadProgress.isUploading = false;
+          uploadProgress.percent = 100;
+          uploadProgress.currentFile = "";
+          uploadProgress.updatedAt = new Date().toISOString();
+          console.log(`[GDrive] Selesai! Semua ${filePathsToUpload.length} file berhasil diunggah ke ${folderResult.folderName}.`);
+
+          // Arsip lokal harian
+          try {
+            const dateFolder = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+            const archiveDestDir = path.join(ARCHIVE_DIR, dateFolder, safeSessionDirName);
+            fs.mkdirSync(path.dirname(archiveDestDir), { recursive: true });
+            fs.renameSync(sessionStagingDir, archiveDestDir);
+            console.log(`[GDrive] Sesi diarsipkan di disk lokal: ${archiveDestDir}`);
+          } catch (archiveErr) {
+            try { fs.rmSync(sessionStagingDir, { recursive: true, force: true }); } catch {}
+          }
+        } catch (uploadErr) {
+          uploadProgress.isUploading = false;
+          uploadProgress.error = uploadErr.message;
+          console.error("[GDrive] Error saat background file upload:", uploadErr);
         }
-      } catch (uploadErr) {
-        uploadProgress.isUploading = false;
-        uploadProgress.error = uploadErr.message;
-        console.error("[GDrive] Error saat background file upload:", uploadErr);
-      }
-    })();
+      })();
+    } else {
+      // GOOGLE DRIVE SEDANG OFFLINE / TOKEN EXPIRED
+      // Foto TETAP AMAN di antrian storage/upload_queue!
+      uploadProgress = {
+        isUploading: false,
+        folderName: "Antrian Offline (PC Lokal)",
+        webViewLink: "",
+        customerName: cleanCustomerName,
+        total: filePathsToUpload.length,
+        uploaded: 0,
+        percent: 0,
+        currentFile: "",
+        error: `Google Drive offline: ${driveError}. Semua foto aman tersimpan di antrian lokal.`,
+        files: filePathsToUpload.map((p) => ({
+          name: path.basename(p),
+          status: "queued",
+        })),
+        updatedAt: new Date().toISOString(),
+      };
+
+      res.json({
+        success: true,
+        offlineQueue: true,
+        warning: "drive_offline",
+        message: "Foto berhasil disimpan aman di antrian server. Google Drive sedang offline atau token kedaluwarsa.",
+        folderName: `Antrian Lokal: ${cleanCustomerName || "Sesi Customer"}`,
+        webViewLink: "",
+        totalFiles: filePathsToUpload.length,
+      });
+    }
   } catch (err) {
-    console.error("[GDrive] Gagal membuat sesi Google Drive:", err);
+    console.error("[GDrive] Fatal error di upload-session-gdrive:", err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -596,12 +816,41 @@ function getFullStorageStats() {
   const disk = getDiskStats();
   const cameraStats = getDirectoryStats(PHOTOS_DIR);
   const thumbsStats = getDirectoryStats(THUMBS_DIR);
+  const cameraCacheStats = getDirectoryStats(CAMERA_CACHE_DIR);
   const queueStats = getDirectoryStats(UPLOAD_QUEUE_DIR);
   const archiveDateFolders = getArchiveDateFolders();
 
   const totalArchiveBytes = archiveDateFolders.reduce((sum, item) => sum + item.bytes, 0);
   const totalArchiveFiles = archiveDateFolders.reduce((sum, item) => sum + item.files, 0);
   const totalArchiveSessions = archiveDateFolders.reduce((sum, item) => sum + item.sessionCount, 0);
+
+  // List files in camera_cache
+  let cameraCacheItems = [];
+  try {
+    if (fs.existsSync(CAMERA_CACHE_DIR)) {
+      const files = fs.readdirSync(CAMERA_CACHE_DIR);
+      for (const f of files) {
+        if (f.match(/\.(jpg|jpeg|png|webp)$/i)) {
+          const p = path.join(CAMERA_CACHE_DIR, f);
+          try {
+            const stat = fs.statSync(p);
+            cameraCacheItems.push({
+              name: f,
+              size: stat.size,
+              formattedSize: formatBytes(stat.size),
+              mtime: stat.mtime.toISOString(),
+              timeFormatted: stat.mtime.toLocaleTimeString("id-ID", {
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit",
+              }),
+            });
+          } catch {}
+        }
+      }
+      cameraCacheItems.sort((a, b) => new Date(b.mtime).getTime() - new Date(a.mtime).getTime());
+    }
+  } catch {}
 
   // Queue subfolders
   let queueFolders = [];
@@ -615,7 +864,12 @@ function getFullStorageStats() {
 
   const config = readStorageConfig();
 
-  const studioTotalBytes = cameraStats.bytes + thumbsStats.bytes + queueStats.bytes + totalArchiveBytes;
+  const studioTotalBytes =
+    cameraStats.bytes +
+    thumbsStats.bytes +
+    cameraCacheStats.bytes +
+    queueStats.bytes +
+    totalArchiveBytes;
 
   return {
     disk,
@@ -627,6 +881,12 @@ function getFullStorageStats() {
         formatted: formatBytes(cameraStats.bytes + thumbsStats.bytes),
         photoFiles: cameraStats.files,
         thumbFiles: thumbsStats.files,
+      },
+      cameraCache: {
+        bytes: cameraCacheStats.bytes,
+        formatted: cameraCacheStats.formatted,
+        files: cameraCacheStats.files,
+        items: cameraCacheItems,
       },
       queue: {
         bytes: queueStats.bytes,
@@ -782,6 +1042,38 @@ app.post("/api/storage-clean", (req, res) => {
           }
         }
       }
+    } else if (action === "camera_cache") {
+      // Kosongkan seluruh cache foto kamera MTP
+      if (fs.existsSync(CAMERA_CACHE_DIR)) {
+        const cacheFiles = fs.readdirSync(CAMERA_CACHE_DIR);
+        for (const c of cacheFiles) {
+          const p = path.join(CAMERA_CACHE_DIR, c);
+          try {
+            const stat = fs.statSync(p);
+            freedBytes += stat.size;
+            fs.unlinkSync(p);
+            deletedCount++;
+          } catch (e) {
+            console.error(`[Storage] Gagal hapus cache ${c}:`, e.message);
+          }
+        }
+      }
+    } else if (action === "camera_cache_file") {
+      // Hapus satu foto spesifik di camera_cache
+      const targetName = req.body.fileName || req.body.date;
+      if (!targetName) return res.status(400).json({ error: "Parameter 'fileName' diperlukan" });
+      const safeName = path.basename(targetName);
+      const p = path.join(CAMERA_CACHE_DIR, safeName);
+      if (fs.existsSync(p)) {
+        try {
+          const stat = fs.statSync(p);
+          freedBytes += stat.size;
+          fs.unlinkSync(p);
+          deletedCount = 1;
+        } catch (e) {
+          return res.status(500).json({ error: `Gagal menghapus file ${safeName}: ${e.message}` });
+        }
+      }
     } else if (action === "camera_all") {
       // Kosongkan kamera & thumbnail
       if (fs.existsSync(PHOTOS_DIR)) {
@@ -796,6 +1088,18 @@ app.post("/api/storage-clean", (req, res) => {
               deletedCount++;
             } catch {}
           }
+        }
+      }
+      if (fs.existsSync(CAMERA_CACHE_DIR)) {
+        const cacheFiles = fs.readdirSync(CAMERA_CACHE_DIR);
+        for (const c of cacheFiles) {
+          const p = path.join(CAMERA_CACHE_DIR, c);
+          try {
+            const stat = fs.statSync(p);
+            freedBytes += stat.size;
+            fs.unlinkSync(p);
+            deletedCount++;
+          } catch {}
         }
       }
       if (fs.existsSync(THUMBS_DIR)) {
@@ -889,7 +1193,6 @@ function writeCameraImportConfig(data) {
 }
 
 const MTP_SCRIPT_PATH = path.join(__dirname, "scripts", "mtp-manager.ps1");
-const CAMERA_CACHE_DIR = path.join(__dirname, "storage", "camera_cache");
 
 function isMtpTarget(targetPath = "", presetId = "") {
   if (presetId === "studio") return true;
@@ -907,14 +1210,18 @@ function checkMtpDevice(targetPath = "") {
   try {
     const cmd = `powershell -NoProfile -ExecutionPolicy Bypass -File "${MTP_SCRIPT_PATH}" -Action check -DeviceQuery "X-S10"`;
     const stdout = execSync(cmd, { encoding: "utf8", timeout: 8000 });
-    return JSON.parse(stdout.trim());
+    const res = JSON.parse(stdout.trim());
+    if (res.folders && !Array.isArray(res.folders)) {
+      res.folders = [res.folders];
+    }
+    return res;
   } catch (err) {
-    return { connected: false, error: err.message };
+    return { connected: false, error: err.message, folders: [] };
   }
 }
 
 function scanMtpPhotos(options = {}) {
-  const { filter = "latest_session", minutes = 30, subFolder = "" } = options;
+  const { filter = "30_min", minutes = 30, subFolder = "" } = options;
   try {
     if (!fs.existsSync(CAMERA_CACHE_DIR)) {
       fs.mkdirSync(CAMERA_CACHE_DIR, { recursive: true });
@@ -922,7 +1229,11 @@ function scanMtpPhotos(options = {}) {
     const subFolderArg = subFolder && subFolder !== "all" ? `-SubFolder "${subFolder}"` : "";
     const cmd = `powershell -NoProfile -ExecutionPolicy Bypass -File "${MTP_SCRIPT_PATH}" -Action scan -DeviceQuery "X-S10" -Filter "${filter}" -Minutes ${minutes} -CacheDir "${CAMERA_CACHE_DIR}" ${subFolderArg}`;
     const stdout = execSync(cmd, { encoding: "utf8", timeout: 25000, maxBuffer: 10 * 1024 * 1024 });
-    return JSON.parse(stdout.trim());
+    const res = JSON.parse(stdout.trim());
+    if (res.availableFolders && !Array.isArray(res.availableFolders)) {
+      res.availableFolders = [res.availableFolders];
+    }
+    return res;
   } catch (err) {
     return { success: false, error: "Gagal scan kamera MTP: " + err.message, totalFound: 0, availableFolders: [] };
   }
@@ -1110,30 +1421,64 @@ function scanCameraPhotos(sourcePath, options = {}) {
   const totalInFolder = allCandidateFiles.length;
   let matchedFiles = [];
   const now = Date.now();
+  const maxMtime = allCandidateFiles.length > 0 ? Math.max(...allCandidateFiles.map((f) => f.mtimeMs)) : 0;
+  // Gunakan waktu foto paling baru di kamera sebagai titik acuan agar kebal terhadap perbedaan jam kamera vs PC
+  const refTimeMs = maxMtime > 0 ? maxMtime : now;
 
   if (filter === "all") {
     // Tampilkan semua foto tanpa filter waktu
     matchedFiles = allCandidateFiles;
-  } else if (filter === "latest_session") {
-    // Sesi Terakhir: ambil foto yang diambil dalam rentang 60 menit dari foto paling baru
-    if (allCandidateFiles.length > 0) {
-      const maxMtime = Math.max(...allCandidateFiles.map((f) => f.mtimeMs));
-      const sessionCutoff = maxMtime - 60 * 60 * 1000;
-      matchedFiles = allCandidateFiles.filter((f) => f.mtimeMs >= sessionCutoff);
-    }
   } else if (filter === "today") {
-    const todayDateStr = new Date().toDateString();
+    const todayDateStr = new Date(refTimeMs).toDateString();
     matchedFiles = allCandidateFiles.filter(
       (f) => new Date(f.mtimeMs).toDateString() === todayDateStr
     );
   } else {
-    let cutoffMs = now - 30 * 60 * 1000;
-    if (filter === "45_min") cutoffMs = now - 45 * 60 * 1000;
-    else if (filter === "60_min") cutoffMs = now - 60 * 60 * 1000;
-    else if (filter === "custom_min" && typeof minutes === "number") cutoffMs = now - minutes * 60 * 1000;
-    else if (filter === "since_last" && lastImportTimestamp) cutoffMs = new Date(lastImportTimestamp).getTime();
+    // Filter menit (30_min, 45_min, 60_min, latest_session)
+    let durMinutes = 30;
+    if (filter === "45_min") durMinutes = 45;
+    else if (filter === "60_min" || filter === "latest_session") durMinutes = 60;
+    else if (filter === "custom_min" && typeof minutes === "number") durMinutes = minutes;
 
-    matchedFiles = allCandidateFiles.filter((f) => f.mtimeMs >= cutoffMs);
+    let bufferMinutes = 10;
+    if (filter === "45_min") bufferMinutes = 15;
+    else if (filter === "60_min" || filter === "latest_session") bufferMinutes = 20;
+    else if (filter === "custom_min" && typeof minutes === "number") bufferMinutes = Math.min(15, Math.ceil(durMinutes * 0.3));
+
+    const maxWindowMs = (durMinutes + bufferMinutes) * 60 * 1000;
+    const nominalWindowMs = durMinutes * 60 * 1000;
+    const maxCutoffMs = refTimeMs - maxWindowMs;
+    const nominalCutoffMs = refTimeMs - nominalWindowMs;
+
+    let cutoffMs = (filter === "since_last" && lastImportTimestamp) ? new Date(lastImportTimestamp).getTime() : 0;
+
+
+    if (filter === "since_last" && lastImportTimestamp) {
+      matchedFiles = allCandidateFiles.filter((f) => f.mtimeMs >= cutoffMs);
+    } else {
+      const sortedDesc = [...allCandidateFiles].sort((a, b) => b.mtimeMs - a.mtimeMs);
+      const sessionFiles = [];
+      let prevMtime = refTimeMs;
+
+      for (const f of sortedDesc) {
+        const gapMinutes = (prevMtime - f.mtimeMs) / (60 * 1000);
+        if (f.mtimeMs < nominalCutoffMs && gapMinutes >= 8) {
+          break;
+        }
+        if (f.mtimeMs >= maxCutoffMs) {
+          sessionFiles.push(f);
+          prevMtime = f.mtimeMs;
+        } else {
+          break;
+        }
+      }
+      matchedFiles = sessionFiles.reverse();
+    }
+
+    // Fallback: jika tidak ada yang match, ambil minimal foto paling baru
+    if (matchedFiles.length === 0 && allCandidateFiles.length > 0) {
+      matchedFiles = [allCandidateFiles[allCandidateFiles.length - 1]];
+    }
   }
 
   // Urutkan berdasarkan waktu pengambilan foto (tertua ke terbaru)
@@ -1187,7 +1532,10 @@ app.get("/api/camera-import/config", (req, res) => {
       if (key === "studio" || isMtpTarget(p.path, key)) {
         const mtpCheck = checkMtpDevice(p.path);
         isConnected = !!mtpCheck.connected;
-        detectedFolders = (mtpCheck.folders || []).map((f) => f.name);
+        const foldersList = Array.isArray(mtpCheck.folders)
+          ? mtpCheck.folders
+          : (mtpCheck.folders ? [mtpCheck.folders] : []);
+        detectedFolders = foldersList.map((f) => f.name);
       } else {
         isConnected = !!(p.path && fs.existsSync(p.path));
         detectedFolders = isConnected ? resolveCameraFolders(p.path).map((f) => f.folderName) : [];
@@ -1361,6 +1709,18 @@ app.post("/api/camera-import/import", async (req, res) => {
           }
         }
       }
+      if (fs.existsSync(CAMERA_CACHE_DIR)) {
+        const cacheFiles = fs.readdirSync(CAMERA_CACHE_DIR);
+        for (const c of cacheFiles) {
+          const p = path.join(CAMERA_CACHE_DIR, c);
+          try {
+            const stat = fs.statSync(p);
+            freedBytes += stat.size;
+            fs.unlinkSync(p);
+            deletedCount++;
+          } catch {}
+        }
+      }
       if (fs.existsSync(THUMBS_DIR)) {
         const thumbs = fs.readdirSync(THUMBS_DIR);
         for (const t of thumbs) {
@@ -1419,7 +1779,16 @@ app.post("/api/camera-import/import", async (req, res) => {
 // Membuka folder public/photos di Windows Explorer asli
 app.post("/api/camera-import/open-folder", (req, res) => {
   try {
-    const targetDir = PHOTOS_DIR.replace(/\//g, "\\");
+    let target = PHOTOS_DIR;
+    if (req.body?.target === "camera_cache" || req.query?.target === "camera_cache") {
+      target = CAMERA_CACHE_DIR;
+    } else if (req.body?.target === "archive" || req.query?.target === "archive") {
+      target = ARCHIVE_DIR;
+    }
+    if (!fs.existsSync(target)) {
+      fs.mkdirSync(target, { recursive: true });
+    }
+    const targetDir = target.replace(/\//g, "\\");
     exec(`explorer.exe "${targetDir}"`, (err) => {
       if (err) {
         console.warn("[CameraImport] explorer.exe warning:", err.message);

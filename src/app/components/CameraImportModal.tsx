@@ -10,6 +10,8 @@ import {
   RefreshCw,
   CheckCircle2,
   AlertTriangle,
+  Sparkles,
+  ArrowRight,
 } from "lucide-react";
 
 interface CameraPreset {
@@ -211,6 +213,8 @@ export function CameraImportModal({
 
   useEffect(() => {
     if (isOpen) {
+      setImportSuccessData(null);
+      setStatusMessage(null);
       fetchConfig();
       if (activeTab === "auto") {
         handleScan(selectedPresetId, timeFilter);
@@ -336,6 +340,19 @@ export function CameraImportModal({
               type: "success",
               text: `Berhasil mengunggah ${draggedFiles.length} foto ke Kiosk!`,
             });
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString("id-ID", {
+              hour: "2-digit",
+              minute: "2-digit",
+              second: "2-digit",
+            });
+
+            setImportSuccessData({
+              count: draggedFiles.length,
+              folder: "Upload Drag & Drop",
+              sourceName: "Tarik & Lepas File",
+              timestamp: timeStr,
+            });
             setDraggedFiles([]);
             setFilePreviews([]);
             if (onImportSuccess) onImportSuccess();
@@ -406,7 +423,26 @@ export function CameraImportModal({
         });
         if (onImportSuccess) onImportSuccess();
         fetchConfig();
-        setTimeout(() => handleScan(selectedPresetId, timeFilter), 1500);
+        const sourceName =
+          selectedPresetId === "studio"
+            ? "Kamera Studio (Fujifilm X-S10)"
+            : selectedPresetId === "fotobox"
+            ? "Card Reader (E:)"
+            : "Folder Kustom";
+
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString("id-ID", {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+        });
+
+        setImportSuccessData({
+          count: data.count || scanResult?.totalFound || 0,
+          folder: scanResult?.activeFolder || "DCIM",
+          sourceName,
+          timestamp: timeStr,
+        });
       } else {
         setStatusMessage({
           type: "error",
@@ -450,7 +486,10 @@ export function CameraImportModal({
             </p>
           </div>
           <button
-            onClick={onClose}
+            onClick={() => {
+              setImportSuccessData(null);
+              onClose();
+            }}
             className="w-8 h-8 rounded-[7px] hover:bg-[#f5f5f5] flex items-center justify-center text-[#888] hover:text-[#171717] transition-colors cursor-pointer"
             title="Tutup"
           >
@@ -459,7 +498,8 @@ export function CameraImportModal({
         </div>
 
         {/* ── Tabs (Amara Villa Minimal Underline Style) ── */}
-        <div className="flex border-b border-[#e8e8e8] px-6 bg-white gap-6 shrink-0">
+        {!importSuccessData && (
+          <div className="flex border-b border-[#e8e8e8] px-6 bg-white gap-6 shrink-0">
           <button
             type="button"
             onClick={() => setActiveTab("dragdrop")}
@@ -482,7 +522,8 @@ export function CameraImportModal({
           >
             Scan Kabel Kamera / SD Card
           </button>
-        </div>
+          </div>
+        )}
 
         {/* Content Body */}
         {/* Progress Transfer Overlay */}
@@ -969,7 +1010,8 @@ export function CameraImportModal({
         </div>
 
         {/* Footer Actions (Clean Amara Style, NO ICONS on Action Button) */}
-        <div className="px-6 py-4 border-t border-[#e8e8e8] bg-white flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
+        {!importSuccessData && (
+          <div className="px-6 py-4 border-t border-[#e8e8e8] bg-white flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
           <button
             type="button"
             onClick={handleOpenFolderExplorer}
@@ -1029,6 +1071,7 @@ export function CameraImportModal({
             )}
           </div>
         </div>
+        )}
       </div>
     </div>
   );

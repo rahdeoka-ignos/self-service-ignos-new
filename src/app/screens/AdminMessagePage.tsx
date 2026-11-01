@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
-import { Copy, Check, MessageCircle, Sparkles, Camera, HardDrive } from "lucide-react";
+import { Copy, Check, MessageCircle, Sparkles, Camera, HardDrive, AlertTriangle, ExternalLink, RefreshCw } from "lucide-react";
 import { usePageTitle } from "../../hooks/usePageTitle";
 import { AdminLayout } from "../components/AdminLayout";
 import { CameraImportModal } from "../components/CameraImportModal";
@@ -72,6 +72,72 @@ export function AdminMessagePage() {
     folderName?: string;
     webViewLink?: string;
   } | null>(null);
+
+  const [gdriveAuthStatus, setGdriveAuthStatus] = useState<{
+    connected: boolean;
+    folderName?: string;
+    isTokenExpired?: boolean;
+    error?: string;
+  } | null>(null);
+
+  const [pendingQueue, setPendingQueue] = useState<Array<{
+    folderName: string;
+    fileCount: number;
+    sessionInfo?: any;
+  }>>([]);
+
+  const [uploadingQueue, setUploadingQueue] = useState(false);
+  const [authorizingDrive, setAuthorizingDrive] = useState(false);
+
+  const checkGdriveStatus = () => {
+    fetch("http://localhost:5000/api/gdrive-auth-status")
+      .then((r) => r.json())
+      .then((d) => setGdriveAuthStatus(d))
+      .catch(() => setGdriveAuthStatus({ connected: false, error: "Server offline" }));
+
+    fetch("http://localhost:5000/api/gdrive-pending-queue")
+      .then((r) => r.json())
+      .then((d) => setPendingQueue(d.queue || []))
+      .catch(() => {});
+  };
+
+  useEffect(() => {
+    checkGdriveStatus();
+    const iv = setInterval(checkGdriveStatus, 4000);
+    return () => clearInterval(iv);
+  }, []);
+
+  const handleTriggerAuth = async () => {
+    try {
+      setAuthorizingDrive(true);
+      const res = await fetch("http://localhost:5000/api/gdrive-trigger-auth", { method: "POST" });
+      const data = await res.json();
+      alert(data.message || "Jendela browser otorisasi Google Drive telah dibuka. Silakan izinkan akses akun Google.");
+    } catch {
+      alert("Gagal memicu otorisasi Google Drive.");
+    } finally {
+      setTimeout(() => setAuthorizingDrive(false), 3000);
+    }
+  };
+
+  const handleUploadPendingQueue = async () => {
+    if (!confirm(`Unggah ${pendingQueue.length} folder sesi di antrian lokal ke Google Drive sekarang?`)) return;
+    try {
+      setUploadingQueue(true);
+      const res = await fetch("http://localhost:5000/api/gdrive-upload-pending", { method: "POST" });
+      const data = await res.json();
+      if (data.success) {
+        alert(data.message);
+        checkGdriveStatus();
+      } else {
+        alert("Gagal mengunggah: " + (data.error || "Unknown error"));
+      }
+    } catch (err: any) {
+      alert("Error saat mengunggah antrian: " + err.message);
+    } finally {
+      setUploadingQueue(false);
+    }
+  };
 
   const [clearingPhotos, setClearingPhotos] = useState(false);
   const handleClearPhotos = async () => {
@@ -194,6 +260,67 @@ export function AdminMessagePage() {
         </div>
 
         <div className="w-full space-y-6">
+          {/* ── GOOGLE DRIVE AUTH STATUS BANNER ── */}
+          {gdriveAuthStatus && !gdriveAuthStatus.connected && (
+            <div className="bg-amber-50 border-2 border-amber-300 rounded-xl p-4.5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs">
+              <div className="flex items-start gap-3">
+                <div className="w-9 h-9 rounded-lg bg-amber-100 flex items-center justify-center text-amber-700 shrink-0 mt-0.5">
+                  <AlertTriangle size={18} />
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold text-amber-950">
+                    {gdriveAuthStatus.isTokenExpired
+                      ? "Token Google Drive Kedaluwarsa (Perlu Login Ulang)"
+                      : "Koneksi Google Drive Terputus"}
+                  </h4>
+                  <p className="text-xs text-amber-800 mt-0.5 leading-relaxed">
+                    {gdriveAuthStatus.isTokenExpired
+                      ? "Masa aktif login Google Drive telah habis (7 hari limit mode testing). Klik tombol di samping untuk login ulang agar foto sesi otomatis ter-upload ke Google Drive."
+                      : `Koneksi Google Drive bermasalah: ${gdriveAuthStatus.error || "Periksa koneksi internet"}. Foto customer saat ini aman disimpan di antrian lokal PC.`}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={handleTriggerAuth}
+                disabled={authorizingDrive}
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-semibold text-xs rounded-lg transition-colors shrink-0 shadow-xs cursor-pointer disabled:opacity-50"
+              >
+                <ExternalLink size={14} />
+                <span>{authorizingDrive ? "Membuka Browser..." : "Login Ulang Google Drive"}</span>
+              </button>
+            </div>
+          )}
+
+          {/* ── PENDING QUEUE BANNER ── */}
+          {pendingQueue.length > 0 && (
+            <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-4.5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs">
+              <div className="flex items-start gap-3">
+                <div className="w-9 h-9 rounded-lg bg-blue-100 flex items-center justify-center text-blue-700 shrink-0 mt-0.5">
+                  <HardDrive size={18} />
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold text-blue-950">
+                    Ada {pendingQueue.length} Antrian Sesi Foto Tersimpan di Disk PC
+                  </h4>
+                  <p className="text-xs text-blue-800 mt-0.5 leading-relaxed">
+                    Foto dari sesi customer sebelumnya ({pendingQueue.map((q) => `${q.sessionInfo?.customerName || q.folderName} (${q.fileCount} foto)`).join(", ")}) tersimpan aman di disk lokal PC dan siap diunggah ke Google Drive.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={handleUploadPendingQueue}
+                disabled={uploadingQueue || !gdriveAuthStatus?.connected}
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-lg transition-colors shrink-0 shadow-xs cursor-pointer disabled:opacity-50"
+                title={!gdriveAuthStatus?.connected ? "Harap login ulang Google Drive terlebih dahulu" : "Unggah semua antrian sesi sekarang"}
+              >
+                <Sparkles size={14} />
+                <span>{uploadingQueue ? "Mengunggah Antrian..." : "Unggah Antrian ke Drive"}</span>
+              </button>
+            </div>
+          )}
+
           {/* ── LIVE UPLOAD STATUS PANEL ── */}
           {uploadStatus && uploadStatus.total > 0 && (
             <div className="bg-white border border-zinc-200 rounded-xl p-5 shadow-xs">

@@ -4,7 +4,7 @@ param (
     
     [string]$DeviceQuery = "X-S10",
     [string]$SubFolder = "",
-    [string]$Filter = "latest_session",
+    [string]$Filter = "30_min",
     [int]$Minutes = 30,
     [string]$CacheDir = "",
     [string]$DestDir = "",
@@ -16,12 +16,20 @@ $ErrorActionPreference = "Stop"
 function Parse-DateSafe([string]$str) {
     if (-not $str) { return $null }
     try {
-        # Bersihkan karakter non-ASCII yang sering ditambahkan Windows Shell
+        # Bersihkan karakter non-ASCII (LTR/RTL mark) yang sering ditambahkan Windows Shell
         $cleanStr = $str -replace '[^\x20-\x7E]', ''
         return [DateTime]::Parse($cleanStr)
     } catch {
         return $null
     }
+}
+
+function Format-Bytes([int64]$bytes) {
+    if ($bytes -le 0) { return "0 B" }
+    if ($bytes -ge 1073741824) { return "{0:N2} GB" -f ($bytes / 1073741824) }
+    if ($bytes -ge 1048576) { return "{0:N1} MB" -f ($bytes / 1048576) }
+    if ($bytes -ge 1024) { return "{0:N0} KB" -f ($bytes / 1024) }
+    return "$bytes B"
 }
 
 function Get-MtpDeviceAndDcim {
@@ -123,12 +131,17 @@ if ($Action -eq "check") {
         }
     }
     
-    Write-Output (@{
-        connected = $true
-        deviceName = $info.DeviceName
-        path = "This PC\$($info.DeviceName)\$($info.StorageName)\DCIM"
-        folders = $subDirs
-    } | ConvertTo-Json -Compress)
+    # Sort numeric descending (misal 265_FUJI sebelum 264_FUJI)
+    $subDirs = @($subDirs | Sort-Object -Property @{ Expression = { $_.name } } -Descending)
+    
+    # Format array folders secara aman agar tidak ter-unwrap oleh ConvertTo-Json
+    $folderElements = @()
+    foreach ($sd in $subDirs) {
+        $folderElements += "{`"name`":`"$($sd.name)`",`"photoCount`":$($sd.photoCount)}"
+    }
+    $foldersJson = "[" + ($folderElements -join ",") + "]"
+    
+    Write-Output "{`"connected`":true,`"deviceName`":`"$($info.DeviceName)`",`"path`":`"This PC\\$($info.DeviceName)\\$($info.StorageName)\\DCIM`",`"folders`":$foldersJson}"
     exit 0
 }
 
@@ -140,14 +153,16 @@ if ($Action -eq "scan" -or $Action -eq "import") {
             error = "Kamera $($DeviceQuery) belum dicolok atau belum dinyalakan."
             totalFound = 0
             totalInFolder = 0
+            totalBytes = 0
+            formattedTotalSize = "0 B"
             availableFolders = @()
         } | ConvertTo-Json -Compress)
         exit 0
     }
     
-    # Ambil list subfolder
+    # Ambil list subfolder di DCIM
     $availableFolders = @()
-    $targetFolderItem = $null
+    $subFolderItemsList = @()
     
     foreach ($item in $info.DcimFolder.Items()) {
         if ($item.IsFolder) {
@@ -160,37 +175,62 @@ if ($Action -eq "scan" -or $Action -eq "import") {
                 name = $item.Name
                 photoCount = $jpgCount
             }
-            if ($SubFolder -ne "" -and $item.Name -eq $SubFolder) {
-                $targetFolderItem = $item
-            }
+            $subFolderItemsList += $item
         }
     }
     
-    if (-not $targetFolderItem) {
-        # Ambil folder pertama yang memiliki foto atau folder pertama
-        if ($availableFolders.Count -gt 0) {
-            $top = ($availableFolders | Where-Object { $_.photoCount -gt 0 } | Select-Object -First 1)
-            if (-not $top) { $top = $availableFolders[0] }
-            $targetFolderItem = $info.DcimFolder.Items() | Where-Object { $_.Name -eq $top.name }
+    # Sort subfolder descending (folder bernomor tertinggi di urutan teratas)
+    $availableFolders = $availableFolders | Sort-Object -Property @{ Expression = { $_.name } } -Descending
+    
+    $targetFolderItems = @()
+    $activeFolderName = ""
+    
+    if ($SubFolder -eq "all") {
+        $targetFolderItems = $subFolderItemsList
+        $activeFolderName = "Semua Subfolder"
+    } elseif ($SubFolder -ne "") {
+        $matched = $subFolderItemsList | Where-Object { $_.Name -eq $SubFolder }
+        if ($matched) {
+            $targetFolderItems = @($matched)
+            $activeFolderName = $matched.Name
         }
     }
     
-    if (-not $targetFolderItem) {
+    if ($targetFolderItems.Count -eq 0) {
+        # Ambil folder pertama yang memiliki foto
+        $top = $availableFolders | Where-Object { $_.photoCount -gt 0 } | Select-Object -First 1
+        if (-not $top -and $availableFolders.Count -gt 0) { $top = $availableFolders[0] }
+        if ($top) {
+            $targetFolderItems = @($subFolderItemsList | Where-Object { $_.Name -eq $top.name })
+            $activeFolderName = $top.name
+        }
+    }
+    
+    if ($targetFolderItems.Count -eq 0) {
         Write-Output (@{
             success = $false
             error = "Tidak ada folder foto di DCIM kamera."
             totalFound = 0
             totalInFolder = 0
+            totalBytes = 0
+            formattedTotalSize = "0 B"
             availableFolders = @()
         } | ConvertTo-Json -Compress)
         exit 0
     }
     
-    $folder = $targetFolderItem.GetFolder
+    # Kumpulkan semua file JPG dari folder target
     $allItems = @()
-    foreach ($it in $folder.Items()) {
-        if ($it.Name -match '\.(jpg|jpeg)$') {
-            $allItems += $it
+    foreach ($tFolderItem in $targetFolderItems) {
+        $f = $tFolderItem.GetFolder
+        foreach ($it in $f.Items()) {
+            if ($it.Name -match '\.(jpg|jpeg)$') {
+                $allItems += @{
+                    Item = $it
+                    Folder = $f
+                    FolderName = $tFolderItem.Name
+                }
+            }
         }
     }
     
@@ -198,9 +238,11 @@ if ($Action -eq "scan" -or $Action -eq "import") {
     if ($totalInFolder -eq 0) {
         Write-Output (@{
             success = $true
-            activeFolder = $targetFolderItem.Name
+            activeFolder = $activeFolderName
             totalFound = 0
             totalInFolder = 0
+            totalBytes = 0
+            formattedTotalSize = "0 B"
             availableFolders = $availableFolders
             files = @()
             previews = @()
@@ -208,94 +250,152 @@ if ($Action -eq "scan" -or $Action -eq "import") {
         exit 0
     }
     
-    # Filter files
+    # Cari tanggal foto paling terbaru di kamera sebagai titik referensi waktu
+    # (Penting: Menangani kamera yang tanggal/jam internalnya berbeda dari jam PC)
+    $latestPhotoDate = $null
+    for ($i = $allItems.Count - 1; $i -ge 0; $i--) {
+        $entry = $allItems[$i]
+        $dateStr = $entry.Folder.GetDetailsOf($entry.Item, 14) # Date Picture Taken
+        if (-not $dateStr) { $dateStr = $entry.Folder.GetDetailsOf($entry.Item, 4) } # Created
+        $parsed = Parse-DateSafe $dateStr
+        if ($parsed) {
+            $latestPhotoDate = $parsed
+            break
+        }
+    }
+    
+    # Tentukan reference time: gunakan tanggal foto terbaru kamera jika ada, atau jam PC
+    $refTime = if ($latestPhotoDate) { $latestPhotoDate } else { [DateTime]::Now }
+    
+    # Tentukan durasi menit dan toleransi buffer sesi (mencegah foto awal sesi terpotong)
+    $mins = 30
+    $bufferMins = 10
+    if ($Filter -eq "45_min") {
+        $mins = 45
+        $bufferMins = 15
+    } elseif ($Filter -eq "60_min" -or $Filter -eq "latest_session") {
+        $mins = 60
+        $bufferMins = 20
+    } elseif ($Filter -eq "custom_min" -and $Minutes -gt 0) {
+        $mins = $Minutes
+        $bufferMins = [Math]::Min(15, [Math]::Ceiling($mins * 0.3))
+    }
+    
+    # Batas maksimal mundur (durasi nominal + buffer toleransi)
+    $maxCutoff = $refTime.AddMinutes(-($mins + $bufferMins))
+    # Batas nominal (setelah batas ini terlewati, jeda antar foto >= 8 menit menandakan ganti sesi)
+    $nominalCutoff = $refTime.AddMinutes(-$mins)
+    
     $matchedItems = @()
     
     if ($Filter -eq "all") {
         $matchedItems = $allItems
-    } elseif ($Filter -eq "latest_session") {
-        # Ambil tanggal dari item paling terakhir
-        $lastIt = $allItems[$allItems.Count - 1]
-        $lastDateStr = $folder.GetDetailsOf($lastIt, 14) # Date Picture Taken
-        if (-not $lastDateStr) { $lastDateStr = $folder.GetDetailsOf($lastIt, 4) } # Created
-        
-        $parsedLastDate = Parse-DateSafe $lastDateStr
-        if ($parsedLastDate) {
-            $cutoff = $parsedLastDate.AddMinutes(-60)
-            # Filter dari belakang ke depan
-            for ($i = $allItems.Count - 1; $i -ge 0; $i--) {
-                $cur = $allItems[$i]
-                $curDateStr = $folder.GetDetailsOf($cur, 14)
-                if (-not $curDateStr) { $curDateStr = $folder.GetDetailsOf($cur, 4) }
-                $parsedCur = Parse-DateSafe $curDateStr
-                if ($parsedCur) {
-                    if ($parsedCur -ge $cutoff) {
-                        $matchedItems = @($cur) + $matchedItems
-                    } else {
-                        break # Sesi berakhir
-                    }
-                } else {
-                    $matchedItems = @($cur) + $matchedItems
-                }
-            }
-        } else {
-            # Fallback jika tanggal tidak bisa di-parse: ambil 30 foto terakhir
-            $takeCount = [Math]::Min(30, $allItems.Count)
-            $matchedItems = $allItems | Select-Object -Last $takeCount
-        }
     } elseif ($Filter -eq "today") {
-        $today = [DateTime]::Today
-        foreach ($it in $allItems) {
-            $dateStr = $folder.GetDetailsOf($it, 14)
-            if (-not $dateStr) { $dateStr = $folder.GetDetailsOf($it, 4) }
+        $targetDate = $refTime.Date
+        foreach ($entry in $allItems) {
+            $dateStr = $entry.Folder.GetDetailsOf($entry.Item, 14)
+            if (-not $dateStr) { $dateStr = $entry.Folder.GetDetailsOf($entry.Item, 4) }
             $pDate = Parse-DateSafe $dateStr
-            if ($pDate -and $pDate.Date -eq $today) {
-                $matchedItems += $it
+            if ($pDate -and $pDate.Date -eq $targetDate) {
+                $matchedItems += $entry
             }
         }
     } else {
-        # 30_min, 45_min, 60_min
-        $mins = 30
-        if ($Filter -eq "45_min") { $mins = 45 }
-        elseif ($Filter -eq "60_min") { $mins = 60 }
-        $cutoff = [DateTime]::Now.AddMinutes(-$mins)
-        foreach ($it in $allItems) {
-            $dateStr = $folder.GetDetailsOf($it, 14)
-            if (-not $dateStr) { $dateStr = $folder.GetDetailsOf($it, 4) }
+        # Filter berdasarkan durasi menit dengan toleransi buffer cerdas & deteksi jeda sesi
+        $prevPhotoDate = $refTime
+        
+        # Scan mundur dari foto terbaru ke foto terlama
+        for ($i = $allItems.Count - 1; $i -ge 0; $i--) {
+            $entry = $allItems[$i]
+            $dateStr = $entry.Folder.GetDetailsOf($entry.Item, 14)
+            if (-not $dateStr) { $dateStr = $entry.Folder.GetDetailsOf($entry.Item, 4) }
             $pDate = Parse-DateSafe $dateStr
-            if ($pDate -and $pDate -ge $cutoff) {
-                $matchedItems += $it
+            
+            if ($pDate) {
+                # Hitung jeda waktu terhadap foto sebelumnya (yang lebih baru)
+                $gapMinutes = [Math]::Abs(($prevPhotoDate - $pDate).TotalMinutes)
+                
+                # Jika sudah melewati durasi nominal DAN terdapat jeda antarfoto >= 8 menit,
+                # ini jelas batas sesi pelanggan sebelumnya (karena dalam 1 sesi foto selalu kontinu)
+                if ($pDate -lt $nominalCutoff -and $gapMinutes -ge 8) {
+                    break
+                }
+                
+                # Masukkan foto selama masih dalam rentang batas maksimal toleransi
+                if ($pDate -ge $maxCutoff) {
+                    $matchedItems = @($entry) + $matchedItems
+                    $prevPhotoDate = $pDate
+                } else {
+                    # Sudah melewati batas toleransi maksimal sesi
+                    break
+                }
+            } else {
+                # Jika tanggal tidak terbaca, sertakan foto terbaru
+                $matchedItems = @($entry) + $matchedItems
             }
+        }
+        
+        # Fallback proteksi: jika karena parsing tanggal tidak ada yang match, ambil minimal foto paling akhir
+        if ($matchedItems.Count -eq 0 -and $allItems.Count -gt 0) {
+            $matchedItems = @($allItems[$allItems.Count - 1])
         }
     }
     
+    # Hitung estimasi total bytes
+    $totalBytes = 0
+    $fileList = @()
+    foreach ($m in $matchedItems) {
+        $szStr = $m.Folder.GetDetailsOf($m.Item, 2) # e.g. "1.51 MB"
+        if ($szStr -match '([\d\.,]+)\s*MB') {
+            $num = [double]($matches[1] -replace ',', '.')
+            $totalBytes += [int64]($num * 1024 * 1024)
+        } elseif ($szStr -match '([\d\.,]+)\s*KB') {
+            $num = [double]($matches[1] -replace ',', '.')
+            $totalBytes += [int64]($num * 1024)
+        }
+        
+        $t = $m.Folder.GetDetailsOf($m.Item, 14)
+        if (-not $t) { $t = $m.Folder.GetDetailsOf($m.Item, 4) }
+        $fileList += @{
+            name = $m.Item.Name
+            sizeFormatted = $szStr
+            timeFormatted = $t
+            folderName = $m.FolderName
+        }
+    }
+    
+    $formattedTotalSize = Format-Bytes $totalBytes
+    
     if ($Action -eq "scan") {
-        # Buat cache preview foto jika CacheDir ditentukan
+        # Buat cache thumbnail foto jika CacheDir ditentukan
         $previews = @()
         if ($CacheDir -ne "" -and $matchedItems.Count -gt 0) {
             if (-not (Test-Path $CacheDir)) { New-Item -ItemType Directory -Path $CacheDir -Force | Out-Null }
             $destShellFolder = $info.Shell.Namespace((Resolve-Path $CacheDir).Path)
             
             # Ambil sampai 6 sampel foto: 3 awal, 3 akhir
-            $sampleItems = @()
+            $sampleEntries = @()
             if ($matchedItems.Count -le 6) {
-                $sampleItems = $matchedItems
+                $sampleEntries = $matchedItems
             } else {
-                $sampleItems = @($matchedItems[0], $matchedItems[1], $matchedItems[2], $matchedItems[$matchedItems.Count - 3], $matchedItems[$matchedItems.Count - 2], $matchedItems[$matchedItems.Count - 1])
+                $sampleEntries = @(
+                    $matchedItems[0], $matchedItems[1], $matchedItems[2],
+                    $matchedItems[$matchedItems.Count - 3], $matchedItems[$matchedItems.Count - 2], $matchedItems[$matchedItems.Count - 1]
+                )
             }
             
-            foreach ($s in $sampleItems) {
-                $targetFile = Join-Path $CacheDir $s.Name
+            foreach ($s in $sampleEntries) {
+                $targetFile = Join-Path $CacheDir $s.Item.Name
                 if (-not (Test-Path $targetFile)) {
-                    $destShellFolder.CopyHere($s, 16) # 16 = Respond with Yes to All
+                    $destShellFolder.CopyHere($s.Item, 16) # 16 = Respond with Yes to All
                     Start-Sleep -Milliseconds 150
                 }
-                $timeTaken = $folder.GetDetailsOf($s, 14)
-                if (-not $timeTaken) { $timeTaken = $folder.GetDetailsOf($s, 4) }
+                $timeTaken = $s.Folder.GetDetailsOf($s.Item, 14)
+                if (-not $timeTaken) { $timeTaken = $s.Folder.GetDetailsOf($s.Item, 4) }
                 if (Test-Path $targetFile) {
                     $resolved = (Resolve-Path $targetFile).Path
                     $previews += @{
-                        name = $s.Name
+                        name = $s.Item.Name
                         fullPath = $resolved
                         timeFormatted = $timeTaken
                         previewUrl = "/api/camera-import/thumbnail?filePath=" + [System.Uri]::EscapeDataString($resolved)
@@ -304,28 +404,18 @@ if ($Action -eq "scan" -or $Action -eq "import") {
             }
         }
         
-        $fileList = @()
-        foreach ($m in $matchedItems) {
-            $t = $folder.GetDetailsOf($m, 14)
-            if (-not $t) { $t = $folder.GetDetailsOf($m, 4) }
-            $fileList += @{
-                name = $m.Name
-                sizeFormatted = $folder.GetDetailsOf($m, 2)
-                timeFormatted = $t
-                folderName = $targetFolderItem.Name
-            }
-        }
-        
         Write-Output (@{
             success = $true
             isMtp = $true
-            activeFolder = $targetFolderItem.Name
-            activeFolderPath = "This PC\$($info.DeviceName)\$($info.StorageName)\DCIM\$($targetFolderItem.Name)"
+            activeFolder = $activeFolderName
+            activeFolderPath = "This PC\$($info.DeviceName)\$($info.StorageName)\DCIM\$($activeFolderName)"
             totalFound = $matchedItems.Count
             totalInFolder = $totalInFolder
+            totalBytes = $totalBytes
+            formattedTotalSize = $formattedTotalSize
             availableFolders = $availableFolders
-            earliestTime = if ($matchedItems.Count -gt 0) { $fileList[0].timeFormatted } else { $null }
-            latestTime = if ($matchedItems.Count -gt 0) { $fileList[$fileList.Count - 1].timeFormatted } else { $null }
+            earliestTime = if ($fileList.Count -gt 0) { $fileList[0].timeFormatted } else { $null }
+            latestTime = if ($fileList.Count -gt 0) { $fileList[$fileList.Count - 1].timeFormatted } else { $null }
             previews = $previews
             files = $fileList
         } | ConvertTo-Json -Depth 4 -Compress)
@@ -353,19 +443,32 @@ if ($Action -eq "scan" -or $Action -eq "import") {
         $copiedCount = 0
         foreach ($m in $matchedItems) {
             try {
-                $destShellFolder.CopyHere($m, 16)
+                $destShellFolder.CopyHere($m.Item, 16)
                 $copiedCount++
             } catch {}
         }
         
-        # Tunggu beberapa detik agar Windows shell menyelesaikan copy
-        Start-Sleep -Milliseconds 800
+        # Tunggu sampai seluruh file foto selesai disalin ke disk oleh Windows Shell
+        $maxWaitSec = 60
+        $sw = [System.Diagnostics.Stopwatch]::StartNew()
+        while ($sw.Elapsed.TotalSeconds -lt $maxWaitSec) {
+            $copiedOnDisk = @(Get-ChildItem -Path $destPath | Where-Object { $_.Name -match '\.(jpg|jpeg|png|webp)$' })
+            if ($copiedOnDisk.Count -ge $matchedItems.Count) {
+                break
+            }
+            Start-Sleep -Milliseconds 300
+        }
+        
+        $finalCount = @(Get-ChildItem -Path $destPath | Where-Object { $_.Name -match '\.(jpg|jpeg|png|webp)$' }).Count
+        if ($finalCount -gt 0) { $copiedCount = $finalCount }
         
         Write-Output (@{
             success = $true
             count = $copiedCount
             isMtp = $true
-            activeFolder = $targetFolderItem.Name
+            activeFolder = $activeFolderName
+            totalBytes = $totalBytes
+            formattedTotalSize = $formattedTotalSize
         } | ConvertTo-Json -Compress)
         exit 0
     }

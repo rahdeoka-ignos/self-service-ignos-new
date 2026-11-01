@@ -3,7 +3,23 @@ const http = require("http");
 const url = require("url");
 const fs = require("fs");
 const path = require("path");
-const { exec } = require("child_process");
+const { exec, execSync } = require("child_process");
+
+function freePort(port) {
+  try {
+    const stdout = execSync(`netstat -ano | findstr :${port}`, { encoding: "utf8" });
+    const lines = stdout.trim().split("\n");
+    for (const line of lines) {
+      const parts = line.trim().split(/\s+/);
+      const pid = parts[parts.length - 1];
+      if (pid && pid !== "0" && pid !== String(process.pid)) {
+        try {
+          execSync(`taskkill /F /PID ${pid}`);
+        } catch {}
+      }
+    }
+  } catch {}
+}
 
 const CLIENT_SECRET_FILE = path.join(
   __dirname,
@@ -88,6 +104,22 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
+server.on("error", (err) => {
+  if (err.code === "EADDRINUSE") {
+    console.log(`Port ${PORT} sedang dipakai proses lain. Membebaskan port...`);
+    freePort(PORT);
+    setTimeout(() => {
+      server.listen(PORT, () => {
+        exec(`start "" "${authUrl}"`);
+      });
+    }, 1000);
+  } else {
+    console.error("Server error:", err.message);
+    process.exit(1);
+  }
+});
+
+freePort(PORT);
 server.listen(PORT, () => {
   // Buka URL di browser default Windows
   exec(`start "" "${authUrl}"`);
