@@ -1,6 +1,16 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
-import { Copy, Check, MessageCircle, Sparkles, Camera, HardDrive, AlertTriangle, ExternalLink, RefreshCw } from "lucide-react";
+import {
+  Copy,
+  Check,
+  MessageCircle,
+  Sparkles,
+  Camera,
+  HardDrive,
+  AlertTriangle,
+  ExternalLink,
+  RefreshCw,
+} from "lucide-react";
 import { usePageTitle } from "../../hooks/usePageTitle";
 import { AdminLayout } from "../components/AdminLayout";
 import { CameraImportModal } from "../components/CameraImportModal";
@@ -80,11 +90,13 @@ export function AdminMessagePage() {
     error?: string;
   } | null>(null);
 
-  const [pendingQueue, setPendingQueue] = useState<Array<{
-    folderName: string;
-    fileCount: number;
-    sessionInfo?: any;
-  }>>([]);
+  const [pendingQueue, setPendingQueue] = useState<
+    Array<{
+      folderName: string;
+      fileCount: number;
+      sessionInfo?: any;
+    }>
+  >([]);
 
   const [uploadingQueue, setUploadingQueue] = useState(false);
   const [authorizingDrive, setAuthorizingDrive] = useState(false);
@@ -93,7 +105,9 @@ export function AdminMessagePage() {
     fetch("http://localhost:5000/api/gdrive-auth-status")
       .then((r) => r.json())
       .then((d) => setGdriveAuthStatus(d))
-      .catch(() => setGdriveAuthStatus({ connected: false, error: "Server offline" }));
+      .catch(() =>
+        setGdriveAuthStatus({ connected: false, error: "Server offline" }),
+      );
 
     fetch("http://localhost:5000/api/gdrive-pending-queue")
       .then((r) => r.json())
@@ -110,9 +124,14 @@ export function AdminMessagePage() {
   const handleTriggerAuth = async () => {
     try {
       setAuthorizingDrive(true);
-      const res = await fetch("http://localhost:5000/api/gdrive-trigger-auth", { method: "POST" });
+      const res = await fetch("http://localhost:5000/api/gdrive-trigger-auth", {
+        method: "POST",
+      });
       const data = await res.json();
-      alert(data.message || "Jendela browser otorisasi Google Drive telah dibuka. Silakan izinkan akses akun Google.");
+      alert(
+        data.message ||
+          "Jendela browser otorisasi Google Drive telah dibuka. Silakan izinkan akses akun Google.",
+      );
     } catch {
       alert("Gagal memicu otorisasi Google Drive.");
     } finally {
@@ -121,10 +140,18 @@ export function AdminMessagePage() {
   };
 
   const handleUploadPendingQueue = async () => {
-    if (!confirm(`Unggah ${pendingQueue.length} folder sesi di antrian lokal ke Google Drive sekarang?`)) return;
+    if (
+      !confirm(
+        `Unggah ${pendingQueue.length} folder sesi di antrian lokal ke Google Drive sekarang?`,
+      )
+    )
+      return;
     try {
       setUploadingQueue(true);
-      const res = await fetch("http://localhost:5000/api/gdrive-upload-pending", { method: "POST" });
+      const res = await fetch(
+        "http://localhost:5000/api/gdrive-upload-pending",
+        { method: "POST" },
+      );
       const data = await res.json();
       if (data.success) {
         alert(data.message);
@@ -143,7 +170,7 @@ export function AdminMessagePage() {
   const handleClearPhotos = async () => {
     if (
       !confirm(
-        "Kosongkan foto jepretan di kamera aktif untuk sesi customer baru?\n\n(Catatan: Antrian upload sesi sebelumnya yang sedang berjalan di background tetap aman & tidak akan terhapus)."
+        "Kosongkan foto jepretan di kamera aktif untuk sesi customer baru?\n\n(Catatan: Antrian upload sesi sebelumnya yang sedang berjalan di background tetap aman & tidak akan terhapus).",
       )
     ) {
       return;
@@ -227,7 +254,8 @@ export function AdminMessagePage() {
               Kirim Softcopy
             </h1>
             <p className="text-zinc-500 text-xs md:text-sm mt-0.5">
-              Generate pesan WhatsApp, monitor status Google Drive, dan kelola sesi kamera
+              Generate pesan WhatsApp, monitor status Google Drive, dan kelola
+              sesi kamera
             </p>
           </div>
           <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
@@ -254,7 +282,11 @@ export function AdminMessagePage() {
               title="Kosongkan kamera aktif tanpa mengganggu proses upload Google Drive"
             >
               <Camera size={14} className="text-zinc-500" />
-              <span>{clearingPhotos ? "Mengosongkan..." : "Kosongkan Kamera (Sesi Baru)"}</span>
+              <span>
+                {clearingPhotos
+                  ? "Mengosongkan..."
+                  : "Kosongkan Kamera (Sesi Baru)"}
+              </span>
             </button>
           </div>
         </div>
@@ -287,7 +319,11 @@ export function AdminMessagePage() {
                 className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-semibold text-xs rounded-lg transition-colors shrink-0 shadow-xs cursor-pointer disabled:opacity-50"
               >
                 <ExternalLink size={14} />
-                <span>{authorizingDrive ? "Membuka Browser..." : "Login Ulang Google Drive"}</span>
+                <span>
+                  {authorizingDrive
+                    ? "Membuka Browser..."
+                    : "Login Ulang Google Drive"}
+                </span>
               </button>
             </div>
           )}
@@ -301,10 +337,19 @@ export function AdminMessagePage() {
                 </div>
                 <div>
                   <h4 className="text-sm font-bold text-blue-950">
-                    Ada {pendingQueue.length} Antrian Sesi Foto Tersimpan di Disk PC
+                    Ada {pendingQueue.length} Antrian Sesi Foto Tersimpan di
+                    Disk PC
                   </h4>
                   <p className="text-xs text-blue-800 mt-0.5 leading-relaxed">
-                    Foto dari sesi customer sebelumnya ({pendingQueue.map((q) => `${q.sessionInfo?.customerName || q.folderName} (${q.fileCount} foto)`).join(", ")}) tersimpan aman di disk lokal PC dan siap diunggah ke Google Drive.
+                    Foto dari sesi customer sebelumnya (
+                    {pendingQueue
+                      .map(
+                        (q) =>
+                          `${q.sessionInfo?.customerName || q.folderName} (${q.fileCount} foto)`,
+                      )
+                      .join(", ")}
+                    ) tersimpan aman di disk lokal PC dan siap diunggah ke
+                    Google Drive.
                   </p>
                 </div>
               </div>
@@ -313,10 +358,17 @@ export function AdminMessagePage() {
                 onClick={handleUploadPendingQueue}
                 disabled={uploadingQueue || !gdriveAuthStatus?.connected}
                 className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-lg transition-colors shrink-0 shadow-xs cursor-pointer disabled:opacity-50"
-                title={!gdriveAuthStatus?.connected ? "Harap login ulang Google Drive terlebih dahulu" : "Unggah semua antrian sesi sekarang"}
+                title={
+                  !gdriveAuthStatus?.connected
+                    ? "Harap login ulang Google Drive terlebih dahulu"
+                    : "Unggah semua antrian sesi sekarang"
+                }
               >
-                <Sparkles size={14} />
-                <span>{uploadingQueue ? "Mengunggah Antrian..." : "Unggah Antrian ke Drive"}</span>
+                <span>
+                  {uploadingQueue
+                    ? "Mengunggah Antrian..."
+                    : "Unggah Antrian ke Drive"}
+                </span>
               </button>
             </div>
           )}
@@ -387,7 +439,8 @@ export function AdminMessagePage() {
                 <div className="mt-3 pt-2.5 border-t border-zinc-100 flex items-center justify-between text-[11px] text-zinc-400">
                   <span className="flex items-center gap-1.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                    Antrian Staging Terisolasi: File foto aman dari pembersihan kamera sesi berikutnya.
+                    Antrian Staging Terisolasi: File foto aman dari pembersihan
+                    kamera sesi berikutnya.
                   </span>
                 </div>
               </div>

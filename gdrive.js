@@ -31,8 +31,20 @@ export function getDriveClient() {
 
     // Otomatis update token jika refresh
     oauth2Client.on("tokens", (newTokens) => {
-      const merged = { ...tokens, ...newTokens };
-      fs.writeFileSync(TOKEN_FILE_PATH, JSON.stringify(merged, null, 2), "utf8");
+      try {
+        let currentDiskTokens = {};
+        if (fs.existsSync(TOKEN_FILE_PATH)) {
+          currentDiskTokens = JSON.parse(fs.readFileSync(TOKEN_FILE_PATH, "utf8"));
+        }
+        const merged = { ...tokens, ...currentDiskTokens, ...newTokens };
+        // Pastikan refresh_token tidak pernah hilang jika Google hanya mengembalikan access_token baru
+        if (!merged.refresh_token) {
+          merged.refresh_token = currentDiskTokens.refresh_token || tokens.refresh_token;
+        }
+        fs.writeFileSync(TOKEN_FILE_PATH, JSON.stringify(merged, null, 2), "utf8");
+      } catch (err) {
+        console.error("[GDrive] Gagal mengupdate token baru ke disk:", err);
+      }
     });
 
     return google.drive({ version: "v3", auth: oauth2Client });
