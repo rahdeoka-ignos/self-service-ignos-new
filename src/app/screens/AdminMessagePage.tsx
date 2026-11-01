@@ -14,6 +14,7 @@ import { usePageTitle } from "../../hooks/usePageTitle";
 import { AdminLayout } from "../components/AdminLayout";
 import { AdminConfirmModal } from "../components/AdminConfirmModal";
 import { CameraImportModal } from "../components/CameraImportModal";
+import { useBranding } from "../../context/BrandingContext";
 
 const API = "http://localhost:5000";
 
@@ -39,6 +40,7 @@ Terima kasih kak, ditunggu kedatangannya yang selanjutnya🙏😊`;
 export function AdminMessagePage() {
   usePageTitle("Pesan Softcopy — Ignos");
   const navigate = useNavigate();
+  const { branding } = useBranding();
 
   const [cameraImportOpen, setCameraImportOpen] = useState(false);
   const [name, setName] = useState("");
@@ -306,7 +308,21 @@ export function AdminMessagePage() {
 
   const handleGenerate = () => {
     if (!validate()) return;
-    const msg = generateMessage(name.trim(), driveLink.trim());
+    const greeting = (branding?.whatsapp?.headerGreeting || "Halo Kakak {customerName}")
+      .replace("{customerName}", name.trim());
+    const intro = branding?.whatsapp?.introText || "Berikut kami kirimkan link Google Drive softcopy foto hari ini, silahkan dicek ya kak.";
+    const igTag = branding?.whatsapp?.instagramTag || "@ignos.studio";
+    const disclaimer = branding?.whatsapp?.footerDisclaimer || "Mohon segera disimpan dikarenakan link akan expired dalam waktu 7 hari. Terima kasih kak, ditunggu kedatangannya yang selanjutnya!";
+
+    const msg = `${greeting} ${getSapaan()}✨
+${intro}
+
+${driveLink.trim()}
+
+Jangan lupa tag kami yaa kak ${igTag}
+Kami meminta izin kedepannya jika kita posting foto kakak yaa🙏😊
+${disclaimer}`;
+
     setMessage(msg.normalize("NFC"));
   };
 
@@ -728,11 +744,13 @@ export function AdminMessagePage() {
                   {/* Sender Header */}
                   <div className="flex items-center gap-2.5 pb-2.5 mb-2.5 border-b border-[#e2e2e2]">
                     <div className="w-7 h-7 bg-[#171717] rounded-full flex items-center justify-center shrink-0">
-                      <span className="text-white text-[10px] font-semibold">IG</span>
+                      <span className="text-white text-[10px] font-semibold">
+                        {branding?.studioName ? branding.studioName.slice(0, 2).toUpperCase() : "IG"}
+                      </span>
                     </div>
                     <div>
                       <p className="font-semibold text-[13px] text-[#202020] leading-tight">
-                        Ignos Studio
+                        {branding?.studioName || "Ignos Studio"}
                       </p>
                       <p className="text-[10px] text-[#888]">Pesan Keluar</p>
                     </div>

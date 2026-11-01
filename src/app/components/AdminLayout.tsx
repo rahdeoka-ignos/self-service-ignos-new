@@ -15,8 +15,10 @@ import {
   Maximize2,
   Minimize2,
   Tag,
+  Building2,
 } from "lucide-react";
 import { CameraImportModal } from "./CameraImportModal";
+import { useBranding } from "../../context/BrandingContext";
 
 const NAV_WORKSPACE = [
   {
@@ -40,6 +42,12 @@ const NAV_WORKSPACE = [
 ];
 
 const NAV_PREFERENCES = [
+  {
+    path: "/admin/branding",
+    label: "Identitas Studio",
+    icon: Building2,
+    desc: "Profil, logo & struk",
+  },
   {
     path: "/admin/kiosk-theme",
     label: "Tema & Alur Kiosk",
@@ -67,6 +75,7 @@ const NAV_PREFERENCES = [
 ];
 
 export function AdminLayout({ children }: { children: React.ReactNode }) {
+  const { branding } = useBranding();
   const [printerAlert, setPrinterAlert] = useState<any>(null);
   const [cameraImportOpen, setCameraImportOpen] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -127,12 +136,20 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
         {/* Brand row */}
         <div className="pt-7 px-5 pb-5 border-b border-[#e8e8e8] mb-3">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-[#171717] text-white flex items-center justify-center shrink-0">
-              <Camera size={16} strokeWidth={2} />
-            </div>
+            {branding?.logoUrl ? (
+              <img
+                src={branding.logoUrl}
+                alt={branding.studioName}
+                className="w-8 h-8 rounded-lg object-contain bg-white border border-[#e8e8e8] shrink-0"
+              />
+            ) : (
+              <div className="w-8 h-8 rounded-lg bg-[#171717] text-white flex items-center justify-center shrink-0">
+                <Camera size={16} strokeWidth={2} />
+              </div>
+            )}
             <div className="min-w-0">
-              <span className="font-semibold text-sm tracking-tight text-[#171717] leading-none block">
-                IGNOS
+              <span className="font-semibold text-sm tracking-tight text-[#171717] leading-none block truncate" title={branding?.studioName || "IGNOS"}>
+                {branding?.studioName || "IGNOS"}
               </span>
               <small className="text-[9px] tracking-[0.16em] text-[#888] font-medium block mt-0.5">
                 ADMIN PORTAL

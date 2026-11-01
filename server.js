@@ -2533,6 +2533,158 @@ app.post("/api/pricing/reset", (req, res) => {
   res.json({ success: true, pricing: DEFAULT_PRICING });
 });
 
+// ── STUDIO BRANDING & WHITELABEL API ──────────────────────────
+const BRANDING_JSON = path.join(__dirname, "data/branding.json");
+
+const DEFAULT_BRANDING = {
+  studioName: "IGNOS STUDIO",
+  tagline: "Self-Service Photobooth Station",
+  logoUrl: "",
+  logoDarkUrl: "",
+  address: "Jl. Raya Abiansemal No. 12, Badung, Bali",
+  phone: "081234567890",
+  instagram: "@ignos.studio",
+  tiktok: "@ignos.photobooth",
+  website: "https://ignos.id",
+  receipt: {
+    headerTitle: "IGNOS STUDIO",
+    headerSub: "Self-Service Photobooth Station",
+    addressLine1: "Jl. Raya Abiansemal No. 12",
+    addressLine2: "Badung, Bali",
+    phoneContact: "WA: 0812-3456-7890",
+    footerNote: "Terima kasih telah berfoto bersama kami!",
+    socialNote: "Tag IG kami: @ignos.studio",
+  },
+  whatsapp: {
+    headerGreeting: "Halo Kakak {customerName}",
+    introText: "Berikut kami kirimkan link Google Drive softcopy foto hari ini, silahkan dicek ya kak.",
+    instagramTag: "@ignos.studio",
+    footerDisclaimer:
+      "Mohon segera disimpan dikarenakan link akan expired dalam waktu 7 hari. Terima kasih kak, ditunggu kedatangannya yang selanjutnya!",
+    expiryDays: 7,
+  },
+  watermark: {
+    enabled: false,
+    text: "IGNOS PHOTOBOOTH",
+    position: "bottom-right",
+    opacity: 0.6,
+  },
+};
+
+function readBranding() {
+  if (!fs.existsSync(BRANDING_JSON)) {
+    return DEFAULT_BRANDING;
+  }
+  try {
+    const raw = JSON.parse(fs.readFileSync(BRANDING_JSON, "utf-8"));
+    return {
+      ...DEFAULT_BRANDING,
+      ...raw,
+      receipt: { ...DEFAULT_BRANDING.receipt, ...(raw.receipt || {}) },
+      whatsapp: { ...DEFAULT_BRANDING.whatsapp, ...(raw.whatsapp || {}) },
+      watermark: { ...DEFAULT_BRANDING.watermark, ...(raw.watermark || {}) },
+    };
+  } catch {
+    return DEFAULT_BRANDING;
+  }
+}
+
+function writeBranding(data) {
+  try {
+    const dir = path.dirname(BRANDING_JSON);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(BRANDING_JSON, JSON.stringify(data, null, 2), "utf-8");
+
+    // Also sync studioName & logoUrl to public/kiosk-theme.json if changed
+    try {
+      if (fs.existsSync(KIOSK_THEME_JSON)) {
+        const themeData = JSON.parse(fs.readFileSync(KIOSK_THEME_JSON, "utf-8"));
+        let themeChanged = false;
+        if (data.studioName && themeData.studioName !== data.studioName) {
+          themeData.studioName = data.studioName;
+          themeChanged = true;
+        }
+        if (data.logoUrl !== undefined && themeData.logoUrl !== data.logoUrl) {
+          themeData.logoUrl = data.logoUrl;
+          themeChanged = true;
+        }
+        if (themeChanged) {
+          fs.writeFileSync(KIOSK_THEME_JSON, JSON.stringify(themeData, null, 2), "utf-8");
+        }
+      }
+    } catch (e) {
+      console.warn("[Branding] Gagal sinkronisasi ke kiosk-theme.json:", e.message);
+    }
+  } catch (err) {
+    console.error("[Branding] Gagal simpan branding.json:", err);
+  }
+}
+
+app.get("/api/branding", (req, res) => {
+  res.json(readBranding());
+});
+
+const saveBrandingHandler = (req, res) => {
+  try {
+    const current = readBranding();
+    const updated = {
+      ...current,
+      ...req.body,
+      receipt: { ...current.receipt, ...(req.body.receipt || {}) },
+      whatsapp: { ...current.whatsapp, ...(req.body.whatsapp || {}) },
+      watermark: { ...current.watermark, ...(req.body.watermark || {}) },
+      lastUpdated: new Date().toISOString(),
+    };
+    writeBranding(updated);
+    res.json({ success: true, branding: updated });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+app.put("/api/branding", saveBrandingHandler);
+app.post("/api/branding", saveBrandingHandler);
+
+app.post("/api/branding/reset", (req, res) => {
+  writeBranding(DEFAULT_BRANDING);
+  res.json({ success: true, branding: DEFAULT_BRANDING });
+});
+
+// Logo upload endpoint for branding
+const brandingStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const dir = path.join(__dirname, "public/img/branding");
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    cb(null, dir);
+  },
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase() || ".png";
+    const filename = "logo-" + Date.now() + ext;
+    cb(null, filename);
+  },
+});
+const uploadBrandingLogo = multer({ storage: brandingStorage });
+
+app.post("/api/branding/logo", uploadBrandingLogo.single("logo"), (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: "File logo tidak ditemukan" });
+    }
+    const publicUrl = "/img/branding/" + req.file.filename;
+    const branding = readBranding();
+    const isDark = req.query.type === "dark";
+    if (isDark) {
+      branding.logoDarkUrl = publicUrl;
+    } else {
+      branding.logoUrl = publicUrl;
+    }
+    writeBranding(branding);
+    res.json({ success: true, url: publicUrl, branding });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 
 // ─────────────────────────────────────────────────────────────
 

@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { AdminLayout } from "../components/AdminLayout";
 import { AdminConfirmModal } from "../components/AdminConfirmModal";
+import { useBranding } from "../../context/BrandingContext";
 import { usePageTitle } from "../../hooks/usePageTitle";
 import type { SessionsResponse, SessionRecord } from "../../types/session";
 
@@ -49,6 +50,7 @@ function getInitials(name: string): string {
 
 export function AdminDashboardPage() {
   usePageTitle("Dashboard Operasional — Ignos");
+  const { branding } = useBranding();
 
   const todayStr = useMemo(() => {
     const now = new Date();
@@ -153,7 +155,7 @@ export function AdminDashboardPage() {
     if (!data) return;
     const { summary, sessions, date } = data;
 
-    let text = `*REKAP PENJUALAN IGNOS STUDIO*\n`;
+    let text = `*REKAP PENJUALAN ${(branding?.studioName || "IGNOS STUDIO").toUpperCase()}*\n`;
     text += `Tanggal: ${formatDateIndo(date)}\n`;
     text += `------------------------------------\n`;
     text += `👥 Total Sesi: ${summary.totalSessions} Sesi (${summary.totalPeople} Orang)\n`;
@@ -207,16 +209,22 @@ export function AdminDashboardPage() {
       const margin = 5;
 
       pdf.setFont("helvetica", "bold");
-      pdf.setFontSize(14);
-      pdf.text("IGNOS STUDIO", W / 2, y, { align: "center" });
-      y += 6;
+      pdf.setFontSize(13);
+      pdf.text(branding?.receipt?.headerTitle || branding?.studioName || "IGNOS STUDIO", W / 2, y, { align: "center" });
+      y += 5.5;
 
       pdf.setFont("helvetica", "normal");
-      pdf.setFontSize(9);
-      pdf.text("REKAP CLOSING SHIFT", W / 2, y, { align: "center" });
-      y += 5;
+      pdf.setFontSize(8.5);
+      pdf.text(branding?.receipt?.headerSub || "REKAP CLOSING SHIFT", W / 2, y, { align: "center" });
+      y += 4.5;
+
+      if (branding?.receipt?.phoneContact) {
+        pdf.text(branding.receipt.phoneContact, W / 2, y, { align: "center" });
+        y += 4;
+      }
+
       pdf.text(formatDateIndo(data.date), W / 2, y, { align: "center" });
-      y += 6;
+      y += 5.5;
 
       pdf.setLineDashPattern([1, 1], 0);
       pdf.line(margin, y, W - margin, y);
@@ -261,7 +269,21 @@ export function AdminDashboardPage() {
         y += 4.5;
       });
 
-      y += 6;
+      y += 5;
+      if (branding?.receipt?.footerNote) {
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(7);
+        pdf.text(branding.receipt.footerNote, W / 2, y, { align: "center" });
+        y += 4;
+      }
+      if (branding?.receipt?.socialNote) {
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(7);
+        pdf.text(branding.receipt.socialNote, W / 2, y, { align: "center" });
+        y += 4;
+      }
+
+      y += 3;
       pdf.setFont("helvetica", "bold");
       pdf.setFontSize(8);
       pdf.text("Tanda Tangan Kasir:", margin, y);

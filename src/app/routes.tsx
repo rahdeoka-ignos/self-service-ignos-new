@@ -25,9 +25,11 @@ import { AdminPrinterPage } from "./screens/AdminPrinterPage";
 import { AdminKioskThemePage } from "./screens/AdminKioskThemePage";
 import { AdminStoragePage } from "./screens/AdminStoragePage";
 import { AdminPricingPage } from "./screens/AdminPricingPage";
+import { AdminBrandingPage } from "./screens/AdminBrandingPage";
 import { PasFotoPage } from "./screens/AddOns/PasFoto";
 import { KioskThemeProvider } from "../context/KioskThemeContext";
 import { PricingProvider } from "../context/PricingContext";
+import { BrandingProvider } from "../context/BrandingContext";
 
 function RootLayout() {
   const location = useLocation();
@@ -35,8 +37,10 @@ function RootLayout() {
   return (
     <KioskThemeProvider>
       <PricingProvider>
-        <Outlet />
-        {!isAdmin && <KioskPrinterAlertModal />}
+        <BrandingProvider>
+          <Outlet />
+          {!isAdmin && <KioskPrinterAlertModal />}
+        </BrandingProvider>
       </PricingProvider>
     </KioskThemeProvider>
   );
@@ -169,6 +173,10 @@ export const router = createBrowserRouter([
       {
         path: "/admin/pricing",
         Component: AdminPricingPage,
+      },
+      {
+        path: "/admin/branding",
+        Component: AdminBrandingPage,
       },
       {
         path: "/pasfoto",
