@@ -9,11 +9,14 @@ import {
   FileText,
   Search,
   ArrowUpRight,
+  Receipt,
 } from "lucide-react";
 import { AdminLayout } from "../components/AdminLayout";
 import { AdminConfirmModal } from "../components/AdminConfirmModal";
+import { AdminReceiptPreviewModal } from "../components/AdminReceiptPreviewModal";
 import { useBranding } from "../../context/BrandingContext";
 import { usePageTitle } from "../../hooks/usePageTitle";
+import { generateReceiptPdf, ReceiptData, ReceiptItem } from "../../utils/generateReceiptPdf";
 import type { SessionsResponse, SessionRecord } from "../../types/session";
 
 const API = "http://localhost:5000";
@@ -64,6 +67,12 @@ export function AdminDashboardPage() {
   const [printingReceipt, setPrintingReceipt] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [packageFilter, setPackageFilter] = useState<string>("all");
+
+  // Receipt Preview Modal State
+  const [previewModalOpen, setPreviewModalOpen] = useState(false);
+  const [receiptData, setReceiptData] = useState<ReceiptData | null>(null);
+  const [blobUrl, setBlobUrl] = useState<string | null>(null);
+  const [downloadFn, setDownloadFn] = useState<(() => void) | null>(null);
 
   // Reusable modal state conforming to GEMINI.md
   const [modalConfig, setModalConfig] = useState<{
@@ -322,6 +331,54 @@ export function AdminDashboardPage() {
     }
   };
 
+  const handleOpenReceipt = async (s: SessionRecord) => {
+    const items: ReceiptItem[] =
+      s.items && s.items.length > 0
+        ? s.items
+        : [
+            {
+              name: s.coupleMode ? "Sesi Foto Couple" : `Sesi Foto (${s.peopleCount} Orang)`,
+              qty: 1,
+              unitPrice: s.basePrice || s.totalPrice,
+              total: s.basePrice || s.totalPrice,
+            },
+            ...(s.miscAddons || []).map((m) => ({
+              name: m.name,
+              qty: m.qty,
+              unitPrice: m.price || 15000,
+              total: m.qty * (m.price || 15000),
+            })),
+          ];
+
+    const receipt: ReceiptData = {
+      invoiceNumber: s.invoiceNumber || `INV-${s.id.slice(-6)}`,
+      dateStr: formatDateIndo(s.date),
+      timeStr: `${s.time.replace(".", ":")} WITA`,
+      customerName: s.customerName,
+      customerPhone: s.customerPhone,
+      notes: s.notes,
+      items,
+      subtotal: s.totalPrice + (s.discount || 0),
+      discount: s.discount,
+      total: s.totalPrice,
+      paymentMethod: s.paymentMethod || "cash",
+      cashReceived: s.cashReceived,
+      cashChange: s.cashChange,
+      studioName: branding?.receipt?.headerTitle || branding?.studioName || "IGNOS STUDIO",
+      studioTagline: branding?.receipt?.headerSub || branding?.tagline,
+      studioAddress: [branding?.receipt?.addressLine1, branding?.receipt?.addressLine2].filter(Boolean).join(", ") || branding?.address,
+      studioPhone: branding?.receipt?.phoneContact || branding?.phone,
+      studioInstagram: branding?.instagram,
+      footerNote: branding?.receipt?.footerNote,
+    };
+
+    const { blobUrl: url, download } = await generateReceiptPdf(receipt);
+    setReceiptData(receipt);
+    setBlobUrl(url);
+    setDownloadFn(() => download);
+    setPreviewModalOpen(true);
+  };
+
   const filteredSessionsList = useMemo(() => {
     if (!data) return [];
     let list = data.sessions;
@@ -465,7 +522,8 @@ export function AdminDashboardPage() {
               </p>
             </div>
             <div className="pt-2 border-t border-[#f2f2f2] flex items-center justify-between text-[11px] text-[#888]">
-              <span>Rata-rata: {data?.summary.totalSessions ? formatRupiah(Math.round((data.summary.totalOmset ?? 0) / data.summary.totalSessions)) : "Rp 0"} / sesi</span>
+              <span>Tunai: {formatRupiah(data?.summary.paymentSummary?.cash ?? 0)}</span>
+              <span>QRIS: {formatRupiah(data?.summary.paymentSummary?.qris ?? 0)}</span>
             </div>
           </div>
 
@@ -819,8 +877,11 @@ export function AdminDashboardPage() {
 
                       {/* Total */}
                       <td className="py-3.5 px-4 text-right whitespace-nowrap">
-                        <span className="font-semibold text-[#202020] font-mono text-[13px]">
+                        <span className="font-semibold text-[#202020] font-mono text-[13px] block">
                           {formatRupiah(s.totalPrice)}
+                        </span>
+                        <span className="text-[10px] text-[#888] font-medium tracking-wide uppercase">
+                          {s.paymentMethod ? s.paymentMethod : "tunai"}
                         </span>
                       </td>
 
@@ -841,16 +902,26 @@ export function AdminDashboardPage() {
                         )}
                       </td>
 
-                      {/* Action Hapus */}
+                      {/* Action E-Receipt & Hapus */}
                       <td className="py-3.5 px-4 text-center whitespace-nowrap">
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteSession(s.id, s.customerName)}
-                          className="w-7 h-7 rounded-[5px] text-[#aaa] hover:text-[#dc2626] hover:bg-[#fef2f2] inline-flex items-center justify-center transition-colors cursor-pointer"
-                          title="Hapus rekaman sesi ini"
-                        >
-                          <Trash2 size={13} />
-                        </button>
+                        <div className="flex items-center justify-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => handleOpenReceipt(s)}
+                            className="w-7 h-7 rounded-[5px] text-[#666] hover:text-[#171717] hover:bg-[#f0f0f0] inline-flex items-center justify-center transition-colors cursor-pointer"
+                            title="Buka / Unduh E-Receipt Digital"
+                          >
+                            <Receipt size={13} />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteSession(s.id, s.customerName)}
+                            className="w-7 h-7 rounded-[5px] text-[#aaa] hover:text-[#dc2626] hover:bg-[#fef2f2] inline-flex items-center justify-center transition-colors cursor-pointer"
+                            title="Hapus rekaman sesi ini"
+                          >
+                            <Trash2 size={13} />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -873,6 +944,18 @@ export function AdminDashboardPage() {
           isDangerous={modalConfig.isDangerous}
           variant={modalConfig.variant}
           singleButton={modalConfig.singleButton}
+        />
+
+        {/* ── E-Receipt Digital Preview Modal ── */}
+        <AdminReceiptPreviewModal
+          isOpen={previewModalOpen}
+          onClose={() => setPreviewModalOpen(false)}
+          onNewTransaction={() => setPreviewModalOpen(false)}
+          receiptData={receiptData}
+          blobUrl={blobUrl}
+          onDownload={() => {
+            if (downloadFn) downloadFn();
+          }}
         />
       </div>
     </AdminLayout>

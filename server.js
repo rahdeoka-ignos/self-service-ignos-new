@@ -2283,6 +2283,8 @@ app.get("/api/sessions", (req, res) => {
   let totalSessions = filteredSessions.length;
   let totalPeople = 0;
   let totalOmset = 0;
+  let totalCash = 0;
+  let totalQris = 0;
   let totalReg4R = 0;
   let totalBonus4R = 0;
   let totalA4 = 0;
@@ -2293,7 +2295,13 @@ app.get("/api/sessions", (req, res) => {
 
   filteredSessions.forEach((s) => {
     totalPeople += Number(s.peopleCount) || 1;
-    totalOmset += Number(s.totalPrice) || 0;
+    const price = Number(s.totalPrice) || 0;
+    totalOmset += price;
+    if (s.paymentMethod === "cash") {
+      totalCash += price;
+    } else if (s.paymentMethod === "qris" || s.paymentMethod === "transfer") {
+      totalQris += price;
+    }
     totalReg4R += Number(s.prints?.regular) || 0;
     totalBonus4R += Number(s.prints?.bonus) || 0;
     totalA4 += Number(s.a4Count) || 0;
@@ -2328,6 +2336,10 @@ app.get("/api/sessions", (req, res) => {
       totalSessions,
       totalPeople,
       totalOmset,
+      paymentSummary: {
+        cash: totalCash,
+        qris: totalQris,
+      },
       totalPrints: {
         regular: totalReg4R,
         bonus: totalBonus4R,

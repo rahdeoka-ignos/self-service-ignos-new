@@ -21,6 +21,7 @@ import {
   KeyRound,
   PanelLeftClose,
   PanelLeftOpen,
+  Receipt,
 } from "lucide-react";
 import { CameraImportModal } from "./CameraImportModal";
 import { AdminChangePinModal } from "./AdminChangePinModal";
@@ -34,6 +35,12 @@ const NAV_WORKSPACE = [
     label: "Dashboard",
     icon: LayoutDashboard,
     desc: "Ringkasan sesi & omset",
+  },
+  {
+    path: "/admin/cashier",
+    label: "Kasir & E-Receipt",
+    icon: Receipt,
+    desc: "Transaksi & nota digital",
   },
   {
     path: "/admin/pricing",

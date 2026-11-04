@@ -1,5 +1,140 @@
 [
   {
+    "id": "SES-1793762588194",
+    "timestamp": "2026-11-04T03:23:08.194Z",
+    "date": "2026-11-04",
+    "time": "11.23",
+    "customerName": "Dkadi",
+    "customerPhone": "082266551815",
+    "invoiceNumber": "INV/20261104/461",
+    "source": "cashier",
+    "paymentMethod": "cash",
+    "cashReceived": 100000,
+    "cashChange": 0,
+    "discount": 0,
+    "packageName": "standard",
+    "items": [
+      {
+        "name": "Sesi Foto Standar (2 Orang)",
+        "qty": 1,
+        "unitPrice": 100000,
+        "total": 100000
+      },
+      {
+        "name": "Softcopy All Files (Bonus Story)",
+        "qty": 1,
+        "unitPrice": 0,
+        "total": 0
+      }
+    ],
+    "peopleCount": 2,
+    "coupleMode": false,
+    "joinedBonus": false,
+    "makeStory": true,
+    "softcopyType": "story_free",
+    "softcopyCharge": 0,
+    "prints": {
+      "regular": 2,
+      "bonus": 0,
+      "total": 2
+    },
+    "a4Count": 0,
+    "miscAddons": [],
+    "basePrice": 100000,
+    "totalAddonsPrice": 0,
+    "totalPrice": 100000
+  },
+  {
+    "id": "SES-1793762367463",
+    "timestamp": "2026-11-04T03:19:27.462Z",
+    "date": "2026-11-04",
+    "time": "11.19",
+    "customerName": "dekadi",
+    "customerPhone": "082266551815",
+    "invoiceNumber": "INV/20261104/882",
+    "source": "cashier",
+    "paymentMethod": "cash",
+    "cashReceived": 100000,
+    "cashChange": 0,
+    "discount": 0,
+    "packageName": "standard",
+    "items": [
+      {
+        "name": "Sesi Foto Standar (2 Orang)",
+        "qty": 1,
+        "unitPrice": 100000,
+        "total": 100000
+      },
+      {
+        "name": "Softcopy All Files (Bonus Story IG)",
+        "qty": 1,
+        "unitPrice": 0,
+        "total": 0
+      }
+    ],
+    "peopleCount": 2,
+    "coupleMode": false,
+    "joinedBonus": false,
+    "makeStory": true,
+    "softcopyType": "story_free",
+    "softcopyCharge": 0,
+    "prints": {
+      "regular": 2,
+      "bonus": 0,
+      "total": 2
+    },
+    "a4Count": 0,
+    "miscAddons": [],
+    "basePrice": 100000,
+    "totalAddonsPrice": 0,
+    "totalPrice": 100000
+  },
+  {
+    "id": "SES-1793761990734",
+    "timestamp": "2026-11-04T03:13:10.734Z",
+    "date": "2026-11-04",
+    "time": "11.13",
+    "customerName": "Laba",
+    "customerPhone": "082266551815",
+    "invoiceNumber": "INV/20261104/450",
+    "source": "cashier",
+    "paymentMethod": "cash",
+    "cashReceived": 100000,
+    "cashChange": 0,
+    "discount": 0,
+    "packageName": "standard",
+    "items": [
+      {
+        "name": "Sesi Foto Standar (2 Orang)",
+        "qty": 1,
+        "unitPrice": 100000,
+        "total": 100000
+      },
+      {
+        "name": "Softcopy All Files (Bonus Story IG)",
+        "qty": 1,
+        "unitPrice": 0,
+        "total": 0
+      }
+    ],
+    "peopleCount": 2,
+    "coupleMode": false,
+    "joinedBonus": false,
+    "makeStory": true,
+    "softcopyType": "story_free",
+    "softcopyCharge": 0,
+    "prints": {
+      "regular": 2,
+      "bonus": 0,
+      "total": 2
+    },
+    "a4Count": 0,
+    "miscAddons": [],
+    "basePrice": 100000,
+    "totalAddonsPrice": 0,
+    "totalPrice": 100000
+  },
+  {
     "id": "SES-1793536352808",
     "timestamp": "2026-11-01T12:32:32.808Z",
     "date": "2026-11-01",
