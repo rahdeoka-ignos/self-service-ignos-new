@@ -1,9 +1,9 @@
 {
-  "licenseKey": "IGNOS-V1.eyJjbGllbnQiOiJJZ25vcyBTdHVkaW8gUGFydG5lciIsInBsYW4iOiJQYWtldCBTZXdhIEJ1bGFuYW4gKDMwIEhhcmkpIiwiY3JlYXRlZCI6MTc5MzU0NzExMDYzMiwiZXhwIjoxNzk2MTM5MTEwNjMyLCJkYXlzIjozMH0.756c8e62abdc438bc44798702bce933ffc2d1d14440c175cce6a15ec5f335923",
-  "clientName": "Ignos Studio Partner",
-  "plan": "Paket Sewa Bulanan (30 Hari)",
-  "activatedAt": "2026-11-01T15:31:50.632Z",
-  "expiresAt": "2026-12-01T15:31:50.632Z",
-  "lastVerifiedAt": 1793547110632,
-  "notes": "Lisensi aktif bawaan sistem"
+  "licenseKey": "IGNOS-V1.eyJjbGllbnQiOiJEZWthZGkiLCJwbGFuIjoiUGFrZXQgQnVsYW5hbiAoMzAgSGFyaSkiLCJjcmVhdGVkIjoxNzkzNTg4MjU1MjQ2LCJleHAiOjE3OTYxODAyNTUyNDYsImRheXMiOjMwfQ.8c4b9d2f9953ee45ef2447ea4c411b3e9d669141a2654a87cc75bc3022ae099f",
+  "clientName": "Dekadi",
+  "plan": "Paket Bulanan (30 Hari)",
+  "activatedAt": "2026-11-02T03:08:09.967Z",
+  "expiresAt": "2026-12-02T02:57:35.246Z",
+  "lastVerifiedAt": 1793760017207,
+  "notes": "Aktivasi manual via Admin Portal"
 }

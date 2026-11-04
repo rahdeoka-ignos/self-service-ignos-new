@@ -2907,6 +2907,186 @@ app.post("/api/license/activate", (req, res) => {
   }
 });
 
+// ─────────────────────────────────────────────────────────────
+// IGNOS ADMIN PIN SECURITY SYSTEM (Kiosk Protection & Access Guard)
+// ─────────────────────────────────────────────────────────────
+const SECURITY_FILE = path.join(__dirname, "data/security.json");
+const PIN_SALT = process.env.IGNOS_PIN_SALT || "IGNOS_PIN_SALT_2026";
+const MASTER_RECOVERY_KEY = process.env.IGNOS_MASTER_KEY || "IGNOS-MASTER-ADMIN-RESET";
+
+let pinFailedAttempts = 0;
+let pinLockoutUntil = 0;
+
+function hashPin(pin) {
+  return crypto.createHmac("sha256", PIN_SALT).update(String(pin).trim()).digest("hex");
+}
+
+function readSecurityRecord() {
+  try {
+    if (fs.existsSync(SECURITY_FILE)) {
+      const raw = fs.readFileSync(SECURITY_FILE, "utf-8");
+      return JSON.parse(raw);
+    }
+  } catch (err) {
+    console.error("Error reading security.json:", err.message);
+  }
+  return {
+    pinHash: hashPin("1234"),
+    isDefaultPin: true,
+    updatedAt: new Date().toISOString(),
+  };
+}
+
+function writeSecurityRecord(record) {
+  try {
+    const dir = path.dirname(SECURITY_FILE);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(SECURITY_FILE, JSON.stringify(record, null, 2), "utf-8");
+  } catch (err) {
+    console.error("Error writing security.json:", err.message);
+  }
+}
+
+// GET /api/security/pin-status
+app.get("/api/security/pin-status", (req, res) => {
+  try {
+    const record = readSecurityRecord();
+    const now = Date.now();
+    const isLockedOut = now < pinLockoutUntil;
+    const remainingSeconds = isLockedOut ? Math.ceil((pinLockoutUntil - now) / 1000) : 0;
+    
+    res.json({
+      hasPin: Boolean(record.pinHash),
+      isDefaultPin: Boolean(record.isDefaultPin),
+      isLockedOut,
+      lockoutRemainingSeconds: remainingSeconds,
+      updatedAt: record.updatedAt,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/security/verify-pin
+app.post("/api/security/verify-pin", (req, res) => {
+  try {
+    const { pin } = req.body;
+    const now = Date.now();
+
+    // Check brute force lockout
+    if (now < pinLockoutUntil) {
+      const waitSec = Math.ceil((pinLockoutUntil - now) / 1000);
+      return res.status(429).json({
+        success: false,
+        isLockedOut: true,
+        remainingSeconds: waitSec,
+        message: "Terlalu banyak percobaan salah. Coba lagi dalam " + waitSec + " detik.",
+      });
+    }
+
+    if (!pin || typeof pin !== "string") {
+      return res.status(400).json({ success: false, message: "PIN wajib diisi." });
+    }
+
+    const record = readSecurityRecord();
+    const inputHash = hashPin(pin);
+
+    // Master override (888888 or master recovery)
+    const isMaster = pin.trim() === "888888" || pin.trim() === MASTER_RECOVERY_KEY;
+
+    if (inputHash === record.pinHash || isMaster) {
+      pinFailedAttempts = 0;
+      pinLockoutUntil = 0;
+      const sessionToken = crypto.randomBytes(24).toString("hex");
+      return res.json({
+        success: true,
+        message: "PIN benar. Akses Admin dibuka.",
+        token: sessionToken,
+        isDefaultPin: record.isDefaultPin,
+      });
+    } else {
+      pinFailedAttempts++;
+      if (pinFailedAttempts >= 5) {
+        pinLockoutUntil = now + 30000; // 30 sec lockout
+        return res.status(429).json({
+          success: false,
+          isLockedOut: true,
+          remainingSeconds: 30,
+          message: "PIN salah 5 kali berturut-turut. Sistem dikunci sementara selama 30 detik.",
+        });
+      }
+      return res.status(401).json({
+        success: false,
+        message: "PIN salah. Sisa percobaan: " + (5 - pinFailedAttempts),
+        attemptsLeft: 5 - pinFailedAttempts,
+      });
+    }
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// POST /api/security/change-pin
+app.post("/api/security/change-pin", (req, res) => {
+  try {
+    const { currentPin, newPin } = req.body;
+    if (!currentPin || !newPin) {
+      return res.status(400).json({ success: false, message: "PIN saat ini dan PIN baru wajib diisi." });
+    }
+
+    const cleanNewPin = String(newPin).trim();
+    if (!/^\d{4,8}$/.test(cleanNewPin)) {
+      return res.status(400).json({ success: false, message: "PIN baru harus berupa 4 hingga 8 digit angka." });
+    }
+
+    const record = readSecurityRecord();
+    const currentHash = hashPin(currentPin);
+    const isMaster = currentPin.trim() === "888888" || currentPin.trim() === MASTER_RECOVERY_KEY;
+
+    if (currentHash !== record.pinHash && !isMaster) {
+      return res.status(401).json({ success: false, message: "PIN saat ini salah." });
+    }
+
+    record.pinHash = hashPin(cleanNewPin);
+    record.isDefaultPin = false;
+    record.updatedAt = new Date().toISOString();
+    writeSecurityRecord(record);
+
+    res.json({
+      success: true,
+      message: "PIN keamanan Admin berhasil diperbarui!",
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// POST /api/security/reset-pin
+app.post("/api/security/reset-pin", (req, res) => {
+  try {
+    const { recoveryKey } = req.body;
+    if (recoveryKey !== MASTER_RECOVERY_KEY && recoveryKey !== "888888") {
+      return res.status(403).json({ success: false, message: "Kunci pemulihan master tidak valid." });
+    }
+
+    const record = {
+      pinHash: hashPin("1234"),
+      isDefaultPin: true,
+      updatedAt: new Date().toISOString(),
+    };
+    writeSecurityRecord(record);
+    pinFailedAttempts = 0;
+    pinLockoutUntil = 0;
+
+    res.json({
+      success: true,
+      message: "PIN berhasil direset ke nilai default (1234).",
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
 // Watch PHOTOS_DIR for new files and generate thumbnails immediately
 function startFileWatcher() {
   console.log(`Watching for new photos in ${PHOTOS_DIR}...`);

@@ -17,10 +17,14 @@ import {
   Tag,
   Building2,
   ShieldCheck,
+  Lock,
+  KeyRound,
 } from "lucide-react";
 import { CameraImportModal } from "./CameraImportModal";
+import { AdminChangePinModal } from "./AdminChangePinModal";
 import { useBranding } from "../../context/BrandingContext";
 import { useLicense } from "../../context/LicenseContext";
+import { useSecurity } from "../../context/SecurityContext";
 
 const NAV_WORKSPACE = [
   {
@@ -85,8 +89,10 @@ const NAV_PREFERENCES = [
 export function AdminLayout({ children }: { children: React.ReactNode }) {
   const { branding } = useBranding();
   const { license, isLocked, isWarning } = useLicense();
+  const { logout, isDefaultPin } = useSecurity();
   const [printerAlert, setPrinterAlert] = useState<any>(null);
   const [cameraImportOpen, setCameraImportOpen] = useState(false);
+  const [changePinOpen, setChangePinOpen] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
@@ -247,7 +253,18 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
         </div>
 
         {/* Sidebar Bottom */}
-        <div className="p-3 border-t border-[#e8e8e8] mt-auto">
+        <div className="p-3 border-t border-[#e8e8e8] mt-auto space-y-1">
+          <button
+            onClick={() => {
+              logout();
+              navigate("/");
+            }}
+            className="w-full flex items-center gap-2 px-2.5 py-2 text-[13px] text-rose-600 hover:text-rose-700 transition-colors rounded-[7px] hover:bg-rose-50 cursor-pointer"
+            title="Kunci sesi admin dan kembali ke Kiosk"
+          >
+            <Lock size={15} strokeWidth={1.5} />
+            <span>Kunci & Keluar</span>
+          </button>
           <button
             onClick={() => navigate("/")}
             className="w-full flex items-center gap-2 px-2.5 py-2 text-[13px] text-[#888] hover:text-[#202020] transition-colors rounded-[7px] hover:bg-[#f6f6f6] cursor-pointer"
@@ -284,6 +301,19 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
             >
               <span>Buka Kiosk</span>
               <ArrowUpRight size={14} strokeWidth={1.5} />
+            </button>
+
+            {/* PIN Security Button */}
+            <button
+              onClick={() => setChangePinOpen(true)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-[#e5e5e5] hover:bg-[#f5f5f5] text-[#171717] rounded-[7px] text-[12px] font-medium transition-colors cursor-pointer"
+              title="Atur PIN Keamanan Admin"
+            >
+              <KeyRound size={13} strokeWidth={1.5} />
+              <span>PIN Keamanan</span>
+              {isDefaultPin && (
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-500" title="PIN masih default (1234)" />
+              )}
             </button>
 
             {printerAlert && (
@@ -357,6 +387,12 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
       <CameraImportModal
         isOpen={cameraImportOpen}
         onClose={() => setCameraImportOpen(false)}
+      />
+
+      {/* Change PIN Security Modal */}
+      <AdminChangePinModal
+        isOpen={changePinOpen}
+        onClose={() => setChangePinOpen(false)}
       />
     </div>
   );

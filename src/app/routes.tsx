@@ -32,23 +32,27 @@ import { KioskThemeProvider } from "../context/KioskThemeContext";
 import { PricingProvider } from "../context/PricingContext";
 import { BrandingProvider } from "../context/BrandingContext";
 import { LicenseProvider } from "../context/LicenseContext";
+import { SecurityProvider } from "../context/SecurityContext";
 import { KioskLockoutGuard } from "./components/KioskLockoutGuard";
+import { AdminRouteGuard } from "./components/AdminRouteGuard";
 
 function RootLayout() {
   const location = useLocation();
   const isAdmin = location.pathname.startsWith("/admin");
   return (
-    <KioskThemeProvider>
-      <PricingProvider>
-        <BrandingProvider>
-          <LicenseProvider>
-            <Outlet />
-            {!isAdmin && <KioskPrinterAlertModal />}
-            {!isAdmin && <KioskLockoutGuard />}
-          </LicenseProvider>
-        </BrandingProvider>
-      </PricingProvider>
-    </KioskThemeProvider>
+    <SecurityProvider>
+      <KioskThemeProvider>
+        <PricingProvider>
+          <BrandingProvider>
+            <LicenseProvider>
+              <Outlet />
+              {!isAdmin && <KioskPrinterAlertModal />}
+              {!isAdmin && <KioskLockoutGuard />}
+            </LicenseProvider>
+          </BrandingProvider>
+        </PricingProvider>
+      </KioskThemeProvider>
+    </SecurityProvider>
   );
 }
 
@@ -145,52 +149,57 @@ export const router = createBrowserRouter([
         Component: LoyaltyCard,
       },
       {
-        path: "/admin",
-        Component: AdminDashboardPage,
-      },
-      {
-        path: "/admin/message",
-        Component: AdminMessagePage,
-      },
-      {
-        path: "/admin/templates",
-        Component: AdminTemplatePage,
-      },
-      {
-        path: "/admin/templates/new",
-        Component: AdminTemplateEditorPage,
-      },
-      {
-        path: "/admin/templates/edit/:id",
-        Component: AdminTemplateEditorPage,
-      },
-      {
-        path: "/admin/printers",
-        Component: AdminPrinterPage,
-      },
-      {
-        path: "/admin/kiosk-theme",
-        Component: AdminKioskThemePage,
-      },
-      {
-        path: "/admin/storage",
-        Component: AdminStoragePage,
-      },
-      {
-        path: "/admin/pricing",
-        Component: AdminPricingPage,
-      },
-      {
-        path: "/admin/branding",
-        Component: AdminBrandingPage,
-      },
-      {
-        path: "/admin/license",
-        Component: AdminLicensePage,
-      },
-      {
         path: "/pasfoto",
         Component: PasFotoPage,
+      },
+      {
+        element: <AdminRouteGuard />,
+        children: [
+          {
+            path: "/admin",
+            Component: AdminDashboardPage,
+          },
+          {
+            path: "/admin/message",
+            Component: AdminMessagePage,
+          },
+          {
+            path: "/admin/templates",
+            Component: AdminTemplatePage,
+          },
+          {
+            path: "/admin/templates/new",
+            Component: AdminTemplateEditorPage,
+          },
+          {
+            path: "/admin/templates/edit/:id",
+            Component: AdminTemplateEditorPage,
+          },
+          {
+            path: "/admin/printers",
+            Component: AdminPrinterPage,
+          },
+          {
+            path: "/admin/kiosk-theme",
+            Component: AdminKioskThemePage,
+          },
+          {
+            path: "/admin/storage",
+            Component: AdminStoragePage,
+          },
+          {
+            path: "/admin/pricing",
+            Component: AdminPricingPage,
+          },
+          {
+            path: "/admin/branding",
+            Component: AdminBrandingPage,
+          },
+          {
+            path: "/admin/license",
+            Component: AdminLicensePage,
+          },
+        ],
       },
     ],
   },

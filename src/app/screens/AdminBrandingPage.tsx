@@ -9,10 +9,14 @@ import {
   Image as ImageIcon,
   Stamp,
   ExternalLink,
+  Lock,
+  KeyRound,
+  ShieldAlert,
 } from "lucide-react";
 import { AdminLayout } from "../components/AdminLayout";
 import { AdminConfirmModal } from "../components/AdminConfirmModal";
 import { useBranding } from "../../context/BrandingContext";
+import { useSecurity } from "../../context/SecurityContext";
 import { usePageTitle } from "../../hooks/usePageTitle";
 import type { StudioBrandingConfig } from "../../types/branding";
 
@@ -28,12 +32,21 @@ export function AdminBrandingPage() {
     uploadLogo,
     saving,
   } = useBranding();
+  const { isDefaultPin, changePin } = useSecurity();
 
   const [activeTab, setActiveTab] = useState<
-    "profile" | "logo" | "receipt" | "whatsapp" | "watermark"
+    "profile" | "logo" | "receipt" | "whatsapp" | "watermark" | "security"
   >("profile");
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
+
+  // PIN change state
+  const [currentPin, setCurrentPin] = useState("");
+  const [newPin, setNewPin] = useState("");
+  const [confirmPin, setConfirmPin] = useState("");
+  const [pinError, setPinError] = useState("");
+  const [pinSuccess, setPinSuccess] = useState("");
+  const [pinChanging, setPinChanging] = useState(false);
 
   const lightLogoInputRef = useRef<HTMLInputElement>(null);
   const darkLogoInputRef = useRef<HTMLInputElement>(null);
@@ -55,6 +68,46 @@ export function AdminBrandingPage() {
     title: "",
     description: "",
   });
+
+  const handlePinSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPinError("");
+    setPinSuccess("");
+
+    if (!currentPin.trim()) {
+      setPinError("Masukkan PIN saat ini.");
+      return;
+    }
+
+    if (!/^\d{4,8}$/.test(newPin.trim())) {
+      setPinError("PIN baru harus berupa 4 hingga 8 digit angka.");
+      return;
+    }
+
+    if (newPin.trim() !== confirmPin.trim()) {
+      setPinError("Konfirmasi PIN baru tidak cocok.");
+      return;
+    }
+
+    if (newPin.trim() === currentPin.trim()) {
+      setPinError("PIN baru tidak boleh sama dengan PIN saat ini.");
+      return;
+    }
+
+    setPinChanging(true);
+    const result = await changePin(currentPin.trim(), newPin.trim());
+    setPinChanging(false);
+
+    if (result.success) {
+      setPinSuccess(result.message);
+      setCurrentPin("");
+      setNewPin("");
+      setConfirmPin("");
+      setTimeout(() => setPinSuccess(""), 4000);
+    } else {
+      setPinError(result.message);
+    }
+  };
 
   const handleSave = async () => {
     const ok = await saveBranding();
@@ -346,6 +399,21 @@ export function AdminBrandingPage() {
             }`}
           >
             Watermark Cetak
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab("security")}
+            className={`pb-3 text-[14px] transition-colors cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
+              activeTab === "security"
+                ? "border-b-2 border-[#171717] font-semibold text-[#171717]"
+                : "border-b-2 border-transparent font-medium text-[#777] hover:text-[#171717]"
+            }`}
+          >
+            <span>Keamanan & PIN</span>
+            {isDefaultPin && (
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-500" title="PIN masih default (1234)" />
+            )}
           </button>
         </div>
 
@@ -1000,6 +1068,152 @@ export function AdminBrandingPage() {
                     <span>{branding.watermark.text || branding.studioName}</span>
                   </div>
                 )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 6: KEAMANAN & PIN ADMIN */}
+        {activeTab === "security" && (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            {/* Form Ganti PIN (7 Cols) */}
+            <div className="lg:col-span-7 bg-white border border-[#e8e8e8] rounded-[12px] p-6 sm:p-8 space-y-6">
+              <div className="pb-4 border-b border-[#f0f0f0]">
+                <h2 className="text-[17px] font-semibold text-[#202020] tracking-[-0.02em]">
+                  Pengaturan PIN Keamanan Admin
+                </h2>
+                <p className="text-[12px] text-[#777] mt-1">
+                  PIN ini digunakan staf untuk mengakses Portal Admin dari bilik Kiosk, melindungi omset dan pengaturan studio dari customer.
+                </p>
+              </div>
+
+              {isDefaultPin && (
+                <div className="p-4 rounded-[10px] bg-amber-50 border border-amber-200 text-amber-900 text-xs flex items-start gap-3">
+                  <ShieldAlert size={17} className="text-amber-600 shrink-0 mt-0.5" />
+                  <div className="space-y-0.5">
+                    <strong className="font-semibold block text-amber-950">
+                      PIN Saat Ini Masih Default (1234)
+                    </strong>
+                    <span className="text-amber-800 leading-relaxed block">
+                      Demi keamanan keuangan dan privasi studio, sangat disarankan untuk segera mengganti PIN default ini dengan kode rahasia staf Anda.
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              <form onSubmit={handlePinSubmit} className="space-y-4">
+                <div className="space-y-1.5">
+                  <label className="text-[12px] font-semibold text-[#171717] uppercase tracking-wider">
+                    PIN Saat Ini *
+                  </label>
+                  <input
+                    type="password"
+                    maxLength={8}
+                    value={currentPin}
+                    onChange={(e) => setCurrentPin(e.target.value.replace(/\D/g, ""))}
+                    placeholder="Masukkan PIN saat ini (default: 1234)"
+                    className="w-full px-3.5 py-2.5 bg-[#fafafa] border border-[#e5e5e5] rounded-[8px] font-mono text-sm text-[#171717] placeholder:text-[#a3a3a3] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#171717] transition-all"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-[12px] font-semibold text-[#171717] uppercase tracking-wider">
+                      PIN Baru (4-8 Digit) *
+                    </label>
+                    <input
+                      type="password"
+                      maxLength={8}
+                      value={newPin}
+                      onChange={(e) => setNewPin(e.target.value.replace(/\D/g, ""))}
+                      placeholder="Contoh: 5821"
+                      className="w-full px-3.5 py-2.5 bg-[#fafafa] border border-[#e5e5e5] rounded-[8px] font-mono text-sm text-[#171717] placeholder:text-[#a3a3a3] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#171717] transition-all"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-[12px] font-semibold text-[#171717] uppercase tracking-wider">
+                      Konfirmasi PIN Baru *
+                    </label>
+                    <input
+                      type="password"
+                      maxLength={8}
+                      value={confirmPin}
+                      onChange={(e) => setConfirmPin(e.target.value.replace(/\D/g, ""))}
+                      placeholder="Ketik ulang PIN baru"
+                      className="w-full px-3.5 py-2.5 bg-[#fafafa] border border-[#e5e5e5] rounded-[8px] font-mono text-sm text-[#171717] placeholder:text-[#a3a3a3] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#171717] transition-all"
+                    />
+                  </div>
+                </div>
+
+                {pinError && (
+                  <div className="p-3 rounded-[8px] bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium">
+                    {pinError}
+                  </div>
+                )}
+
+                {pinSuccess && (
+                  <div className="p-3 rounded-[8px] bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-medium flex items-center gap-2">
+                    <Check size={15} className="text-emerald-600 shrink-0" />
+                    <span>{pinSuccess}</span>
+                  </div>
+                )}
+
+                {/* Horizontal Action Row (Rule 6) */}
+                <div className="pt-3 border-t border-[#f0f0f0] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <span className="text-xs text-[#888]">
+                    Hanya karakter angka yang diperbolehkan (4 - 8 digit).
+                  </span>
+                  <button
+                    type="submit"
+                    disabled={pinChanging || !currentPin || !newPin || !confirmPin}
+                    className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-[#171717] hover:bg-[#333] text-white text-xs font-bold rounded-[8px] transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
+                  >
+                    <KeyRound size={14} />
+                    <span>{pinChanging ? "Menyimpan..." : "Perbarui PIN Keamanan"}</span>
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            {/* Panduan & Status Keamanan (5 Cols) */}
+            <div className="lg:col-span-5 space-y-6">
+              <div className="bg-white border border-[#e8e8e8] rounded-[12px] p-6 sm:p-8 space-y-5">
+                <div className="pb-3 border-b border-[#f0f0f0]">
+                  <h3 className="text-sm font-bold text-[#171717] uppercase tracking-wider">
+                    Status Proteksi Kiosk
+                  </h3>
+                </div>
+
+                <div className="space-y-3 text-xs text-[#525252]">
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-[#fafafa] border border-[#e5e5e5]">
+                    <span className="text-[#737373]">Status PIN:</span>
+                    <span className="font-semibold text-[#171717]">
+                      {isDefaultPin ? "Default (1234)" : "Kustom (Telah Diubah)"}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-[#fafafa] border border-[#e5e5e5]">
+                    <span className="text-[#737373]">Anti Brute-Force:</span>
+                    <span className="font-semibold text-emerald-600">
+                      Aktif (Maks 5x Coba)
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-[#fafafa] border border-[#e5e5e5]">
+                    <span className="text-[#737373]">Auto-Lock Sesi:</span>
+                    <span className="font-semibold text-[#171717]">
+                      Aktif (Saat Kiosk Dimulai)
+                    </span>
+                  </div>
+                </div>
+
+                <div className="pt-2 text-xs text-[#737373] space-y-2 leading-relaxed">
+                  <p>
+                    <strong>Mengapa ini penting?</strong> Di Self Photo Studio, customer memilih foto tanpa pengawasan staf. Proteksi PIN memastikan customer tidak dapat mengintip omset harian, mengubah harga sesi, atau menghapus template foto studio.
+                  </p>
+                  <p>
+                    <strong>Lupa PIN?</strong> Anda dapat menggunakan master PIN darurat atau hubungi vendor software untuk reset cepat.
+                  </p>
+                </div>
               </div>
             </div>
           </div>

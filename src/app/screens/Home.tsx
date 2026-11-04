@@ -1,16 +1,19 @@
 import { clearSessionData } from "../../utils/sessionTracker";
 import { useNavigate } from "react-router";
-import { Camera, Users } from "lucide-react";
+import { Camera, Users, Lock } from "lucide-react";
 import { BrutalistCard } from "../components/BrutalistCard";
 import { useEffect, useState } from "react";
 import { BrutalistButton } from "../components/BrutalistButton";
 import { preloadGallery } from "../../utils/photoPreloader";
 import { useKioskTheme } from "../../context/KioskThemeContext";
+import { useSecurity } from "../../context/SecurityContext";
 import { CameraImportModal } from "../components/CameraImportModal";
+import { AdminPinModal } from "../components/AdminPinModal";
 
 export function Home() {
   const navigate = useNavigate();
   const { theme } = useKioskTheme();
+  const { openPinModal, pinModalOpen, closePinModal } = useSecurity();
   const [cameraImportOpen, setCameraImportOpen] = useState(false);
 
   useEffect(() => {
@@ -94,6 +97,25 @@ export function Home() {
       <CameraImportModal
         isOpen={cameraImportOpen}
         onClose={() => setCameraImportOpen(false)}
+      />
+
+      {/* Discreet Staff Portal Trigger */}
+      <div className="fixed bottom-4 right-4 z-40">
+        <button
+          type="button"
+          onClick={() => openPinModal("/admin")}
+          className="p-2.5 rounded-full bg-black/5 hover:bg-black/10 text-neutral-400 hover:text-black transition-all cursor-pointer opacity-30 hover:opacity-100"
+          title="Staff Portal (Admin)"
+        >
+          <Lock size={16} />
+        </button>
+      </div>
+
+      {/* Admin PIN Keypad Modal */}
+      <AdminPinModal
+        isOpen={pinModalOpen}
+        onClose={closePinModal}
+        targetPath="/admin"
       />
     </div>
   );
