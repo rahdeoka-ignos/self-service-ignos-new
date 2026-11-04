@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { Printer, AlertTriangle, Loader2, X, RefreshCw } from "lucide-react";
+import { Printer, Loader2, X } from "lucide-react";
 import type { PrinterMonitorResponse, PrinterAlertInfo } from "../../types/printer";
 
 const API = "http://localhost:5000";
@@ -84,73 +84,49 @@ export function KioskPrinterAlertModal() {
 
   if (!alert || dismissed) return null;
 
-  const isPaperOut = alert.type === "paper_out";
-  const isDoorOpen = alert.type === "door_open";
-  const isPaperJam = alert.type === "paper_jam";
-
   return (
-    <div className="fixed inset-0 z-[9999] bg-black/80 flex items-center justify-center p-6 backdrop-blur-sm animate-[fadeIn_0.2s_ease-out]">
-      <div className="bg-white border-6 border-black rounded-3xl p-8 max-w-xl w-full shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] text-center relative overflow-hidden">
-        {/* Decorative Top Accent Bar */}
-        <div className="absolute top-0 left-0 right-0 h-4 bg-yellow-400 border-b-4 border-black" />
-
+    <div className="fixed inset-0 z-[9999] bg-black/40 backdrop-blur-xs flex items-center justify-center p-4 sm:p-6 select-none font-['Manrope',sans-serif] animate-in fade-in duration-150">
+      <div className="bg-white border border-[#e5e5e5] rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl text-center relative space-y-6 text-[#171717]">
         {/* Close Button */}
         <button
+          type="button"
           onClick={() => setDismissed(true)}
-          className="absolute top-6 right-6 w-11 h-11 border-3 border-black rounded-full flex items-center justify-center bg-gray-100 hover:bg-black hover:text-white transition-colors cursor-pointer"
-          title="Tutup peringatan"
+          className="absolute top-5 right-5 p-1.5 rounded-lg text-neutral-400 hover:text-[#171717] hover:bg-neutral-100 transition-colors cursor-pointer"
+          title="Tutup sementara"
         >
-          <X size={22} strokeWidth={3} />
+          <X size={18} />
         </button>
 
-        {/* Big Animated Icon */}
-        <div className="w-24 h-24 bg-yellow-300 border-4 border-black rounded-3xl flex items-center justify-center mx-auto mt-4 mb-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] relative animate-bounce">
-          <Printer size={48} strokeWidth={2.5} className="text-black" />
-          <div className="absolute -top-2 -right-2 w-8 h-8 bg-red-500 text-white rounded-full border-2 border-black flex items-center justify-center font-black text-sm">
-            !
-          </div>
+        {/* Clean Executive Icon */}
+        <div className="w-16 h-16 mx-auto rounded-2xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-800 shadow-2xs pt-0.5">
+          <Printer size={28} strokeWidth={1.75} />
         </div>
 
-        {/* Badge */}
-        <div className="inline-flex items-center gap-2 bg-red-100 text-red-800 border-2 border-red-500 rounded-full px-4 py-1.5 text-sm font-black uppercase tracking-wider mb-4">
-          <AlertTriangle size={16} strokeWidth={3} className="text-red-600" />
-          <span>
-            {isPaperOut
-              ? "Kertas Printer Habis"
-              : isDoorOpen
-                ? "Tray / Penutup Belum Terbuka"
-                : isPaperJam
-                  ? "Kertas Macet (Paper Jam)"
-                  : "Perhatian Printer"}
-          </span>
+        {/* Title & Customer-Friendly Message */}
+        <div className="space-y-2">
+          <h2 className="text-xl sm:text-2xl font-bold text-[#171717] tracking-tight leading-snug">
+            {alert.title}
+          </h2>
+          <p className="text-sm text-[#737373] leading-relaxed max-w-md mx-auto">
+            {alert.customerMessage}
+          </p>
         </div>
 
-        {/* Title */}
-        <h2 className="text-3xl font-black text-black leading-tight mb-3">
-          {alert.title}
-        </h2>
-
-        {/* Customer Friendly Message */}
-        <p className="text-lg text-gray-700 font-bold mb-6 leading-relaxed max-w-md mx-auto">
-          {alert.customerMessage}
-        </p>
-
-        {/* Real-time Status Card */}
-        <div className="bg-gray-50 border-3 border-black rounded-2xl p-4 mb-6 flex items-center justify-center gap-3">
-          <Loader2 size={20} className="animate-spin text-black" />
-          <span className="text-sm font-black text-gray-800">
-            Menunggu printer kembali siap (Ready)...
-          </span>
+        {/* Real-time Status Box */}
+        <div className="bg-[#fafafa] border border-[#e5e5e5] rounded-xl p-3.5 flex items-center justify-center gap-2.5 text-xs font-semibold text-[#171717]">
+          <Loader2 size={16} className="animate-spin text-[#171717]" />
+          <span>Menunggu printer kembali siap (Ready)...</span>
         </div>
 
-        {/* Footer Note & Staff Assist */}
-        <div className="flex flex-col gap-2">
-          <p className="text-xs text-gray-400 font-bold">
-            Staff kasir sudah diberitahu. Cetakan kamu akan otomatis keluar begitu printer selesai disiapkan.
+        {/* Footer Note & Secondary Dismiss Action */}
+        <div className="space-y-2 pt-1 border-t border-[#f0f0f0]">
+          <p className="text-[11px] text-[#888] leading-relaxed">
+            Staf kasir studio telah diberitahu. Cetakan foto akan otomatis keluar begitu printer selesai disiapkan.
           </p>
           <button
+            type="button"
             onClick={() => setDismissed(true)}
-            className="mt-2 text-sm font-bold text-gray-500 hover:text-black underline cursor-pointer"
+            className="text-xs font-semibold text-neutral-400 hover:text-[#171717] transition-colors cursor-pointer"
           >
             Tutup sementara
           </button>
