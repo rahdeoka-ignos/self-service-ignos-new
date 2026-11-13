@@ -1,6 +1,8 @@
+import { prepareGallery, publishGallery } from "./backend/photoTransfer.js";
+import { createCameraImporter } from "./backend/cameraImport.js";
 import crypto from "crypto";
 import os from "os";
-import { exec, execSync } from "child_process";
+import { exec, execSync, execFile } from "child_process";
 import express from "express";
 import fs from "fs";
 import path from "path";
@@ -36,6 +38,15 @@ app.use((req, res, next) => {
 app.use(cors({ origin: (origin, done) => done(null, !origin || allowedOrigins.has(origin)), credentials: true }));
 app.use(express.json({ limit: "30mb" }));
 app.use("/api", adminSessions.middleware);
+
+let cameraImporter;
+let manualUploadBusy = false;
+app.use("/api", (req, res, next) => {
+  if ((cameraImporter?.busy || manualUploadBusy) && req.method !== "GET" && ["/save-print", "/upload-session-gdrive", "/clear-photos", "/upload-photos", "/storage-clean", "/camera-import/import", "/camera-import/scan"].includes(req.path)) {
+    return res.status(409).json({ success: false, error: "Impor foto sedang berlangsung. Tunggu hingga galeri siap." });
+  }
+  next();
+});
 
 // fix __dirname di ES module
 const __filename = fileURLToPath(import.meta.url);
@@ -112,7 +123,7 @@ if (!fs.existsSync(THUMBS_DIR)) {
 // serve images
 app.use("/photos", express.static(PHOTOS_DIR));
 app.use("/thumbs", express.static(THUMBS_DIR));
-app.use("/camera-cache", express.static(CAMERA_CACHE_DIR));
+// Camera previews are served through authenticated scan-bound endpoints.
 
 // upload hasil print
 const storage = multer.diskStorage({
@@ -1101,7 +1112,7 @@ const DEFAULT_CAMERA_IMPORT_CONFIG = {
     },
     fotobox: {
       id: "fotobox",
-      name: "Fotobox (Card Reader E:)",
+      name: "SD Card / Card Reader",
       path: "E:\\DCIM",
       defaultMinutes: 30,
     },
@@ -1135,12 +1146,8 @@ function readCameraImportConfig() {
 }
 
 function writeCameraImportConfig(data) {
-  try {
-    if (!fs.existsSync(SESSIONS_DIR)) fs.mkdirSync(SESSIONS_DIR, { recursive: true });
-    fs.writeFileSync(CAMERA_IMPORT_CONFIG_JSON, JSON.stringify(data, null, 2), "utf-8");
-  } catch (err) {
-    console.error("[CameraImport] Gagal simpan config:", err);
-  }
+  if (!fs.existsSync(SESSIONS_DIR)) fs.mkdirSync(SESSIONS_DIR, { recursive: true });
+  writeJsonAtomic(CAMERA_IMPORT_CONFIG_JSON, data);
 }
 
 const MTP_SCRIPT_PATH = path.join(__dirname, "scripts", "mtp-manager.ps1");
@@ -1157,62 +1164,24 @@ function isMtpTarget(targetPath = "", presetId = "") {
   );
 }
 
-function checkMtpDevice(targetPath = "") {
-  try {
-    const cmd = `powershell -NoProfile -ExecutionPolicy Bypass -File "${MTP_SCRIPT_PATH}" -Action check -DeviceQuery "X-S10"`;
-    const stdout = execSync(cmd, { encoding: "utf8", timeout: 8000 });
-    const res = JSON.parse(stdout.trim());
-    if (res.folders && !Array.isArray(res.folders)) {
-      res.folders = [res.folders];
-    }
-    return res;
-  } catch (err) {
-    return { connected: false, error: err.message, folders: [] };
-  }
+let mtpTask = Promise.resolve();
+function runMtp(args) {
+  const task = () => new Promise((resolve, reject) => {
+    execFile("powershell.exe", ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", MTP_SCRIPT_PATH, ...args],
+      { windowsHide: true, timeout: 30 * 60 * 1000, maxBuffer: 20 * 1024 * 1024, encoding: "utf8" },
+      (error, stdout) => {
+        if (error) return reject(new Error("Kamera tidak dapat diakses: " + error.message));
+        try { resolve(JSON.parse(stdout.trim().replace(/^\uFEFF/, ""))); } catch { reject(new Error("Respons kamera tidak valid.")); }
+      });
+  });
+  const result = mtpTask.then(task, task);
+  mtpTask = result.catch(() => {});
+  return result;
 }
 
-function scanMtpPhotos(options = {}) {
-  const { filter = "30_min", minutes = 30, subFolder = "" } = options;
-  try {
-    if (!fs.existsSync(CAMERA_CACHE_DIR)) {
-      fs.mkdirSync(CAMERA_CACHE_DIR, { recursive: true });
-    }
-    const subFolderArg = subFolder && subFolder !== "all" ? `-SubFolder "${subFolder}"` : "";
-    const cmd = `powershell -NoProfile -ExecutionPolicy Bypass -File "${MTP_SCRIPT_PATH}" -Action scan -DeviceQuery "X-S10" -Filter "${filter}" -Minutes ${minutes} -CacheDir "${CAMERA_CACHE_DIR}" ${subFolderArg}`;
-    const stdout = execSync(cmd, { encoding: "utf8", timeout: 25000, maxBuffer: 10 * 1024 * 1024 });
-    const res = JSON.parse(stdout.trim());
-    if (res.availableFolders && !Array.isArray(res.availableFolders)) {
-      res.availableFolders = [res.availableFolders];
-    }
-    return res;
-  } catch (err) {
-    return { success: false, error: "Gagal scan kamera MTP: " + err.message, totalFound: 0, availableFolders: [] };
-  }
-}
-
-async function importMtpPhotos(options = {}) {
-  const { filter = "latest_session", minutes = 30, subFolder = "", clearExisting = true } = options;
-  try {
-    const subFolderArg = subFolder && subFolder !== "all" ? `-SubFolder "${subFolder}"` : "";
-    const clearArg = clearExisting ? "-ClearExisting" : "";
-    const cmd = `powershell -NoProfile -ExecutionPolicy Bypass -File "${MTP_SCRIPT_PATH}" -Action import -DeviceQuery "X-S10" -Filter "${filter}" -Minutes ${minutes} -DestDir "${PHOTOS_DIR}" ${subFolderArg} ${clearArg}`;
-    const stdout = execSync(cmd, { encoding: "utf8", timeout: 120000, maxBuffer: 10 * 1024 * 1024 });
-    const res = JSON.parse(stdout.trim());
-
-    if (res.success) {
-      if (fs.existsSync(PHOTOS_DIR)) {
-        const files = fs.readdirSync(PHOTOS_DIR).filter((f) => f.match(/\.(jpg|jpeg|png|webp)$/i));
-        for (const file of files) {
-          try {
-            await generateThumbnail(file);
-          } catch {}
-        }
-      }
-    }
-    return res;
-  } catch (err) {
-    return { success: false, error: "Gagal import kamera MTP: " + err.message };
-  }
+async function checkMtpDevice(targetPath = "") {
+  try { return await runMtp(["-Action", "check", "-DeviceQuery", "X-S10"]); }
+  catch (err) { return { connected: false, error: err.message, folders: [] }; }
 }
 
 // Menemukan folder DCIM atau folder kamera aktif (misal 263_FUJI, 264_FUJI, 100CANON)
@@ -1285,193 +1254,15 @@ function resolveCameraFolders(rootPath) {
   return [];
 }
 
-// Scan file foto di folder kamera berdasarkan filter waktu
-function scanCameraPhotos(sourcePath, options = {}) {
-  const {
-    minutes = 30,
-    filter = "30_min",
-    lastImportTimestamp = null,
-    subFolder = null,
-  } = options;
-  const folders = resolveCameraFolders(sourcePath);
+const IMPORT_STORAGE_DIR = path.join(__dirname, "storage", "camera_imports");
+fs.mkdirSync(IMPORT_STORAGE_DIR, { recursive: true });
+cameraImporter = createCameraImporter({
+  photosDir: PHOTOS_DIR, thumbsDir: THUMBS_DIR, storageDir: IMPORT_STORAGE_DIR, cacheDir: CAMERA_CACHE_DIR,
+  runMtp, resolveFolders: resolveCameraFolders, readConfig: readCameraImportConfig, saveConfig: writeCameraImportConfig,
+  beforePublish: () => { photoWatcher?.close(); photoWatcher = null; }, afterPublish: () => startFileWatcher(),
+});
 
-  if (folders.length === 0) {
-    return {
-      success: false,
-      error: `Folder sumber tidak terdeteksi atau belum dicolok: "${sourcePath}"`,
-      folders: [],
-      files: [],
-      totalFound: 0,
-      totalInFolder: 0,
-      availableFolders: [],
-    };
-  }
-
-  const availableFolders = folders.map((f) => ({
-    name: f.folderName,
-    path: f.folderPath,
-    photoCount: f.photoCount,
-    latestMtime: f.latestMtime,
-  }));
-
-  // Tentukan folder mana yang dipindai
-  let foldersToScan = [];
-  let activeFolderName = "";
-
-  if (subFolder && subFolder !== "all") {
-    const matched = folders.find((f) => f.folderName === subFolder);
-    if (matched) {
-      foldersToScan = [matched];
-      activeFolderName = matched.folderName;
-    } else {
-      foldersToScan = [folders[0]];
-      activeFolderName = folders[0].folderName;
-    }
-  } else if (subFolder === "all") {
-    foldersToScan = folders;
-    activeFolderName = "Semua Subfolder";
-  } else {
-    // Default: pilih folder yang memiliki foto terbaru
-    const topFolder = folders.find((f) => f.photoCount > 0) || folders[0];
-    foldersToScan = [topFolder];
-    activeFolderName = topFolder.folderName;
-  }
-
-  // Kumpulkan semua file foto dari folder terpilih
-  const allCandidateFiles = [];
-  for (const f of foldersToScan) {
-    try {
-      const items = fs.readdirSync(f.folderPath);
-      for (const item of items) {
-        if (!item.match(/\.(jpg|jpeg)$/i)) continue; // Hanya JPG (abaikan RAW .RAF/.CR3)
-
-        const fullPath = path.join(f.folderPath, item);
-        try {
-          const stat = fs.statSync(fullPath);
-          const mtimeMs = stat.mtimeMs;
-          const mtimeDate = new Date(mtimeMs);
-
-          allCandidateFiles.push({
-            name: item,
-            fullPath,
-            size: stat.size,
-            formattedSize: formatBytes(stat.size),
-            mtimeMs,
-            timeFormatted: mtimeDate.toLocaleTimeString("id-ID", {
-              hour: "2-digit",
-              minute: "2-digit",
-              second: "2-digit",
-            }),
-            folderName: f.folderName,
-          });
-        } catch {}
-      }
-    } catch {}
-  }
-
-  const totalInFolder = allCandidateFiles.length;
-  let matchedFiles = [];
-  const now = Date.now();
-  const maxMtime = allCandidateFiles.length > 0 ? Math.max(...allCandidateFiles.map((f) => f.mtimeMs)) : 0;
-  // Gunakan waktu foto paling baru di kamera sebagai titik acuan agar kebal terhadap perbedaan jam kamera vs PC
-  const refTimeMs = maxMtime > 0 ? maxMtime : now;
-
-  if (filter === "all") {
-    // Tampilkan semua foto tanpa filter waktu
-    matchedFiles = allCandidateFiles;
-  } else if (filter === "today") {
-    const todayDateStr = new Date(refTimeMs).toDateString();
-    matchedFiles = allCandidateFiles.filter(
-      (f) => new Date(f.mtimeMs).toDateString() === todayDateStr
-    );
-  } else {
-    // Filter menit (30_min, 45_min, 60_min, latest_session)
-    let durMinutes = 30;
-    if (filter === "45_min") durMinutes = 45;
-    else if (filter === "60_min" || filter === "latest_session") durMinutes = 60;
-    else if (filter === "custom_min" && typeof minutes === "number") durMinutes = minutes;
-
-    let bufferMinutes = 10;
-    if (filter === "45_min") bufferMinutes = 15;
-    else if (filter === "60_min" || filter === "latest_session") bufferMinutes = 20;
-    else if (filter === "custom_min" && typeof minutes === "number") bufferMinutes = Math.min(15, Math.ceil(durMinutes * 0.3));
-
-    const maxWindowMs = (durMinutes + bufferMinutes) * 60 * 1000;
-    const nominalWindowMs = durMinutes * 60 * 1000;
-    const maxCutoffMs = refTimeMs - maxWindowMs;
-    const nominalCutoffMs = refTimeMs - nominalWindowMs;
-
-    let cutoffMs = (filter === "since_last" && lastImportTimestamp) ? new Date(lastImportTimestamp).getTime() : 0;
-
-
-    if (filter === "since_last" && lastImportTimestamp) {
-      matchedFiles = allCandidateFiles.filter((f) => f.mtimeMs >= cutoffMs);
-    } else {
-      const sortedDesc = [...allCandidateFiles].sort((a, b) => b.mtimeMs - a.mtimeMs);
-      const sessionFiles = [];
-      let prevMtime = refTimeMs;
-
-      for (const f of sortedDesc) {
-        const gapMinutes = (prevMtime - f.mtimeMs) / (60 * 1000);
-        if (f.mtimeMs < nominalCutoffMs && gapMinutes >= 8) {
-          break;
-        }
-        if (f.mtimeMs >= maxCutoffMs) {
-          sessionFiles.push(f);
-          prevMtime = f.mtimeMs;
-        } else {
-          break;
-        }
-      }
-      matchedFiles = sessionFiles.reverse();
-    }
-
-    // Fallback: jika tidak ada yang match, ambil minimal foto paling baru
-    if (matchedFiles.length === 0 && allCandidateFiles.length > 0) {
-      matchedFiles = [allCandidateFiles[allCandidateFiles.length - 1]];
-    }
-  }
-
-  // Urutkan berdasarkan waktu pengambilan foto (tertua ke terbaru)
-  matchedFiles.sort((a, b) => a.mtimeMs - b.mtimeMs);
-
-  const totalBytes = matchedFiles.reduce((acc, f) => acc + f.size, 0);
-
-  // Ambil sampel preview: 3 foto awal dan 3 foto akhir
-  const previewFiles = [];
-  if (matchedFiles.length <= 6) {
-    previewFiles.push(...matchedFiles);
-  } else {
-    previewFiles.push(matchedFiles[0], matchedFiles[1], matchedFiles[2]);
-    previewFiles.push(
-      matchedFiles[matchedFiles.length - 3],
-      matchedFiles[matchedFiles.length - 2],
-      matchedFiles[matchedFiles.length - 1]
-    );
-  }
-
-  return {
-    success: true,
-    activeFolder: activeFolderName,
-    activeFolderPath: foldersToScan.length === 1 ? foldersToScan[0].folderPath : sourcePath,
-    totalFound: matchedFiles.length,
-    totalInFolder,
-    totalBytes,
-    formattedTotalSize: formatBytes(totalBytes),
-    earliestTime: matchedFiles.length > 0 ? matchedFiles[0].timeFormatted : null,
-    latestTime: matchedFiles.length > 0 ? matchedFiles[matchedFiles.length - 1].timeFormatted : null,
-    availableFolders,
-    files: matchedFiles,
-    previews: previewFiles.map((pf) => ({
-      name: pf.name,
-      fullPath: pf.fullPath,
-      timeFormatted: pf.timeFormatted,
-      previewUrl: `/api/camera-import/thumbnail?filePath=${encodeURIComponent(pf.fullPath)}`,
-    })),
-  };
-}
-
-app.get("/api/camera-import/config", (req, res) => {
+app.get("/api/camera-import/config", async (req, res) => {
   try {
     const config = readCameraImportConfig();
     // Tambahkan status koneksi live untuk masing-masing preset
@@ -1481,7 +1272,7 @@ app.get("/api/camera-import/config", (req, res) => {
       let detectedFolders = [];
 
       if (key === "studio" || isMtpTarget(p.path, key)) {
-        const mtpCheck = checkMtpDevice(p.path);
+        const mtpCheck = await checkMtpDevice(p.path);
         isConnected = !!mtpCheck.connected;
         const foldersList = Array.isArray(mtpCheck.folders)
           ? mtpCheck.folders
@@ -1511,6 +1302,11 @@ app.get("/api/camera-import/config", (req, res) => {
 app.post("/api/camera-import/config", (req, res) => {
   try {
     const current = readCameraImportConfig();
+    for (const preset of Object.values(req.body.presets || {})) {
+      if (preset.defaultMinutes !== undefined && (!Number.isInteger(preset.defaultMinutes) || preset.defaultMinutes < 1 || preset.defaultMinutes > 180)) {
+        return res.status(400).json({ error: "Durasi harus 1-180 menit." });
+      }
+    }
     const updated = {
       ...current,
       ...req.body,
@@ -1526,205 +1322,24 @@ app.post("/api/camera-import/config", (req, res) => {
   }
 });
 
-app.post("/api/camera-import/scan", (req, res) => {
-  try {
-    const { presetId = "studio", customPath, filter = "30_min", minutes = 30, subFolder } = req.body;
-    const config = readCameraImportConfig();
-
-    let targetPath = "";
-    if (presetId === "custom" || customPath) {
-      targetPath = customPath || config.presets.custom?.path || "";
-    } else if (config.presets[presetId]) {
-      targetPath = config.presets[presetId].path;
-    }
-
-    if (presetId === "studio" || isMtpTarget(targetPath, presetId)) {
-      const mtpResult = scanMtpPhotos({ filter, minutes: Number(minutes) || 30, subFolder });
-      return res.json(mtpResult);
-    }
-
-    if (!targetPath) {
-      return res.status(400).json({ success: false, error: "Path folder sumber belum ditentukan." });
-    }
-
-    const lastImportTime = config.lastImport?.timestamp || null;
-    const result = scanCameraPhotos(targetPath, {
-      filter,
-      minutes: Number(minutes) || 30,
-      lastImportTimestamp: lastImportTime,
-      subFolder,
-    });
-
-    res.json(result);
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
-  }
+app.post("/api/camera-import/scan", async (req, res) => {
+  try { res.json(await cameraImporter.scan(req.body)); }
+  catch (err) { res.status(400).json({ success: false, error: err.message }); }
 });
 
-// Endpoint streaming thumbnail cepat untuk preview foto kamera
-app.get("/api/camera-import/thumbnail", async (req, res) => {
-  try {
-    const filePath = req.query.filePath;
-    if (!filePath || !fs.existsSync(filePath)) {
-      return res.status(404).send("File not found");
-    }
+app.get("/api/camera-import/progress", (req, res) => res.json(cameraImporter.progress));
 
-    // Buat thumbnail kecil on-the-fly (max lebar 260px) agar render modal instan
-    res.type("image/jpeg");
-    try {
-      const stream = sharp(filePath)
-        .resize({ width: 260, height: 260, fit: "inside" })
-        .jpeg({ quality: 75 });
-      stream.pipe(res);
-    } catch {
-      fs.createReadStream(filePath).pipe(res);
-    }
-  } catch (err) {
-    res.status(500).send(err.message);
-  }
+app.get("/api/camera-import/preview", async (req, res) => {
+  try {
+    const file = await cameraImporter.preview(req.query.scanId, req.query.id);
+    const buffer = await sharp(file).rotate().resize({ width: 260, height: 260, fit: "inside" }).jpeg({ quality: 75 }).toBuffer();
+    res.type("image/jpeg").send(buffer);
+  } catch (err) { res.status(400).json({ error: err.message }); }
 });
 
 app.post("/api/camera-import/import", async (req, res) => {
-  try {
-    const {
-      presetId = "studio",
-      customPath,
-      filter = "30_min",
-      minutes = 30,
-      clearExistingPhotos = true,
-      subFolder,
-    } = req.body;
-
-    const config = readCameraImportConfig();
-
-    let targetPath = "";
-    if (presetId === "custom" || customPath) {
-      targetPath = customPath || config.presets.custom?.path || "";
-    } else if (config.presets[presetId]) {
-      targetPath = config.presets[presetId].path;
-    }
-
-    if (presetId === "studio" || isMtpTarget(targetPath, presetId)) {
-      const mtpImportRes = await importMtpPhotos({
-        filter,
-        minutes: Number(minutes) || 30,
-        subFolder,
-        clearExisting: clearExistingPhotos,
-      });
-
-      if (!mtpImportRes.success) {
-        return res.status(400).json(mtpImportRes);
-      }
-
-      config.lastImport = {
-        timestamp: new Date().toISOString(),
-        preset: presetId,
-        count: mtpImportRes.count || 0,
-        bytes: 0,
-        formattedSize: `${mtpImportRes.count} Foto`,
-      };
-      writeCameraImportConfig(config);
-
-      return res.json({
-        success: true,
-        count: mtpImportRes.count,
-        message: `Berhasil menyalin ${mtpImportRes.count} foto dari kamera X-S10 ke Kiosk!`,
-      });
-    }
-
-    if (!targetPath) {
-      return res.status(400).json({ success: false, error: "Path folder kamera belum ditentukan" });
-    }
-
-    const scan = scanCameraPhotos(targetPath, {
-      filter,
-      minutes: Number(minutes) || 30,
-      lastImportTimestamp: config.lastImport?.timestamp,
-      subFolder,
-    });
-
-    if (!scan.success || scan.files.length === 0) {
-      return res.status(400).json({
-        success: false,
-        error: scan.error || "Tidak ada foto baru yang ditemukan sesuai filter waktu.",
-      });
-    }
-
-    // 1. Kosongkan folder kamera aktif jika dipilih
-    if (clearExistingPhotos) {
-      if (fs.existsSync(PHOTOS_DIR)) {
-        const files = fs.readdirSync(PHOTOS_DIR);
-        for (const f of files) {
-          if (f.match(/\.(jpg|jpeg|png|webp)$/i)) {
-            try { fs.unlinkSync(path.join(PHOTOS_DIR, f)); } catch {}
-          }
-        }
-      }
-      if (fs.existsSync(CAMERA_CACHE_DIR)) {
-        const cacheFiles = fs.readdirSync(CAMERA_CACHE_DIR);
-        for (const c of cacheFiles) {
-          const p = path.join(CAMERA_CACHE_DIR, c);
-          try {
-            const stat = fs.statSync(p);
-            freedBytes += stat.size;
-            fs.unlinkSync(p);
-            deletedCount++;
-          } catch {}
-        }
-      }
-      if (fs.existsSync(THUMBS_DIR)) {
-        const thumbs = fs.readdirSync(THUMBS_DIR);
-        for (const t of thumbs) {
-          try { fs.unlinkSync(path.join(THUMBS_DIR, t)); } catch {}
-        }
-      }
-    }
-
-    // 2. Salin file-file foto ke public/photos
-    let copiedCount = 0;
-    let copiedBytes = 0;
-
-    for (const file of scan.files) {
-      const dest = path.join(PHOTOS_DIR, file.name);
-      try {
-        fs.copyFileSync(file.fullPath, dest);
-        copiedCount++;
-        copiedBytes += file.size;
-
-        // Generate thumbnail langsung untuk Kiosk
-        await generateThumbnail(file.name);
-      } catch (err) {
-        console.error(`[CameraImport] Gagal salin ${file.name}:`, err.message);
-      }
-    }
-
-    // 3. Catat riwayat import di config
-    config.lastImport = {
-      timestamp: new Date().toISOString(),
-      preset: presetId,
-      count: copiedCount,
-      bytes: copiedBytes,
-      formattedSize: formatBytes(copiedBytes),
-      firstFile: scan.files[0]?.name || null,
-      lastFile: scan.files[scan.files.length - 1]?.name || null,
-      earliestTime: scan.earliestTime,
-      latestTime: scan.latestTime,
-    };
-    writeCameraImportConfig(config);
-
-    console.log(`[CameraImport] Sukses import ${copiedCount} foto (${formatBytes(copiedBytes)}) dari ${presetId}.`);
-
-    res.json({
-      success: true,
-      count: copiedCount,
-      totalBytes: copiedBytes,
-      formattedSize: formatBytes(copiedBytes),
-      timeRange: `${scan.earliestTime} - ${scan.latestTime}`,
-      message: `Berhasil menyalin ${copiedCount} foto (${formatBytes(copiedBytes)}) ke Kiosk!`,
-    });
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
-  }
+  try { res.json(await cameraImporter.import(req.body)); }
+  catch (err) { res.status(400).json({ success: false, error: err.message }); }
 });
 
 // Membuka folder public/photos di Windows Explorer asli
@@ -1752,27 +1367,30 @@ app.post("/api/camera-import/open-folder", (req, res) => {
 });
 
 // Upload multiple photos via Drag & Drop atau File Picker manual
-app.post("/api/upload-photos", upload.array("photos", 500), async (req, res) => {
-  try {
-    const uploadedFiles = req.files || [];
-    let count = 0;
-    for (const f of uploadedFiles) {
-      try {
-        await generateThumbnail(path.basename(f.path));
-        count++;
-      } catch (thumbErr) {
-        console.warn(`[Upload] Failed thumb for ${f.originalname}:`, thumbErr.message);
-      }
+const manualPhotoUpload = multer({ dest: path.join(IMPORT_STORAGE_DIR, "incoming"), limits: { fileSize: 100 * 1024 * 1024, files: 500 } }).array("photos", 500);
+app.post("/api/upload-photos", (req, res) => {
+  manualUploadBusy = true;
+  manualPhotoUpload(req, res, async (uploadError) => {
+    try {
+      if (uploadError) throw uploadError;
+      if (!req.files?.length) throw new Error("Pilih foto untuk diunggah.");
+      const workDir = path.join(IMPORT_STORAGE_DIR, crypto.randomUUID());
+      const files = req.files.map((file, index) => {
+        if (!/\.(jpe?g|png|webp)$/i.test(file.originalname)) throw new Error("Format foto tidak didukung.");
+        return { ...file, destName: `${path.basename(workDir).slice(0, 8)}-${index + 1}${path.extname(file.originalname).toLowerCase()}` };
+      });
+      const prepared = await prepareGallery({ files, workDir, photosDir: PHOTOS_DIR, clearExisting: req.body.clearExistingPhotos === "true",
+        copy: async destination => { for (const file of files) await fs.promises.copyFile(file.path, childPath(destination, file.destName)); } });
+      photoWatcher?.close();
+      try { publishGallery({ photosDir: PHOTOS_DIR, thumbsDir: THUMBS_DIR, ...prepared, backupDir: path.join(workDir, "previous-gallery") }); }
+      finally { startFileWatcher(); }
+      res.json({ success: true, count: files.length, message: "Foto sudah diperiksa dan siap di galeri." });
+    } catch (err) { res.status(400).json({ success: false, error: err.message }); }
+    finally {
+      for (const file of req.files || []) { try { fs.unlinkSync(file.path); } catch {} }
+      manualUploadBusy = false;
     }
-    console.log(`[Upload] Sukses menerima ${count} foto baru via Drag & Drop.`);
-    res.json({
-      success: true,
-      count,
-      message: `Berhasil mengunggah ${count} foto ke Kiosk!`,
-    });
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
-  }
+  });
 });
 
 // ── Template API ──────────────────────────────────────────────
@@ -3048,10 +2666,12 @@ app.post("/api/security/reset-pin", (req, res) => {
 });
 
 // Watch PHOTOS_DIR for new files and generate thumbnails immediately
+let photoWatcher = null;
 function startFileWatcher() {
+  photoWatcher?.close();
   console.log(`Watching for new photos in ${PHOTOS_DIR}...`);
   try {
-    fs.watch(PHOTOS_DIR, async (eventType, filename) => {
+    photoWatcher = fs.watch(PHOTOS_DIR, async (eventType, filename) => {
       if (eventType === "rename" && filename) {
         const filePath = path.join(PHOTOS_DIR, filename);
         // Wait a bit to ensure the file is fully written and unlocked

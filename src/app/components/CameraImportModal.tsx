@@ -27,7 +27,16 @@ interface CameraPreset {
   detectedFolders?: string[];
 }
 
+interface PhotoCandidate {
+  id: string; name: string; timeFormatted: string; previewUrl: string;
+  group: string; selected: boolean; size: number;
+}
+
 interface ScanResult {
+  scanId?: string;
+  candidates?: PhotoCandidate[];
+  toleranceCount?: number; fallbackCount?: number; unknownCount?: number;
+  gaps?: unknown[];
   success: boolean;
   error?: string;
   activeFolder?: string;
@@ -71,7 +80,7 @@ const DEFAULT_CONFIG: CameraImportConfig = {
     },
     fotobox: {
       id: "fotobox",
-      name: "Fotobox (Card Reader E:)",
+      name: "SD Card / Card Reader",
       path: "E:\\DCIM",
       defaultMinutes: 30,
       isConnected: false,
@@ -136,8 +145,9 @@ function AuthenticatedCameraImportModal({
   onClose,
   onImportSuccess,
 }: CameraImportModalProps) {
-  const [activeTab, setActiveTab] = useState<"dragdrop" | "auto">("dragdrop");
+  const [activeTab, setActiveTab] = useState<"dragdrop" | "auto">("auto");
 
+  const [configLoaded, setConfigLoaded] = useState(false);
   const [config, setConfig] = useState<CameraImportConfig>(DEFAULT_CONFIG);
   const [selectedPresetId, setSelectedPresetId] = useState<string>("studio");
   const [timeFilter, setTimeFilter] = useState<string>("30_min");
@@ -147,9 +157,20 @@ function AuthenticatedCameraImportModal({
   const [editingPath, setEditingPath] = useState(false);
   const [customPathInput, setCustomPathInput] = useState("D:\\DCIM");
 
+  const [firstId, setFirstId] = useState("");
+  const [lastId, setLastId] = useState("");
+  const [customMinutes, setCustomMinutes] = useState(30);
+  const scanSequence = useRef(0);
+  const [progressText, setProgressText] = useState("");
   // Auto-Scan state
   const [scanning, setScanning] = useState(false);
   const [scanResult, setScanResult] = useState<ScanResult | null>(null);
+  const candidates = scanResult?.candidates || [];
+  const firstIndex = candidates.findIndex(f => f.id === firstId);
+  const lastIndex = candidates.findIndex(f => f.id === lastId);
+  const selectedPhotos = firstIndex >= 0 && lastIndex >= firstIndex ? candidates.slice(firstIndex, lastIndex + 1) : [];
+
+
 
   // Drag & Drop State
   const [draggedFiles, setDraggedFiles] = useState<File[]>([]);
@@ -171,7 +192,7 @@ function AuthenticatedCameraImportModal({
     text: string;
   } | null>(null);
 
-  const fetchConfig = async () => {
+  const fetchConfig = async (initialize = false) => {
     try {
       const res = await fetch(`${API}/api/camera-import/config`);
       if (res.ok) {
@@ -179,9 +200,12 @@ function AuthenticatedCameraImportModal({
         try {
           const data = JSON.parse(text);
           setConfig(data);
-          if (data.selectedPreset) {
+          if (initialize && data.selectedPreset) {
             setSelectedPresetId(data.selectedPreset);
             const activePreset = data.presets?.[data.selectedPreset];
+            const minutes = activePreset?.defaultMinutes || 30;
+            setCustomMinutes(minutes);
+            setTimeFilter([15, 20, 30, 45, 60].includes(minutes) ? `${minutes}_min` : "custom_min");
             if (activePreset?.path) {
               setCustomPathInput(activePreset.path);
             }
@@ -190,78 +214,70 @@ function AuthenticatedCameraImportModal({
       }
     } catch (err) {
       console.warn("Backend /api/camera-import/config belum siap:", err);
-    }
+    } finally { if (initialize) setConfigLoaded(true); }
   };
 
-  const handleScan = async (presetId = selectedPresetId, filter = timeFilter) => {
+  const handleScan = async (presetId = selectedPresetId, filter = timeFilter, minutes = customMinutes) => {
+    const sequence = ++scanSequence.current;
+    setScanning(true); setScanResult(null); setFirstId(""); setLastId(""); setStatusMessage(null);
     try {
-      setScanning(true);
-      setStatusMessage(null);
       const res = await fetch(`${API}/api/camera-import/scan`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          presetId,
-          filter,
-          minutes: filter === "30_min" ? 30 : filter === "45_min" ? 45 : 60,
-        }),
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ presetId, filter, minutes: filter === "custom_min" ? minutes : Number.parseInt(filter) || minutes }),
       });
-
-      const text = await res.text();
-      let data: any = null;
-      try {
-        data = JSON.parse(text);
-      } catch {
-        if (!res.ok) {
-          setStatusMessage({
-            type: "error",
-            text:
-              res.status === 404
-                ? "Backend server belum di-restart. Silakan restart terminal 'node server.js' agar endpoint import aktif."
-                : `Server merespon dengan status ${res.status}. Pastikan server.js sedang berjalan.`,
-          });
-          return;
-        }
-      }
-
-      if (data) {
-        setScanResult(data);
-        if (!data.success && data.error) {
-          setStatusMessage({ type: "error", text: data.error });
-        }
-      }
+      const data = await res.json();
+      if (sequence !== scanSequence.current) return;
+      if (!res.ok || !data.success) throw new Error(data.error || "Scan gagal.");
+      setScanResult(data);
+      const selected = (data.candidates || []).filter((f: PhotoCandidate) => f.selected);
+      setFirstId(selected[0]?.id || ""); setLastId(selected.at(-1)?.id || "");
     } catch (err: any) {
-      setStatusMessage({
-        type: "error",
-        text: "Koneksi ke backend gagal. Pastikan 'node server.js' sedang berjalan di port 5000.",
-      });
-    } finally {
-      setScanning(false);
-    }
+      if (sequence === scanSequence.current) setStatusMessage({ type: "error", text: err.message || "Koneksi ke backend gagal." });
+    } finally { if (sequence === scanSequence.current) setScanning(false); }
   };
 
+  useEffect(() => { if (isOpen) void fetchConfig(true); }, [isOpen]);
   useEffect(() => {
-    if (isOpen) {
-      setImportSuccessData(null);
-      setStatusMessage(null);
-      fetchConfig();
-      if (activeTab === "auto") {
-        handleScan(selectedPresetId, timeFilter);
-      }
-    }
-  }, [isOpen, activeTab]);
+    if (isOpen && configLoaded && activeTab === "auto") void handleScan();
+    return () => { scanSequence.current++; };
+  }, [isOpen, activeTab, configLoaded]);
+  useEffect(() => {
+    if (!importing || activeTab !== "auto") return;
+    let stopped = false;
+    const poll = async () => {
+      try {
+        const res = await fetch(`${API}/api/camera-import/progress`);
+        const data = await res.json();
+        if (!stopped && data.scanId === scanResult?.scanId) setProgressText(
+          data.phase === "copying" ? "Menyalin foto dari perangkat…" :
+          data.phase === "verifying" ? `Memeriksa foto ${data.verified} dari ${data.total}…` :
+          data.phase === "publishing" ? "Menyiapkan galeri pelanggan…" : "Menyelesaikan impor…");
+      } catch {}
+    };
+    void poll(); const timer = setInterval(poll, 1000);
+    return () => { stopped = true; clearInterval(timer); };
+  }, [importing, activeTab, scanResult?.scanId]);
 
   const handleSelectPreset = (presetId: string) => {
     setSelectedPresetId(presetId);
-    if (config?.presets?.[presetId]) {
-      setCustomPathInput(config.presets[presetId].path);
-    }
-    handleScan(presetId, timeFilter);
+    const preset = config.presets[presetId];
+    setCustomPathInput(preset?.path || "");
+    const minutes = preset?.defaultMinutes || 30;
+    const filter = [15, 20, 30, 45, 60].includes(minutes) ? `${minutes}_min` : "custom_min";
+    setCustomMinutes(minutes); setTimeFilter(filter); void handleScan(presetId, filter, minutes);
   };
-
   const handleFilterChange = (filter: string) => {
-    setTimeFilter(filter);
-    handleScan(selectedPresetId, filter);
+    setTimeFilter(filter); void handleScan(selectedPresetId, filter);
+  };
+  const saveDuration = async () => {
+    const minutes = timeFilter === "custom_min" ? customMinutes : Number.parseInt(timeFilter);
+    if (!Number.isInteger(minutes) || minutes < 1 || minutes > 180) return;
+    try {
+      const presets = { ...config.presets, [selectedPresetId]: { ...config.presets[selectedPresetId], defaultMinutes: minutes } };
+      const res = await fetch(`${API}/api/camera-import/config`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ presets }) });
+      if (!res.ok) throw new Error("Durasi gagal disimpan.");
+      setConfig({ ...config, presets }); setStatusMessage({ type: "success", text: "Durasi bawaan tersimpan." });
+    } catch (err: any) { setStatusMessage({ type: "error", text: err.message }); }
   };
 
   const handleSavePath = async () => {
@@ -339,13 +355,8 @@ function AuthenticatedCameraImportModal({
       setUploadPercent(5);
       setStatusMessage(null);
 
-      if (clearExisting) {
-        try {
-          await fetch(`${API}/api/clear-photos`, { method: "POST" });
-        } catch {}
-      }
-
       const formData = new FormData();
+      formData.append("clearExistingPhotos", String(clearExisting));
       draggedFiles.forEach((file) => {
         formData.append("photos", file);
       });
@@ -421,7 +432,7 @@ function AuthenticatedCameraImportModal({
   };
 
   const handleExecuteImport = async () => {
-    if (!scanResult || scanResult.totalFound === 0) return;
+    if (!scanResult?.scanId || scanning || importing || !selectedPhotos.length) return;
     try {
       setImporting(true);
       setStatusMessage(null);
@@ -429,9 +440,7 @@ function AuthenticatedCameraImportModal({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          presetId: selectedPresetId,
-          filter: timeFilter,
-          minutes: timeFilter === "30_min" ? 30 : timeFilter === "45_min" ? 45 : 60,
+          scanId: scanResult.scanId, firstId, lastId,
           clearExistingPhotos: clearExisting,
         }),
       });
@@ -518,6 +527,7 @@ function AuthenticatedCameraImportModal({
             </p>
           </div>
           <button
+            disabled={importing}
             onClick={() => {
               setImportSuccessData(null);
               onClose();
@@ -534,7 +544,7 @@ function AuthenticatedCameraImportModal({
           <div className="flex border-b border-[#e8e8e8] px-6 bg-white gap-6 shrink-0">
           <button
             type="button"
-            onClick={() => setActiveTab("dragdrop")}
+            disabled={importing} onClick={() => setActiveTab("dragdrop")}
             className={`py-3 text-[13px] font-medium border-b-2 transition-all cursor-pointer -mb-px ${
               activeTab === "dragdrop"
                 ? "border-[#171717] text-[#171717] font-semibold"
@@ -545,7 +555,7 @@ function AuthenticatedCameraImportModal({
           </button>
           <button
             type="button"
-            onClick={() => setActiveTab("auto")}
+            disabled={importing} onClick={() => setActiveTab("auto")}
             className={`py-3 text-[13px] font-medium border-b-2 transition-all cursor-pointer -mb-px ${
               activeTab === "auto"
                 ? "border-[#171717] text-[#171717] font-semibold"
@@ -570,7 +580,7 @@ function AuthenticatedCameraImportModal({
                 Menyalin Foto ke Kiosk...
               </h4>
               <p className="text-[12px] text-[#666] leading-relaxed">
-                Sedang mentransfer <strong>{scanResult?.totalFound || draggedFiles.length} foto</strong> melalui USB dan membuat thumbnail instan.
+                {activeTab === "auto" ? progressText : "Mengunggah foto…"} <strong>{activeTab === "auto" ? selectedPhotos.length : draggedFiles.length} foto</strong> untuk disiapkan di galeri.
               </p>
             </div>
 
@@ -908,12 +918,14 @@ function AuthenticatedCameraImportModal({
                     <span>Scan Ulang</span>
                   </button>
                 </div>
-                <div className="grid grid-cols-4 gap-1.5">
+                <div className="grid grid-cols-3 gap-1.5">
                   {[
+                    { id: "15_min", label: "15 Menit" },
+                    { id: "20_min", label: "20 Menit" },
                     { id: "30_min", label: "30 Menit" },
                     { id: "45_min", label: "45 Menit" },
                     { id: "60_min", label: "60 Menit" },
-                    { id: "today", label: "Hari Ini" },
+                    { id: "custom_min", label: "Kustom" },
                   ].map((f) => (
                     <button
                       key={f.id}
@@ -930,6 +942,13 @@ function AuthenticatedCameraImportModal({
                 </div>
               </div>
 
+              <div className="flex items-center gap-3 text-xs">
+                {timeFilter === "custom_min" && <label>Menit (1–180)
+                  <input aria-label="Durasi kustom" type="number" min={1} max={180} value={customMinutes}
+                    onChange={e => { const value = Number(e.target.value); setCustomMinutes(value); void handleScan(selectedPresetId, "custom_min", value); }} className="border rounded p-2 w-20 ml-2" />
+                </label>}
+                <button onClick={saveDuration} className="underline">Simpan sebagai durasi bawaan</button>
+              </div>
               {/* Scan Results */}
               <div className="bg-white border border-[#e8e8e8] rounded-[10px] p-4 space-y-3">
                 <div className="flex items-center justify-between border-b border-[#f0f0f0] pb-2">
@@ -947,7 +966,7 @@ function AuthenticatedCameraImportModal({
                     {scanning
                       ? "Memindai..."
                       : scanResult?.success
-                      ? `${scanResult.totalFound} Foto (${scanResult.formattedTotalSize})`
+                      ? `${selectedPhotos.length} Foto (${formatBytes(selectedPhotos.reduce((n, f) => n + (f.size || 0), 0))})`
                       : "0 Foto"}
                   </span>
                 </div>
@@ -957,14 +976,14 @@ function AuthenticatedCameraImportModal({
                     <RefreshCw size={16} className="animate-spin text-[#888]" />
                     <span>Memindai folder kamera...</span>
                   </div>
-                ) : !isConnected ? (
+                ) : !scanResult?.success ? (
                   <div className="py-5 text-center space-y-2">
                     <p className="text-[12px] text-[#92400e] bg-[#fef3c7] border border-[#fde68a] rounded-[8px] p-3 font-medium">
                       Kamera atau Card Reader belum terdeteksi di path{" "}
                       <code>{currentPreset?.path}</code>. Pastikan kabel sudah dicolok ke PC.
                     </p>
                   </div>
-                ) : scanResult && scanResult.totalFound === 0 ? (
+                ) : scanResult && candidates.length === 0 ? (
                   <div className="py-6 text-center text-[#888] text-[12px] space-y-1">
                     <p className="font-medium text-[#555]">
                       Tidak ada foto baru yang ditemukan dalam rentang waktu ini.
@@ -975,6 +994,21 @@ function AuthenticatedCameraImportModal({
                   </div>
                 ) : (
                   <div className="space-y-3">
+                    <p className="text-xs text-[#666]">Rekomendasi dihitung mundur dari foto terbaru di kamera, bukan jam PC. Periksa pelanggan pada foto awal dan akhir sebelum impor.</p>
+                    <p className="text-xs text-[#666]">{scanResult?.toleranceCount || 0} foto toleransi tidak dipilih otomatis. {scanResult?.fallbackCount || 0} foto memakai waktu perubahan file; {scanResult?.unknownCount || 0} tanpa waktu.</p>
+                    {!!scanResult?.gaps?.length && <p className="text-xs text-amber-800">Ada jeda pemotretan. Periksa apakah rentang ini mencakup sesi pelanggan lain.</p>}
+                    <div className="grid grid-cols-2 gap-3">
+                      {[{ label: "Foto awal", value: firstId, change: setFirstId }, { label: "Foto akhir", value: lastId, change: setLastId }].map(field => (
+                        <label key={field.label} className="text-xs min-w-0">{field.label}
+                          <select aria-label={field.label} value={field.value} onChange={e => field.change(e.target.value)} className="w-full border rounded p-2 mt-1">
+                            <option value="">Pilih foto</option>
+                            {candidates.map(f => <option key={f.id} value={f.id}>{f.name} · {f.timeFormatted} · {({main: "durasi sesi", tolerance: "toleransi", outside: "di luar durasi", unknown: "tanpa waktu"} as Record<string, string>)[f.group]}</option>)}
+                          </select>
+                          {field.value && <CameraThumbnail src={candidates.find(f => f.id === field.value)?.previewUrl} alt={field.label} className="w-full h-32 object-contain bg-[#fafafa] mt-2" />}
+                        </label>
+                      ))}
+                    </div>
+                    {!selectedPhotos.length && <p className="text-xs text-amber-800">Pilih rentang awal–akhir yang berurutan.</p>}
                     {scanResult?.earliestTime && (
                       <div className="text-[11px] text-[#666] flex items-center justify-between bg-[#fafafa] px-2.5 py-1.5 rounded-[6px] border border-[#e8e8e8]">
                         <span>
@@ -984,18 +1018,18 @@ function AuthenticatedCameraImportModal({
                           </strong>
                         </span>
                         <span className="text-[#059669] font-medium">
-                          ✓ Foto Sesi Terkini
+                          Periksa batas sesi
                         </span>
                       </div>
                     )}
 
-                    {scanResult?.previews && scanResult.previews.length > 0 && (
+                    {selectedPhotos.length > 0 && (
                       <div>
                         <div className="text-[10px] uppercase tracking-wider font-semibold text-[#999] mb-1.5">
                           Sampel Foto:
                         </div>
                         <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
-                          {scanResult.previews.map((pv, idx) => (
+                          {(selectedPhotos.length > 6 ? [...selectedPhotos.slice(0, 3), ...selectedPhotos.slice(-3)] : selectedPhotos).map((pv, idx) => (
                             <div
                               key={idx}
                               className="aspect-square rounded-[6px] overflow-hidden border border-[#e8e8e8] bg-[#f9f9f9] relative"
@@ -1027,7 +1061,7 @@ function AuthenticatedCameraImportModal({
                 Kosongkan Foto Kamera Sesi Sebelumnya
               </div>
               <div className="text-[11px] text-[#888] mt-0.5">
-                Hapus foto customer lama di Kiosk sebelum foto baru disalin
+                {activeTab === "auto" ? "Galeri diganti setelah foto lolos pemeriksaan; galeri lama disimpan sebagai cadangan." : "Galeri diganti setelah unggahan lolos pemeriksaan; galeri lama disimpan sebagai cadangan."}
               </div>
             </div>
             <input
@@ -1057,7 +1091,7 @@ function AuthenticatedCameraImportModal({
           <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
             <button
               type="button"
-              onClick={onClose}
+              disabled={importing} onClick={onClose}
               className="px-4 py-2 text-[12px] font-medium text-[#666] hover:text-[#171717] bg-white border border-[#e5e5e5] rounded-[7px] hover:bg-[#fafafa] transition-colors cursor-pointer"
             >
               Tutup
@@ -1087,7 +1121,7 @@ function AuthenticatedCameraImportModal({
                   importing ||
                   scanning ||
                   !scanResult?.success ||
-                  scanResult?.totalFound === 0
+                  selectedPhotos.length === 0
                 }
                 className="inline-flex items-center justify-center px-4.5 py-2 bg-[#171717] hover:bg-[#333] text-white rounded-[7px] text-[12px] font-medium transition-all cursor-pointer shadow-2xs disabled:opacity-40"
               >
@@ -1096,7 +1130,7 @@ function AuthenticatedCameraImportModal({
                 ) : (
                   <span>
                     Import ke Kiosk{" "}
-                    {scanResult?.totalFound ? `(${scanResult.totalFound} Foto)` : ""}
+                    {selectedPhotos.length ? `(${selectedPhotos.length} Foto)` : ""}
                   </span>
                 )}
               </button>
