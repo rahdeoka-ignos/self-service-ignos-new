@@ -1,0 +1,44 @@
+/* Legacy white UI/print panels need dark text even on a dark screen. */
+@layer base {
+  [data-kiosk-theme] .bg-white { color: #171717; }
+}
+/* Kiosk-only surfaces. Printed photos, receipt artwork, and admin stay independent. */
+[data-kiosk-theme] .kiosk-screen {
+  background-color: var(--kiosk-bg, #f3f4f6);
+  color: var(--kiosk-text, #171717);
+  font-family: var(--kiosk-font, 'Space Grotesk', sans-serif);
+}
+[data-kiosk-theme] .kiosk-navigation {
+  background-color: var(--kiosk-card-bg, white);
+  color: var(--kiosk-text, #171717);
+  border-color: var(--kiosk-border, black);
+  border-bottom-width: var(--kiosk-border-w, 4px);
+  font-family: var(--kiosk-font, 'Space Grotesk', sans-serif);
+}
+[data-kiosk-theme] .kiosk-step,
+[data-kiosk-theme] .kiosk-step-active {
+  background-color: var(--kiosk-card-bg, white);
+  color: var(--kiosk-text, #171717);
+  border-color: var(--kiosk-border, black);
+  border-width: var(--kiosk-border-w, 4px);
+}
+[data-kiosk-theme] .kiosk-step-active {
+  background-color: var(--kiosk-primary, black);
+  color: var(--kiosk-primary-text, white);
+  outline: 2px solid var(--kiosk-accent, #fde047);
+  outline-offset: 2px;
+}
+[data-kiosk-theme] .kiosk-icon {
+  background-color: var(--kiosk-primary, black);
+  color: var(--kiosk-primary-text, white);
+  border-color: var(--kiosk-border, black);
+}
+[data-kiosk-theme] .kiosk-icon svg { color: inherit; }
+[data-kiosk-theme] .kiosk-screen :is(.text-gray-500, .text-gray-600, .text-gray-700) {
+  color: inherit;
+  opacity: .75;
+}
+[data-kiosk-theme] button:focus-visible {
+  outline: 3px solid var(--kiosk-accent, #fde047);
+  outline-offset: 3px;
+}

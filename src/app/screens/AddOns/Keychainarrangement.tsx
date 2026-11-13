@@ -200,7 +200,7 @@ export function KeychainArrangement() {
   const canConfirm = slots.every((s) => filledSlots[s.globalIndex]);
 
   return (
-    <div className="h-[100dvh] overflow-hidden bg-gray-100 flex flex-col">
+    <div className="kiosk-screen h-[100dvh] overflow-hidden bg-gray-100 flex flex-col">
       <Navigation currentStep={4} totalSteps={5} />
 
       <div className="pt-32 px-8 flex-1 overflow-hidden">

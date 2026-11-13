@@ -36,7 +36,7 @@ export function FlowerHotwheelsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-8">
+    <div className="kiosk-screen min-h-screen bg-gray-100 flex items-center justify-center p-8">
       <div className="max-w-3xl w-full">
         {step === "input" ? (
           <>

@@ -41,7 +41,7 @@ export function Home() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-8">
+    <div className="kiosk-screen min-h-screen bg-gray-100 flex items-center justify-center p-8">
       <div className="max-w-7xl w-full">
         {/* Secret Double Click Trigger for Staff */}
         <div
@@ -79,7 +79,7 @@ export function Home() {
               }
               className="cursor-pointer flex flex-col items-center justify-center text-center p-12 min-h-[400px] hover:scale-105"
             >
-              <div className="w-32 h-32 bg-black rounded-full flex items-center justify-center mb-8 border-4 border-black">
+              <div className="w-32 h-32 kiosk-icon bg-black rounded-full flex items-center justify-center mb-8 border-4 border-black">
                 <service.icon
                   size={64}
                   className="text-white"

@@ -63,7 +63,7 @@ export function IdCardOptions() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="kiosk-screen min-h-screen bg-gray-100">
       <Navigation currentStep={4} totalSteps={5} />
 
       <div className="flex flex-col items-center justify-center min-h-screen p-8 pt-32">

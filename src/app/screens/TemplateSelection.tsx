@@ -128,7 +128,7 @@ export function TemplateSelection() {
           }
         />
       )}
-      <div className="h-[100dvh] bg-gray-100 flex flex-col overflow-hidden">
+      <div className="kiosk-screen h-[100dvh] bg-gray-100 flex flex-col overflow-hidden">
         <Navigation currentStep={3} totalSteps={5} />
 
         <div className="pt-32 pb-8 px-8 flex-1 overflow-hidden">

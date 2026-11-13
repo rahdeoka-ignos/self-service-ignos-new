@@ -46,7 +46,7 @@ function RootLayout() {
         <PricingProvider>
           <BrandingProvider>
             <LicenseProvider>
-              <Outlet />
+              <div data-kiosk-theme={!isAdmin ? "active" : undefined} style={{ display: "contents" }}><Outlet /></div>
               {!isAdmin && <KioskPrinterAlertModal />}
               {!isAdmin && <KioskLockoutGuard />}
             </LicenseProvider>

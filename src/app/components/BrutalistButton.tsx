@@ -21,7 +21,7 @@ export function BrutalistButton({
     // Rendered outside KioskThemeProvider
   }
 
-  const isDefault = !theme || theme.presetId === "neo-brutalism";
+  const isDefault = !theme;
 
   if (isDefault) {
     const baseClasses =
@@ -50,7 +50,7 @@ export function BrutalistButton({
     );
   }
 
-  // Non-default custom / alternative theme
+  // All configured presets share the same theme tokens as the preview.
   const sizeClasses = {
     sm: "px-6 py-3 text-lg font-bold rounded-lg",
     md: "px-8 py-4 text-xl font-bold rounded-xl",
@@ -75,7 +75,8 @@ export function BrutalistButton({
           }
         : {
             backgroundColor: "transparent",
-            color: "var(--kiosk-text, #171717)",
+            // Outline buttons also appear inside fixed white preview dialogs.
+            color: "inherit",
           }),
     ...style,
   };

@@ -397,7 +397,7 @@ export function PasFotoPage() {
   // ── Step 1: Input Jumlah Cetak ─────────────────────────────
   if (printQty === null) {
     return (
-      <div className="min-h-screen bg-gray-100 flex flex-col justify-between">
+      <div className="kiosk-screen min-h-screen bg-gray-100 flex flex-col justify-between">
         <Navigation currentStep={1} totalSteps={3} />
 
         <div className="flex-1 flex items-center justify-center pt-32 pb-8 px-8">
@@ -482,7 +482,7 @@ export function PasFotoPage() {
       );
 
     return (
-      <div className="h-[100dvh] overflow-hidden bg-gray-100 flex flex-col">
+      <div className="kiosk-screen h-[100dvh] overflow-hidden bg-gray-100 flex flex-col">
         <Navigation currentStep={2} totalSteps={3} />
 
         <div className="pt-32 pb-8 px-8 flex-1 overflow-hidden">
@@ -649,7 +649,7 @@ export function PasFotoPage() {
 
   // ── Step 3: Susun Foto ─────────────────────────────────────
   return (
-    <div className="h-[100dvh] overflow-hidden bg-gray-100 flex flex-col">
+    <div className="kiosk-screen h-[100dvh] overflow-hidden bg-gray-100 flex flex-col">
       <Navigation currentStep={3} totalSteps={3} />
 
       <div className="pt-32 px-8 flex-1 overflow-hidden">

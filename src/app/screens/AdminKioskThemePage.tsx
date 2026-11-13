@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Check,
   RefreshCw,
@@ -10,6 +10,7 @@ import { AdminConfirmModal } from "../components/AdminConfirmModal";
 import { useKioskTheme } from "../../context/KioskThemeContext";
 import { usePageTitle } from "../../hooks/usePageTitle";
 import {
+  THEME_PRESETS,
   KioskThemeConfig,
   ThemePresetId,
   BorderRadiusType,
@@ -18,17 +19,25 @@ import {
   FontFamilyType,
 } from "../../types/kioskTheme";
 
+import { radiusMap, borderWMap, fontMap, getShadowMap, isValidTheme } from "../../utils/kioskTheme";
+
 export function AdminKioskThemePage() {
   usePageTitle("Tema & Alur Kiosk — Ignos");
 
-  const {
-    theme,
-    setTheme,
-    applyPreset,
-    saveTheme,
-    resetTheme,
-    saving,
-  } = useKioskTheme();
+  const { theme: activeTheme, saveTheme, resetTheme, saving, loading } = useKioskTheme();
+  const [theme, setTheme] = useState(activeTheme);
+  const dirty = useRef(false);
+  const [saveError, setSaveError] = useState("");
+  const successTimer = useRef<ReturnType<typeof setTimeout>>();
+  useEffect(() => {
+    if (!dirty.current) setTheme(activeTheme);
+  }, [activeTheme]);
+  useEffect(() => () => clearTimeout(successTimer.current), []);
+  const markDirty = () => {
+    dirty.current = true;
+    setSaveSuccess(false);
+    setSaveError("");
+  };
 
   const [activeTab, setActiveTab] = useState<
     "presets" | "colors" | "branding" | "flow"
@@ -54,14 +63,23 @@ export function AdminKioskThemePage() {
   });
 
   const handleApplyPreset = (presetId: ThemePresetId) => {
-    applyPreset(presetId);
+    if (loading || saving) return;
+    markDirty();
+    setTheme({ ...THEME_PRESETS[presetId] });
   };
 
   const handleSave = async () => {
-    const ok = await saveTheme();
+    setSaveError("");
+    if (!isValidTheme(theme)) {
+      setSaveError("Warna harus berupa kode hex 6 digit, misalnya #171717.");
+      return;
+    }
+    const ok = await saveTheme(theme);
     if (ok) {
+      dirty.current = false;
       setSaveSuccess(true);
-      setTimeout(() => setSaveSuccess(false), 2500);
+      clearTimeout(successTimer.current);
+      successTimer.current = setTimeout(() => setSaveSuccess(false), 2500);
     } else {
       setModalConfig({
         isOpen: true,
@@ -85,7 +103,15 @@ export function AdminKioskThemePage() {
       isDangerous: true,
       variant: "warning",
       onConfirm: async () => {
-        await resetTheme();
+        const ok = await resetTheme();
+        if (ok) {
+          dirty.current = false;
+          setTheme({ ...THEME_PRESETS["neo-brutalism"] });
+          setSaveSuccess(false);
+          setSaveError("");
+        } else {
+          setSaveError("Reset gagal. Tema aktif tidak berubah. Periksa koneksi dan sesi admin, lalu coba lagi.");
+        }
       },
     });
   };
@@ -94,6 +120,8 @@ export function AdminKioskThemePage() {
     key: K,
     value: KioskThemeConfig[K],
   ) => {
+    if (loading || saving) return;
+    markDirty();
     setTheme((prev) => ({
       ...prev,
       presetId: "custom",
@@ -101,35 +129,20 @@ export function AdminKioskThemePage() {
     }));
   };
 
-  // Preview helper values
-  const radiusMap: Record<BorderRadiusType, string> = {
-    none: "0px",
-    sm: "6px",
-    md: "10px",
-    lg: "16px",
-    full: "24px",
-  };
-  const borderWMap: Record<BorderWidthType, string> = {
-    none: "0px",
-    thin: "1px",
-    medium: "2px",
-    thick: "4px",
-  };
-  const shadowMap: Record<ShadowStyleType, string> = {
-    none: "none",
-    soft: "0 2px 8px rgba(0,0,0,0.06)",
-    "hard-offset": `3px 3px 0px 0px ${theme.borderColor || "#000"}`,
-    elevated: "0 8px 24px rgba(0,0,0,0.12)",
-  };
-  const fontMap: Record<FontFamilyType, string> = {
-    manrope: "'Manrope', sans-serif",
-    "space-grotesk": "'Space Grotesk', sans-serif",
-    poppins: "'Poppins', sans-serif",
-  };
+  const shadowMap = getShadowMap(theme.borderColor);
 
   return (
     <AdminLayout>
-      <div className="w-full p-6 md:p-8 space-y-8">
+      <fieldset disabled={loading || saving} className="min-w-0 w-full p-6 md:p-8 space-y-8">
+        {loading && <p role="status">Memuat tema tersimpan…</p>}
+        <AdminConfirmModal
+          isOpen={Boolean(saveError)}
+          onClose={() => setSaveError("")}
+          title="Pengaturan Tema Belum Disimpan"
+          description={saveError}
+          singleButton
+          variant="warning"
+        />
         {/* ── 1. HEADER & ACTIONS ── */}
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 pb-6 border-b border-[#e8e8e8]">
           <div>
@@ -148,7 +161,7 @@ export function AdminKioskThemePage() {
             <button
               type="button"
               onClick={handleReset}
-              disabled={saving}
+              disabled={loading || saving}
               className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white border border-[#e6e6e6] text-[#444] hover:bg-[#f6f6f6] hover:text-[#171717] rounded-[7px] text-[12px] font-medium transition-colors cursor-pointer disabled:opacity-40"
               title="Reset ke tema bawaan sistem"
             >
@@ -159,7 +172,7 @@ export function AdminKioskThemePage() {
             <button
               type="button"
               onClick={handleSave}
-              disabled={saving}
+              disabled={loading || saving}
               className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#171717] text-white hover:bg-black rounded-[7px] text-[12px] font-medium transition-colors cursor-pointer shadow-xs disabled:opacity-50"
             >
               {saveSuccess ? (
@@ -180,7 +193,7 @@ export function AdminKioskThemePage() {
         {/* ── 2. 4 EXECUTIVE STATUS METRICS ── */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="bg-white border border-[#e8e8e8] rounded-[10px] p-5 space-y-3">
-            <span className="text-[12px] font-medium text-[#777]">Preset Tema Aktif</span>
+            <span className="text-[12px] font-medium text-[#777]">Pratinjau Preset Tema</span>
             <div>
               <div className="text-[22px] font-semibold text-[#171717] capitalize tracking-tight">
                 {theme.presetId === "neo-brutalism"
@@ -910,7 +923,7 @@ export function AdminKioskThemePage() {
                     Pratinjau Bilik Kiosk
                   </h3>
                   <p className="text-[11px] text-[#888] mt-0.5">
-                    Simulasi tampilan layar sentuh customer secara langsung
+                    Draft tampilan kiosk. Klik Terapkan ke Kiosk untuk menyimpan.
                   </p>
                 </div>
                 <span className="text-[10px] font-mono uppercase tracking-wider bg-[#f2f2f2] text-[#444] px-2 py-0.5 rounded-[4px]">
@@ -950,6 +963,8 @@ export function AdminKioskThemePage() {
                       {theme.homeHeadline || "Kamu Habis Fotoan Dimana?"}
                     </p>
                   </div>
+
+                  {theme.homeSubheadline && <p className="text-center text-[9px] opacity-60">{theme.homeSubheadline}</p>}
 
                   {/* 2 Service Selection Cards */}
                   <div className="grid grid-cols-2 gap-3 my-auto">
@@ -1070,7 +1085,7 @@ export function AdminKioskThemePage() {
           variant={modalConfig.variant}
           singleButton={modalConfig.singleButton}
         />
-      </div>
+      </fieldset>
     </AdminLayout>
   );
 }

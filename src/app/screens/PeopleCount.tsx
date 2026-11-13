@@ -192,7 +192,7 @@ export function PeopleCount() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="kiosk-screen min-h-screen bg-gray-100">
       <Navigation currentStep={1} totalSteps={5} />
 
       {showModal && (
@@ -207,7 +207,7 @@ export function PeopleCount() {
         <BrutalistCard className="max-w-2xl w-full p-16">
           <div className="text-center">
             <div className="mb-8">
-              <div className="w-24 h-24 bg-black rounded-full flex items-center justify-center mx-auto mb-6 border-4 border-black">
+              <div className="w-24 h-24 kiosk-icon bg-black rounded-full flex items-center justify-center mx-auto mb-6 border-4 border-black">
                 <Users size={48} className="text-white" strokeWidth={3} />
               </div>
               <h1 className="text-5xl font-bold mb-4">

@@ -35,7 +35,7 @@ export function Navigation({
 
   return (
     <>
-      <div className="fixed top-0 left-0 right-0 bg-white border-b-4 border-black z-50">
+      <div className="kiosk-navigation fixed top-0 left-0 right-0 bg-white border-b-4 border-black z-50">
         <div className="flex items-center justify-between p-6">
           <div className="flex items-center gap-4">
             {showBack && (
@@ -57,8 +57,8 @@ export function Navigation({
                 key={i}
                 className={`w-12 h-12 border-4 border-black rounded-full flex items-center justify-center text-xl font-bold ${
                   i + 1 <= currentStep
-                    ? "bg-black text-white"
-                    : "bg-white text-black"
+                    ? "kiosk-step-active bg-black text-white"
+                    : "kiosk-step bg-white text-black"
                 }`}
               >
                 {i + 1}

@@ -96,7 +96,7 @@ export function AddOnQuestion() {
   const orders = location.state?.orders ?? location.state?.keychainOrders ?? [];
 
   return (
-    <div className="min-h-screen bg-gray-100 p-10 pt-14 pb-20">
+    <div className="kiosk-screen min-h-screen bg-gray-100 p-10 pt-14 pb-20">
       <div className="w-screen-3xl mx-auto">
         {/* Title */}
         <div className="text-center mb-7">

@@ -91,7 +91,7 @@ export function BingkaiA4Page() {
     Object.keys(framePhotos).length === selectedFramesList.length;
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-8">
+    <div className="kiosk-screen min-h-screen bg-gray-100 flex items-center justify-center p-8">
       <div className="max-w-4xl w-full">
         {/* Title */}
         <div className="text-center mb-12">

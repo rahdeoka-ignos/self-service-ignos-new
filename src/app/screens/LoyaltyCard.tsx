@@ -329,7 +329,7 @@ export function LoyaltyCard() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-8 pt-20">
+    <div className="kiosk-screen min-h-screen bg-gray-100 p-8 pt-20">
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-10">
           <h1 className="text-6xl font-bold mb-3">Loyalty Card</h1>

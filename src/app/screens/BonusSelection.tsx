@@ -76,7 +76,7 @@ export function BonusSelection() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="kiosk-screen min-h-screen bg-gray-100">
       <Navigation currentStep={2} totalSteps={5} />
 
       <div className="flex items-center justify-center min-h-screen p-8 pt-32">

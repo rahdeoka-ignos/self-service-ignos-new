@@ -40,7 +40,7 @@ export function BonusGuide() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+    <div className="kiosk-screen min-h-screen flex items-center justify-center bg-gray-100">
       <Navigation currentStep={2} totalSteps={5} />
 
       <div className="pt-32 pb-12 px-8">

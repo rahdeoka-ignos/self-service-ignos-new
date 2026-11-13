@@ -22,7 +22,7 @@ export function BrutalistCard({
     // Rendered outside KioskThemeProvider
   }
 
-  const isDefault = !theme || theme.presetId === "neo-brutalism";
+  const isDefault = !theme;
 
   if (isDefault) {
     const baseClasses = "relative bg-white border-4 border-black rounded-2xl";
@@ -42,7 +42,7 @@ export function BrutalistCard({
     );
   }
 
-  // Non-default custom / alternative theme
+  // All configured presets share the same theme tokens as the preview.
   const interactiveClasses = interactive
     ? "cursor-pointer transition-all hover:-translate-y-1 active:translate-y-0"
     : "";
@@ -64,7 +64,7 @@ export function BrutalistCard({
 
   return (
     <div
-      className={`relative border transition-all ${interactiveClasses} ${className}`}
+      className={`kiosk-card relative border transition-all ${interactiveClasses} ${className}`}
       style={dynamicStyle}
       {...props}
     >

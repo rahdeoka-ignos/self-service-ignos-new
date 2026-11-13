@@ -602,7 +602,7 @@ export function PhotoArrangement() {
   };
 
   return (
-    <div className="h-[100dvh] overflow-hidden bg-gray-100 flex flex-col">
+    <div className="kiosk-screen h-[100dvh] overflow-hidden bg-gray-100 flex flex-col">
       <TimerBar
         minutes={timer.minutes}
         seconds={timer.seconds}
