@@ -96,8 +96,8 @@
     },
 
     "success": {
-      "title": "Cetak Berhasil!",
-      "description": "Semua foto berhasil disimpan dan siap dicetak.",
+      "title": "Dikirim ke Printer",
+      "description": "File tersimpan dan perintah cetak telah dikirim. Silakan periksa hasil pada printer.",
       "autoNext": "Otomatis lanjut dalam {{count}} detik..."
     },
 

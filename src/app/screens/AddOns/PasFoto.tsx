@@ -1,3 +1,5 @@
+import { notifyPrintError } from "../../../utils/api";
+import { apiFetch as fetch } from "../../../utils/api";
 import { useState, useRef, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router";
 import { Navigation } from "../../components/Navigation";
@@ -378,7 +380,7 @@ export function PasFotoPage() {
       setSuccessOpen(true);
     } catch (err) {
       console.error("PRINT ERROR:", err);
-      alert("Print failed");
+      notifyPrintError(err);
     } finally {
       setPrinting(false);
     }

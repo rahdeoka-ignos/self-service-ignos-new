@@ -266,26 +266,25 @@ export async function uploadFileToDrive(localFilePath, targetFolderId, fileName)
  */
 export async function uploadMultipleFiles(filePaths, targetFolderId, onProgress = null) {
   const results = [];
+  const failures = [];
   const total = filePaths.length;
-
-  for (let i = 0; i < total; i++) {
-    const filePath = filePaths[i];
-    const fileName = path.basename(filePath);
-
-    if (fs.existsSync(filePath)) {
-      if (onProgress) onProgress(i, total, fileName, "uploading");
-      try {
-        const uploaded = await uploadFileToDrive(filePath, targetFolderId);
-        results.push(uploaded);
-        if (onProgress) onProgress(i + 1, total, fileName, "done");
-      } catch (err) {
-        console.error(`Gagal upload file ${filePath}:`, err.message);
-        if (onProgress) onProgress(i + 1, total, fileName, "failed");
-      }
-    } else {
-      if (onProgress) onProgress(i + 1, total, fileName, "missing");
+  for (const filePath of filePaths) {
+    const name = path.basename(filePath);
+    try {
+      if (!fs.existsSync(filePath)) throw new Error("File lokal tidak ditemukan");
+      if (onProgress) await onProgress(results.length, total, name, "uploading");
+      const uploaded = await uploadFileToDrive(filePath, targetFolderId);
+      results.push(uploaded);
+      if (onProgress) await onProgress(results.length, total, name, "done");
+    } catch (err) {
+      failures.push({ name, error: err.message });
+      if (onProgress) await onProgress(results.length, total, name, "failed");
     }
   }
-
+  if (failures.length) {
+    const error = new Error(`${failures.length} file gagal diunggah. Foto tetap disimpan di antrean lokal.`);
+    error.failures = failures;
+    throw error;
+  }
   return results;
 }

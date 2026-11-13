@@ -1,3 +1,4 @@
+import { notifyPrintError } from "../../../utils/api";
 import { useState, useEffect, useRef, useLayoutEffect } from "react";
 import { useLocation, useNavigate } from "react-router";
 import { BrutalistCard } from "../../components/BrutalistCard";
@@ -175,7 +176,7 @@ export function KeychainArrangement() {
       setSuccessOpen(true);
     } catch (err) {
       console.error("PRINT ERROR:", err);
-      alert("Print failed");
+      notifyPrintError(err);
     } finally {
       setPrinting(false);
     }

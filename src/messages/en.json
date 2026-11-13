@@ -96,8 +96,8 @@
     },
 
     "success": {
-      "title": "Print Successful!",
-      "description": "All photos have been saved and are ready to print.",
+      "title": "Sent to Printer",
+      "description": "Files saved and print jobs submitted. Please check the printer output.",
       "autoNext": "Automatically continuing in {{count}} seconds..."
     },
 

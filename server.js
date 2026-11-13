@@ -15,9 +15,27 @@ sharp.cache(false);
 import { fileURLToPath } from "url";
 import { createCustomerFolder, uploadMultipleFiles, testFolderAccess, PARENT_FOLDER_ID } from "./gdrive.js";
 
+import { createQueueUploader } from "./backend/uploadQueue.js";
+import { createAdminSessions } from "./backend/security.js";
+import { childPath, writeJsonAtomic } from "./backend/safety.js";
+import { priceKioskSession, reportPrints, reportSoftcopy, nonNegative } from "./backend/pricing.js";
+
 const app = express();
-app.use(cors());
-app.use(express.json());
+const adminSessions = createAdminSessions();
+const allowedOrigins = new Set([
+  "http://localhost:5173", "http://127.0.0.1:5173",
+  "http://localhost:4173", "http://127.0.0.1:4173",
+  ...(process.env.IGNOS_ALLOWED_ORIGINS || "").split(",").map((s) => s.trim()).filter(Boolean),
+]);
+app.use((req, res, next) => {
+  if (req.headers.origin && !allowedOrigins.has(req.headers.origin)) {
+    return res.status(403).json({ error: "Origin tidak diizinkan." });
+  }
+  next();
+});
+app.use(cors({ origin: (origin, done) => done(null, !origin || allowedOrigins.has(origin)), credentials: true }));
+app.use(express.json({ limit: "30mb" }));
+app.use("/api", adminSessions.middleware);
 
 // fix __dirname di ES module
 const __filename = fileURLToPath(import.meta.url);
@@ -42,8 +60,8 @@ function readSessions() {
   if (!fs.existsSync(SESSIONS_JSON)) return [];
   try {
     return JSON.parse(fs.readFileSync(SESSIONS_JSON, "utf-8"));
-  } catch {
-    return [];
+  } catch (err) {
+    throw new Error("Data transaksi tidak dapat dibaca: " + err.message);
   }
 }
 
@@ -51,7 +69,7 @@ function writeSessions(sessions) {
   if (!fs.existsSync(SESSIONS_DIR)) {
     fs.mkdirSync(SESSIONS_DIR, { recursive: true });
   }
-  fs.writeFileSync(SESSIONS_JSON, JSON.stringify(sessions, null, 2), "utf-8");
+  writeJsonAtomic(SESSIONS_JSON, sessions);
 }
 
 function readTemplates() {
@@ -71,11 +89,15 @@ function writePrinters(data) {
 
 const templateImageStorage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const dir = path.join(TEMPLATES_DIR, req.params.name);
+    let dir;
+    try { dir = childPath(TEMPLATES_DIR, req.params.name); } catch (err) { return cb(err); }
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
     cb(null, dir);
   },
-  filename: (req, file, cb) => cb(null, file.originalname),
+  filename: (req, file, cb) => {
+    const expected = `${file.fieldname}.png`;
+    cb(null, expected);
+  },
 });
 const uploadTemplateImage = multer({
   storage: templateImageStorage,
@@ -100,9 +122,9 @@ const storage = multer.diskStorage({
   filename: function (req, file, cb) {
     // Jika frontend mengirimkan nama file spesifik (bukan default "blob"), gunakan nama tersebut
     if (file.originalname && file.originalname !== "blob") {
-      cb(null, file.originalname);
+      try { childPath(PHOTOS_DIR, file.originalname); cb(null, file.originalname); } catch (err) { cb(err); }
     } else {
-      const label = req.query.label?.toString() || "print";
+      const label = (req.query.label?.toString() || "print").replace(/[^a-zA-Z0-9_-]/g, "_");
       const ext = path.extname(file.originalname) || ".png";
       cb(null, `${label}-${Date.now()}${ext}`);
     }
@@ -119,42 +141,26 @@ function findPrinterProfile(productType) {
 
 async function autoPrintFile(filePath, productType, copiesOverride) {
   const profile = findPrinterProfile(productType);
-  if (!profile) {
-    console.log(`No printer profile found for product type "${productType}", skipping auto-print.`);
-    return;
-  }
-  const copiesToPrint = copiesOverride || profile.copies || 1;
-  try {
-    for (let c = 0; c < copiesToPrint; c++) {
-      await print(filePath, {
-        printer: profile.printerName,
-        copies: 1,
-        printDialog: false,
-        silent: true,
-        scale: "fit",
-        ...(profile.paperSize ? { paperSize: profile.paperSize } : {}),
-      });
-    }
-    console.log(`Auto-printed "${path.basename(filePath)}" (${copiesToPrint}x) to "${profile.printerName}" (profile: ${profile.id})`);
-  } catch (err) {
-    console.error(`Auto-print failed for profile "${profile.id}":`, err.message);
-  }
+  if (!profile) throw new Error(`Profil printer untuk ${productType} belum dikonfigurasi. File tetap tersimpan.`);
+  const copies = copiesOverride ?? profile.copies ?? 1;
+  if (!Number.isInteger(copies) || copies < 1 || copies > 100) throw new Error("Jumlah salinan harus 1–100.");
+  await print(filePath, {
+    printer: profile.printerName, copies, printDialog: false, silent: true, scale: "fit",
+    ...(profile.paperSize ? { paperSize: profile.paperSize } : {}),
+  });
+  return "submitted";
 }
 
 app.post("/api/save-print", upload.single("file"), async (req, res) => {
+  if (!req.file) return res.status(400).json({ success: false, error: "File cetak wajib dikirim." });
   const productType = req.query.printProfile?.toString();
-  const copiesOverride = req.query.copies ? parseInt(req.query.copies.toString(), 10) : undefined;
-  const filePath = req.file.path;
-
-  res.json({
-    success: true,
-    file: `http://localhost:5000/photos/${req.file.filename}`,
-    filename: req.file.filename,
-  });
-
-  // Fire-and-forget: kirim response dulu ke frontend, print jalan di background
-  if (productType) {
-    autoPrintFile(filePath, productType, copiesOverride);
+  const copies = req.query.copies === undefined ? undefined : Number(req.query.copies);
+  const saved = { file: `http://localhost:5000/photos/${encodeURIComponent(req.file.filename)}`, filename: req.file.filename, saved: true };
+  try {
+    const printStatus = productType ? await autoPrintFile(req.file.path, productType, copies) : "saved";
+    res.json({ success: true, ...saved, printStatus });
+  } catch (err) {
+    res.status(502).json({ success: false, ...saved, printStatus: "failed", error: `File tersimpan, tetapi pengiriman ke printer gagal: ${err.message}. Periksa antrean printer sebelum mencoba lagi.` });
   }
 });
 
@@ -250,7 +256,7 @@ app.get("/api/gdrive-pending-queue", (req, res) => {
       return {
         folderName,
         folderPath,
-        fileCount: files.filter((f) => f.match(/\.(jpg|jpeg|png|webp)$/i)).length,
+        fileCount: files.filter((f) => f.match(/\.(jpg|jpeg|png|webp|pdf)$/i)).length,
         sessionInfo,
       };
     });
@@ -261,97 +267,42 @@ app.get("/api/gdrive-pending-queue", (req, res) => {
   }
 });
 
+const preparingKioskSessions = new Set();
+
+function updateDriveSession(id, changes) {
+  const sessions = readSessions();
+  const session = sessions.find((s) => s.id === id);
+  if (session) { Object.assign(session, changes); writeSessions(sessions); }
+}
+const uploadQueuedSession = createQueueUploader({
+  queueDir: UPLOAD_QUEUE_DIR, archiveDir: ARCHIVE_DIR,
+  createFolder: createCustomerFolder, uploadFiles: uploadMultipleFiles, updateSession: updateDriveSession,
+});
+
 app.post("/api/gdrive-upload-pending", async (req, res) => {
   try {
     const { folderName } = req.body || {};
-    if (!fs.existsSync(UPLOAD_QUEUE_DIR)) {
-      return res.status(400).json({ error: "Folder upload queue tidak ditemukan" });
-    }
-
-    const targetFolders = folderName
-      ? [folderName]
-      : fs.readdirSync(UPLOAD_QUEUE_DIR).filter((f) => {
-          const fullPath = path.join(UPLOAD_QUEUE_DIR, f);
-          return fs.statSync(fullPath).isDirectory();
-        });
-
-    if (targetFolders.length === 0) {
-      return res.json({ success: true, message: "Tidak ada antrian tertunda", uploadedCount: 0 });
-    }
-
+    if (folderName) childPath(UPLOAD_QUEUE_DIR, folderName);
+    const folders = folderName ? [folderName] : fs.readdirSync(UPLOAD_QUEUE_DIR).filter((f) => fs.statSync(childPath(UPLOAD_QUEUE_DIR, f)).isDirectory());
     const results = [];
-    for (const folder of targetFolders) {
-      const folderPath = path.join(UPLOAD_QUEUE_DIR, folder);
-      if (!fs.existsSync(folderPath)) continue;
-
-      let sessionInfo = null;
-      const infoPath = path.join(folderPath, "session_info.json");
-      if (fs.existsSync(infoPath)) {
-        try { sessionInfo = JSON.parse(fs.readFileSync(infoPath, "utf8")); } catch {}
-      }
-
-      const custName = sessionInfo?.customerName || folder.split("_").slice(1).join("_") || "Customer";
-      const files = fs.readdirSync(folderPath)
-        .filter((f) => f.match(/\.(jpg|jpeg|png|webp)$/i))
-        .map((f) => path.join(folderPath, f));
-
-      console.log(`[GDrive Queue] Memproses antrian: ${folder} (${files.length} file)...`);
-      const folderResult = await createCustomerFolder(custName);
-      console.log(`[GDrive Queue] Folder Drive dibuat: ${folderResult.folderName}`);
-
-      latestDriveSession = {
-        customerName: custName,
-        folderName: folderResult.folderName,
-        webViewLink: folderResult.webViewLink,
-        createdAt: new Date().toISOString(),
-      };
-
-      // Upload file-file sesi
-      await uploadMultipleFiles(files, folderResult.photosFolderId || folderResult.folderId);
-
-      // Pindahkan folder antrian ke arsip harian
-      const now = new Date();
-      const dateFolder = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
-      const archiveDestDir = path.join(ARCHIVE_DIR, dateFolder, folder);
+    for (const folder of folders) {
       try {
-        fs.mkdirSync(path.dirname(archiveDestDir), { recursive: true });
-        fs.renameSync(folderPath, archiveDestDir);
-        console.log(`[GDrive Queue] Folder diarsipkan ke: ${archiveDestDir}`);
-      } catch {
-        try { fs.rmSync(folderPath, { recursive: true, force: true }); } catch {}
-      }
-
-      // Update session di sessions.json jika ada
-      try {
-        const allSessions = readSessions();
-        const found = allSessions.find((s) => s.id === sessionInfo?.id || s.customerName === custName);
-        if (found) {
-          found.driveFolderName = folderResult.folderName;
-          found.driveWebViewLink = folderResult.webViewLink;
-          found.driveStatus = "uploaded";
-          writeSessions(allSessions);
-        }
-      } catch {}
-
-      results.push({
-        folder,
-        folderResult,
-        filesUploaded: files.length,
-      });
+        if (preparingKioskSessions.has(folder)) throw new Error("Sesi masih disiapkan oleh kiosk. Coba lagi setelah selesai.");
+        const result = await uploadQueuedSession(folder);
+        latestDriveSession = { ...result.folderResult, createdAt: new Date().toISOString() };
+        results.push({ folder, success: true, ...result });
+      } catch (err) { results.push({ folder, success: false, error: err.message }); }
     }
-
-    res.json({
-      success: true,
-      message: `Berhasil mengunggah ${results.length} antrian sesi ke Google Drive!`,
-      results,
+    const failed = results.filter((r) => !r.success).length;
+    res.status(failed ? 502 : 200).json({ success: !failed, results,
+      message: `${results.length - failed} sesi berhasil diunggah.`,
+      ...(failed ? { error: `${failed} sesi belum selesai. Foto tetap di antrean lokal; silakan coba lagi.` } : {}),
     });
-  } catch (err) {
-    console.error("[GDrive Queue] Gagal memproses antrian:", err);
-    res.status(500).json({ error: err.message });
-  }
+  } catch (err) { res.status(400).json({ success: false, error: err.message }); }
 });
 
 app.post("/api/upload-session-gdrive", async (req, res) => {
+  let preparingId;
   try {
     const {
       customerName = "",
@@ -367,8 +318,18 @@ app.post("/api/upload-session-gdrive", async (req, res) => {
       bonusPrint = 0,
       a4Count = 0,
       miscAddons = [],
-      basePrice = 50000,
     } = req.body;
+
+    if (!Array.isArray(rawPhotos) || !Array.isArray(printFiles) || [...rawPhotos, ...printFiles].some((v) => typeof v !== "string")) {
+      return res.status(400).json({ error: "Daftar file sesi tidak valid." });
+    }
+    const sessionId = req.body.sessionId || `KIOSK-${crypto.randomUUID()}`;
+    if (!/^KIOSK-[a-f0-9-]{36}$/.test(sessionId)) return res.status(400).json({ error: "ID sesi tidak valid." });
+    const existing = readSessions().find((s) => s.id === sessionId);
+    if (existing) return res.json({ success: true, sessionId, folderName: existing.driveFolderName || "Antrean lokal",
+      webViewLink: existing.driveWebViewLink || "", offlineQueue: !existing.driveWebViewLink, totalFiles: existing.totalFiles });
+    preparingId = sessionId;
+    preparingKioskSessions.add(sessionId);
 
     const cleanCustomerName = customerName ? customerName.replace(/^@+/, "").trim() : "";
     const now = new Date();
@@ -377,32 +338,46 @@ app.post("/api/upload-session-gdrive", async (req, res) => {
     const minutes = now.getMinutes().toString().padStart(2, "0");
     const timeStr = `${hours}.${minutes}`;
 
-    const pricing = readPricing();
-    const addonsTotal = (miscAddons || []).reduce((sum, item) => {
-      const price = Number(item.price) || 15000;
-      return sum + (price * (Number(item.qty) || 1));
-    }, 0);
-    const singleA4Price = Number(pricing?.prints?.printA4Price) || 20000;
-    const a4Total = (Number(a4Count) || 0) * singleA4Price;
-    const defaultSoftcopyCharge = Number(pricing?.session?.softcopyCharge) || 25000;
-    const softcopyTotal = makeStory ? 0 : (extraCharge !== undefined ? Number(extraCharge) : defaultSoftcopyCharge);
-
-    const count = Number(peopleCount) || 1;
-    const incPeople = Number(pricing?.session?.includedPeople) || 2;
-    const extraPersonPrice = Number(pricing?.session?.extraPersonPrice) || 15000;
-    const extraPeopleCount = Math.max(0, count - incPeople);
-    const computedBasePrice = (Number(pricing?.session?.basePrice) || 50000) + (extraPeopleCount * extraPersonPrice);
-    const sessionBasePrice = basePrice !== undefined && basePrice !== null ? Number(basePrice) : computedBasePrice;
-    const finalTotalPrice = sessionBasePrice + addonsTotal + a4Total + softcopyTotal;
+    const priced = priceKioskSession(req.body, readPricing(), readKioskTheme().freeEventMode === true);
+    const { addonsTotal, a4Total, softcopyTotal, basePrice: sessionBasePrice, totalPrice: finalTotalPrice } = priced;
 
     // ─── 1. SESSION STAGING QUEUE (ISOLASI FILE SESI PERTAMA KALI) ─────────
     // Dibuat PERTAMA agar file foto tidak pernah hilang meskipun Google Drive offline
-    const sessionId = `SES-${Date.now()}`;
-    const safeSessionDirName = `${Date.now()}_${cleanCustomerName || "Session"}`.replace(/[/\\?%*:|"<>]/g, "_");
+    const safeSessionDirName = sessionId;
     const sessionStagingDir = path.join(UPLOAD_QUEUE_DIR, safeSessionDirName);
     fs.mkdirSync(sessionStagingDir, { recursive: true });
 
-    const filePathsToUpload = [];
+    const filePathsToUpload = fs.readdirSync(sessionStagingDir).filter((f) => /\.(jpg|jpeg|png|webp|pdf)$/i.test(f)).map((f) => childPath(sessionStagingDir, f));
+
+    const sessionMeta = {
+      id: sessionId,
+      timestamp: now.toISOString(),
+      date: dateStr,
+      time: timeStr,
+      customerName: cleanCustomerName || "Customer",
+      peopleCount: Number(peopleCount) || 1,
+      coupleMode: Boolean(coupleMode),
+      joinedBonus: Boolean(joinedBonus),
+      makeStory: Boolean(makeStory),
+      softcopyType: makeStory ? "story_free" : "paid",
+      softcopyCharge: softcopyTotal,
+      prints: {
+        regular: nonNegative(regularPrint, Number(peopleCount) || 1) + priced.miscAddons.filter((a) => a.productId === "4r-print" || a.name === "Cetak Foto 4R").reduce((n, a) => n + a.qty, 0),
+        bonus: Number(bonusPrint) || (joinedBonus ? Number(peopleCount) : 0),
+        total: nonNegative(totalPrint, Number(peopleCount) || 1) + priced.miscAddons.filter((a) => a.productId === "4r-print" || a.name === "Cetak Foto 4R").reduce((n, a) => n + a.qty, 0),
+      },
+      a4Count: Number(a4Count) || 0,
+      miscAddons: priced.miscAddons,
+      source: "kiosk",
+      basePrice: sessionBasePrice,
+      totalAddonsPrice: addonsTotal + a4Total,
+      totalPrice: finalTotalPrice,
+      totalFiles: filePathsToUpload.length,
+      files: filePathsToUpload.map((p) => path.basename(p)),
+      stagingDir: safeSessionDirName,
+      status: "staging",
+    };
+    writeJsonAtomic(path.join(sessionStagingDir, "session_info.json"), sessionMeta);
 
     // Helper untuk memindahkan file secara aman
     function stageFile(sourcePath, filename) {
@@ -437,7 +412,7 @@ app.post("/api/upload-session-gdrive", async (req, res) => {
     if (fs.existsSync(PHOTOS_DIR)) {
       const existingPhotos = fs.readdirSync(PHOTOS_DIR);
       for (const f of existingPhotos) {
-        if (f.match(/\.(jpg|jpeg|png|webp)$/i)) {
+        if (f.match(/\.(jpg|jpeg|png|webp)$/i) || (f.toLowerCase().endsWith(".pdf") && printFiles.some((v) => typeof v === "string" && (v === f || v.endsWith("/" + encodeURIComponent(f)) || v.endsWith("/" + f))))) {
           const srcPath = path.join(PHOTOS_DIR, f);
           const stagedPath = stageFile(srcPath, f);
           filePathsToUpload.push(stagedPath);
@@ -455,36 +430,15 @@ app.post("/api/upload-session-gdrive", async (req, res) => {
     console.log(`[GDrive] Folder ${PHOTOS_DIR} kini telah bersih dan siap untuk sesi berikutnya.`);
 
     // ─── 2. SIMPAN METADATA SESI SECARA LOKAL ──────────────────────
-    const sessionMeta = {
-      id: sessionId,
-      timestamp: now.toISOString(),
-      date: dateStr,
-      time: timeStr,
-      customerName: cleanCustomerName || "Customer",
-      peopleCount: Number(peopleCount) || 1,
-      coupleMode: Boolean(coupleMode),
-      joinedBonus: Boolean(joinedBonus),
-      makeStory: Boolean(makeStory),
-      softcopyType: makeStory ? "story_free" : "paid",
-      softcopyCharge: softcopyTotal,
-      prints: {
-        regular: Number(regularPrint) || Number(peopleCount) || 1,
-        bonus: Number(bonusPrint) || (joinedBonus ? Number(peopleCount) : 0),
-        total: Number(totalPrint) || (joinedBonus ? (Number(peopleCount) * 2) : Number(peopleCount)),
-      },
-      a4Count: Number(a4Count) || 0,
-      miscAddons: miscAddons || [],
-      basePrice: sessionBasePrice,
-      totalAddonsPrice: addonsTotal + a4Total,
-      totalPrice: finalTotalPrice,
-      totalFiles: filePathsToUpload.length,
-      stagingDir: safeSessionDirName,
-      status: "queued",
-    };
+    sessionMeta.files = filePathsToUpload.map((p) => path.basename(p));
+    sessionMeta.totalFiles = filePathsToUpload.length;
+    sessionMeta.status = "queued";
 
-    try {
-      fs.writeFileSync(path.join(sessionStagingDir, "session_info.json"), JSON.stringify(sessionMeta, null, 2), "utf8");
-    } catch {}
+    writeJsonAtomic(path.join(sessionStagingDir, "session_info.json"), sessionMeta);
+    const allSessions = readSessions();
+    allSessions.unshift({ ...sessionMeta, driveStatus: "queued", driveWebViewLink: "" });
+    writeSessions(allSessions);
+
 
     // ─── 3. HUBUNGI GOOGLE DRIVE DENGAN PERLINDUNGAN TRY/CATCH ──────
     let folderResult = null;
@@ -499,25 +453,16 @@ app.post("/api/upload-session-gdrive", async (req, res) => {
       console.error("[GDrive] Gagal membuat folder Google Drive (Disimpan aman di antrian lokal):", driveError);
     }
 
-    // Simpan data transaksi di sessions.json
-    try {
-      const recordToSave = {
-        ...sessionMeta,
-        driveFolderName: folderResult ? folderResult.folderName : "Antrian Lokal (Drive Belum Login)",
-        driveWebViewLink: folderResult ? folderResult.webViewLink : "",
-        driveStatus: folderResult ? "ready" : "offline_pending",
-        driveError: driveError || null,
-      };
-      const allSessions = readSessions();
-      allSessions.unshift(recordToSave);
-      writeSessions(allSessions);
-      console.log(`[Session] Recorded session for ${cleanCustomerName}: Total Rp ${finalTotalPrice}`);
-    } catch (saveErr) {
-      console.error("[Session] Gagal menyimpan data sesi:", saveErr.message);
-    }
+    updateDriveSession(sessionId, {
+      driveFolderName: folderResult?.folderName || "Antrean Lokal (Drive Belum Login)",
+      driveWebViewLink: folderResult?.webViewLink || "",
+      driveStatus: folderResult ? "ready" : "offline_pending", driveError,
+    });
 
     // ─── 4. RESPON KE FRONTEND (KIOSK) ────────────────────────────
     if (folderResult) {
+      sessionMeta.driveFolder = folderResult;
+      writeJsonAtomic(path.join(sessionStagingDir, "session_info.json"), sessionMeta);
       latestDriveSession = {
         customerName: cleanCustomerName,
         folderName: folderResult.folderName,
@@ -526,6 +471,7 @@ app.post("/api/upload-session-gdrive", async (req, res) => {
       };
 
       uploadProgress = {
+        sessionId,
         isUploading: true,
         folderName: folderResult.folderName,
         webViewLink: folderResult.webViewLink,
@@ -549,41 +495,31 @@ app.post("/api/upload-session-gdrive", async (req, res) => {
         totalFiles: filePathsToUpload.length,
       });
 
+      const progress = uploadProgress;
       // Background upload Google Drive
       (async () => {
         try {
           console.log(`[GDrive] Mengunggah ${filePathsToUpload.length} file ke ${folderResult.folderName}...`);
-          await uploadMultipleFiles(
-            filePathsToUpload,
-            folderResult.photosFolderId || folderResult.folderId,
+          await uploadQueuedSession(
+            safeSessionDirName,
             (uploadedCount, totalCount, fileName, status) => {
-              const fileItem = uploadProgress.files.find((f) => f.name === fileName);
+              const fileItem = progress.files.find((f) => f.name === fileName);
               if (fileItem) fileItem.status = status;
-              uploadProgress.uploaded = (status === "done" || status === "failed") ? uploadedCount : uploadProgress.uploaded;
-              uploadProgress.percent = Math.round((uploadProgress.uploaded / totalCount) * 100);
-              uploadProgress.currentFile = status === "uploading" ? fileName : "";
-              uploadProgress.updatedAt = new Date().toISOString();
+              progress.uploaded = uploadedCount;
+              progress.percent = totalCount ? Math.round((progress.uploaded / totalCount) * 100) : 100;
+              progress.currentFile = status === "uploading" ? fileName : "";
+              progress.updatedAt = new Date().toISOString();
             }
           );
-          uploadProgress.isUploading = false;
-          uploadProgress.percent = 100;
-          uploadProgress.currentFile = "";
-          uploadProgress.updatedAt = new Date().toISOString();
+          progress.isUploading = false;
+          progress.percent = 100;
+          progress.currentFile = "";
+          progress.updatedAt = new Date().toISOString();
           console.log(`[GDrive] Selesai! Semua ${filePathsToUpload.length} file berhasil diunggah ke ${folderResult.folderName}.`);
 
-          // Arsip lokal harian
-          try {
-            const dateFolder = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
-            const archiveDestDir = path.join(ARCHIVE_DIR, dateFolder, safeSessionDirName);
-            fs.mkdirSync(path.dirname(archiveDestDir), { recursive: true });
-            fs.renameSync(sessionStagingDir, archiveDestDir);
-            console.log(`[GDrive] Sesi diarsipkan di disk lokal: ${archiveDestDir}`);
-          } catch (archiveErr) {
-            try { fs.rmSync(sessionStagingDir, { recursive: true, force: true }); } catch {}
-          }
         } catch (uploadErr) {
-          uploadProgress.isUploading = false;
-          uploadProgress.error = uploadErr.message;
+          progress.isUploading = false;
+          progress.error = uploadErr.message;
           console.error("[GDrive] Error saat background file upload:", uploadErr);
         }
       })();
@@ -591,6 +527,7 @@ app.post("/api/upload-session-gdrive", async (req, res) => {
       // GOOGLE DRIVE SEDANG OFFLINE / TOKEN EXPIRED
       // Foto TETAP AMAN di antrian storage/upload_queue!
       uploadProgress = {
+        sessionId,
         isUploading: false,
         folderName: "Antrian Offline (PC Lokal)",
         webViewLink: "",
@@ -620,6 +557,8 @@ app.post("/api/upload-session-gdrive", async (req, res) => {
   } catch (err) {
     console.error("[GDrive] Fatal error di upload-session-gdrive:", err);
     res.status(500).json({ error: err.message });
+  } finally {
+    if (preparingId) preparingKioskSessions.delete(preparingId);
   }
 });
 
@@ -933,7 +872,7 @@ function runAutoCleanup() {
 
     for (const item of archiveFolders) {
       if (item.ageDays >= config.retentionDays) {
-        const targetPath = path.join(ARCHIVE_DIR, item.date);
+        const targetPath = childPath(ARCHIVE_DIR, item.date);
         try {
           fs.rmSync(targetPath, { recursive: true, force: true });
           freedBytes += item.bytes;
@@ -996,7 +935,7 @@ app.post("/api/storage-clean", (req, res) => {
       const folders = getArchiveDateFolders();
       for (const item of folders) {
         if (item.ageDays >= thresholdDays) {
-          const target = path.join(ARCHIVE_DIR, item.date);
+          const target = childPath(ARCHIVE_DIR, item.date);
           try {
             fs.rmSync(target, { recursive: true, force: true });
             freedBytes += item.bytes;
@@ -1008,7 +947,8 @@ app.post("/api/storage-clean", (req, res) => {
       }
     } else if (action === "archive_date") {
       if (!date) return res.status(400).json({ error: "Parameter 'date' diperlukan" });
-      const target = path.join(ARCHIVE_DIR, date);
+      if (typeof date !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return res.status(400).json({ error: "Tanggal arsip tidak valid." });
+      const target = childPath(ARCHIVE_DIR, date);
       if (fs.existsSync(target)) {
         const stats = getDirectoryStats(target);
         fs.rmSync(target, { recursive: true, force: true });
@@ -1019,7 +959,7 @@ app.post("/api/storage-clean", (req, res) => {
       if (fs.existsSync(ARCHIVE_DIR)) {
         const entries = fs.readdirSync(ARCHIVE_DIR);
         for (const e of entries) {
-          const target = path.join(ARCHIVE_DIR, e);
+          const target = childPath(ARCHIVE_DIR, e);
           const stats = getDirectoryStats(target);
           try {
             fs.rmSync(target, { recursive: true, force: true });
@@ -1878,7 +1818,7 @@ app.post("/api/templates", (req, res) => {
   const existing = Object.values(data.templates).flat().find((t) => t.name === name);
   if (existing) return res.status(409).json({ error: "Template name already exists" });
 
-  const dir = path.join(TEMPLATES_DIR, name);
+  const dir = childPath(TEMPLATES_DIR, name);
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 
   const entry = {
@@ -1923,7 +1863,7 @@ app.delete("/api/templates/:id", (req, res) => {
     if (idx !== -1) {
       const [removed] = data.templates[category].splice(idx, 1);
       if (deleteFiles) {
-        const dir = path.join(TEMPLATES_DIR, removed.name);
+        const dir = childPath(TEMPLATES_DIR, removed.name);
         if (fs.existsSync(dir)) fs.rmSync(dir, { recursive: true });
       }
       found = true;
@@ -2302,22 +2242,20 @@ app.get("/api/sessions", (req, res) => {
     } else if (s.paymentMethod === "qris" || s.paymentMethod === "transfer") {
       totalQris += price;
     }
-    totalReg4R += Number(s.prints?.regular) || 0;
-    totalBonus4R += Number(s.prints?.bonus) || 0;
+    const prints = reportPrints(s);
+    totalReg4R += prints.regular;
+    totalBonus4R += prints.bonus;
     totalA4 += Number(s.a4Count) || 0;
 
-    if (s.makeStory) {
-      storyFreeCount++;
-    } else {
-      paidSoftcopyCount++;
-      paidSoftcopyRevenue += Number(s.softcopyCharge) || 25000;
-    }
+    const softcopy = reportSoftcopy(s);
+    if (softcopy.free) storyFreeCount++;
+    if (softcopy.paid) { paidSoftcopyCount++; paidSoftcopyRevenue += softcopy.revenue; }
 
     if (Array.isArray(s.miscAddons)) {
       s.miscAddons.forEach((item) => {
         const name = item.name || "Addon";
         const qty = Number(item.qty) || 1;
-        const price = Number(item.price) || 15000;
+        const price = nonNegative(item.price);
         if (!addonsMap[name]) {
           addonsMap[name] = { name, qty: 0, revenue: 0 };
         }
@@ -2362,6 +2300,11 @@ app.post("/api/sessions", (req, res) => {
   const sessionData = req.body;
   if (!sessionData) return res.status(400).json({ error: "Missing session data" });
   const allSessions = readSessions();
+  const existing = sessionData.id && allSessions.find((s) => s.id === sessionData.id);
+  if (existing) return res.json({ success: true, session: existing });
+  if (!sessionData.customerName || !Number.isFinite(sessionData.totalPrice) || sessionData.totalPrice < 0) {
+    return res.status(400).json({ success: false, error: "Data transaksi tidak valid." });
+  }
   const now = new Date();
   const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
   const hours = now.getHours().toString().padStart(2, "0");
@@ -2924,7 +2867,7 @@ app.post("/api/license/activate", (req, res) => {
 // ─────────────────────────────────────────────────────────────
 const SECURITY_FILE = path.join(__dirname, "data/security.json");
 const PIN_SALT = process.env.IGNOS_PIN_SALT || "IGNOS_PIN_SALT_2026";
-const MASTER_RECOVERY_KEY = process.env.IGNOS_MASTER_KEY || "IGNOS-MASTER-ADMIN-RESET";
+const MASTER_RECOVERY_KEY = process.env.IGNOS_MASTER_KEY || "";
 
 let pinFailedAttempts = 0;
 let pinLockoutUntil = 0;
@@ -2940,7 +2883,7 @@ function readSecurityRecord() {
       return JSON.parse(raw);
     }
   } catch (err) {
-    console.error("Error reading security.json:", err.message);
+    throw new Error("Data PIN tidak dapat dibaca. Hubungi operator: " + err.message);
   }
   return {
     pinHash: hashPin("1234"),
@@ -2955,9 +2898,15 @@ function writeSecurityRecord(record) {
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
     fs.writeFileSync(SECURITY_FILE, JSON.stringify(record, null, 2), "utf-8");
   } catch (err) {
-    console.error("Error writing security.json:", err.message);
+    throw err;
   }
 }
+
+app.get("/api/security/session", (req, res) => res.json({ authenticated: true }));
+app.post("/api/security/logout", (req, res) => {
+  adminSessions.revoke(req, res);
+  res.json({ success: true });
+});
 
 // GET /api/security/pin-status
 app.get("/api/security/pin-status", (req, res) => {
@@ -3000,16 +2949,14 @@ app.post("/api/security/verify-pin", (req, res) => {
       return res.status(400).json({ success: false, message: "PIN wajib diisi." });
     }
 
+    if (pinLockoutUntil && now >= pinLockoutUntil) { pinFailedAttempts = 0; pinLockoutUntil = 0; }
     const record = readSecurityRecord();
     const inputHash = hashPin(pin);
 
-    // Master override (888888 or master recovery)
-    const isMaster = pin.trim() === "888888" || pin.trim() === MASTER_RECOVERY_KEY;
-
-    if (inputHash === record.pinHash || isMaster) {
+    if (inputHash === record.pinHash) {
       pinFailedAttempts = 0;
       pinLockoutUntil = 0;
-      const sessionToken = crypto.randomBytes(24).toString("hex");
+      const sessionToken = adminSessions.issue(res);
       return res.json({
         success: true,
         message: "PIN benar. Akses Admin dibuka.",
@@ -3053,9 +3000,8 @@ app.post("/api/security/change-pin", (req, res) => {
 
     const record = readSecurityRecord();
     const currentHash = hashPin(currentPin);
-    const isMaster = currentPin.trim() === "888888" || currentPin.trim() === MASTER_RECOVERY_KEY;
 
-    if (currentHash !== record.pinHash && !isMaster) {
+    if (currentHash !== record.pinHash) {
       return res.status(401).json({ success: false, message: "PIN saat ini salah." });
     }
 
@@ -3063,6 +3009,7 @@ app.post("/api/security/change-pin", (req, res) => {
     record.isDefaultPin = false;
     record.updatedAt = new Date().toISOString();
     writeSecurityRecord(record);
+    adminSessions.clear();
 
     res.json({
       success: true,
@@ -3077,7 +3024,7 @@ app.post("/api/security/change-pin", (req, res) => {
 app.post("/api/security/reset-pin", (req, res) => {
   try {
     const { recoveryKey } = req.body;
-    if (recoveryKey !== MASTER_RECOVERY_KEY && recoveryKey !== "888888") {
+    if (!MASTER_RECOVERY_KEY || typeof recoveryKey !== "string" || recoveryKey !== MASTER_RECOVERY_KEY) {
       return res.status(403).json({ success: false, message: "Kunci pemulihan master tidak valid." });
     }
 
@@ -3087,6 +3034,7 @@ app.post("/api/security/reset-pin", (req, res) => {
       updatedAt: new Date().toISOString(),
     };
     writeSecurityRecord(record);
+    adminSessions.clear();
     pinFailedAttempts = 0;
     pinLockoutUntil = 0;
 

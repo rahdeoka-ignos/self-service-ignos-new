@@ -1,3 +1,4 @@
+import { apiFetch as fetch } from "../../utils/api";
 import { useEffect, useState, useRef } from "react";
 import { Printer, Loader2, X } from "lucide-react";
 import type { PrinterMonitorResponse, PrinterAlertInfo } from "../../types/printer";

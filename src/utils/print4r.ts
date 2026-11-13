@@ -1,3 +1,4 @@
+import { apiFetch as fetch } from "./api";
 import { trackRawPhotos, trackPrintFile } from "./sessionTracker";
 import type { CustomSlotDef } from "../types/template";
 

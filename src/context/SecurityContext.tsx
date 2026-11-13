@@ -1,3 +1,4 @@
+import { apiFetch as fetch } from "../utils/api";
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { PinStatusResponse, VerifyPinResponse, ChangePinResponse } from "../types/security";
 
@@ -18,24 +19,11 @@ interface SecurityContextType {
 const API = "http://localhost:5000";
 const AUTH_TOKEN_KEY = "ignos_admin_session_token";
 const AUTH_TIME_KEY = "ignos_admin_session_timestamp";
-const SESSION_MAX_AGE_MS = 60 * 60 * 1000; // 60 minutes of session validity
 
 const SecurityContext = createContext<SecurityContextType | undefined>(undefined);
 
 export function SecurityProvider({ children }: { children: React.ReactNode }) {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
-    try {
-      const token = sessionStorage.getItem(AUTH_TOKEN_KEY);
-      const time = sessionStorage.getItem(AUTH_TIME_KEY);
-      if (token && time) {
-        const elapsed = Date.now() - Number(time);
-        if (elapsed < SESSION_MAX_AGE_MS) {
-          return true;
-        }
-      }
-    } catch {}
-    return false;
-  });
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const [isDefaultPin, setIsDefaultPin] = useState(true);
   const [loading, setLoading] = useState(true);
@@ -59,6 +47,21 @@ export function SecurityProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     refreshPinStatus();
+    const expire = () => {
+      setIsAuthenticated(false);
+      sessionStorage.removeItem(AUTH_TOKEN_KEY);
+      sessionStorage.removeItem(AUTH_TIME_KEY);
+    };
+    const validate = async () => {
+      try {
+        const res = await fetch(`${API}/api/security/session`);
+        setIsAuthenticated(res.ok);
+      } catch { expire(); }
+    };
+    validate();
+    const interval = setInterval(validate, 30000);
+    window.addEventListener("ignos-auth-expired", expire);
+    return () => { clearInterval(interval); window.removeEventListener("ignos-auth-expired", expire); };
   }, [refreshPinStatus]);
 
   const verifyPin = async (pin: string): Promise<VerifyPinResponse> => {
@@ -105,6 +108,7 @@ export function SecurityProvider({ children }: { children: React.ReactNode }) {
       const data: ChangePinResponse = await res.json();
       if (res.ok && data.success) {
         setIsDefaultPin(false);
+        logout();
       }
       return data;
     } catch (err: any) {
@@ -116,6 +120,7 @@ export function SecurityProvider({ children }: { children: React.ReactNode }) {
   };
 
   const logout = () => {
+    void fetch(`${API}/api/security/logout`, { method: "POST" }).catch(() => {});
     setIsAuthenticated(false);
     try {
       sessionStorage.removeItem(AUTH_TOKEN_KEY);

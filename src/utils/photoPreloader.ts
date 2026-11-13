@@ -1,3 +1,4 @@
+import { apiFetch as fetch } from "./api";
 export interface Photo {
   thumb: string;
   full: string;

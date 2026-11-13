@@ -1,4 +1,12 @@
 const RAW_PHOTOS_KEY = "ignos_session_raw_photos";
+const SESSION_ID_KEY = "ignos_session_id";
+
+export function getSessionId(): string {
+  let id = sessionStorage.getItem(SESSION_ID_KEY);
+  if (!id) { id = `KIOSK-${crypto.randomUUID()}`; sessionStorage.setItem(SESSION_ID_KEY, id); }
+  return id;
+}
+
 const PRINT_FILES_KEY = "ignos_session_print_files";
 
 export function getSessionRawPhotos(): string[] {
@@ -48,6 +56,7 @@ export const DRIVE_LINK_KEY = "ignos_current_drive_link";
 
 export function clearSessionData() {
   try {
+    sessionStorage.removeItem(SESSION_ID_KEY);
     sessionStorage.removeItem(RAW_PHOTOS_KEY);
     sessionStorage.removeItem(PRINT_FILES_KEY);
     sessionStorage.removeItem(DRIVE_LINK_KEY);

@@ -1,3 +1,4 @@
+import { notifyPrintError } from "../../utils/api";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router";
 import { BrutalistCard } from "../components/BrutalistCard";
@@ -265,7 +266,7 @@ export function PhotoArrangement() {
           print4rCount: (base.print4rCount ?? 0) + templates.length,
           miscAddons: [
             ...(base.miscAddons ?? []),
-            { name: "Cetak Foto 4R", qty: templates.length },
+            { name: "Cetak Foto 4R", qty: templates.length, productId: "4r-print", kind: "addon" },
           ],
         },
       });
@@ -485,7 +486,7 @@ export function PhotoArrangement() {
       setSuccessOpen(true);
     } catch (err) {
       console.error("PRINT ERROR:", err);
-      alert("Print failed");
+      notifyPrintError(err);
     } finally {
       setPrinting(false);
     }

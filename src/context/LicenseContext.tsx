@@ -1,3 +1,4 @@
+import { apiFetch as fetch } from "../utils/api";
 import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { LicenseStatusResponse } from "../types/license";
 

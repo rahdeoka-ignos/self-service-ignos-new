@@ -1,3 +1,4 @@
+import { notifyPrintError } from "../../utils/api";
 import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router";
 import { BrutalistCard } from "../components/BrutalistCard";
@@ -138,7 +139,7 @@ export function PhotoArrangementA4() {
       setSuccessOpen(true);
     } catch (err) {
       console.error("PRINT ERROR:", err);
-      alert("Print failed");
+      notifyPrintError(err);
     } finally {
       setPrinting(false);
     }
@@ -453,7 +454,7 @@ export function PhotoArrangementA4() {
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-xl border-4 border-black max-w-md w-full text-center">
             <div className="text-6xl mb-4">🎉</div>
-            <h2 className="text-3xl font-bold mb-2">Print Berhasil!</h2>
+            <h2 className="text-3xl font-bold mb-2">Dikirim ke Printer</h2>
             <p className="text-xl text-gray-600 mb-6">
               Foto A4 berhasil disimpan dan siap dicetak.
             </p>

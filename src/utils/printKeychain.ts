@@ -1,3 +1,4 @@
+import { apiFetch as fetch } from "./api";
 type SlotTransform = {
   scale: number;
   x: number;

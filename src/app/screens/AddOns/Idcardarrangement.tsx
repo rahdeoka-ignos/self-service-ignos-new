@@ -1,3 +1,4 @@
+import { notifyPrintError } from "../../../utils/api";
 import { useState, useEffect, useRef, useLayoutEffect } from "react";
 import { useLocation, useNavigate } from "react-router";
 import { BrutalistCard } from "../../components/BrutalistCard";
@@ -137,6 +138,7 @@ export function IdCardArrangement() {
           const idCardItems = orders.map((o) => ({
             name: `${o.name} - ${o.subtitle}`,
             qty: o.qty,
+            price: o.price, productId: o.id, kind: "idcard",
           }));
           navigate("/add-ons", {
             state: {
@@ -209,7 +211,7 @@ export function IdCardArrangement() {
       setSuccessOpen(true);
     } catch (err) {
       console.error("PRINT ERROR:", err);
-      alert("Print failed");
+      notifyPrintError(err);
     } finally {
       setPrinting(false);
     }
@@ -968,6 +970,7 @@ export function IdCardArrangement() {
                 const idCardItems = orders.map((o) => ({
                   name: `${o.name} - ${o.subtitle}`,
                   qty: o.qty,
+            price: o.price, productId: o.id, kind: "idcard",
                 }));
                 navigate("/add-ons", {
                   state: {

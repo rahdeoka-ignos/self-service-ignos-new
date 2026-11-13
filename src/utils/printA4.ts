@@ -1,3 +1,4 @@
+import { apiFetch as fetch } from "./api";
 import { trackRawPhoto, trackPrintFile } from "./sessionTracker";
 type SlotTransform = {
   scale: number;

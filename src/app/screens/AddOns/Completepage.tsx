@@ -1,7 +1,9 @@
+import { apiFetch as fetch } from "../../../utils/api";
 import { useState, useRef, useEffect } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import {
   getSessionRawPhotos,
+  getSessionId,
   getSessionPrintFiles,
   trackPrintFile,
   clearSessionData,
@@ -32,6 +34,7 @@ type KeychainOrder = {
   id: string;
   name: string;
   qty: number;
+  price: number;
 };
 
 export function CompletePage() {
@@ -51,8 +54,8 @@ export function CompletePage() {
   const templates: { layout: string }[] = location.state?.templates ?? [];
   const keychainOrder: KeychainOrder[] = location.state?.orders ?? [];
   const a4Count: number = location.state?.a4Count ?? 0;
-  const miscAddons: { name: string; qty: number; photoUrl?: string; photoThumb?: string }[] = [
-    ...keychainOrder.map((o) => ({ name: o.name, qty: o.qty })),
+  const miscAddons: { name: string; qty: number; price?: number; productId?: string; kind?: string; photoUrl?: string; photoThumb?: string }[] = [
+    ...keychainOrder.map((o) => ({ name: o.name, qty: o.qty, price: o.price, productId: o.id, kind: "keychain" })),
     ...(location.state?.miscAddons ?? []),
   ];
   // Di dalam komponen, tambah ref:
@@ -309,6 +312,7 @@ export function CompletePage() {
       console.log("Receipt saved to server successfully.");
     } catch (err) {
       console.error("Failed to generate/upload receipt PDF:", err);
+      setReceiptError(err instanceof Error ? err.message : "Struk gagal dikirim. Hubungi staf.");
     }
   };
 
@@ -323,13 +327,17 @@ export function CompletePage() {
       return null;
     }
   });
-  const [driveLoading, setDriveLoading] = useState(false);
+  const [driveLoading, setDriveLoading] = useState(true);
+  const [completionError, setCompletionError] = useState<string | null>(null);
+  const [receiptError, setReceiptError] = useState<string | null>(null);
+  const sessionId = useRef(getSessionId()).current;
   const [uploadProgress, setUploadProgress] = useState<{
     isUploading: boolean;
     total: number;
     uploaded: number;
     percent: number;
     currentFile: string;
+    error?: string;
   } | null>(null);
 
   useEffect(() => {
@@ -337,7 +345,7 @@ export function CompletePage() {
       fetch("http://localhost:5000/api/gdrive-upload-status")
         .then((r) => r.json())
         .then((data) => {
-          if (data && data.total > 0) {
+          if (data && data.total > 0 && data.sessionId === sessionId) {
             setUploadProgress(data);
           }
         })
@@ -366,6 +374,7 @@ export function CompletePage() {
 
     try {
       setDriveLoading(true);
+      setCompletionError(null);
       // Ambil SEMUA foto dari galeri jepretan studio sesi ini
       let allGalleryPhotos: string[] = [];
       try {
@@ -384,6 +393,7 @@ export function CompletePage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          sessionId,
           customerName,
           rawPhotos,
           printFiles,
@@ -401,7 +411,8 @@ export function CompletePage() {
       });
 
       if (!res.ok) {
-        throw new Error(`Server returned status ${res.status}`);
+        const problem = await res.json().catch(() => ({}));
+        throw new Error(problem.error || `Server returned status ${res.status}`);
       }
 
       const data = await res.json();
@@ -415,6 +426,7 @@ export function CompletePage() {
       }
     } catch (err) {
       console.error("Gagal auto upload Google Drive:", err);
+      setCompletionError(err instanceof Error ? err.message : "Sesi gagal disimpan. Hubungi staf.");
     } finally {
       setDriveLoading(false);
     }
@@ -425,8 +437,7 @@ export function CompletePage() {
   useEffect(() => {
     if (uploadStarted.current) return;
     uploadStarted.current = true;
-    autoUploadReceipt();
-    autoUploadDrive();
+    void (async () => { if (!sessionStorage.getItem(DRIVE_LINK_KEY)) await autoUploadReceipt(); await autoUploadDrive(); })();
   }, []);
 
   const layoutLabels: { [key: string]: string } = {
@@ -589,7 +600,7 @@ export function CompletePage() {
                             <span>Mengunggah foto ke Drive...</span>
                           </>
                         ) : (
-                          <span className="text-green-700 font-black">✓ Selesai Diunggah</span>
+                          <span className="font-black">{uploadProgress.error ? "Belum selesai - foto tersimpan lokal" : "Selesai Diunggah"}</span>
                         )}
                       </span>
                       <span className="font-black text-black text-xs">
@@ -878,9 +889,16 @@ export function CompletePage() {
           </div>
         </div>
 
+        {(receiptError || completionError || uploadProgress?.error) && (
+          <div role="alert" className="border-2 border-black bg-white p-5 mb-6 text-center">
+            {completionError || receiptError || uploadProgress?.error} Silakan hubungi staf sebelum melanjutkan.
+            {completionError && <button disabled={driveLoading} onClick={autoUploadDrive} className="block mx-auto mt-3 underline">Coba simpan sesi lagi</button>}
+          </div>
+        )}
         {/* Back home */}
         <div className="flex justify-center">
             <button
+              disabled={driveLoading || !!completionError}
               onClick={() => {
                 clearSessionData();
                 navigate("/");

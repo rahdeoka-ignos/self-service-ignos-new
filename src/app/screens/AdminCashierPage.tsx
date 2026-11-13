@@ -1,4 +1,5 @@
-import { useState, useMemo, useEffect } from "react";
+import { apiFetch as fetch } from "../../utils/api";
+import { useState, useMemo, useEffect, useRef } from "react";
 import {
   User,
   Phone,
@@ -64,8 +65,8 @@ export function AdminCashierPage() {
 
   // Form States: Base Session Package
   const [packageType, setPackageType] = useState<"standard" | "couple" | "group" | "custom">("standard");
-  const [customBasePrice, setCustomBasePrice] = useState<number>(pricing.session.basePrice || 100000);
-  const [peopleCount, setPeopleCount] = useState<number>(pricing.session.includedPeople || 2);
+  const [customBasePrice, setCustomBasePrice] = useState<number>(pricing.session.basePrice ?? 100000);
+  const [peopleCount, setPeopleCount] = useState<number>(pricing.session.includedPeople ?? 2);
 
   // Form States: Add-ons & Merchandise
   const [print4rCount, setPrint4rCount] = useState<number>(0);
@@ -87,6 +88,7 @@ export function AdminCashierPage() {
   const [cashReceived, setCashReceived] = useState<number | "">("");
 
   // Receipt Modal State
+  const submissionRef = useRef<{ fingerprint: string; id: string; invoiceNumber: string } | null>(null);
   const [previewModalOpen, setPreviewModalOpen] = useState(false);
   const [generatedReceiptData, setGeneratedReceiptData] = useState<ReceiptData | null>(null);
   const [generatedBlobUrl, setGeneratedBlobUrl] = useState<string | null>(null);
@@ -119,18 +121,18 @@ export function AdminCashierPage() {
   // Calculate Base Session Price
   const basePrice = useMemo(() => {
     if (packageType === "custom") return Number(customBasePrice) || 0;
-    return pricing.session.basePrice || 100000;
+    return pricing.session.basePrice ?? 100000;
   }, [packageType, customBasePrice, pricing.session.basePrice]);
 
-  const includedPeople = pricing.session.includedPeople || 2;
-  const extraPersonPrice = pricing.session.extraPersonPrice || 15000;
+  const includedPeople = pricing.session.includedPeople ?? 2;
+  const extraPersonPrice = pricing.session.extraPersonPrice ?? 15000;
   const extraPeopleCount = Math.max(0, peopleCount - includedPeople);
   const extraPeopleCost = extraPeopleCount * extraPersonPrice;
 
   // Calculate Add-on Costs
-  const print4rCost = print4rCount * (pricing.prints.print4rPrice || 10000);
-  const printA4Cost = printA4Count * (pricing.prints.printA4Price || 20000);
-  const softcopyCost = softcopyOption === "paid" ? pricing.session.softcopyCharge || 25000 : 0;
+  const print4rCost = print4rCount * (pricing.prints.print4rPrice ?? 10000);
+  const printA4Cost = printA4Count * (pricing.prints.printA4Price ?? 20000);
+  const softcopyCost = softcopyOption === "paid" ? pricing.session.softcopyCharge ?? 25000 : 0;
 
   // Keychains Cost
   const keychainsBreakdown = useMemo(() => {
@@ -263,12 +265,13 @@ export function AdminCashierPage() {
   // Reset form
   const handleResetForm = (skipConfirm = false) => {
     const doReset = () => {
+      submissionRef.current = null;
       setCustomerName("");
       setCustomerPhone("");
       setNotes("");
       setPackageType("standard");
-      setPeopleCount(pricing.session.includedPeople || 2);
-      setCustomBasePrice(pricing.session.basePrice || 100000);
+      setPeopleCount(pricing.session.includedPeople ?? 2);
+      setCustomBasePrice(pricing.session.basePrice ?? 100000);
       setPrint4rCount(0);
       setPrintA4Count(0);
       setSoftcopyOption("story_free");
@@ -333,7 +336,7 @@ export function AdminCashierPage() {
       items.push({
         name: "Cetak Foto 4R Tambahan",
         qty: print4rCount,
-        unitPrice: pricing.prints.print4rPrice || 10000,
+        unitPrice: pricing.prints.print4rPrice ?? 10000,
         total: print4rCost,
       });
     }
@@ -341,7 +344,7 @@ export function AdminCashierPage() {
       items.push({
         name: "Cetak Foto A4 (10R)",
         qty: printA4Count,
-        unitPrice: pricing.prints.printA4Price || 20000,
+        unitPrice: pricing.prints.printA4Price ?? 20000,
         total: printA4Cost,
       });
     }
@@ -351,7 +354,7 @@ export function AdminCashierPage() {
       items.push({
         name: "Softcopy All Files (Google Drive)",
         qty: 1,
-        unitPrice: pricing.session.softcopyCharge || 25000,
+        unitPrice: pricing.session.softcopyCharge ?? 25000,
         total: softcopyCost,
       });
     } else if (softcopyOption === "story_free") {
@@ -429,7 +432,7 @@ export function AdminCashierPage() {
       const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
       const timeStr = `${String(now.getHours()).padStart(2, "0")}.${String(now.getMinutes()).padStart(2, "0")}`;
       const randomSeq = String(Math.floor(100 + Math.random() * 900));
-      const invoiceNumber = `INV/${dateStr.replace(/-/g, "")}/${randomSeq}`;
+      let invoiceNumber = `INV/${dateStr.replace(/-/g, "")}/${randomSeq}`;
 
       const receiptItems = compileReceiptItems();
 
@@ -473,7 +476,7 @@ export function AdminCashierPage() {
         softcopyType: softcopyOption,
         softcopyCharge: softcopyCost,
         prints: {
-          regular: includedPeople,
+          regular: includedPeople + print4rCount,
           bonus: 0,
           total: includedPeople + print4rCount,
         },
@@ -484,6 +487,15 @@ export function AdminCashierPage() {
         totalPrice: totalBill,
       };
 
+      // Reuse the transaction identity after an ambiguous network/PDF failure.
+      const fingerprint = JSON.stringify({ ...sessionPayload, id: undefined, timestamp: undefined, date: undefined, time: undefined, invoiceNumber: undefined });
+      if (submissionRef.current?.fingerprint !== fingerprint) {
+        submissionRef.current = { fingerprint, id: `CASH-${crypto.randomUUID()}`, invoiceNumber };
+      }
+      sessionPayload.id = submissionRef.current.id;
+      invoiceNumber = submissionRef.current.invoiceNumber;
+      sessionPayload.invoiceNumber = invoiceNumber;
+
       // 2. Save session to backend
       const res = await fetch(`${API}/api/sessions`, {
         method: "POST",
@@ -492,7 +504,8 @@ export function AdminCashierPage() {
       });
 
       if (!res.ok) {
-        console.warn("Backend save failed, continuing client-side receipt generation");
+        const error = await res.json().catch(() => ({}));
+        throw new Error(error.error || "Transaksi gagal disimpan. Struk belum diterbitkan.");
       }
 
       // 3. Generate PDF E-Receipt
@@ -723,7 +736,7 @@ export function AdminCashierPage() {
                     type="button"
                     onClick={() => {
                       setPackageType("standard");
-                      setPeopleCount(pricing.session.includedPeople || 2);
+                      setPeopleCount(pricing.session.includedPeople ?? 2);
                     }}
                     className={`p-3 rounded-[8px] border text-left transition-colors cursor-pointer ${
                       packageType === "standard"
@@ -735,10 +748,10 @@ export function AdminCashierPage() {
                       Paket Dasar
                     </span>
                     <span className="text-[13px] font-semibold text-[#171717] block mt-0.5">
-                      Standar ({pricing.session.includedPeople || 2} Org)
+                      Standar ({pricing.session.includedPeople ?? 2} Org)
                     </span>
                     <span className="text-[12px] text-[#555] font-mono mt-1 block">
-                      {formatRupiah(pricing.session.basePrice || 100000)}
+                      {formatRupiah(pricing.session.basePrice ?? 100000)}
                     </span>
                   </button>
 
@@ -761,7 +774,7 @@ export function AdminCashierPage() {
                       Sesi Couple (2 Org)
                     </span>
                     <span className="text-[12px] text-[#555] font-mono mt-1 block">
-                      {formatRupiah(pricing.session.basePrice || 100000)}
+                      {formatRupiah(pricing.session.basePrice ?? 100000)}
                     </span>
                   </button>
 
@@ -889,7 +902,7 @@ export function AdminCashierPage() {
                         Cetak Foto 4R Tambahan
                       </span>
                       <span className="text-[11.5px] text-[#888] font-mono">
-                        {formatRupiah(pricing.prints.print4rPrice || 10000)} / lembar
+                        {formatRupiah(pricing.prints.print4rPrice ?? 10000)} / lembar
                       </span>
                     </div>
                     <div className="flex items-center gap-2.5">
@@ -921,7 +934,7 @@ export function AdminCashierPage() {
                         Cetak Foto A4 (10R)
                       </span>
                       <span className="text-[11.5px] text-[#888] font-mono">
-                        {formatRupiah(pricing.prints.printA4Price || 20000)} / lembar
+                        {formatRupiah(pricing.prints.printA4Price ?? 20000)} / lembar
                       </span>
                     </div>
                     <div className="flex items-center gap-2.5">
@@ -989,7 +1002,7 @@ export function AdminCashierPage() {
                         Akses Google Drive penuh
                       </span>
                       <span className="text-[11.5px] text-[#171717] font-mono mt-1 block">
-                        +{formatRupiah(pricing.session.softcopyCharge || 25000)}
+                        +{formatRupiah(pricing.session.softcopyCharge ?? 25000)}
                       </span>
                     </button>
 

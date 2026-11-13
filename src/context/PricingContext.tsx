@@ -1,3 +1,4 @@
+import { apiFetch as fetch } from "../utils/api";
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { DEFAULT_PRICING, PricingConfig } from "../types/pricing";
 

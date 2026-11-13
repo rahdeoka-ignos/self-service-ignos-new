@@ -1,3 +1,4 @@
+import { apiFetch as fetch } from "../../utils/api";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import { BrutalistCard } from "../components/BrutalistCard";
@@ -355,6 +356,7 @@ export function BingkaiA4Page() {
                         const photo = framePhotos[frame.index];
                         return {
                           name: `${addonName} - ${frame.colorName}`,
+                          productId: "bingkai-4r", kind: "addon",
                           qty: 1,
                           photoUrl: photo?.full || "",
                           photoThumb: photo?.thumb || "",
@@ -364,6 +366,7 @@ export function BingkaiA4Page() {
                         .filter((c) => quantities[c.id] > 0)
                         .map((c) => ({
                           name: `${addonName} - ${c.name}`,
+                          productId: "bingkai-a4", kind: "addon",
                           qty: quantities[c.id],
                         }));
 

@@ -62,10 +62,10 @@ export function AdminPinModal({
 
       if (result.success) {
         setPin("");
-        onClose();
         if (onSuccess) {
           onSuccess();
         } else {
+          onClose();
           navigate(targetPath);
         }
       } else {
@@ -80,17 +80,10 @@ export function AdminPinModal({
     [isVerifying, isLockedOut, verifyPin, onClose, onSuccess, navigate, targetPath]
   );
 
-  // Auto-verify when 4 digits are entered
-  useEffect(() => {
-    if (pin.length === 4) {
-      handleVerify(pin);
-    }
-  }, [pin, handleVerify]);
-
   const handleKeyPress = useCallback(
     (digit: string) => {
       if (isVerifying || isLockedOut) return;
-      if (pin.length < 6) {
+      if (pin.length < 8) {
         setPin((prev) => prev + digit);
         setErrorMsg("");
       }
@@ -117,6 +110,8 @@ export function AdminPinModal({
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key >= "0" && e.key <= "9") {
         handleKeyPress(e.key);
+      } else if (e.key === "Enter") {
+        handleVerify(pin);
       } else if (e.key === "Backspace") {
         handleDelete();
       } else if (e.key === "Escape") {
@@ -126,7 +121,7 @@ export function AdminPinModal({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, handleKeyPress, handleDelete, onClose]);
+  }, [isOpen, handleKeyPress, handleDelete, onClose, handleVerify, pin]);
 
   if (!isOpen) return null;
 
@@ -165,14 +160,14 @@ export function AdminPinModal({
             Masukkan PIN Admin
           </h2>
           <p className="text-xs text-[#737373]">
-            Ketik 4-digit PIN keamanan untuk membuka portal studio.
+            Ketik PIN 4-8 digit, lalu tekan Masuk.
           </p>
         </div>
 
         {/* PIN Dots Display */}
         <div className="py-2">
           <div className="flex items-center justify-center gap-3">
-            {[0, 1, 2, 3].map((idx) => {
+            {Array.from({ length: Math.max(4, pin.length) }, (_, i) => i).map((idx) => {
               const isFilled = idx < pin.length;
               return (
                 <div
@@ -245,6 +240,10 @@ export function AdminPinModal({
           </button>
         </div>
 
+        <button type="button" disabled={pin.length < 4 || isVerifying || isLockedOut}
+          onClick={() => handleVerify(pin)} className="w-full rounded-xl bg-black text-white p-3 disabled:opacity-40">
+          {isVerifying ? "Memeriksa..." : "Masuk"}
+        </button>
         {/* Footer Hint */}
         <p className="text-[11px] text-neutral-400 leading-tight">
           Hanya untuk pemilik dan staf kasir studio.

@@ -1,3 +1,7 @@
+import type { ImgHTMLAttributes } from "react";
+import { useSecurity } from "../../context/SecurityContext";
+import { AdminPinModal } from "./AdminPinModal";
+import { apiFetch as fetch } from "../../utils/api";
 import { useState, useEffect, useRef } from "react";
 import {
   Camera,
@@ -88,6 +92,24 @@ const API =
     ? `http://${window.location.hostname}:5000`
     : "http://localhost:5000";
 
+function CameraThumbnail({ src, ...props }: ImgHTMLAttributes<HTMLImageElement>) {
+  const [url, setUrl] = useState<string>();
+  useEffect(() => {
+    if (!src) return;
+    const controller = new AbortController();
+    let objectUrl: string | undefined;
+    void fetch(new URL(src, API).href, { signal: controller.signal })
+      .then((res) => { if (!res.ok) throw new Error("Thumbnail tidak tersedia"); return res.blob(); })
+      .then((blob) => {
+        if (controller.signal.aborted) return;
+        objectUrl = URL.createObjectURL(blob);
+        setUrl(objectUrl);
+      }).catch(() => {});
+    return () => { controller.abort(); if (objectUrl) URL.revokeObjectURL(objectUrl); };
+  }, [src]);
+  return <img {...props} src={url} />;
+}
+
 function formatBytes(bytes: number) {
   if (bytes === 0) return "0 B";
   const k = 1024;
@@ -102,7 +124,14 @@ interface CameraImportModalProps {
   onImportSuccess?: () => void;
 }
 
-export function CameraImportModal({
+export function CameraImportModal(props: CameraImportModalProps) {
+  const { isAuthenticated } = useSecurity();
+  if (!props.isOpen) return null;
+  if (!isAuthenticated) return <AdminPinModal isOpen onClose={props.onClose} onSuccess={() => {}} />;
+  return <AuthenticatedCameraImportModal {...props} />;
+}
+
+function AuthenticatedCameraImportModal({
   isOpen,
   onClose,
   onImportSuccess,
@@ -323,6 +352,9 @@ export function CameraImportModal({
 
       const xhr = new XMLHttpRequest();
       xhr.open("POST", `${API}/api/upload-photos`);
+      xhr.withCredentials = true;
+      const token = sessionStorage.getItem("ignos_admin_session_token");
+      if (token) xhr.setRequestHeader("Authorization", `Bearer ${token}`);
 
       xhr.upload.onprogress = (event) => {
         if (event.lengthComputable) {
@@ -968,7 +1000,7 @@ export function CameraImportModal({
                               key={idx}
                               className="aspect-square rounded-[6px] overflow-hidden border border-[#e8e8e8] bg-[#f9f9f9] relative"
                             >
-                              <img
+                              <CameraThumbnail
                                 src={pv.previewUrl}
                                 alt={pv.name}
                                 className="w-full h-full object-cover"

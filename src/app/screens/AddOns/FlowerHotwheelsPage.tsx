@@ -118,7 +118,7 @@ export function FlowerHotwheelsPage() {
                       ...location.state,
                       miscAddons: [
                         ...(location.state?.miscAddons ?? []),
-                        { name: currentContent.title, qty: quantity },
+                        { name: currentContent.title, qty: quantity, productId: location.pathname.slice(1), kind: "addon" },
                       ],
                     },
                   })
