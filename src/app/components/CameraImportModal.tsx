@@ -1,8 +1,8 @@
-import type { ImgHTMLAttributes } from "react";
 import { useSecurity } from "../../context/SecurityContext";
 import { AdminPinModal } from "./AdminPinModal";
 import { apiFetch as fetch } from "../../utils/api";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
+import { CameraPhotoGrid, CAMERA_API, type GridPhoto } from "./CameraPhotoGrid";
 import {
   Camera,
   FolderOpen,
@@ -27,13 +27,14 @@ interface CameraPreset {
   detectedFolders?: string[];
 }
 
-interface PhotoCandidate {
-  id: string; name: string; timeFormatted: string; previewUrl: string;
-  group: string; selected: boolean; size: number;
+interface PhotoCandidate extends GridPhoto {
+  selected: boolean;
 }
 
 interface ScanResult {
   scanId?: string;
+  deviceName?: string | null;
+  importedCount?: number;
   candidates?: PhotoCandidate[];
   toleranceCount?: number; fallbackCount?: number; unknownCount?: number;
   gaps?: unknown[];
@@ -96,28 +97,7 @@ const DEFAULT_CONFIG: CameraImportConfig = {
   lastImport: null,
 };
 
-const API =
-  typeof window !== "undefined" && window.location.hostname !== "localhost"
-    ? `http://${window.location.hostname}:5000`
-    : "http://localhost:5000";
-
-function CameraThumbnail({ src, ...props }: ImgHTMLAttributes<HTMLImageElement>) {
-  const [url, setUrl] = useState<string>();
-  useEffect(() => {
-    if (!src) return;
-    const controller = new AbortController();
-    let objectUrl: string | undefined;
-    void fetch(new URL(src, API).href, { signal: controller.signal })
-      .then((res) => { if (!res.ok) throw new Error("Thumbnail tidak tersedia"); return res.blob(); })
-      .then((blob) => {
-        if (controller.signal.aborted) return;
-        objectUrl = URL.createObjectURL(blob);
-        setUrl(objectUrl);
-      }).catch(() => {});
-    return () => { controller.abort(); if (objectUrl) URL.revokeObjectURL(objectUrl); };
-  }, [src]);
-  return <img {...props} src={url} />;
-}
+const API = CAMERA_API;
 
 function formatBytes(bytes: number) {
   if (bytes === 0) return "0 B";
@@ -127,10 +107,18 @@ function formatBytes(bytes: number) {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
 }
 
+// Set when the modal is opened because a camera/card reader was just plugged in.
+export interface CameraAutoRequest {
+  key: number;
+  presetId: string;
+  path?: string;
+}
+
 interface CameraImportModalProps {
   isOpen: boolean;
   onClose: () => void;
   onImportSuccess?: () => void;
+  autoRequest?: CameraAutoRequest;
 }
 
 export function CameraImportModal(props: CameraImportModalProps) {
@@ -144,6 +132,7 @@ function AuthenticatedCameraImportModal({
   isOpen,
   onClose,
   onImportSuccess,
+  autoRequest,
 }: CameraImportModalProps) {
   const [activeTab, setActiveTab] = useState<"dragdrop" | "auto">("auto");
 
@@ -157,8 +146,12 @@ function AuthenticatedCameraImportModal({
   const [editingPath, setEditingPath] = useState(false);
   const [customPathInput, setCustomPathInput] = useState("D:\\DCIM");
 
-  const [firstId, setFirstId] = useState("");
-  const [lastId, setLastId] = useState("");
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [confirmImported, setConfirmImported] = useState(false);
+  // A card reader may appear on another drive letter than the saved preset path.
+  const pathOverride = useRef<{ presetId: string; path: string } | null>(null);
+  const handledAuto = useRef<number | null>(null);
+  const [gridHeight, setGridHeight] = useState(() => (typeof window === "undefined" ? 480 : Math.max(260, Math.min(620, window.innerHeight - 450))));
   const [customMinutes, setCustomMinutes] = useState(30);
   const scanSequence = useRef(0);
   const [progressText, setProgressText] = useState("");
@@ -166,9 +159,16 @@ function AuthenticatedCameraImportModal({
   const [scanning, setScanning] = useState(false);
   const [scanResult, setScanResult] = useState<ScanResult | null>(null);
   const candidates = scanResult?.candidates || [];
-  const firstIndex = candidates.findIndex(f => f.id === firstId);
-  const lastIndex = candidates.findIndex(f => f.id === lastId);
-  const selectedPhotos = firstIndex >= 0 && lastIndex >= firstIndex ? candidates.slice(firstIndex, lastIndex + 1) : [];
+  const selectedPhotos = useMemo(() => candidates.filter((f) => selectedIds.has(f.id)), [candidates, selectedIds]);
+  const recommendedIds = useMemo(() => new Set(candidates.filter((f) => f.selected).map((f) => f.id)), [candidates]);
+  const selectedImported = selectedPhotos.filter((f) => f.importedAt);
+  const lastImportedAt = selectedImported.map((f) => f.importedAt!).sort().at(-1);
+  useEffect(() => { setConfirmImported(false); }, [selectedIds]);
+  useEffect(() => {
+    const onResize = () => setGridHeight(Math.max(260, Math.min(620, window.innerHeight - 450)));
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
 
 
 
@@ -200,9 +200,10 @@ function AuthenticatedCameraImportModal({
         try {
           const data = JSON.parse(text);
           setConfig(data);
-          if (initialize && data.selectedPreset) {
-            setSelectedPresetId(data.selectedPreset);
-            const activePreset = data.presets?.[data.selectedPreset];
+          const initialPreset = autoRequest?.presetId && data.presets?.[autoRequest.presetId] ? autoRequest.presetId : data.selectedPreset;
+          if (initialize && initialPreset) {
+            setSelectedPresetId(initialPreset);
+            const activePreset = data.presets?.[initialPreset];
             const minutes = activePreset?.defaultMinutes || 30;
             setCustomMinutes(minutes);
             setTimeFilter([15, 20, 30, 45, 60].includes(minutes) ? `${minutes}_min` : "custom_min");
@@ -219,28 +220,35 @@ function AuthenticatedCameraImportModal({
 
   const handleScan = async (presetId = selectedPresetId, filter = timeFilter, minutes = customMinutes) => {
     const sequence = ++scanSequence.current;
-    setScanning(true); setScanResult(null); setFirstId(""); setLastId(""); setStatusMessage(null);
+    setScanning(true); setScanResult(null); setSelectedIds(new Set()); setStatusMessage(null);
     try {
+      const override = pathOverride.current?.presetId === presetId ? { customPath: pathOverride.current.path } : {};
       const res = await fetch(`${API}/api/camera-import/scan`, {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ presetId, filter, minutes: filter === "custom_min" ? minutes : Number.parseInt(filter) || minutes }),
+        body: JSON.stringify({ presetId, filter, minutes: filter === "custom_min" ? minutes : Number.parseInt(filter) || minutes, ...override }),
       });
       const data = await res.json();
       if (sequence !== scanSequence.current) return;
       if (!res.ok || !data.success) throw new Error(data.error || "Scan gagal.");
       setScanResult(data);
-      const selected = (data.candidates || []).filter((f: PhotoCandidate) => f.selected);
-      setFirstId(selected[0]?.id || ""); setLastId(selected.at(-1)?.id || "");
+      setSelectedIds(new Set((data.candidates || []).filter((f: PhotoCandidate) => f.selected).map((f: PhotoCandidate) => f.id)));
     } catch (err: any) {
       if (sequence === scanSequence.current) setStatusMessage({ type: "error", text: err.message || "Koneksi ke backend gagal." });
     } finally { if (sequence === scanSequence.current) setScanning(false); }
   };
 
   useEffect(() => { if (isOpen) void fetchConfig(true); }, [isOpen]);
+  useEffect(() => { if (autoRequest) setActiveTab("auto"); }, [autoRequest?.key]);
   useEffect(() => {
-    if (isOpen && configLoaded && activeTab === "auto") void handleScan();
+    if (!isOpen || !configLoaded || activeTab !== "auto") return;
+    if (autoRequest && handledAuto.current !== autoRequest.key) {
+      // Opened (or re-triggered) by plugging in a device: scan that device.
+      handledAuto.current = autoRequest.key;
+      pathOverride.current = autoRequest.path ? { presetId: autoRequest.presetId, path: autoRequest.path } : null;
+      handleSelectPreset(autoRequest.presetId);
+    } else void handleScan();
     return () => { scanSequence.current++; };
-  }, [isOpen, activeTab, configLoaded]);
+  }, [isOpen, activeTab, configLoaded, autoRequest?.key]);
   useEffect(() => {
     if (!importing || activeTab !== "auto") return;
     let stopped = false;
@@ -433,6 +441,7 @@ function AuthenticatedCameraImportModal({
 
   const handleExecuteImport = async () => {
     if (!scanResult?.scanId || scanning || importing || !selectedPhotos.length) return;
+    if (selectedImported.length && !confirmImported) { setConfirmImported(true); return; }
     try {
       setImporting(true);
       setStatusMessage(null);
@@ -440,7 +449,7 @@ function AuthenticatedCameraImportModal({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          scanId: scanResult.scanId, firstId, lastId,
+          scanId: scanResult.scanId, ids: selectedPhotos.map((f) => f.id),
           clearExistingPhotos: clearExisting,
         }),
       });
@@ -514,7 +523,7 @@ function AuthenticatedCameraImportModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 backdrop-blur-xs p-4 animate-in fade-in font-['Manrope',sans-serif]">
-      <div className="bg-white border border-[#e8e8e8] rounded-[14px] max-w-2xl w-full shadow-2xl flex flex-col max-h-[92vh] overflow-hidden text-[#202020] relative">
+      <div className={`bg-white border border-[#e8e8e8] rounded-[14px] ${activeTab === "auto" && !importSuccessData ? "max-w-6xl" : "max-w-2xl"} w-full shadow-2xl flex flex-col max-h-[94vh] overflow-hidden text-[#202020] relative`}>
         
         {/* Header (Amara Villa Clean Style) */}
         <div className="px-6 py-4.5 border-b border-[#e8e8e8] flex items-center justify-between bg-white shrink-0">
@@ -815,12 +824,13 @@ function AuthenticatedCameraImportModal({
           {/* TAB 2: AUTO CABLE SCAN (Clean Amara Style)                   */}
           {/* ═════════════════════════════════════════════════════════════ */}
           {activeTab === "auto" && (
-            <div className="space-y-4">
+            <div className="grid gap-5 lg:grid-cols-[250px_minmax(0,1fr)]">
+              <div className="space-y-4">
               <div className="space-y-2">
                 <label className="text-[10px] tracking-[0.14em] uppercase font-semibold text-[#888]">
                   SUMBER KAMERA
                 </label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 gap-2">
                   {config &&
                     Object.values(config.presets).map((p) => {
                       const isSelected = selectedPresetId === p.id;
@@ -868,7 +878,7 @@ function AuthenticatedCameraImportModal({
                     <span className="font-medium truncate">
                       Path:{" "}
                       <code className="text-[#171717] font-mono text-[11px]">
-                        {currentPreset?.path || "Belum diatur"}
+                        {(pathOverride.current?.presetId === selectedPresetId && pathOverride.current.path) || currentPreset?.path || "Belum diatur"}
                       </code>
                     </span>
                   </div>
@@ -949,106 +959,65 @@ function AuthenticatedCameraImportModal({
                 </label>}
                 <button onClick={saveDuration} className="underline">Simpan sebagai durasi bawaan</button>
               </div>
-              {/* Scan Results */}
-              <div className="bg-white border border-[#e8e8e8] rounded-[10px] p-4 space-y-3">
-                <div className="flex items-center justify-between border-b border-[#f0f0f0] pb-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[13px] font-semibold text-[#171717]">
-                      Hasil Deteksi Foto
-                    </span>
-                    {scanResult?.activeFolder && (
-                      <span className="text-[10px] font-mono bg-[#f4f4f5] text-[#52525b] px-2 py-0.5 rounded-[5px] border border-[#e4e4e7]">
-                        📁 {scanResult.activeFolder}
-                      </span>
+              </div>
+
+              {/* Scan Results: photo grid with Explorer-style selection */}
+              <div className="min-w-0 space-y-3">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="text-[13px] font-semibold text-[#171717]">Foto di Perangkat</span>
+                    {scanResult?.deviceName && (
+                      <span className="text-[10px] font-mono bg-[#f4f4f5] text-[#52525b] px-2 py-0.5 rounded-[5px] border border-[#e4e4e7]">📷 {scanResult.deviceName}</span>
                     )}
+                    {scanResult?.success && !scanning && <span className="text-[11px] text-[#888]">{candidates.length} foto</span>}
                   </div>
-                  <span className="text-[12px] font-mono font-medium text-[#171717]">
-                    {scanning
-                      ? "Memindai..."
-                      : scanResult?.success
-                      ? `${selectedPhotos.length} Foto (${formatBytes(selectedPhotos.reduce((n, f) => n + (f.size || 0), 0))})`
-                      : "0 Foto"}
-                  </span>
+                  {scanResult?.success && !scanning && candidates.length > 0 && (
+                    <div className="flex items-center gap-3 text-[11px] font-medium">
+                      <button type="button" onClick={() => setSelectedIds(recommendedIds)} className="text-[#555] hover:text-[#171717] underline underline-offset-2 cursor-pointer">Kembali ke rekomendasi</button>
+                      <button type="button" onClick={() => setSelectedIds(new Set(candidates.map((f) => f.id)))} className="text-[#555] hover:text-[#171717] underline underline-offset-2 cursor-pointer">Pilih semua</button>
+                      <button type="button" onClick={() => setSelectedIds(new Set())} className="text-[#555] hover:text-[#171717] underline underline-offset-2 cursor-pointer">Kosongkan</button>
+                    </div>
+                  )}
                 </div>
 
                 {scanning ? (
-                  <div className="py-8 text-center text-[#888] text-[12px] flex flex-col items-center gap-2">
+                  <div className="py-16 text-center text-[#888] text-[12px] flex flex-col items-center gap-2 border border-[#e8e8e8] rounded-[10px]">
                     <RefreshCw size={16} className="animate-spin text-[#888]" />
-                    <span>Memindai folder kamera...</span>
+                    <span>Membaca daftar foto di perangkat…</span>
                   </div>
                 ) : !scanResult?.success ? (
-                  <div className="py-5 text-center space-y-2">
-                    <p className="text-[12px] text-[#92400e] bg-[#fef3c7] border border-[#fde68a] rounded-[8px] p-3 font-medium">
-                      Kamera atau Card Reader belum terdeteksi di path{" "}
-                      <code>{currentPreset?.path}</code>. Pastikan kabel sudah dicolok ke PC.
+                  <div className="py-10 px-4 text-center border border-[#e8e8e8] rounded-[10px]">
+                    <p className="text-[12px] text-[#92400e] bg-[#fef3c7] border border-[#fde68a] rounded-[8px] p-3 font-medium inline-block">
+                      Foto belum bisa dibaca. Pastikan kamera menyala dan kabel USB atau SD card terpasang, lalu klik Scan Ulang.
                     </p>
                   </div>
-                ) : scanResult && candidates.length === 0 ? (
-                  <div className="py-6 text-center text-[#888] text-[12px] space-y-1">
-                    <p className="font-medium text-[#555]">
-                      Tidak ada foto baru yang ditemukan dalam rentang waktu ini.
-                    </p>
-                    <p className="text-[11px] text-[#999]">
-                      Coba ubah filter durasi ke 45/60 menit atau periksa jam kamera.
-                    </p>
+                ) : candidates.length === 0 ? (
+                  <div className="py-16 text-center text-[#888] text-[12px] border border-[#e8e8e8] rounded-[10px]">
+                    Tidak ada foto JPG di perangkat ini.
                   </div>
                 ) : (
-                  <div className="space-y-3">
-                    <p className="text-xs text-[#666]">Rekomendasi dihitung mundur dari foto terbaru di kamera, bukan jam PC. Periksa pelanggan pada foto awal dan akhir sebelum impor.</p>
-                    <p className="text-xs text-[#666]">{scanResult?.toleranceCount || 0} foto toleransi tidak dipilih otomatis. {scanResult?.fallbackCount || 0} foto memakai waktu perubahan file; {scanResult?.unknownCount || 0} tanpa waktu.</p>
-                    {!!scanResult?.gaps?.length && <p className="text-xs text-amber-800">Ada jeda pemotretan. Periksa apakah rentang ini mencakup sesi pelanggan lain.</p>}
-                    <div className="grid grid-cols-2 gap-3">
-                      {[{ label: "Foto awal", value: firstId, change: setFirstId }, { label: "Foto akhir", value: lastId, change: setLastId }].map(field => (
-                        <label key={field.label} className="text-xs min-w-0">{field.label}
-                          <select aria-label={field.label} value={field.value} onChange={e => field.change(e.target.value)} className="w-full border rounded p-2 mt-1">
-                            <option value="">Pilih foto</option>
-                            {candidates.map(f => <option key={f.id} value={f.id}>{f.name} · {f.timeFormatted} · {({main: "durasi sesi", tolerance: "toleransi", outside: "di luar durasi", unknown: "tanpa waktu"} as Record<string, string>)[f.group]}</option>)}
-                          </select>
-                          {field.value && <CameraThumbnail src={candidates.find(f => f.id === field.value)?.previewUrl} alt={field.label} className="w-full h-32 object-contain bg-[#fafafa] mt-2" />}
-                        </label>
-                      ))}
+                  <>
+                    <CameraPhotoGrid photos={candidates} selected={selectedIds} onChange={setSelectedIds} height={gridHeight} />
+                    <p className="text-[10.5px] text-[#888] leading-relaxed">
+                      <strong className="text-[#555]">Klik</strong> pilih satu · <strong className="text-[#555]">Ctrl+klik</strong> tambah/kurangi · <strong className="text-[#555]">Shift+klik</strong> rentang · <strong className="text-[#555]">seret</strong> rentang · <strong className="text-[#555]">Ctrl+A</strong> semua · <strong className="text-[#555]">Esc</strong> kosongkan · <strong className="text-[#555]">klik dua kali</strong> lihat besar
+                    </p>
+                    <div className="flex flex-wrap items-center justify-between gap-2 text-[11.5px] bg-[#fafafa] border border-[#e8e8e8] rounded-[8px] px-3 py-2">
+                      <span className="text-[#555]">
+                        <strong className="text-[#171717]">{selectedPhotos.length} foto dipilih</strong>
+                        {selectedPhotos.length > 0 && <> · {formatBytes(selectedPhotos.reduce((n, f) => n + (f.size || 0), 0))} · {selectedPhotos[0].timeFormatted} — {selectedPhotos[selectedPhotos.length - 1].timeFormatted}</>}
+                      </span>
+                      <span className="text-[#888]">
+                        Rekomendasi {scanResult?.totalFound ?? 0} foto ({customMinutes && timeFilter === "custom_min" ? customMinutes : Number.parseInt(timeFilter)} menit terakhir){scanResult?.fallbackCount ? ` · ${scanResult.fallbackCount} foto memakai waktu file` : ""}
+                      </span>
                     </div>
-                    {!selectedPhotos.length && <p className="text-xs text-amber-800">Pilih rentang awal–akhir yang berurutan.</p>}
-                    {scanResult?.earliestTime && (
-                      <div className="text-[11px] text-[#666] flex items-center justify-between bg-[#fafafa] px-2.5 py-1.5 rounded-[6px] border border-[#e8e8e8]">
-                        <span>
-                          Waktu:{" "}
-                          <strong className="text-[#171717] font-medium">
-                            {scanResult.earliestTime} — {scanResult.latestTime}
-                          </strong>
-                        </span>
-                        <span className="text-[#059669] font-medium">
-                          Periksa batas sesi
-                        </span>
-                      </div>
+                    {selectedImported.length > 0 && (
+                      <p className="text-[11.5px] text-[#92400e] bg-[#fffbeb] border border-[#fde68a] rounded-[8px] px-3 py-2">
+                        {selectedImported.length} foto yang dipilih sudah pernah diimpor
+                        {lastImportedAt ? ` (terakhir ${new Date(lastImportedAt).toLocaleString("id-ID")})` : ""}.
+                        {confirmImported ? " Klik Import sekali lagi untuk tetap mengimpor." : " Periksa apakah foto ini milik customer sebelumnya."}
+                      </p>
                     )}
-
-                    {selectedPhotos.length > 0 && (
-                      <div>
-                        <div className="text-[10px] uppercase tracking-wider font-semibold text-[#999] mb-1.5">
-                          Sampel Foto:
-                        </div>
-                        <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
-                          {(selectedPhotos.length > 6 ? [...selectedPhotos.slice(0, 3), ...selectedPhotos.slice(-3)] : selectedPhotos).map((pv, idx) => (
-                            <div
-                              key={idx}
-                              className="aspect-square rounded-[6px] overflow-hidden border border-[#e8e8e8] bg-[#f9f9f9] relative"
-                            >
-                              <CameraThumbnail
-                                src={pv.previewUrl}
-                                alt={pv.name}
-                                className="w-full h-full object-cover"
-                                loading="lazy"
-                              />
-                              <div className="absolute inset-x-0 bottom-0 bg-black/60 text-white text-[9px] font-mono px-1 py-0.5 truncate text-center">
-                                {pv.timeFormatted}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
+                  </>
                 )}
               </div>
             </div>
@@ -1127,6 +1096,8 @@ function AuthenticatedCameraImportModal({
               >
                 {importing ? (
                   <span>Menyalin ke Kiosk...</span>
+                ) : confirmImported ? (
+                  <span>Tetap Import ({selectedPhotos.length} Foto)</span>
                 ) : (
                   <span>
                     Import ke Kiosk{" "}

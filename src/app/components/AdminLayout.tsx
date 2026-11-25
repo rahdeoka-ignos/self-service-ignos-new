@@ -23,12 +23,17 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   Receipt,
+  ChevronRight,
+  Sun,
+  Moon,
 } from "lucide-react";
 import { CameraImportModal } from "./CameraImportModal";
 import { AdminChangePinModal } from "./AdminChangePinModal";
 import { useBranding } from "../../context/BrandingContext";
 import { useLicense } from "../../context/LicenseContext";
 import { useSecurity } from "../../context/SecurityContext";
+
+import { adminThemeClasses, useAdminTheme } from "../../hooks/useAdminTheme";
 
 const NAV_WORKSPACE = [
   {
@@ -98,7 +103,8 @@ const NAV_PREFERENCES = [
 
 export function AdminLayout({ children }: { children: React.ReactNode }) {
   const { branding } = useBranding();
-  const { license, isLocked, isWarning } = useLicense();
+  const { theme, toggleTheme } = useAdminTheme();
+  const { isLocked, isWarning } = useLicense();
   const { logout, isDefaultPin } = useSecurity();
   const [printerAlert, setPrinterAlert] = useState<any>(null);
   const [cameraImportOpen, setCameraImportOpen] = useState(false);
@@ -174,6 +180,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
 
   const getPageTitle = () => {
     if (location.pathname === "/admin") return "Dashboard";
+    if (location.pathname.startsWith("/admin/cashier")) return "Kasir & E-Receipt";
     if (location.pathname.startsWith("/admin/pricing")) return "Harga & Paket";
     if (location.pathname.startsWith("/admin/templates")) return "Templates";
     if (location.pathname.startsWith("/admin/branding")) return "Identitas Studio";
@@ -185,399 +192,65 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
     return "Admin";
   };
 
+  const navGroups = [
+    { label: "Workspace", items: NAV_WORKSPACE },
+    { label: "Pengaturan studio", items: NAV_PREFERENCES },
+  ];
+  const iconButton = "inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-[var(--admin-control,#1c1e20)] text-[var(--admin-muted,#92989d)] transition-colors duration-200 hover:bg-[var(--admin-raised,#292b2f)] hover:text-[var(--admin-text,#f4f4f5)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--admin-focus,#c0d0e7)]";
+
   return (
-    <div className="fixed inset-0 flex bg-[#fafafa] overflow-hidden text-[#202020] antialiased font-['Manrope',sans-serif]">
-      {/* ── Sidebar (Amara Villa Minimal Style with Icon-Only Collapse) ── */}
-      <aside
-        className={`${
-          sidebarOpen ? "w-[236px]" : "w-[68px]"
-        } bg-white border-r border-[#e8e8e8] flex flex-col shrink-0 h-full overflow-y-auto overflow-x-hidden transition-all duration-200 ease-in-out`}
-      >
-        {/* Brand row */}
-        {sidebarOpen ? (
-          <div className="pt-6 px-4 pb-4 border-b border-[#e8e8e8] mb-3">
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2.5 min-w-0">
-                {branding?.logoUrl ? (
-                  <img
-                    src={branding.logoUrl}
-                    alt={branding.studioName}
-                    className="w-8 h-8 rounded-lg object-contain bg-white border border-[#e8e8e8] shrink-0"
-                  />
-                ) : (
-                  <div className="w-8 h-8 rounded-lg bg-[#171717] text-white flex items-center justify-center shrink-0 font-bold text-xs tracking-wider">
-                    {(branding?.studioName || "IG").slice(0, 2).toUpperCase()}
-                  </div>
-                )}
-                <div className="min-w-0">
-                  <span
-                    className="font-bold text-[14px] tracking-tight text-[#171717] leading-tight block truncate"
-                    title={branding?.studioName || "IGNOS"}
-                  >
-                    {branding?.studioName || "IGNOS"}
-                  </span>
-                  <small className="text-[9px] tracking-[0.16em] text-[#888] font-semibold block mt-0.5">
-                    ADMIN PORTAL
-                  </small>
-                </div>
-              </div>
-
-              <button
-                type="button"
-                onClick={toggleSidebar}
-                className="p-1.5 rounded-lg text-neutral-400 hover:text-[#171717] hover:bg-neutral-100 transition-colors shrink-0 cursor-pointer"
-                title="Ciutkan Sidebar (Ctrl+B)"
-              >
-                <PanelLeftClose size={16} strokeWidth={1.75} />
-              </button>
-            </div>
-          </div>
-        ) : (
-          <div className="pt-5 px-2 pb-4 border-b border-[#e8e8e8] mb-3 flex flex-col items-center gap-2.5">
-            {branding?.logoUrl ? (
-              <img
-                src={branding.logoUrl}
-                alt={branding.studioName}
-                className="w-8 h-8 rounded-lg object-contain bg-white border border-[#e8e8e8] shrink-0"
-              />
-            ) : (
-              <div className="w-8 h-8 rounded-lg bg-[#171717] text-white flex items-center justify-center shrink-0 font-bold text-xs tracking-wider">
-                {(branding?.studioName || "IG").slice(0, 2).toUpperCase()}
-              </div>
-            )}
-            <button
-              type="button"
-              onClick={toggleSidebar}
-              className="w-10 h-8 flex items-center justify-center rounded-lg text-neutral-400 hover:text-[#171717] hover:bg-neutral-100 transition-colors cursor-pointer"
-              title="Perluas Sidebar (Ctrl+B)"
-            >
-              <PanelLeftOpen size={16} strokeWidth={1.75} />
-            </button>
-          </div>
-        )}
-
-        {/* Navigation Sections */}
-        <div className={`flex-1 ${sidebarOpen ? "px-3" : "px-2"} py-1 space-y-4`}>
-          {/* Section 1: Workspace */}
-          <div>
-            {sidebarOpen ? (
-              <p className="text-[10px] tracking-[0.13em] text-[#9a9a9a] font-medium uppercase px-2 mb-1.5 truncate">
-                WORKSPACE
-              </p>
-            ) : (
-              <div className="h-2" />
-            )}
-            <nav className="space-y-1">
-              {NAV_WORKSPACE.map(({ path, label, icon: Icon }) => {
-                const isActive =
-                  path === "/admin"
-                    ? location.pathname === "/admin"
-                    : location.pathname.startsWith(path);
-
-                if (!sidebarOpen) {
-                  return (
-                    <div key={path} className="relative group flex justify-center">
-                      <button
-                        onClick={() => navigate(path)}
-                        className={`w-10 h-10 flex items-center justify-center rounded-[8px] transition-colors cursor-pointer relative ${
-                          isActive
-                            ? "bg-[#f2f2f2] text-[#171717]"
-                            : "text-[#555] hover:bg-[#f6f6f6] hover:text-[#171717]"
-                        }`}
-                      >
-                        <Icon
-                          size={17}
-                          strokeWidth={isActive ? 2 : 1.5}
-                          className={isActive ? "text-[#171717]" : "text-[#777]"}
-                        />
-                      </button>
-                      {/* Floating tooltip */}
-                      <div className="absolute left-full ml-3 top-1/2 -translate-y-1/2 px-2.5 py-1 bg-[#171717] text-white text-[11px] font-medium rounded-md shadow-lg whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50">
-                        {label}
-                      </div>
-                    </div>
-                  );
-                }
-
-                return (
-                  <button
-                    key={path}
-                    onClick={() => navigate(path)}
-                    className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-[8px] text-[13px] text-left transition-colors cursor-pointer ${
-                      isActive
-                        ? "bg-[#f2f2f2] text-[#171717] font-semibold"
-                        : "text-[#555] hover:bg-[#f6f6f6] hover:text-[#171717]"
-                    }`}
-                  >
-                    <Icon
-                      size={16}
-                      strokeWidth={1.5}
-                      className={isActive ? "text-[#171717]" : "text-[#898989]"}
-                    />
-                    <span className="truncate">{label}</span>
-                  </button>
-                );
-              })}
-            </nav>
-          </div>
-
-          {/* Section 2: Preferensi */}
-          <div>
-            {sidebarOpen ? (
-              <p className="text-[10px] tracking-[0.13em] text-[#9a9a9a] font-medium uppercase px-2 mb-1.5 truncate">
-                PREFERENSI
-              </p>
-            ) : (
-              <div className="my-2 border-t border-[#f0f0f0] w-6 mx-auto" />
-            )}
-            <nav className="space-y-1">
-              {NAV_PREFERENCES.map(({ path, label, icon: Icon }) => {
-                const isActive = location.pathname.startsWith(path);
-
-                if (!sidebarOpen) {
-                  return (
-                    <div key={path} className="relative group flex justify-center">
-                      <button
-                        onClick={() => navigate(path)}
-                        className={`w-10 h-10 flex items-center justify-center rounded-[8px] transition-colors cursor-pointer relative ${
-                          isActive
-                            ? "bg-[#f2f2f2] text-[#171717]"
-                            : "text-[#555] hover:bg-[#f6f6f6] hover:text-[#171717]"
-                        }`}
-                      >
-                        <Icon
-                          size={17}
-                          strokeWidth={isActive ? 2 : 1.5}
-                          className={isActive ? "text-[#171717]" : "text-[#777]"}
-                        />
-                        {path === "/admin/printers" && printerAlert && (
-                          <span className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-[#ef4444]" />
-                        )}
-                        {path === "/admin/license" && (isLocked || isWarning) && (
-                          <span
-                            className={`absolute top-2 right-2 w-1.5 h-1.5 rounded-full ${
-                              isLocked ? "bg-[#ef4444]" : "bg-[#f59e0b]"
-                            }`}
-                          />
-                        )}
-                      </button>
-                      {/* Floating Tooltip */}
-                      <div className="absolute left-full ml-3 top-1/2 -translate-y-1/2 px-2.5 py-1 bg-[#171717] text-white text-[11px] font-medium rounded-md shadow-lg whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50">
-                        {label}
-                      </div>
-                    </div>
-                  );
-                }
-
-                return (
-                  <button
-                    key={path}
-                    onClick={() => navigate(path)}
-                    className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-[8px] text-[13px] text-left transition-colors cursor-pointer ${
-                      isActive
-                        ? "bg-[#f2f2f2] text-[#171717] font-semibold"
-                        : "text-[#555] hover:bg-[#f6f6f6] hover:text-[#171717]"
-                    }`}
-                  >
-                    <Icon
-                      size={16}
-                      strokeWidth={1.5}
-                      className={isActive ? "text-[#171717]" : "text-[#898989]"}
-                    />
-                    <span className="truncate">{label}</span>
-                    {path === "/admin/printers" && printerAlert && (
-                      <span className="ml-auto w-1.5 h-1.5 rounded-full bg-[#ef4444] shrink-0" title="Printer Perlu Perhatian" />
-                    )}
-                    {path === "/admin/license" && (isLocked || isWarning) && (
-                      <span
-                        className={`ml-auto w-1.5 h-1.5 rounded-full shrink-0 ${
-                          isLocked ? "bg-[#ef4444]" : "bg-[#f59e0b]"
-                        }`}
-                        title={isLocked ? "Lisensi Perlu Diperpanjang" : "Lisensi Mendekati Jatuh Tempo"}
-                      />
-                    )}
-                  </button>
-                );
-              })}
-            </nav>
-          </div>
-        </div>
-
-        {/* Sidebar Bottom */}
-        <div className={`border-t border-[#e8e8e8] mt-auto space-y-1 ${sidebarOpen ? "p-3" : "px-2 py-3"}`}>
-          {sidebarOpen ? (
-            <>
-              <button
-                onClick={() => {
-                  logout();
-                  navigate("/");
-                }}
-                className="w-full flex items-center gap-2 px-2.5 py-2 text-[13px] text-rose-600 hover:text-rose-700 transition-colors rounded-[7px] hover:bg-rose-50 cursor-pointer"
-                title="Kunci sesi admin dan kembali ke Kiosk"
-              >
-                <Lock size={15} strokeWidth={1.5} />
-                <span>Kunci & Keluar</span>
-              </button>
-              <button
-                onClick={() => navigate("/")}
-                className="w-full flex items-center gap-2 px-2.5 py-2 text-[13px] text-[#888] hover:text-[#202020] transition-colors rounded-[7px] hover:bg-[#f6f6f6] cursor-pointer"
-              >
-                <ArrowLeft size={15} strokeWidth={1.5} />
-                <span>Kembali ke Kiosk</span>
-              </button>
-            </>
+    <div data-admin-theme={theme} className={`${adminThemeClasses} fixed inset-0 flex overflow-hidden bg-[var(--admin-canvas,#111114)] font-['Inter',sans-serif] text-[var(--admin-text,#f4f4f5)] antialiased [&_button]:cursor-pointer [&_button:disabled]:cursor-not-allowed [&_button]:duration-200 [&_button:focus-visible]:outline-2 [&_button:focus-visible]:outline-offset-2 [&_button:focus-visible]:outline-[var(--admin-focus,#c0d0e7)] [&_input:focus-visible]:border-[var(--admin-focus,#c0d0e7)] [&_select:focus-visible]:border-[var(--admin-focus,#c0d0e7)] motion-reduce:[&_*]:transition-none`}>
+      <aside id="admin-sidebar" aria-label="Navigasi admin" className={`${sidebarOpen ? "w-[270px] xl:w-[301px]" : "w-[76px]"} flex h-full shrink-0 flex-col overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-[var(--admin-border-strong,#41474e)] [&::-webkit-scrollbar-thumb:hover]:bg-[var(--admin-muted,#92989d)] [&::-webkit-scrollbar-button]:hidden supports-[not_selector(::-webkit-scrollbar)]:[scrollbar-width:thin] supports-[not_selector(::-webkit-scrollbar)]:[scrollbar-color:var(--admin-border-strong,#41474e)_transparent] border-r border-[var(--admin-border,#27292b)] bg-[var(--admin-sidebar,#17191b)] transition-[width] duration-300 ease-in-out motion-reduce:transition-none`}>
+        <div className={`flex min-h-[88px] items-center gap-3 ${sidebarOpen ? "px-[21px]" : "justify-center px-3"}`}>
+          {!sidebarOpen && (branding?.logoUrl ? (
+            <img src={branding.logoUrl} alt={branding.studioName} className="size-10 shrink-0 rounded-xl bg-[var(--admin-raised,#292b2f)] object-contain p-1" />
           ) : (
-            <>
-              <div className="relative group flex justify-center">
-                <button
-                  onClick={() => {
-                    logout();
-                    navigate("/");
-                  }}
-                  className="w-10 h-10 flex items-center justify-center rounded-[8px] text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
-                >
-                  <Lock size={16} strokeWidth={1.5} />
-                </button>
-                <div className="absolute left-full ml-3 top-1/2 -translate-y-1/2 px-2.5 py-1 bg-[#171717] text-white text-[11px] font-medium rounded-md shadow-lg whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50">
-                  Kunci & Keluar
-                </div>
-              </div>
-
-              <div className="relative group flex justify-center">
-                <button
-                  onClick={() => navigate("/")}
-                  className="w-10 h-10 flex items-center justify-center rounded-[8px] text-neutral-400 hover:text-[#171717] hover:bg-neutral-100 transition-colors cursor-pointer"
-                >
-                  <ArrowLeft size={16} strokeWidth={1.5} />
-                </button>
-                <div className="absolute left-full ml-3 top-1/2 -translate-y-1/2 px-2.5 py-1 bg-[#171717] text-white text-[11px] font-medium rounded-md shadow-lg whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50">
-                  Kembali ke Kiosk
-                </div>
-              </div>
-            </>
-          )}
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[#c0d0e7] text-[#111b23]"><Camera size={23} strokeWidth={1.8} /></div>
+          ))}
+          {sidebarOpen && <><div className="min-w-0 flex-1"><p className="truncate text-[18px] font-semibold tracking-[-0.3px]" title={branding?.studioName || "IGNOS"}>{branding?.studioName || "IGNOS"}</p><p className="mt-0.5 text-[12px] text-[var(--admin-muted,#92989d)]">Self service workspace</p></div><button type="button" onClick={toggleSidebar} aria-label="Ciutkan sidebar" aria-expanded={sidebarOpen} aria-controls="admin-sidebar" className="rounded-lg p-1 text-[var(--admin-muted,#92989d)] hover:text-[var(--admin-text,#f4f4f5)]"><PanelLeftClose size={19} /></button></>}
+        </div>
+        {!sidebarOpen && <button type="button" onClick={toggleSidebar} aria-label="Perluas sidebar" aria-expanded={sidebarOpen} aria-controls="admin-sidebar" className="mx-auto mb-5 rounded-lg p-2 text-[var(--admin-muted,#92989d)] hover:bg-[var(--admin-raised,#292b2f)]"><PanelLeftOpen size={19} /></button>}
+        <div className={`flex-1 space-y-7 pb-6 ${sidebarOpen ? "px-[21px]" : "px-3"}`}>
+          {navGroups.map((group) => (
+            <div key={group.label}>
+              {sidebarOpen && <p className="mb-3 mt-3 px-3.5 text-[12px] font-medium uppercase tracking-[0.6px] text-[var(--admin-label,#737779)]">{group.label}</p>}
+              <nav aria-label={group.label} className="space-y-1">
+                {group.items.map(({ path, label, icon: Icon }) => {
+                  const active = path === "/admin" ? location.pathname === path : location.pathname.startsWith(path);
+                  const alert = (path === "/admin/printers" && printerAlert) || (path === "/admin/license" && (isLocked || isWarning));
+                  return <button key={path} type="button" onClick={() => navigate(path)} aria-current={active ? "page" : undefined} aria-label={label} title={sidebarOpen ? undefined : label} className={`relative flex min-h-11 w-full items-center rounded-[13px] text-left text-[14px] font-medium transition-colors ${sidebarOpen ? "gap-[13px] px-3.5" : "justify-center"} ${active ? "bg-[var(--admin-raised,#292b2f)] text-[var(--admin-text,#f4f4f5)]" : "text-[var(--admin-muted,#96999b)] hover:bg-[var(--admin-border,#202325)] hover:text-[var(--admin-text,#f4f4f5)]"}`}><Icon size={18} strokeWidth={1.8} className="shrink-0" />{sidebarOpen && <span className="truncate">{label}</span>}{alert && <span aria-label="Perlu perhatian" className={`${sidebarOpen ? "ml-auto" : "absolute right-2 top-2"} size-1.5 shrink-0 rounded-full bg-[#f18e9a]`} />}</button>;
+                })}
+              </nav>
+            </div>
+          ))}
+        </div>
+        <div className={`mt-auto space-y-2 border-t border-[var(--admin-border,#27292b)] py-5 ${sidebarOpen ? "px-[21px]" : "px-3"}`}>
+          {sidebarOpen && <div className="mb-4 rounded-[19px] bg-[var(--admin-raised,#292b2f)] p-4"><div className="mb-2 flex items-center gap-2 text-[13px]"><ShieldCheck size={16} className={isLocked ? "text-[var(--admin-danger,#f18e9a)]" : "text-[var(--admin-accent-text,#c0d0e7)]"} /><span>Lisensi studio</span></div><p className="text-[12px] leading-5 text-[var(--admin-muted,#92989d)]">{isLocked ? "Perpanjang lisensi untuk melanjutkan." : isWarning ? "Masa aktif segera berakhir." : "Kelola aktivasi dan masa sewa studio."}</p><button type="button" onClick={() => navigate("/admin/license")} className="mt-3 flex items-center gap-1 text-[12px] font-medium text-[var(--admin-accent-text,#c0d0e7)]">Lihat lisensi <ArrowUpRight size={13} /></button></div>}
+          <button type="button" onClick={() => navigate("/")} aria-label="Kembali ke Kiosk" title="Kembali ke Kiosk" className={`flex min-h-10 w-full items-center rounded-[13px] text-[13px] text-[var(--admin-muted,#96999b)] hover:bg-[var(--admin-raised,#292b2f)] hover:text-[var(--admin-text,#f4f4f5)] ${sidebarOpen ? "gap-3 px-3.5" : "justify-center"}`}><ArrowLeft size={18} />{sidebarOpen && "Kembali ke Kiosk"}</button>
+          <button type="button" onClick={() => { logout(); navigate("/"); }} aria-label="Kunci dan keluar" title="Kunci dan keluar" className={`flex min-h-10 w-full items-center rounded-[13px] text-[13px] text-[var(--admin-danger,#f18e9a)] hover:bg-[var(--admin-alert,#3b2d3c)] ${sidebarOpen ? "gap-3 px-3.5" : "justify-center"}`}><Lock size={18} />{sidebarOpen && "Kunci & keluar"}</button>
         </div>
       </aside>
-
-      {/* ── Main Shell with Amara Topbar ── */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-[#fafafa]">
-        {/* Topbar (Amara style: dash-topbar) */}
-        <header className="h-[70px] border-b border-[#e8e8e8] px-6 md:px-8 flex items-center justify-between gap-4 bg-white shrink-0">
-          <div className="flex items-center gap-3.5 text-[14px] text-[#999]">
-            <span>Admin</span>
-            <span className="text-[#ccc]">/</span>
-            <span className="text-[#333] font-medium">{getPageTitle()}</span>
+      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+        <header className="flex min-h-[79px] shrink-0 flex-wrap items-center justify-between gap-3 px-5 py-4 lg:px-[34px]">
+          <div className="flex h-[38px] items-center gap-3 rounded-full bg-[var(--admin-control,#1c1e20)] px-3.5 text-[13px]">
+            <span className="text-[var(--admin-muted,#92989d)]">Workspace</span><ChevronRight size={14} className="text-[var(--admin-label,#737779)]" /><span>{getPageTitle()}</span>
           </div>
-
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setCameraImportOpen(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#171717] hover:bg-[#333] text-white rounded-[7px] text-[12px] font-medium transition-colors cursor-pointer shadow-2xs"
-              title="Tarik foto otomatis dari kamera atau card reader"
-            >
-              <Camera size={13} strokeWidth={2} />
-              <span>Tarik Foto Kamera</span>
+          <div className="flex flex-wrap items-center gap-2">
+            <button type="button" onClick={() => setCameraImportOpen(true)} className="inline-flex h-10 items-center gap-2 rounded-full bg-[#f5f5f7] px-4 text-[12px] font-semibold text-[#202124] hover:bg-[#c0d0e7]" title="Tarik foto otomatis dari kamera atau card reader"><Camera size={15} /><span className="hidden sm:inline">Tarik foto kamera</span></button>
+            <button type="button" onClick={toggleTheme} className={iconButton} aria-label={theme === "dark" ? "Aktifkan light mode" : "Aktifkan dark mode"} title={theme === "dark" ? "Aktifkan light mode" : "Aktifkan dark mode"}>
+              {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
             </button>
-
-            <button
-              onClick={() => navigate("/")}
-              className="hidden sm:inline-flex items-center gap-1.5 text-[13px] text-[#777] hover:text-[#171717] transition-colors cursor-pointer mr-1"
-            >
-              <span>Buka Kiosk</span>
-              <ArrowUpRight size={14} strokeWidth={1.5} />
-            </button>
-
-            {/* PIN Security Button */}
-            <button
-              onClick={() => setChangePinOpen(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-[#e5e5e5] hover:bg-[#f5f5f5] text-[#171717] rounded-[7px] text-[12px] font-medium transition-colors cursor-pointer"
-              title="Atur PIN Keamanan Admin"
-            >
-              <KeyRound size={13} strokeWidth={1.5} />
-              <span>PIN Keamanan</span>
-              {isDefaultPin && (
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-500" title="PIN masih default (1234)" />
-              )}
-            </button>
-
-            {printerAlert && (
-              <button
-                onClick={() => navigate("/admin/printers")}
-                className="w-[34px] h-[34px] rounded-full border border-[#e6e6e6] bg-white hover:bg-[#f4f4f4] flex items-center justify-center text-[#ef4444] relative cursor-pointer"
-                title="Peringatan Printer Aktif"
-              >
-                <Bell size={15} strokeWidth={1.5} />
-                <span className="w-2 h-2 rounded-full bg-[#ef4444] absolute top-2 right-2 border border-white" />
-              </button>
-            )}
-
-            <button
-              onClick={toggleFullscreen}
-              className="w-[34px] h-[34px] rounded-full border border-[#e6e6e6] bg-white hover:bg-[#f4f4f4] flex items-center justify-center text-[#666] hover:text-[#171717] transition-colors cursor-pointer"
-              title={isFullscreen ? "Keluar Layar Penuh (Exit Fullscreen)" : "Layar Penuh (Fullscreen)"}
-            >
-              {isFullscreen ? (
-                <Minimize2 size={14} strokeWidth={1.75} />
-              ) : (
-                <Maximize2 size={14} strokeWidth={1.75} />
-              )}
-            </button>
-
-            <div
-              className="w-[32px] h-[32px] rounded-full bg-[#171717] text-white flex items-center justify-center text-[12px] font-medium tracking-[0.03em] select-none"
-              title="Admin User"
-            >
-              AD
-            </div>
+            <button type="button" onClick={() => setChangePinOpen(true)} className={iconButton} aria-label="Atur PIN keamanan" title="Atur PIN keamanan"><KeyRound size={18} />{isDefaultPin && <span className="ml-0.5 size-1.5 rounded-full bg-[#d7b8d6]" />}</button>
+            {printerAlert && <button type="button" onClick={() => navigate("/admin/printers")} className={iconButton} aria-label="Peringatan printer" title="Peringatan printer"><Bell size={18} className="text-[var(--admin-danger,#f18e9a)]" /></button>}
+            <button type="button" onClick={toggleFullscreen} className={iconButton} aria-label={isFullscreen ? "Keluar layar penuh" : "Layar penuh"} title={isFullscreen ? "Keluar layar penuh" : "Layar penuh"}>{isFullscreen ? <Minimize2 size={17} /> : <Maximize2 size={17} />}</button>
+            <div className="ml-1 flex size-9 items-center justify-center rounded-full border border-[var(--admin-border-strong,#41474e)] bg-[#dfb9de] text-[12px] font-semibold text-[#644362]" title="Admin studio">AD</div>
           </div>
         </header>
-
-        {/* Printer Error Banner if any */}
-        {printerAlert && (
-          <div className="bg-white border-b border-[#e8e8e8] px-6 md:px-8 py-2.5 flex items-center justify-between gap-4 text-[13px] shrink-0 transition-all">
-            <div className="flex items-center gap-3 min-w-0">
-              <span className="w-2 h-2 rounded-full bg-[#ef4444] shrink-0" />
-              <div className="flex items-center gap-2 min-w-0 truncate">
-                <strong className="text-[13px] font-semibold text-[#202020] shrink-0">
-                  {printerAlert.title}
-                </strong>
-                <span className="text-[#ccc] hidden md:inline shrink-0">·</span>
-                <span className="text-[13px] text-[#666] truncate font-normal">
-                  {printerAlert.adminMessage}
-                </span>
-              </div>
-            </div>
-
-            {location.pathname !== "/admin/printers" && (
-              <button
-                type="button"
-                onClick={() => navigate("/admin/printers")}
-                className="inline-flex items-center gap-1.5 px-3 py-1 bg-white border border-[#e5e5e5] hover:border-[#171717] hover:bg-[#171717] hover:text-white text-[#333] rounded-[6px] text-[12px] font-medium transition-all cursor-pointer shadow-2xs shrink-0"
-              >
-                <span>Pengaturan Printer</span>
-                <ArrowRight size={13} strokeWidth={1.5} />
-              </button>
-            )}
-          </div>
-        )}
-
-        {/* Page Content Scrollable Container */}
-        <main className="flex-1 overflow-y-auto min-w-0">
-          {children}
-        </main>
+        {printerAlert && <div role="status" className="mx-5 mb-2 flex shrink-0 items-center justify-between gap-3 rounded-xl border border-[var(--admin-alert,#3b2d3c)] bg-[var(--admin-alert,#3b2d3c)] px-4 py-3 text-[13px] lg:mx-[34px]"><div className="min-w-0"><strong className="text-[var(--admin-danger,#f18e9a)]">{printerAlert.title}</strong><p className="truncate text-[var(--admin-secondary,#c3c7ca)]">{printerAlert.adminMessage}</p></div><button type="button" onClick={() => navigate("/admin/printers")} className="shrink-0 text-[var(--admin-danger,#f18e9a)]">Periksa printer <ArrowRight size={14} className="inline" /></button></div>}
+        <main id="admin-content" className="min-w-0 flex-1 overflow-y-auto">{children}</main>
       </div>
-
-      {/* Smart Camera Ingest Modal */}
-      <CameraImportModal
-        isOpen={cameraImportOpen}
-        onClose={() => setCameraImportOpen(false)}
-      />
-
-      {/* Change PIN Security Modal */}
-      <AdminChangePinModal
-        isOpen={changePinOpen}
-        onClose={() => setChangePinOpen(false)}
-      />
+      <CameraImportModal isOpen={cameraImportOpen} onClose={() => setCameraImportOpen(false)} />
+      <AdminChangePinModal isOpen={changePinOpen} onClose={() => setChangePinOpen(false)} />
     </div>
   );
 }

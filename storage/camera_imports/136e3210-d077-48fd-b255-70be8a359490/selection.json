@@ -1,0 +1,19 @@
+{
+  "deviceName": "X-S10",
+  "storageName": "External Memory",
+  "files": [
+    {
+      "id": "280_FUJI/DSCF0023.JPG",
+      "name": "DSCF0023.JPG",
+      "folderName": "280_FUJI",
+      "capturedAt": "2020-11-09T23:31:12",
+      "timeSource": "taken",
+      "size": 2950092,
+      "timeMs": 1604935872000,
+      "group": "main",
+      "selected": true,
+      "importedAt": null,
+      "destName": "136e3210-1-DSCF0023.JPG"
+    }
+  ]
+}

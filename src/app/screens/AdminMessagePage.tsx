@@ -344,17 +344,17 @@ ${disclaimer}`;
 
   return (
     <AdminLayout>
-      <div className="w-full p-6 md:p-8 space-y-8">
+      <div className="w-full px-5 pb-8 pt-3 lg:px-[34px] space-y-7">
         {/* ── 1. HEADER & CONTROL ACTIONS ── */}
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 pb-6 border-b border-[#e8e8e8]">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 pb-6 border-b border-[var(--admin-border,#2a2d2f)]">
           <div>
-            <p className="text-[10px] tracking-[0.14em] text-[#999] uppercase font-medium">
+            <p className="text-[12px] tracking-[0.14em] text-[var(--admin-muted,#92989d)] uppercase font-medium">
               PENGIRIMAN & CLOUD DISK
             </p>
-            <h1 className="text-[28px] sm:text-[34px] font-semibold tracking-[-0.04em] text-[#202020] leading-[1.25] mt-1.5">
+            <h1 className="text-[28px] sm:text-[30px] font-semibold tracking-[-0.04em] text-[var(--admin-text,#f4f4f5)] leading-[1.25] mt-1.5">
               Pesan Softcopy & Google Drive
             </h1>
-            <p className="text-[13px] text-[#777] leading-[1.8] mt-1 max-w-2xl">
+            <p className="text-[13px] text-[var(--admin-muted,#92989d)] leading-[1.8] mt-1 max-w-2xl">
               Generate format pesan WhatsApp, pantau antrean upload Google Drive, serta kelola sinkronisasi sesi kamera.
             </p>
           </div>
@@ -363,7 +363,7 @@ ${disclaimer}`;
             <button
               type="button"
               onClick={() => setCameraImportOpen(true)}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#171717] text-white hover:bg-black rounded-[7px] text-[12px] font-medium transition-colors cursor-pointer shadow-xs"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#c0d0e7] text-[#111b23] hover:bg-[#d2def0] rounded-full text-[12px] font-medium transition-colors cursor-pointer "
             >
               <Camera size={13} />
               <span>Tarik Foto Kamera</span>
@@ -372,7 +372,7 @@ ${disclaimer}`;
             <button
               type="button"
               onClick={() => navigate("/admin/storage")}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white border border-[#e6e6e6] text-[#444] hover:bg-[#f6f6f6] hover:text-[#171717] rounded-[7px] text-[12px] font-medium transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[var(--admin-card,#1c1f20)] border border-[var(--admin-border,#2a2d2f)] text-[var(--admin-secondary,#c3c7ca)] hover:bg-[var(--admin-raised,#292b2f)] hover:text-[var(--admin-text,#f4f4f5)] rounded-full text-[12px] font-medium transition-colors cursor-pointer"
             >
               <HardDrive size={13} />
               <span>Storage PC</span>
@@ -382,7 +382,7 @@ ${disclaimer}`;
               type="button"
               onClick={handleClearPhotos}
               disabled={clearingPhotos}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white border border-[#e6e6e6] text-[#444] hover:bg-[#f6f6f6] hover:text-[#171717] rounded-[7px] text-[12px] font-medium transition-colors cursor-pointer disabled:opacity-40"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[var(--admin-card,#1c1f20)] border border-[var(--admin-border,#2a2d2f)] text-[var(--admin-secondary,#c3c7ca)] hover:bg-[var(--admin-raised,#292b2f)] hover:text-[var(--admin-text,#f4f4f5)] rounded-full text-[12px] font-medium transition-colors cursor-pointer disabled:opacity-40"
               title="Bersihkan folder jepretan kamera aktif untuk sesi customer baru"
             >
               <RefreshCw size={13} className={clearingPhotos ? "animate-spin" : ""} />
@@ -393,13 +393,13 @@ ${disclaimer}`;
 
         {/* ── 2. 4 EXECUTIVE STATUS METRICS ── */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-white border border-[#e8e8e8] rounded-[10px] p-5 space-y-3">
-            <span className="text-[12px] font-medium text-[#777]">Koneksi Google Drive</span>
+          <div className="bg-[var(--admin-card,#1c1f20)] border border-[var(--admin-border,#2a2d2f)] rounded-2xl p-5 space-y-3">
+            <span className="text-[12px] font-medium text-[var(--admin-muted,#92989d)]">Koneksi Google Drive</span>
             <div>
-              <div className="text-[22px] font-semibold text-[#171717] tracking-tight flex items-center gap-2">
+              <div className="text-[18px] font-semibold text-[var(--admin-text,#f4f4f5)] tracking-tight flex items-center gap-2">
                 <span
                   className={`w-2 h-2 rounded-full ${
-                    gdriveAuthStatus?.connected ? "bg-[#10b981]" : "bg-[#f59e0b]"
+                    gdriveAuthStatus?.connected ? "bg-[#c9d2e1]" : "bg-[#d7b8d6]"
                   }`}
                 />
                 <span>
@@ -410,61 +410,61 @@ ${disclaimer}`;
                       : "Terputus"}
                 </span>
               </div>
-              <p className="text-[11px] text-[#888] mt-0.5">
+              <p className="text-[12px] text-[var(--admin-muted,#92989d)] mt-0.5">
                 {gdriveAuthStatus?.connected
                   ? `Folder cloud: ${gdriveAuthStatus.folderName || "Aktif"}`
                   : "Token kedaluwarsa atau server offline"}
               </p>
             </div>
-            <div className="pt-2 border-t border-[#f2f2f2] flex items-center justify-between text-[11px] text-[#888]">
+            <div className="pt-2  border-[var(--admin-border,#2a2d2f)] flex items-center justify-between text-[12px] text-[var(--admin-muted,#92989d)]">
               <span>Otorisasi: {gdriveAuthStatus?.connected ? "Valid" : "Perlu Aksi"}</span>
             </div>
           </div>
 
-          <div className="bg-white border border-[#e8e8e8] rounded-[10px] p-5 space-y-3">
-            <span className="text-[12px] font-medium text-[#777]">Antrean Upload Disk</span>
+          <div className="bg-[var(--admin-card,#1c1f20)] border border-[var(--admin-border,#2a2d2f)] rounded-2xl p-5 space-y-3">
+            <span className="text-[12px] font-medium text-[var(--admin-muted,#92989d)]">Antrean Upload Disk</span>
             <div>
-              <div className="text-[26px] font-semibold text-[#171717] font-mono tracking-tight">
+              <div className="text-[28px] font-semibold text-[var(--admin-text,#f4f4f5)] font-mono tracking-tight">
                 {pendingQueue.length}
-                <span className="text-[14px] text-[#888] font-normal font-sans ml-1">sesi</span>
+                <span className="text-[14px] text-[var(--admin-muted,#92989d)] font-normal font-sans ml-1">sesi</span>
               </div>
-              <p className="text-[11px] text-[#888] mt-0.5">
+              <p className="text-[12px] text-[var(--admin-muted,#92989d)] mt-0.5">
                 {pendingQueue.length > 0
                   ? "Tersimpan aman di folder antrean lokal"
                   : "Seluruh foto telah terunggah ke cloud"}
               </p>
             </div>
-            <div className="pt-2 border-t border-[#f2f2f2] flex items-center justify-between text-[11px] text-[#888]">
+            <div className="pt-2  border-[var(--admin-border,#2a2d2f)] flex items-center justify-between text-[12px] text-[var(--admin-muted,#92989d)]">
               <span>Staging Antrean: Aman</span>
             </div>
           </div>
 
-          <div className="bg-white border border-[#e8e8e8] rounded-[10px] p-5 space-y-3">
-            <span className="text-[12px] font-medium text-[#777]">Sesi Customer Terakhir</span>
+          <div className="bg-[var(--admin-card,#1c1f20)] border border-[var(--admin-border,#2a2d2f)] rounded-2xl p-5 space-y-3">
+            <span className="text-[12px] font-medium text-[var(--admin-muted,#92989d)]">Sesi Customer Terakhir</span>
             <div>
-              <div className="text-[22px] font-semibold text-[#171717] truncate tracking-tight">
+              <div className="text-[18px] font-semibold text-[var(--admin-text,#f4f4f5)] truncate tracking-tight">
                 {latestSession?.customerName || "Belum Ada"}
               </div>
-              <p className="text-[11px] text-[#888] mt-0.5 truncate">
+              <p className="text-[12px] text-[var(--admin-muted,#92989d)] mt-0.5 truncate">
                 {latestSession?.webViewLink ? "Link Drive siap dibagikan" : "Menunggu sesi Kiosk"}
               </p>
             </div>
-            <div className="pt-2 border-t border-[#f2f2f2] flex items-center justify-between text-[11px] text-[#888]">
+            <div className="pt-2  border-[var(--admin-border,#2a2d2f)] flex items-center justify-between text-[12px] text-[var(--admin-muted,#92989d)]">
               <span>Status: {latestSession?.webViewLink ? "Tersedia" : "Standby"}</span>
             </div>
           </div>
 
-          <div className="bg-white border border-[#e8e8e8] rounded-[10px] p-5 space-y-3">
-            <span className="text-[12px] font-medium text-[#777]">Format Pesan WhatsApp</span>
+          <div className="bg-[var(--admin-card,#1c1f20)] border border-[var(--admin-border,#2a2d2f)] rounded-2xl p-5 space-y-3">
+            <span className="text-[12px] font-medium text-[var(--admin-muted,#92989d)]">Format Pesan WhatsApp</span>
             <div>
-              <div className="text-[22px] font-semibold text-[#171717] tracking-tight">
+              <div className="text-[18px] font-semibold text-[var(--admin-text,#f4f4f5)] tracking-tight">
                 {message ? "Pesan Siap" : "Form Input"}
               </div>
-              <p className="text-[11px] text-[#888] mt-0.5">
+              <p className="text-[12px] text-[var(--admin-muted,#92989d)] mt-0.5">
                 {message ? "Teks telah digenerate" : "Lengkapi form customer"}
               </p>
             </div>
-            <div className="pt-2 border-t border-[#f2f2f2] flex items-center justify-between text-[11px] text-[#888]">
+            <div className="pt-2  border-[var(--admin-border,#2a2d2f)] flex items-center justify-between text-[12px] text-[var(--admin-muted,#92989d)]">
               <span>Auto-copy clipboard: Aktif</span>
             </div>
           </div>
@@ -474,17 +474,17 @@ ${disclaimer}`;
         <div className="space-y-4">
           {/* Drive Auth Warning Banner */}
           {gdriveAuthStatus && !gdriveAuthStatus.connected && (
-            <div className="p-5 border border-[#e8e8e8] rounded-[10px] bg-[#fafafa] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="p-5 border border-[var(--admin-border,#2a2d2f)] rounded-2xl bg-[var(--admin-card,#1c1f20)] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-[#f59e0b]" />
-                  <strong className="text-[14px] font-semibold text-[#202020]">
+                  <span className="w-2 h-2 rounded-full bg-[#d7b8d6]" />
+                  <strong className="text-[14px] font-semibold text-[var(--admin-text,#f4f4f5)]">
                     {gdriveAuthStatus.isTokenExpired
                       ? "Token Google Drive Kedaluwarsa (Perlu Login Ulang)"
                       : "Koneksi Google Drive Terputus"}
                   </strong>
                 </div>
-                <p className="text-[12px] text-[#777] mt-1 leading-[1.6] max-w-2xl">
+                <p className="text-[12px] text-[var(--admin-muted,#92989d)] mt-1 leading-[1.6] max-w-2xl">
                   {gdriveAuthStatus.isTokenExpired
                     ? "Masa aktif login Google Drive telah habis. Klik tombol di samping untuk login ulang agar foto sesi otomatis ter-upload ke Google Drive pelanggan."
                     : `Koneksi Google Drive bermasalah (${gdriveAuthStatus.error || "Periksa koneksi internet"}). Foto sesi saat ini aman disimpan di antrean lokal PC.`}
@@ -495,7 +495,7 @@ ${disclaimer}`;
                 type="button"
                 onClick={handleTriggerAuth}
                 disabled={authorizingDrive}
-                className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#171717] text-white hover:bg-black rounded-[7px] text-[12px] font-medium transition-colors cursor-pointer shrink-0 disabled:opacity-50 shadow-xs"
+                className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#c0d0e7] text-[#111b23] hover:bg-[#d2def0] rounded-full text-[12px] font-medium transition-colors cursor-pointer shrink-0 disabled:opacity-50 "
               >
                 <ExternalLink size={13} />
                 <span>{authorizingDrive ? "Membuka Browser..." : "Login Ulang Drive"}</span>
@@ -505,15 +505,15 @@ ${disclaimer}`;
 
           {/* Pending Queue Banner */}
           {pendingQueue.length > 0 && (
-            <div className="p-5 border border-[#e8e8e8] rounded-[10px] bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="p-5 border border-[var(--admin-border,#2a2d2f)] rounded-2xl bg-[var(--admin-card,#1c1f20)] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <div className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-[#0284c7]" />
-                  <strong className="text-[14px] font-semibold text-[#202020]">
+                  <strong className="text-[14px] font-semibold text-[var(--admin-text,#f4f4f5)]">
                     Ada {pendingQueue.length} Antrean Sesi Foto di Disk PC
                   </strong>
                 </div>
-                <p className="text-[12px] text-[#777] mt-1 leading-[1.6]">
+                <p className="text-[12px] text-[var(--admin-muted,#92989d)] mt-1 leading-[1.6]">
                   Foto dari sesi customer sebelumnya tersimpan aman di disk lokal PC dan siap diunggah ke Google Drive.
                 </p>
               </div>
@@ -522,7 +522,7 @@ ${disclaimer}`;
                 type="button"
                 onClick={handleUploadPendingQueue}
                 disabled={uploadingQueue || !gdriveAuthStatus?.connected}
-                className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#171717] text-white hover:bg-black rounded-[7px] text-[12px] font-medium transition-colors cursor-pointer shrink-0 disabled:opacity-40 shadow-xs"
+                className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#c0d0e7] text-[#111b23] hover:bg-[#d2def0] rounded-full text-[12px] font-medium transition-colors cursor-pointer shrink-0 disabled:opacity-40 "
               >
                 <HardDrive size={13} />
                 <span>{uploadingQueue ? "Mengunggah Antrean..." : "Unggah Antrean ke Drive"}</span>
@@ -532,15 +532,15 @@ ${disclaimer}`;
 
           {/* Live Upload Status Panel */}
           {uploadStatus && uploadStatus.total > 0 && (
-            <div className="bg-white border border-[#e8e8e8] rounded-[10px] p-5 space-y-3">
+            <div className="bg-[var(--admin-card,#1c1f20)] border border-[var(--admin-border,#2a2d2f)] rounded-2xl p-5 space-y-3">
               <div className="flex items-center justify-between flex-wrap gap-2">
                 <div className="flex items-center gap-2">
                   <span
                     className={`w-2 h-2 rounded-full ${
-                      uploadStatus.isUploading ? "bg-[#f59e0b]" : "bg-[#10b981]"
+                      uploadStatus.isUploading ? "bg-[#d7b8d6]" : "bg-[#c9d2e1]"
                     }`}
                   />
-                  <h3 className="text-[13px] font-semibold text-[#202020]">
+                  <h3 className="text-[13px] font-semibold text-[var(--admin-text,#f4f4f5)]">
                     {uploadStatus.isUploading
                       ? "Status Upload Google Drive (Live)"
                       : "Upload Google Drive Selesai (100%)"}
@@ -548,24 +548,24 @@ ${disclaimer}`;
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <span className="text-[11px] font-mono text-[#555] bg-[#f5f5f5] px-2 py-0.5 rounded-[4px]">
+                  <span className="text-[12px] font-mono text-[var(--admin-secondary,#c3c7ca)] bg-[var(--admin-card,#1c1f20)] px-2 py-0.5 rounded-[4px]">
                     {uploadStatus.folderName}
                   </span>
-                  <span className="text-[11px] font-mono text-[#202020] font-medium">
+                  <span className="text-[12px] font-mono text-[var(--admin-text,#f4f4f5)] font-medium">
                     {uploadStatus.uploaded} / {uploadStatus.total} File ({uploadStatus.percent}%)
                   </span>
                 </div>
               </div>
 
               {/* Progress Bar */}
-              <div className="w-full bg-[#f0f0f0] h-1.5 rounded-full overflow-hidden">
+              <div className="w-full bg-[var(--admin-raised,#292b2f)] h-1.5 rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-[#171717] transition-all duration-300 rounded-full"
+                  className="h-full bg-[#c0d0e7] transition-all duration-300 rounded-full"
                   style={{ width: `${Math.max(uploadStatus.percent, 3)}%` }}
                 />
               </div>
 
-              <div className="flex justify-between items-center text-[11px] text-[#888]">
+              <div className="flex justify-between items-center text-[12px] text-[var(--admin-muted,#92989d)]">
                 <span>
                   {uploadStatus.isUploading
                     ? `Mengunggah: ${uploadStatus.currentFile || "..."}`
@@ -582,12 +582,12 @@ ${disclaimer}`;
         {/* ── 4. TWO-COLUMN: INPUT FORM (6 cols) & WA PREVIEW (6 cols) ── */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           {/* Column 1: Input Data Customer (6 cols) */}
-          <div className="lg:col-span-6 bg-white border border-[#e8e8e8] rounded-[12px] p-6 sm:p-8 space-y-6">
-            <div className="pb-4 border-b border-[#f0f0f0]">
-              <h2 className="text-[17px] font-semibold text-[#202020] tracking-[-0.02em]">
+          <div className="lg:col-span-6 bg-[var(--admin-card,#1c1f20)] border border-[var(--admin-border,#2a2d2f)] rounded-2xl p-6 sm:p-8 space-y-6">
+            <div className="pb-4  border-[var(--admin-border,#2a2d2f)]">
+              <h2 className="text-[16px] font-semibold text-[var(--admin-text,#f4f4f5)] tracking-[-0.02em]">
                 Input Data Customer
               </h2>
-              <p className="text-[13px] text-[#888] leading-[1.7] mt-0.5">
+              <p className="text-[13px] text-[var(--admin-muted,#92989d)] leading-[1.7] mt-0.5">
                 Masukkan identitas dan link folder Google Drive untuk generate pesan softcopy.
               </p>
             </div>
@@ -595,7 +595,7 @@ ${disclaimer}`;
             <div className="space-y-4 text-[13px]">
               {/* Nama Customer */}
               <div>
-                <label className="font-medium text-[#444] mb-1.5 block text-[12px]">
+                <label className="font-medium text-[var(--admin-secondary,#c3c7ca)] mb-1.5 block text-[12px]">
                   Nama Customer
                 </label>
                 <input
@@ -606,21 +606,21 @@ ${disclaimer}`;
                     if (errors.name) setErrors((p) => ({ ...p, name: undefined }));
                   }}
                   placeholder="Contoh: Sarah"
-                  className={`w-full px-3 py-2 border rounded-[7px] text-[13px] outline-none transition-colors ${
+                  className={`w-full px-3 py-2 border rounded-full text-[13px] outline-none transition-colors ${
                     errors.name
-                      ? "border-[#ef4444] bg-[#fef2f2]"
-                      : "border-[#e0e0e0] focus:border-[#171717] bg-white"
+                      ? "border-[var(--admin-border,#2a2d2f)] bg-[var(--admin-alert,#3b2d3c)]"
+                      : "border-[var(--admin-border,#2a2d2f)] focus:border-[var(--admin-focus,#c0d0e7)] bg-[var(--admin-card,#1c1f20)]"
                   }`}
                 />
                 {errors.name && (
-                  <p className="text-[#dc2626] text-[11px] mt-1 font-medium">{errors.name}</p>
+                  <p className="text-[var(--admin-danger,#f18e9a)] text-[12px] mt-1 font-medium">{errors.name}</p>
                 )}
               </div>
 
               {/* Link Google Drive */}
               <div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <label className="font-medium text-[#444] text-[12px]">
+                  <label className="font-medium text-[var(--admin-secondary,#c3c7ca)] text-[12px]">
                     Link Google Drive
                   </label>
                   {latestSession?.webViewLink && (
@@ -630,7 +630,7 @@ ${disclaimer}`;
                         setDriveLink(latestSession.webViewLink || "");
                         if (latestSession.customerName) setName(latestSession.customerName);
                       }}
-                      className="text-[11px] text-[#555] hover:text-[#171717] bg-[#f5f5f5] hover:bg-[#eaeaea] px-2 py-0.5 rounded-[4px] border border-[#e2e2e2] transition-colors cursor-pointer"
+                      className="text-[12px] text-[var(--admin-secondary,#c3c7ca)] hover:text-[var(--admin-text,#f4f4f5)] bg-[var(--admin-card,#1c1f20)] hover:bg-[var(--admin-raised,#292b2f)] px-2 py-0.5 rounded-[4px] border border-[var(--admin-border,#2a2d2f)] transition-colors cursor-pointer"
                     >
                       ⚡ Isi dari Sesi Terakhir ({latestSession.customerName || "Customer"})
                     </button>
@@ -644,24 +644,24 @@ ${disclaimer}`;
                     if (errors.driveLink) setErrors((p) => ({ ...p, driveLink: undefined }));
                   }}
                   placeholder="https://drive.google.com/drive/folders/..."
-                  className={`w-full px-3 py-2 border rounded-[7px] text-[13px] outline-none font-mono transition-colors ${
+                  className={`w-full px-3 py-2 border rounded-full text-[13px] outline-none font-mono transition-colors ${
                     errors.driveLink
-                      ? "border-[#ef4444] bg-[#fef2f2]"
-                      : "border-[#e0e0e0] focus:border-[#171717] bg-white"
+                      ? "border-[var(--admin-border,#2a2d2f)] bg-[var(--admin-alert,#3b2d3c)]"
+                      : "border-[var(--admin-border,#2a2d2f)] focus:border-[var(--admin-focus,#c0d0e7)] bg-[var(--admin-card,#1c1f20)]"
                   }`}
                 />
                 {errors.driveLink && (
-                  <p className="text-[#dc2626] text-[11px] mt-1 font-medium">{errors.driveLink}</p>
+                  <p className="text-[var(--admin-danger,#f18e9a)] text-[12px] mt-1 font-medium">{errors.driveLink}</p>
                 )}
               </div>
 
               {/* Nomor WhatsApp */}
               <div>
-                <label className="font-medium text-[#444] mb-1.5 block text-[12px]">
+                <label className="font-medium text-[var(--admin-secondary,#c3c7ca)] mb-1.5 block text-[12px]">
                   Nomor WhatsApp Customer
                 </label>
-                <div className="flex items-center border border-[#e0e0e0] focus-within:border-[#171717] rounded-[7px] overflow-hidden bg-white">
-                  <span className="bg-[#f7f7f7] border-r border-[#e0e0e0] px-3 py-2 text-[12px] font-mono text-[#666] shrink-0 font-medium">
+                <div className="flex items-center border border-[var(--admin-border,#2a2d2f)] focus-within:border-[var(--admin-focus,#c0d0e7)] rounded-full overflow-hidden bg-[var(--admin-card,#1c1f20)]">
+                  <span className="bg-[var(--admin-card,#1c1f20)] border-r border-[var(--admin-border,#2a2d2f)] px-3 py-2 text-[12px] font-mono text-[var(--admin-secondary,#c3c7ca)] shrink-0 font-medium">
                     +62
                   </span>
                   <input
@@ -677,9 +677,9 @@ ${disclaimer}`;
                   />
                 </div>
                 {errors.phone && (
-                  <p className="text-[#dc2626] text-[11px] mt-1 font-medium">{errors.phone}</p>
+                  <p className="text-[var(--admin-danger,#f18e9a)] text-[12px] mt-1 font-medium">{errors.phone}</p>
                 )}
-                <p className="text-[11px] text-[#888] mt-1">
+                <p className="text-[12px] text-[var(--admin-muted,#92989d)] mt-1">
                   Ketik tanpa angka 0 di depan (contoh: 81234567890)
                 </p>
               </div>
@@ -688,23 +688,23 @@ ${disclaimer}`;
               <button
                 type="button"
                 onClick={handleGenerate}
-                className="w-full py-2.5 bg-[#171717] text-white hover:bg-black rounded-[7px] text-[12px] font-medium transition-colors cursor-pointer shadow-xs"
+                className="w-full py-2.5 bg-[#c0d0e7] text-[#111b23] hover:bg-[#d2def0] rounded-full text-[12px] font-medium transition-colors cursor-pointer "
               >
                 <span>Generate Format Pesan</span>
               </button>
 
               {/* Quick Actions after generated */}
               {message && (
-                <div className="flex gap-2.5 pt-3 border-t border-[#f0f0f0]">
+                <div className="flex gap-2.5 pt-3  border-[var(--admin-border,#2a2d2f)]">
                   <button
                     type="button"
                     onClick={handleCopy}
-                    className="flex-1 py-2 text-[12px] font-medium border border-[#e2e2e2] rounded-[7px] bg-white text-[#333] hover:bg-[#f6f6f6] hover:text-[#171717] transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                    className="flex-1 py-2 text-[12px] font-medium border border-[var(--admin-border,#2a2d2f)] rounded-full bg-[var(--admin-card,#1c1f20)] text-[var(--admin-text,#f4f4f5)] hover:bg-[var(--admin-raised,#292b2f)] hover:text-[var(--admin-text,#f4f4f5)] transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
                   >
                     {copied ? (
                       <>
-                        <Check size={13} className="text-[#10b981]" />
-                        <span className="text-[#10b981] font-semibold">Tersalin</span>
+                        <Check size={13} className="text-[var(--admin-accent-text,#c9d2e1)]" />
+                        <span className="text-[var(--admin-accent-text,#c9d2e1)] font-semibold">Tersalin</span>
                       </>
                     ) : (
                       <>
@@ -717,7 +717,7 @@ ${disclaimer}`;
                   <button
                     type="button"
                     onClick={handleWhatsApp}
-                    className="flex-1 py-2 text-[12px] font-medium rounded-[7px] bg-[#10b981] text-white hover:bg-[#059669] transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
+                    className="flex-1 py-2 text-[12px] font-medium rounded-full bg-[#c9d2e1] text-[#111b23] hover:bg-[#c9d2e1] transition-colors flex items-center justify-center gap-1.5 cursor-pointer "
                   >
                     <Send size={13} />
                     <span>Buka WhatsApp</span>
@@ -728,12 +728,12 @@ ${disclaimer}`;
           </div>
 
           {/* Column 2: WhatsApp Preview (6 cols) */}
-          <div className="lg:col-span-6 bg-white border border-[#e8e8e8] rounded-[12px] p-6 sm:p-8 space-y-6">
-            <div className="pb-4 border-b border-[#f0f0f0]">
-              <h2 className="text-[17px] font-semibold text-[#202020] tracking-[-0.02em]">
+          <div className="lg:col-span-6 bg-[var(--admin-card,#1c1f20)] border border-[var(--admin-border,#2a2d2f)] rounded-2xl p-6 sm:p-8 space-y-6">
+            <div className="pb-4  border-[var(--admin-border,#2a2d2f)]">
+              <h2 className="text-[16px] font-semibold text-[var(--admin-text,#f4f4f5)] tracking-[-0.02em]">
                 Pratinjau Pesan WhatsApp
               </h2>
-              <p className="text-[13px] text-[#888] leading-[1.7] mt-0.5">
+              <p className="text-[13px] text-[var(--admin-muted,#92989d)] leading-[1.7] mt-0.5">
                 Simulasi tampilan teks yang akan diterima oleh customer di ponsel mereka.
               </p>
             </div>
@@ -741,28 +741,28 @@ ${disclaimer}`;
             {message ? (
               <div className="space-y-4">
                 {/* Bubble Container */}
-                <div className="bg-[#f7f7f7] border border-[#e8e8e8] rounded-[10px] p-4">
+                <div className="bg-[var(--admin-card,#1c1f20)] border border-[var(--admin-border,#2a2d2f)] rounded-2xl p-4">
                   {/* Sender Header */}
-                  <div className="flex items-center gap-2.5 pb-2.5 mb-2.5 border-b border-[#e2e2e2]">
-                    <div className="w-7 h-7 bg-[#171717] rounded-full flex items-center justify-center shrink-0">
-                      <span className="text-white text-[10px] font-semibold">
+                  <div className="flex items-center gap-2.5 pb-2.5 mb-2.5  border-[var(--admin-border,#2a2d2f)]">
+                    <div className="w-7 h-7 bg-[#c0d0e7] rounded-full flex items-center justify-center shrink-0">
+                      <span className="text-white text-[12px] font-semibold">
                         {branding?.studioName ? branding.studioName.slice(0, 2).toUpperCase() : "IG"}
                       </span>
                     </div>
                     <div>
-                      <p className="font-semibold text-[13px] text-[#202020] leading-tight">
+                      <p className="font-semibold text-[13px] text-[var(--admin-text,#f4f4f5)] leading-tight">
                         {branding?.studioName || "Ignos Studio"}
                       </p>
-                      <p className="text-[10px] text-[#888]">Pesan Keluar</p>
+                      <p className="text-[12px] text-[var(--admin-muted,#92989d)]">Pesan Keluar</p>
                     </div>
                   </div>
 
                   {/* Message Bubble */}
-                  <div className="bg-white border border-[#e0e0e0] rounded-[10px] rounded-tl-none p-4 shadow-2xs">
-                    <p className="text-[12px] leading-relaxed whitespace-pre-line text-[#202020]">
+                  <div className="bg-[var(--admin-card,#1c1f20)] border border-[var(--admin-border,#2a2d2f)] rounded-2xl rounded-tl-none p-4 ">
+                    <p className="text-[12px] leading-relaxed whitespace-pre-line text-[var(--admin-text,#f4f4f5)]">
                       {message}
                     </p>
-                    <p className="text-[10px] text-[#999] text-right mt-2 font-mono">
+                    <p className="text-[12px] text-[var(--admin-muted,#92989d)] text-right mt-2 font-mono">
                       {new Date().toLocaleTimeString("id-ID", {
                         hour: "2-digit",
                         minute: "2-digit",
@@ -773,23 +773,23 @@ ${disclaimer}`;
 
                 {/* Raw Textbox */}
                 <div>
-                  <label className="text-[11px] font-medium text-[#777] mb-1 block">
+                  <label className="text-[12px] font-medium text-[var(--admin-muted,#92989d)] mb-1 block">
                     Teks Mentah (Clipboard):
                   </label>
                   <textarea
                     readOnly
                     value={message}
                     rows={6}
-                    className="w-full border border-[#e0e0e0] rounded-[7px] px-3 py-2 text-[12px] font-mono text-[#444] bg-[#fafafa] resize-none outline-none leading-relaxed"
+                    className="w-full border border-[var(--admin-border,#2a2d2f)] rounded-lg px-3 py-2 text-[12px] font-mono text-[var(--admin-secondary,#c3c7ca)] bg-[var(--admin-canvas,#111114)] resize-none outline-none leading-relaxed"
                   />
                 </div>
               </div>
             ) : (
-              <div className="py-20 text-center space-y-2 border border-dashed border-[#e5e5e5] rounded-[10px] bg-[#fafafa] p-6">
-                <p className="text-[14px] font-medium text-[#202020]">
+              <div className="py-20 text-center space-y-2 border border-dashed border-[var(--admin-border,#2a2d2f)] rounded-2xl bg-[var(--admin-card,#1c1f20)] p-6">
+                <p className="text-[14px] font-medium text-[var(--admin-text,#f4f4f5)]">
                   Pesan belum digenerate
                 </p>
-                <p className="text-[12px] text-[#888] max-w-sm mx-auto">
+                <p className="text-[12px] text-[var(--admin-muted,#92989d)] max-w-sm mx-auto">
                   Lengkapi nama customer, link Google Drive, dan nomor WhatsApp di form sebelah kiri, lalu klik tombol "Generate Format Pesan".
                 </p>
               </div>

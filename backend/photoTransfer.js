@@ -13,15 +13,36 @@ export async function verifyPhoto(filename, expectedSize) {
 
 // Synchronous rename section: no other API handler observes a partially published gallery.
 // Old files are retained, not deleted. Roll back if either directory cannot be switched.
-export function publishGallery({ photosDir, thumbsDir, stagePhotos, stageThumbs, backupDir, io = fs }) {
+// Folders are never renamed, only their files: Windows refuses to rename a folder while any file in
+// it is open (EPERM), and freshly copied photos are typically being scanned by the antivirus right
+// then. A single file that is briefly locked is retried for up to ~3 seconds.
+const LOCK_CODES = new Set(["EPERM", "EBUSY", "EACCES"]);
+const pause = (ms) => Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
+
+export function publishGallery({ photosDir, thumbsDir, stagePhotos, stageThumbs, backupDir, io = fs, retryDelayMs = 100, retries = 30 }) {
   io.mkdirSync(backupDir, { recursive: true });
   const moves = [];
-  const move = (from, to) => { io.renameSync(from, to); moves.push([from, to]); };
+  // Synchronous on purpose: no request handler can observe a half-replaced gallery.
+  const move = (from, to) => {
+    for (let attempt = 0; ; attempt++) {
+      try { io.renameSync(from, to); break; }
+      catch (error) {
+        if (!LOCK_CODES.has(error.code) || attempt >= retries) throw error;
+        pause(retryDelayMs);
+      }
+    }
+    moves.push([from, to]);
+  };
+  const swap = (liveDir, stageDir, backupName) => {
+    const backup = path.join(backupDir, backupName);
+    io.mkdirSync(liveDir, { recursive: true });
+    io.mkdirSync(backup, { recursive: true });
+    for (const name of io.readdirSync(liveDir)) move(path.join(liveDir, name), path.join(backup, name));
+    for (const name of io.readdirSync(stageDir)) move(path.join(stageDir, name), path.join(liveDir, name));
+  };
   try {
-    if (io.existsSync(photosDir)) move(photosDir, path.join(backupDir, "photos"));
-    if (io.existsSync(thumbsDir)) move(thumbsDir, path.join(backupDir, "thumbs"));
-    move(stagePhotos, photosDir);
-    move(stageThumbs, thumbsDir);
+    swap(photosDir, stagePhotos, "photos");
+    swap(thumbsDir, stageThumbs, "thumbs");
   } catch (error) {
     const rollbackErrors = [];
     for (const [from, to] of moves.reverse()) {
@@ -41,14 +62,32 @@ export async function prepareGallery({ files, workDir, photosDir, clearExisting,
   }
   writeJsonAtomic(path.join(workDir, "manifest.json"), { status: "copying", files });
   await copy(stagePhotos);
+  // One decode per photo, several photos at a time: building the gallery thumbnail is also the
+  // integrity check (a truncated or corrupt JPEG fails with failOn: "warning"). Decoding every
+  // photo twice, one by one, took about half of an 81-photo import.
   let bytes = 0, verified = 0;
-  for (const file of files) {
-    bytes += await verifyPhoto(childPath(stagePhotos, file.destName), file.size);
+  const imported = new Set(files.map((file) => file.destName));
+  await mapLimit(files, THUMB_CONCURRENCY, async (file) => {
+    const photo = childPath(stagePhotos, file.destName);
+    const stat = await fs.promises.stat(photo);
+    if (!stat.isFile() || !stat.size || (file.size != null && stat.size !== file.size)) throw new Error(`Transfer belum lengkap: ${file.destName}`);
+    await sharp(photo, { failOn: "warning" }).rotate().resize(400).jpeg({ quality: 80 }).toFile(childPath(stageThumbs, file.destName));
+    bytes += stat.size;
     onProgress(++verified, files.length, "verifying");
-  }
-  for (const file of fs.readdirSync(stagePhotos).filter((f) => /\.(jpg|jpeg|png|webp)$/i.test(f))) {
-    await sharp(childPath(stagePhotos, file), { failOn: "warning" }).rotate().resize(400).jpeg({ quality: 80 }).toFile(childPath(stageThumbs, file));
-  }
+  });
+  // Photos kept from the previous gallery only need their thumbnails rebuilt.
+  const kept = fs.readdirSync(stagePhotos).filter((f) => /\.(jpg|jpeg|png|webp)$/i.test(f) && !imported.has(f));
+  await mapLimit(kept, THUMB_CONCURRENCY, (name) =>
+    sharp(childPath(stagePhotos, name), { failOn: "warning" }).rotate().resize(400).jpeg({ quality: 80 }).toFile(childPath(stageThumbs, name)));
   writeJsonAtomic(path.join(workDir, "manifest.json"), { status: "verified", files, bytes });
   return { stagePhotos, stageThumbs, bytes };
+}
+
+const THUMB_CONCURRENCY = 4;
+
+// Runs fn over items with at most limit in flight; rejects on the first failure.
+async function mapLimit(items, limit, fn) {
+  let next = 0;
+  const worker = async () => { while (next < items.length) { const item = items[next++]; await fn(item); } };
+  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, worker));
 }

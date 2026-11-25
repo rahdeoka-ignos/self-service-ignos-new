@@ -108,9 +108,9 @@ export function AdminLicensePage() {
     if (!license) {
       return {
         label: "Memuat Status...",
-        dotClass: "bg-neutral-300",
+        dotClass: "bg-[var(--admin-raised,#292b2f)]",
         badgeText: "Memeriksa",
-        badgeBg: "bg-neutral-100 text-neutral-600",
+        badgeBg: "bg-[var(--admin-raised,#292b2f)] text-[var(--admin-secondary,#c3c7ca)]",
       };
     }
     if (license.isClockTampered) {
@@ -118,7 +118,7 @@ export function AdminLicensePage() {
         label: "Manipulasi Jam Terdeteksi",
         dotClass: "bg-rose-500",
         badgeText: "Jam PC Tidak Valid",
-        badgeBg: "bg-rose-50 text-rose-700 border border-rose-200",
+        badgeBg: "bg-[var(--admin-alert,#3b2d3c)] text-[var(--admin-danger,#f18e9a)] border border-rose-200",
       };
     }
     if (license.isExpired) {
@@ -126,7 +126,7 @@ export function AdminLicensePage() {
         label: "Masa Sewa Berakhir",
         dotClass: "bg-rose-500",
         badgeText: "Kedaluwarsa",
-        badgeBg: "bg-rose-50 text-rose-700 border border-rose-200",
+        badgeBg: "bg-[var(--admin-alert,#3b2d3c)] text-[var(--admin-danger,#f18e9a)] border border-rose-200",
       };
     }
     if (license.status === "warning_expiring_soon") {
@@ -134,14 +134,14 @@ export function AdminLicensePage() {
         label: "Mendekati Jatuh Tempo",
         dotClass: "bg-amber-500",
         badgeText: "Segera Perpanjang",
-        badgeBg: "bg-amber-50 text-amber-700 border border-amber-200",
+        badgeBg: "bg-[var(--admin-alert,#3b2d3c)] text-[var(--admin-pending,#d7b8d6)] border border-amber-200",
       };
     }
     return {
       label: "Lisensi Aktif & Valid",
       dotClass: "bg-emerald-500",
       badgeText: "Aktif",
-      badgeBg: "bg-emerald-50 text-emerald-700 border border-emerald-200",
+      badgeBg: "bg-[var(--admin-raised,#292b2f)] text-[var(--admin-accent-text,#c0d0e7)] border border-emerald-200",
     };
   };
 
@@ -166,14 +166,14 @@ export function AdminLicensePage() {
 
   return (
     <AdminLayout>
-      <div className="w-full p-6 md:p-8 space-y-8">
+      <div className="w-full px-5 pb-8 pt-3 lg:px-[34px] space-y-7">
         {/* Header Section */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-[#e8e8e8]">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-[var(--admin-border,#2a2d2f)]">
           <div>
-            <h1 className="text-2xl font-bold text-[#171717] tracking-tight">
+            <h1 className="text-[28px] sm:text-[30px] font-semibold text-[var(--admin-text,#f4f4f5)] tracking-tight">
               Lisensi Sewa & Langganan
             </h1>
-            <p className="text-sm text-[#737373] mt-1">
+            <p className="text-sm text-[var(--admin-muted,#92989d)] mt-1">
               Pantau masa sewa software studio, status proteksi offline, dan aktivasi kode perpanjangan dari vendor.
             </p>
           </div>
@@ -181,7 +181,7 @@ export function AdminLicensePage() {
             <button
               onClick={handleManualRefresh}
               disabled={refreshing || loading}
-              className="inline-flex items-center gap-2 px-4 py-2 border border-[#e5e5e5] hover:bg-neutral-50 text-[#171717] rounded-lg text-sm font-medium transition-colors cursor-pointer disabled:opacity-50"
+              className="inline-flex items-center gap-2 px-4 py-2 border border-[var(--admin-border,#2a2d2f)] hover:bg-[var(--admin-raised,#292b2f)] text-[var(--admin-text,#f4f4f5)] rounded-lg text-sm font-medium transition-colors cursor-pointer disabled:opacity-50"
             >
               <RefreshCw size={15} className={refreshing ? "animate-spin" : ""} />
               <span>Periksa Status</span>
@@ -191,17 +191,17 @@ export function AdminLicensePage() {
 
         {/* Notice Banner if Expired or Expiring Soon */}
         {isLocked && (
-          <div className="bg-rose-50 border border-rose-200 rounded-xl p-5 flex items-start gap-4 text-rose-900">
-            <div className="w-8 h-8 rounded-lg bg-rose-100 flex items-center justify-center shrink-0 text-rose-600 mt-0.5">
+          <div className="bg-[var(--admin-alert,#3b2d3c)] border border-rose-200 rounded-xl p-5 flex items-start gap-4 text-[var(--admin-danger,#f18e9a)]">
+            <div className="w-8 h-8 rounded-lg bg-[var(--admin-alert,#3b2d3c)] flex items-center justify-center shrink-0 text-[var(--admin-danger,#f18e9a)] mt-0.5">
               <AlertTriangle size={18} />
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-sm text-rose-950">
+              <h3 className="font-semibold text-sm text-[var(--admin-danger,#f18e9a)]">
                 {license?.isClockTampered
                   ? "Peringatan: Manipulasi Jam PC Terdeteksi"
                   : "Masa Sewa Software Telah Berakhir"}
               </h3>
-              <p className="text-xs text-rose-800 mt-1 leading-relaxed">
+              <p className="text-xs text-[var(--admin-danger,#f18e9a)] mt-1 leading-relaxed">
                 {license?.isClockTampered
                   ? "Sistem mendeteksi pengaturan jam komputer dimundurkan. Sesuaikan kembali jam Windows ke waktu saat ini atau masukkan kode lisensi baru untuk melanjutkan."
                   : "Layar antarmuka bilik Kiosk saat ini terkunci otomatis. Hubungi vendor penyedia software untuk melakukan perpanjangan masa sewa dan dapatkan kode aktivasi baru."}
@@ -211,15 +211,15 @@ export function AdminLicensePage() {
         )}
 
         {isWarning && !isLocked && (
-          <div className="bg-amber-50 border border-amber-200 rounded-xl p-5 flex items-start gap-4 text-amber-900">
-            <div className="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center shrink-0 text-amber-600 mt-0.5">
+          <div className="bg-[var(--admin-alert,#3b2d3c)] border border-amber-200 rounded-xl p-5 flex items-start gap-4 text-[var(--admin-pending,#d7b8d6)]">
+            <div className="w-8 h-8 rounded-lg bg-[var(--admin-alert,#3b2d3c)] flex items-center justify-center shrink-0 text-[var(--admin-pending,#d7b8d6)] mt-0.5">
               <Clock size={18} />
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-sm text-amber-950">
+              <h3 className="font-semibold text-sm text-[var(--admin-pending,#d7b8d6)]">
                 Masa Sewa Akan Segera Berakhir dalam {license?.daysLeft} Hari
               </h3>
-              <p className="text-xs text-amber-800 mt-1 leading-relaxed">
+              <p className="text-xs text-[var(--admin-pending,#d7b8d6)] mt-1 leading-relaxed">
                 Lisensi studio Anda jatuh tempo pada {formattedExpiry}. Disarankan untuk segera menghubungi vendor agar operasional bilik foto customer tidak terganggu saat hari pergantian sewa.
               </p>
             </div>
@@ -229,75 +229,75 @@ export function AdminLicensePage() {
         {/* 4 Top KPI Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Card 1: Status */}
-          <div className="bg-white border border-[#e5e5e5] rounded-xl p-5 flex flex-col justify-between space-y-4">
+          <div className="bg-[var(--admin-card,#1c1f20)] border border-[var(--admin-border,#2a2d2f)] rounded-xl p-5 flex flex-col justify-between space-y-4">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-[#737373] uppercase tracking-wider">
+              <span className="text-xs font-medium text-[var(--admin-muted,#92989d)] uppercase tracking-wider">
                 Status Lisensi
               </span>
               <div className="flex items-center gap-1.5">
                 <span className={`w-2 h-2 rounded-full ${statusDisplay.dotClass}`} />
-                <span className="text-xs font-medium text-[#171717]">{statusDisplay.badgeText}</span>
+                <span className="text-xs font-medium text-[var(--admin-text,#f4f4f5)]">{statusDisplay.badgeText}</span>
               </div>
             </div>
             <div>
-              <div className="text-lg font-bold text-[#171717] tracking-tight truncate">
+              <div className="text-lg font-bold text-[var(--admin-text,#f4f4f5)] tracking-tight truncate">
                 {statusDisplay.label}
               </div>
-              <div className="text-xs text-[#737373] mt-0.5 truncate">
+              <div className="text-xs text-[var(--admin-muted,#92989d)] mt-0.5 truncate">
                 Klien: {license?.clientName || "—"}
               </div>
             </div>
           </div>
 
           {/* Card 2: Sisa Hari */}
-          <div className="bg-white border border-[#e5e5e5] rounded-xl p-5 flex flex-col justify-between space-y-4">
+          <div className="bg-[var(--admin-card,#1c1f20)] border border-[var(--admin-border,#2a2d2f)] rounded-xl p-5 flex flex-col justify-between space-y-4">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-[#737373] uppercase tracking-wider">
+              <span className="text-xs font-medium text-[var(--admin-muted,#92989d)] uppercase tracking-wider">
                 Sisa Masa Sewa
               </span>
-              <Clock size={15} className="text-[#a3a3a3]" />
+              <Clock size={15} className="text-[var(--admin-muted,#92989d)]" />
             </div>
             <div>
-              <div className="text-2xl font-bold text-[#171717] tracking-tight">
+              <div className="text-2xl font-bold text-[var(--admin-text,#f4f4f5)] tracking-tight">
                 {license?.isExpired ? "0 Hari" : `${license?.daysLeft ?? 0} Hari`}
               </div>
-              <div className="text-xs text-[#737373] mt-0.5 truncate">
+              <div className="text-xs text-[var(--admin-muted,#92989d)] mt-0.5 truncate">
                 Jatuh tempo: {formattedExpiry}
               </div>
             </div>
           </div>
 
           {/* Card 3: Paket Sewa */}
-          <div className="bg-white border border-[#e5e5e5] rounded-xl p-5 flex flex-col justify-between space-y-4">
+          <div className="bg-[var(--admin-card,#1c1f20)] border border-[var(--admin-border,#2a2d2f)] rounded-xl p-5 flex flex-col justify-between space-y-4">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-[#737373] uppercase tracking-wider">
+              <span className="text-xs font-medium text-[var(--admin-muted,#92989d)] uppercase tracking-wider">
                 Paket Berlangganan
               </span>
-              <Building size={15} className="text-[#a3a3a3]" />
+              <Building size={15} className="text-[var(--admin-muted,#92989d)]" />
             </div>
             <div>
-              <div className="text-base font-bold text-[#171717] tracking-tight truncate">
+              <div className="text-base font-bold text-[var(--admin-text,#f4f4f5)] tracking-tight truncate">
                 {license?.plan || "Paket Sewa Studio"}
               </div>
-              <div className="text-xs text-[#737373] mt-0.5">
+              <div className="text-xs text-[var(--admin-muted,#92989d)] mt-0.5">
                 Aktivasi: {formattedActivated}
               </div>
             </div>
           </div>
 
           {/* Card 4: Perangkat PC */}
-          <div className="bg-white border border-[#e5e5e5] rounded-xl p-5 flex flex-col justify-between space-y-4">
+          <div className="bg-[var(--admin-card,#1c1f20)] border border-[var(--admin-border,#2a2d2f)] rounded-xl p-5 flex flex-col justify-between space-y-4">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-[#737373] uppercase tracking-wider">
+              <span className="text-xs font-medium text-[var(--admin-muted,#92989d)] uppercase tracking-wider">
                 Perangkat Terverifikasi
               </span>
-              <Laptop size={15} className="text-[#a3a3a3]" />
+              <Laptop size={15} className="text-[var(--admin-muted,#92989d)]" />
             </div>
             <div>
-              <div className="text-base font-bold text-[#171717] tracking-tight truncate">
+              <div className="text-base font-bold text-[var(--admin-text,#f4f4f5)] tracking-tight truncate">
                 {license?.machineInfo?.hostname || "Localhost"}
               </div>
-              <div className="text-xs text-[#737373] mt-0.5 truncate">
+              <div className="text-xs text-[var(--admin-muted,#92989d)] mt-0.5 truncate">
                 OS: {license?.machineInfo?.platform || "Windows"} • Enkripsi Offline V1
               </div>
             </div>
@@ -307,25 +307,25 @@ export function AdminLicensePage() {
         {/* Main 2-Column Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* Kolom Kiri: Form Aktivasi Kode Lisensi Baru (7 Cols) */}
-          <div className="lg:col-span-7 bg-white border border-[#e5e5e5] rounded-xl p-6 md:p-8 space-y-6">
+          <div className="lg:col-span-7 bg-[var(--admin-card,#1c1f20)] border border-[var(--admin-border,#2a2d2f)] rounded-xl p-6 md:p-8 space-y-6">
             <div>
-              <h2 className="text-lg font-bold text-[#171717] tracking-tight">
+              <h2 className="text-[16px] font-bold text-[var(--admin-text,#f4f4f5)] tracking-tight">
                 Aktivasi Kode Lisensi Baru
               </h2>
-              <p className="text-sm text-[#737373] mt-1">
+              <p className="text-sm text-[var(--admin-muted,#92989d)] mt-1">
                 Tempelkan kode lisensi terenkripsi yang diberikan oleh vendor setelah perpanjangan sewa software.
               </p>
             </div>
 
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <label className="text-xs font-semibold text-[#171717] uppercase tracking-wider">
+                <label className="text-xs font-semibold text-[var(--admin-text,#f4f4f5)] uppercase tracking-wider">
                   Kode Lisensi (Format IGNOS-V1)
                 </label>
                 <button
                   type="button"
                   onClick={handlePasteClipboard}
-                  className="text-xs font-medium text-[#525252] hover:text-[#171717] flex items-center gap-1.5 transition-colors cursor-pointer"
+                  className="text-xs font-medium text-[var(--admin-secondary,#c3c7ca)] hover:text-[var(--admin-text,#f4f4f5)] flex items-center gap-1.5 transition-colors cursor-pointer"
                 >
                   <ClipboardPaste size={13} />
                   <span>Tempel dari Clipboard</span>
@@ -337,7 +337,7 @@ export function AdminLicensePage() {
                 onChange={(e) => setInputKey(e.target.value)}
                 placeholder="Contoh: IGNOS-V1.eyJjbGllbnQiOiJMdW1lbiBTdHVkaW8iLCJwbGFuIjoiMSBCdWxhbiJ9.756c8e62abdc..."
                 rows={5}
-                className="w-full p-3.5 bg-[#fafafa] border border-[#e5e5e5] rounded-lg font-mono text-xs text-[#171717] placeholder:text-[#a3a3a3] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#171717] focus:border-transparent transition-all resize-none"
+                className="w-full p-3.5 bg-[var(--admin-canvas,#111114)] border border-[var(--admin-border,#2a2d2f)] rounded-lg font-mono text-xs text-[var(--admin-text,#f4f4f5)] placeholder:text-[var(--admin-muted,#92989d)] focus:bg-[var(--admin-canvas,#111114)] focus:outline-none focus:ring-2 focus:ring-[var(--admin-focus,#c0d0e7)] focus:border-transparent transition-all resize-none"
               />
               <p className="text-xs text-[#8a8a8a] leading-relaxed">
                 Kode lisensi bersifat unik dan diamankan dengan tanda tangan kriptografi HMAC-SHA256. Sistem tidak memerlukan internet saat proses verifikasi.
@@ -345,15 +345,15 @@ export function AdminLicensePage() {
             </div>
 
             {/* Horizontal Control & Action (GEMINI.md Rule 6) */}
-            <div className="pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-t border-[#f0f0f0]">
-              <span className="text-xs text-[#737373]">
+            <div className="pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-4  border-[var(--admin-border,#2a2d2f)]">
+              <span className="text-xs text-[var(--admin-muted,#92989d)]">
                 Pastikan seluruh rangkaian kode tersalin lengkap tanpa spasi tambahan.
               </span>
               <button
                 type="button"
                 onClick={handleActivate}
                 disabled={submitting || !inputKey.trim()}
-                className="inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-[#171717] text-white text-sm font-semibold rounded-lg hover:bg-[#333333] transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
+                className="inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-[#c0d0e7] text-[#111b23] text-sm font-semibold rounded-lg hover:bg-[#d2def0] transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
               >
                 {submitting ? (
                   <>
@@ -373,32 +373,32 @@ export function AdminLicensePage() {
           {/* Kolom Kanan: Panduan Perpanjangan & Kontak Vendor (5 Cols) */}
           <div className="lg:col-span-5 space-y-6">
             {/* Box Kontak Vendor */}
-            <div className="bg-white border border-[#e5e5e5] rounded-xl p-6 md:p-8 space-y-5">
+            <div className="bg-[var(--admin-card,#1c1f20)] border border-[var(--admin-border,#2a2d2f)] rounded-xl p-6 md:p-8 space-y-5">
               <div>
-                <h2 className="text-lg font-bold text-[#171717] tracking-tight">
+                <h2 className="text-[16px] font-bold text-[var(--admin-text,#f4f4f5)] tracking-tight">
                   Kontak Vendor Software
                 </h2>
-                <p className="text-sm text-[#737373] mt-1">
+                <p className="text-sm text-[var(--admin-muted,#92989d)] mt-1">
                   Hubungi penyedia software untuk melakukan perpanjangan sewa atau bantuan teknis sistem.
                 </p>
               </div>
 
-              <div className="bg-[#fafafa] border border-[#e5e5e5] rounded-lg p-4 space-y-3 text-sm">
+              <div className="bg-[var(--admin-card,#1c1f20)] border border-[var(--admin-border,#2a2d2f)] rounded-lg p-4 space-y-3 text-sm">
                 <div className="flex justify-between items-center text-xs">
-                  <span className="text-[#737373]">Penyedia Layanan:</span>
-                  <span className="font-semibold text-[#171717]">
+                  <span className="text-[var(--admin-muted,#92989d)]">Penyedia Layanan:</span>
+                  <span className="font-semibold text-[var(--admin-text,#f4f4f5)]">
                     {license?.supportContact?.name || "Vendor Ignos Studio"}
                   </span>
                 </div>
                 <div className="flex justify-between items-center text-xs">
-                  <span className="text-[#737373]">WhatsApp Bantuan:</span>
-                  <span className="font-mono text-[#171717]">
+                  <span className="text-[var(--admin-muted,#92989d)]">WhatsApp Bantuan:</span>
+                  <span className="font-mono text-[var(--admin-text,#f4f4f5)]">
                     +{license?.supportContact?.phone || "6281234567890"}
                   </span>
                 </div>
                 <div className="flex justify-between items-center text-xs">
-                  <span className="text-[#737373]">Waktu Respon:</span>
-                  <span className="text-[#171717]">Setiap Hari (09:00 - 21:00)</span>
+                  <span className="text-[var(--admin-muted,#92989d)]">Waktu Respon:</span>
+                  <span className="text-[var(--admin-text,#f4f4f5)]">Setiap Hari (09:00 - 21:00)</span>
                 </div>
               </div>
 
@@ -416,22 +416,22 @@ export function AdminLicensePage() {
             </div>
 
             {/* Box Penjelasan Alur Sewa */}
-            <div className="bg-white border border-[#e5e5e5] rounded-xl p-6 md:p-8 space-y-4">
-              <h3 className="text-sm font-bold text-[#171717] uppercase tracking-wider">
+            <div className="bg-[var(--admin-card,#1c1f20)] border border-[var(--admin-border,#2a2d2f)] rounded-xl p-6 md:p-8 space-y-4">
+              <h3 className="text-sm font-bold text-[var(--admin-text,#f4f4f5)] uppercase tracking-wider">
                 Alur Perpanjangan Sewa
               </h3>
-              <ol className="space-y-3 text-xs text-[#525252] leading-relaxed list-decimal list-inside">
+              <ol className="space-y-3 text-xs text-[var(--admin-secondary,#c3c7ca)] leading-relaxed list-decimal list-inside">
                 <li>
-                  <strong className="text-[#171717]">Hubungi Vendor:</strong> Konfirmasikan perpanjangan masa sewa 3-5 hari sebelum jatuh tempo.
+                  <strong className="text-[var(--admin-text,#f4f4f5)]">Hubungi Vendor:</strong> Konfirmasikan perpanjangan masa sewa 3-5 hari sebelum jatuh tempo.
                 </li>
                 <li>
-                  <strong className="text-[#171717]">Pembayaran Sewa:</strong> Selesaikan pembayaran biaya sewa bulanan atau tahunan.
+                  <strong className="text-[var(--admin-text,#f4f4f5)]">Pembayaran Sewa:</strong> Selesaikan pembayaran biaya sewa bulanan atau tahunan.
                 </li>
                 <li>
-                  <strong className="text-[#171717]">Terima Kode Lisensi:</strong> Vendor akan membuatkan kode lisensi dan mengirimkannya via WhatsApp.
+                  <strong className="text-[var(--admin-text,#f4f4f5)]">Terima Kode Lisensi:</strong> Vendor akan membuatkan kode lisensi dan mengirimkannya via WhatsApp.
                 </li>
                 <li>
-                  <strong className="text-[#171717]">Aktivasi di Kiosk:</strong> Masukkan kode ke formulir aktivasi di halaman ini. Masa sewa otomatis bertambah tanpa perlu restart perangkat.
+                  <strong className="text-[var(--admin-text,#f4f4f5)]">Aktivasi di Kiosk:</strong> Masukkan kode ke formulir aktivasi di halaman ini. Masa sewa otomatis bertambah tanpa perlu restart perangkat.
                 </li>
               </ol>
             </div>

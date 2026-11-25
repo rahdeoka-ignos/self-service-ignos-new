@@ -225,17 +225,17 @@ export function AdminStoragePage() {
 
   return (
     <AdminLayout>
-      <div className="w-full p-6 md:p-8 space-y-8">
+      <div className="w-full px-5 pb-8 pt-3 lg:px-[34px] space-y-7">
         {/* ── Page Header (Minimal Editorial) ── */}
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 pb-6 border-b border-[#e8e8e8]">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 pb-6 border-b border-[var(--admin-border,#2a2d2f)]">
           <div>
-            <p className="text-[10px] tracking-[0.14em] text-[#999] uppercase font-medium">
+            <p className="text-[12px] tracking-[0.14em] text-[var(--admin-muted,#92989d)] uppercase font-medium">
               SISTEM & PENYIMPANAN DISK
             </p>
-            <h1 className="text-[28px] sm:text-[34px] font-semibold tracking-[-0.04em] text-[#202020] leading-[1.25] mt-1.5">
+            <h1 className="text-[28px] sm:text-[30px] font-semibold tracking-[-0.04em] text-[var(--admin-text,#f4f4f5)] leading-[1.25] mt-1.5">
               Penyimpanan & Disk
             </h1>
-            <p className="text-[13px] text-[#777] leading-[1.8] mt-1 max-w-2xl">
+            <p className="text-[13px] text-[var(--admin-muted,#92989d)] leading-[1.8] mt-1 max-w-2xl">
               Pantau sisa kapasitas hardisk PC admin, kelola pembersihan file arsip softcopy kadaluarsa, serta atur retensi otomatis.
             </p>
           </div>
@@ -244,9 +244,9 @@ export function AdminStoragePage() {
             <button
               onClick={fetchStats}
               disabled={loading}
-              className="inline-flex items-center gap-2 px-3.5 py-2 bg-white border border-[#e6e6e6] text-[#444] hover:bg-[#f6f6f6] hover:text-[#171717] rounded-[7px] text-[12px] font-medium transition-colors cursor-pointer disabled:opacity-40"
+              className="inline-flex items-center gap-2 px-3.5 py-2 bg-[var(--admin-card,#1c1f20)] border border-[var(--admin-border,#2a2d2f)] text-[var(--admin-secondary,#c3c7ca)] hover:bg-[var(--admin-raised,#292b2f)] hover:text-[var(--admin-text,#f4f4f5)] rounded-full text-[12px] font-medium transition-colors cursor-pointer disabled:opacity-40"
             >
-              <RefreshCw size={13} className={loading ? "animate-spin text-[#888]" : "text-[#888]"} />
+              <RefreshCw size={13} className={loading ? "animate-spin text-[var(--admin-muted,#92989d)]" : "text-[var(--admin-muted,#92989d)]"} />
               <span>{loading ? "Menyinkronkan..." : "Segarkan Status"}</span>
             </button>
           </div>
@@ -254,14 +254,14 @@ export function AdminStoragePage() {
 
         {/* ── Feedback Notification (Quiet & Clean) ── */}
         {feedback && (
-          <div className="p-3.5 rounded-[8px] border border-[#e8e8e8] bg-white text-[#202020] text-[13px] flex items-center justify-between shadow-2xs">
+          <div className="p-3.5 rounded-[8px] border border-[var(--admin-border,#2a2d2f)] bg-[var(--admin-card,#1c1f20)] text-[var(--admin-text,#f4f4f5)] text-[13px] flex items-center justify-between ">
             <div className="flex items-center gap-2.5">
-              <span className={`w-2 h-2 rounded-full shrink-0 ${feedback.type === "success" ? "bg-[#10b981]" : "bg-[#ef4444]"}`} />
+              <span className={`w-2 h-2 rounded-full shrink-0 ${feedback.type === "success" ? "bg-[#c9d2e1]" : "bg-[#f18e9a]"}`} />
               <span className="font-normal">{feedback.message}</span>
             </div>
             <button
               onClick={() => setFeedback(null)}
-              className="text-[12px] text-[#888] hover:text-[#171717] cursor-pointer ml-4 shrink-0"
+              className="text-[12px] text-[var(--admin-muted,#92989d)] hover:text-[var(--admin-text,#f4f4f5)] cursor-pointer ml-4 shrink-0"
             >
               ✕
             </button>
@@ -271,27 +271,27 @@ export function AdminStoragePage() {
         {/* ── 4 Calm Metric Cards ── */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Card 1: Ruang Hardisk PC */}
-          <div className="bg-white border border-[#e8e8e8] rounded-[10px] p-5 space-y-3">
+          <div className="bg-[var(--admin-card,#1c1f20)] border border-[var(--admin-border,#2a2d2f)] rounded-2xl p-5 space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-[12px] font-medium text-[#777]">Sisa Ruang Disk PC</span>
-              <span className={`w-2 h-2 rounded-full ${isDiskFullWarning ? "bg-[#ef4444]" : "bg-[#10b981]"}`} />
+              <span className="text-[12px] font-medium text-[var(--admin-muted,#92989d)]">Sisa Ruang Disk PC</span>
+              <span className={`w-2 h-2 rounded-full ${isDiskFullWarning ? "bg-[#f18e9a]" : "bg-[#c9d2e1]"}`} />
             </div>
             <div>
-              <div className="text-[22px] font-semibold text-[#171717] font-mono tracking-tight">
+              <div className="text-[28px] font-semibold text-[var(--admin-text,#f4f4f5)] font-mono tracking-tight">
                 {stats?.disk ? stats.disk.freeFormatted : "—"}
               </div>
-              <p className="text-[11px] text-[#888] mt-0.5">
+              <p className="text-[12px] text-[var(--admin-muted,#92989d)] mt-0.5">
                 Bebas dari total {stats?.disk ? stats.disk.totalFormatted : "—"}
               </p>
             </div>
             <div className="space-y-1.5 pt-1">
-              <div className="w-full bg-[#f0f0f0] h-1.5 rounded-full overflow-hidden">
+              <div className="w-full bg-[var(--admin-raised,#292b2f)] h-1.5 rounded-full overflow-hidden">
                 <div
-                  className={`h-full rounded-full transition-all duration-500 ${isDiskFullWarning ? "bg-[#ef4444]" : "bg-[#171717]"}`}
+                  className={`h-full rounded-full transition-all duration-500 ${isDiskFullWarning ? "bg-[#f18e9a]" : "bg-[#c0d0e7]"}`}
                   style={{ width: `${Math.min(diskUsedPercent, 100)}%` }}
                 />
               </div>
-              <div className="flex justify-between items-center text-[10px] text-[#999] font-mono">
+              <div className="flex justify-between items-center text-[12px] text-[var(--admin-muted,#92989d)] font-mono">
                 <span>{diskUsedPercent}% terpakai</span>
                 <span>{stats?.disk ? stats.disk.usedFormatted : ""}</span>
               </div>
@@ -299,69 +299,69 @@ export function AdminStoragePage() {
           </div>
 
           {/* Card 2: Total Penyimpanan Studio */}
-          <div className="bg-white border border-[#e8e8e8] rounded-[10px] p-5 space-y-3">
-            <span className="text-[12px] font-medium text-[#777]">Data Foto Studio</span>
+          <div className="bg-[var(--admin-card,#1c1f20)] border border-[var(--admin-border,#2a2d2f)] rounded-2xl p-5 space-y-3">
+            <span className="text-[12px] font-medium text-[var(--admin-muted,#92989d)]">Data Foto Studio</span>
             <div>
-              <div className="text-[22px] font-semibold text-[#171717] font-mono tracking-tight">
+              <div className="text-[28px] font-semibold text-[var(--admin-text,#f4f4f5)] font-mono tracking-tight">
                 {stats?.studioStorage.totalFormatted || "0 B"}
               </div>
-              <p className="text-[11px] text-[#888] mt-0.5">
+              <p className="text-[12px] text-[var(--admin-muted,#92989d)] mt-0.5">
                 Total foto, antrian & arsip lokal
               </p>
             </div>
-            <div className="pt-2 border-t border-[#f2f2f2] flex items-center justify-between text-[11px] text-[#888]">
+            <div className="pt-2  border-[var(--admin-border,#2a2d2f)] flex items-center justify-between text-[12px] text-[var(--admin-muted,#92989d)]">
               <span>Kiosk: {stats?.studioStorage.camera.formatted || "0 B"}</span>
               <span>Cache: {stats?.studioStorage.cameraCache?.formatted || "0 B"}</span>
             </div>
           </div>
 
           {/* Card 3: Arsip Softcopy */}
-          <div className="bg-white border border-[#e8e8e8] rounded-[10px] p-5 space-y-3">
-            <span className="text-[12px] font-medium text-[#777]">Arsip Softcopy Lokal</span>
+          <div className="bg-[var(--admin-card,#1c1f20)] border border-[var(--admin-border,#2a2d2f)] rounded-2xl p-5 space-y-3">
+            <span className="text-[12px] font-medium text-[var(--admin-muted,#92989d)]">Arsip Softcopy Lokal</span>
             <div>
-              <div className="text-[22px] font-semibold text-[#171717] font-mono tracking-tight">
+              <div className="text-[28px] font-semibold text-[var(--admin-text,#f4f4f5)] font-mono tracking-tight">
                 {stats?.studioStorage.archive.formatted || "0 B"}
               </div>
-              <p className="text-[11px] text-[#888] mt-0.5">
+              <p className="text-[12px] text-[var(--admin-muted,#92989d)] mt-0.5">
                 {stats?.studioStorage.archive.sessionCount || 0} sesi ({stats?.studioStorage.archive.totalFiles || 0} file)
               </p>
             </div>
-            <div className="pt-2 border-t border-[#f2f2f2] flex items-center justify-between text-[11px] text-[#888]">
+            <div className="pt-2  border-[var(--admin-border,#2a2d2f)] flex items-center justify-between text-[12px] text-[var(--admin-muted,#92989d)]">
               <span>{stats?.studioStorage.archive.dateFolders.length || 0} tanggal tersimpan</span>
-              <span className="text-[#10b981] font-medium">Synced G-Drive</span>
+              <span className="text-[var(--admin-accent-text,#c9d2e1)] font-medium">Synced G-Drive</span>
             </div>
           </div>
 
           {/* Card 4: Retensi Otomatis */}
-          <div className="bg-white border border-[#e8e8e8] rounded-[10px] p-5 space-y-3">
-            <span className="text-[12px] font-medium text-[#777]">Jadwal Auto-Clean</span>
+          <div className="bg-[var(--admin-card,#1c1f20)] border border-[var(--admin-border,#2a2d2f)] rounded-2xl p-5 space-y-3">
+            <span className="text-[12px] font-medium text-[var(--admin-muted,#92989d)]">Jadwal Auto-Clean</span>
             <div>
-              <div className="text-[16px] font-semibold text-[#171717] tracking-tight">
+              <div className="text-[16px] font-semibold text-[var(--admin-text,#f4f4f5)] tracking-tight">
                 {stats?.retentionPolicy.autoCleanEnabled
                   ? `Aktif (> ${stats.retentionPolicy.retentionDays} Hari)`
                   : "Dinonaktifkan"}
               </div>
-              <p className="text-[11px] text-[#888] mt-0.5">
+              <p className="text-[12px] text-[var(--admin-muted,#92989d)] mt-0.5">
                 {stats?.retentionPolicy.lastCleanedAt
                   ? `Terakhir cek: ${new Date(stats.retentionPolicy.lastCleanedAt).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}`
                   : "Pemeriksaan berkala aktif"}
               </p>
             </div>
-            <div className="pt-2 border-t border-[#f2f2f2] text-[11px] text-[#888] truncate">
+            <div className="pt-2  border-[var(--admin-border,#2a2d2f)] text-[12px] text-[var(--admin-muted,#92989d)] truncate">
               Antrian upload aktif terlindungi
             </div>
           </div>
         </div>
 
         {/* ── Minimal Tabs (No Icons, No Badges) ── */}
-        <div className="flex border-b border-[#e8e8e8] gap-8">
+        <div className="flex  border-[var(--admin-border,#2a2d2f)] gap-8">
           <button
             type="button"
             onClick={() => setActiveTab("cleanup")}
-            className={`pb-3 text-[13px] tracking-[-0.01em] transition-colors cursor-pointer border-b-2 -mb-px ${
+            className={`rounded-full px-4 py-2 text-[13px] transition-colors cursor-pointer whitespace-nowrap ${
               activeTab === "cleanup"
-                ? "border-[#171717] font-semibold text-[#171717]"
-                : "border-transparent text-[#777] hover:text-[#171717]"
+                ? "bg-[var(--admin-tab,#343638)] font-medium text-[var(--admin-text,#f4f4f5)]"
+                : "border-transparent text-[var(--admin-muted,#92989d)] hover:text-[var(--admin-text,#f4f4f5)]"
             }`}
           >
             Pembersihan & Retensi
@@ -369,10 +369,10 @@ export function AdminStoragePage() {
           <button
             type="button"
             onClick={() => setActiveTab("cache")}
-            className={`pb-3 text-[13px] tracking-[-0.01em] transition-colors cursor-pointer border-b-2 -mb-px ${
+            className={`rounded-full px-4 py-2 text-[13px] transition-colors cursor-pointer whitespace-nowrap ${
               activeTab === "cache"
-                ? "border-[#171717] font-semibold text-[#171717]"
-                : "border-transparent text-[#777] hover:text-[#171717]"
+                ? "bg-[var(--admin-tab,#343638)] font-medium text-[var(--admin-text,#f4f4f5)]"
+                : "border-transparent text-[var(--admin-muted,#92989d)] hover:text-[var(--admin-text,#f4f4f5)]"
             }`}
           >
             Cache Foto Kamera ({stats?.studioStorage.cameraCache?.files || 0})
@@ -380,10 +380,10 @@ export function AdminStoragePage() {
           <button
             type="button"
             onClick={() => setActiveTab("archive")}
-            className={`pb-3 text-[13px] tracking-[-0.01em] transition-colors cursor-pointer border-b-2 -mb-px ${
+            className={`rounded-full px-4 py-2 text-[13px] transition-colors cursor-pointer whitespace-nowrap ${
               activeTab === "archive"
-                ? "border-[#171717] font-semibold text-[#171717]"
-                : "border-transparent text-[#777] hover:text-[#171717]"
+                ? "bg-[var(--admin-tab,#343638)] font-medium text-[var(--admin-text,#f4f4f5)]"
+                : "border-transparent text-[var(--admin-muted,#92989d)] hover:text-[var(--admin-text,#f4f4f5)]"
             }`}
           >
             Daftar Arsip per Tanggal ({stats?.studioStorage.archive.dateFolders.length || 0})
@@ -394,19 +394,19 @@ export function AdminStoragePage() {
         {activeTab === "cleanup" && (
           <div className="space-y-8">
             {/* Box 1: Pembersihan Cepat Berdasarkan Usia */}
-            <div className="bg-white border border-[#e8e8e8] rounded-[12px] p-8 sm:p-10 space-y-6">
-              <div className="pb-4 border-b border-[#f0f0f0]">
-                <h2 className="text-[17px] font-semibold text-[#202020] tracking-[-0.02em]">
+            <div className="bg-[var(--admin-card,#1c1f20)] border border-[var(--admin-border,#2a2d2f)] rounded-2xl p-8 sm:p-10 space-y-6">
+              <div className="pb-4  border-[var(--admin-border,#2a2d2f)]">
+                <h2 className="text-[16px] font-semibold text-[var(--admin-text,#f4f4f5)] tracking-[-0.02em]">
                   Pembersihan Arsip Softcopy Cepat
                 </h2>
-                <p className="text-[13px] text-[#888] leading-[1.7] mt-1">
+                <p className="text-[13px] text-[var(--admin-muted,#92989d)] leading-[1.7] mt-1">
                   Hapus arsip foto lokal lama dari hardisk PC untuk membebaskan ruang memori. Semua foto ini sudah sukses terunggah ke Google Drive pelanggan.
                 </p>
               </div>
 
               <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pt-1">
                 <div className="space-y-2.5">
-                  <label className="text-[12px] font-medium text-[#444] block">
+                  <label className="text-[12px] font-medium text-[var(--admin-secondary,#c3c7ca)] block">
                     Pilih Batas Usia Arsip:
                   </label>
                   <div className="flex flex-wrap gap-2">
@@ -415,10 +415,10 @@ export function AdminStoragePage() {
                         key={days}
                         type="button"
                         onClick={() => setSelectedDays(days)}
-                        className={`px-3.5 py-2 text-[12px] font-medium rounded-[7px] border transition-colors cursor-pointer ${
+                        className={`px-3.5 py-2 text-[12px] font-medium rounded-full border transition-colors cursor-pointer ${
                           selectedDays === days
-                            ? "bg-[#171717] text-white border-[#171717]"
-                            : "bg-white text-[#555] border-[#e0e0e0] hover:text-[#171717] hover:bg-[#fafafa]"
+                            ? "bg-[#c0d0e7] text-[#111b23] border-[var(--admin-focus,#c0d0e7)]"
+                            : "bg-[var(--admin-card,#1c1f20)] text-[var(--admin-secondary,#c3c7ca)] border-[var(--admin-border,#2a2d2f)] hover:text-[var(--admin-text,#f4f4f5)] hover:bg-[var(--admin-raised,#292b2f)]"
                         }`}
                       >
                         Lebih Dari {days} Hari
@@ -444,7 +444,7 @@ export function AdminStoragePage() {
                       });
                     }}
                     disabled={!!cleaningAction}
-                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#171717] hover:bg-black text-white rounded-[7px] text-[13px] font-medium transition-colors cursor-pointer shadow-xs disabled:opacity-50"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#c0d0e7] hover:bg-[#d2def0] text-[#111b23] rounded-full text-[13px] font-medium transition-colors cursor-pointer  disabled:opacity-50"
                   >
                     <Trash2 size={13} strokeWidth={2} />
                     <span>
@@ -458,29 +458,29 @@ export function AdminStoragePage() {
             </div>
 
             {/* Box 2: Aksi Pembersihan Khusus */}
-            <div className="bg-white border border-[#e8e8e8] rounded-[12px] p-8 sm:p-10 space-y-6">
-              <div className="pb-4 border-b border-[#f0f0f0]">
-                <h3 className="text-[17px] font-semibold text-[#202020] tracking-[-0.02em]">
+            <div className="bg-[var(--admin-card,#1c1f20)] border border-[var(--admin-border,#2a2d2f)] rounded-2xl p-8 sm:p-10 space-y-6">
+              <div className="pb-4  border-[var(--admin-border,#2a2d2f)]">
+                <h3 className="text-[16px] font-semibold text-[var(--admin-text,#f4f4f5)] tracking-[-0.02em]">
                   Aksi Pembersihan Tambahan
                 </h3>
-                <p className="text-[13px] text-[#888] leading-[1.7] mt-1">
+                <p className="text-[13px] text-[var(--admin-muted,#92989d)] leading-[1.7] mt-1">
                   Tindakan perawatan mandiri untuk membersihkan cache pratinjau, foto sesi kerja aktif, atau antrian tersangkut.
                 </p>
               </div>
 
-              <div className="divide-y divide-[#f2f2f2]">
+              <div className="divide-y divide-[var(--admin-border,#2a2d2f)]">
                 {/* 1. Cache Kamera */}
                 <div className="py-4.5 first:pt-0 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
-                    <div className="text-[13px] font-medium text-[#202020]">
+                    <div className="text-[13px] font-medium text-[var(--admin-text,#f4f4f5)]">
                       Cache Foto Kamera (MTP Preview)
                     </div>
-                    <div className="text-[12px] text-[#888] mt-0.5">
+                    <div className="text-[12px] text-[var(--admin-muted,#92989d)] mt-0.5">
                       Sampel foto sementara dari kabel USB kamera saat proses scan pratinjau.
                     </div>
                   </div>
                   <div className="flex items-center gap-4 shrink-0">
-                    <span className="text-[12px] font-mono text-[#888]">
+                    <span className="text-[12px] font-mono text-[var(--admin-muted,#92989d)]">
                       {stats?.studioStorage.cameraCache?.formatted || "0 B"} ({stats?.studioStorage.cameraCache?.files || 0} file)
                     </span>
                     <button
@@ -497,7 +497,7 @@ export function AdminStoragePage() {
                         });
                       }}
                       disabled={!!cleaningAction || (stats?.studioStorage.cameraCache?.files ?? 0) === 0}
-                      className="px-3.5 py-1.5 bg-white border border-[#e6e6e6] text-[#444] hover:bg-[#f6f6f6] hover:text-[#171717] rounded-[7px] text-[12px] font-medium transition-colors cursor-pointer disabled:opacity-40"
+                      className="px-3.5 py-1.5 bg-[var(--admin-card,#1c1f20)] border border-[var(--admin-border,#2a2d2f)] text-[var(--admin-secondary,#c3c7ca)] hover:bg-[var(--admin-raised,#292b2f)] hover:text-[var(--admin-text,#f4f4f5)] rounded-full text-[12px] font-medium transition-colors cursor-pointer disabled:opacity-40"
                     >
                       Kosongkan
                     </button>
@@ -507,15 +507,15 @@ export function AdminStoragePage() {
                 {/* 2. Kamera & Thumbnail Sesi Aktif */}
                 <div className="py-4.5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
-                    <div className="text-[13px] font-medium text-[#202020]">
+                    <div className="text-[13px] font-medium text-[var(--admin-text,#f4f4f5)]">
                       Folder Foto Sesi Kiosk & Thumbnail
                     </div>
-                    <div className="text-[12px] text-[#888] mt-0.5">
+                    <div className="text-[12px] text-[var(--admin-muted,#92989d)] mt-0.5">
                       Foto jepretan sesi customer aktif saat ini di folder public/photos.
                     </div>
                   </div>
                   <div className="flex items-center gap-4 shrink-0">
-                    <span className="text-[12px] font-mono text-[#888]">
+                    <span className="text-[12px] font-mono text-[var(--admin-muted,#92989d)]">
                       {stats?.studioStorage.camera.formatted || "0 B"}
                     </span>
                     <button
@@ -532,7 +532,7 @@ export function AdminStoragePage() {
                         });
                       }}
                       disabled={!!cleaningAction}
-                      className="px-3.5 py-1.5 bg-white border border-[#e6e6e6] text-[#444] hover:bg-[#f6f6f6] hover:text-[#171717] rounded-[7px] text-[12px] font-medium transition-colors cursor-pointer disabled:opacity-40"
+                      className="px-3.5 py-1.5 bg-[var(--admin-card,#1c1f20)] border border-[var(--admin-border,#2a2d2f)] text-[var(--admin-secondary,#c3c7ca)] hover:bg-[var(--admin-raised,#292b2f)] hover:text-[var(--admin-text,#f4f4f5)] rounded-full text-[12px] font-medium transition-colors cursor-pointer disabled:opacity-40"
                     >
                       Kosongkan
                     </button>
@@ -542,15 +542,15 @@ export function AdminStoragePage() {
                 {/* 3. Antrian Stale */}
                 <div className="py-4.5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
-                    <div className="text-[13px] font-medium text-[#202020]">
+                    <div className="text-[13px] font-medium text-[var(--admin-text,#f4f4f5)]">
                       Antrian Upload Tersangkut (Stale Queue)
                     </div>
-                    <div className="text-[12px] text-[#888] mt-0.5">
+                    <div className="text-[12px] text-[var(--admin-muted,#92989d)] mt-0.5">
                       Sesi yang terputus atau telah selesai diunggah. Folder yang sedang aktif diupload tetap aman.
                     </div>
                   </div>
                   <div className="flex items-center gap-4 shrink-0">
-                    <span className="text-[12px] font-mono text-[#888]">
+                    <span className="text-[12px] font-mono text-[var(--admin-muted,#92989d)]">
                       {stats?.studioStorage.queue.formatted || "0 B"}
                     </span>
                     <button
@@ -567,7 +567,7 @@ export function AdminStoragePage() {
                         });
                       }}
                       disabled={!!cleaningAction}
-                      className="px-3.5 py-1.5 bg-white border border-[#e6e6e6] text-[#444] hover:bg-[#f6f6f6] hover:text-[#171717] rounded-[7px] text-[12px] font-medium transition-colors cursor-pointer disabled:opacity-40"
+                      className="px-3.5 py-1.5 bg-[var(--admin-card,#1c1f20)] border border-[var(--admin-border,#2a2d2f)] text-[var(--admin-secondary,#c3c7ca)] hover:bg-[var(--admin-raised,#292b2f)] hover:text-[var(--admin-text,#f4f4f5)] rounded-full text-[12px] font-medium transition-colors cursor-pointer disabled:opacity-40"
                     >
                       Bersihkan
                     </button>
@@ -577,15 +577,15 @@ export function AdminStoragePage() {
                 {/* 4. Kosongkan Seluruh Arsip Lokal */}
                 <div className="py-4.5 last:pb-0 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
-                    <div className="text-[13px] font-medium text-[#dc2626]">
+                    <div className="text-[13px] font-medium text-[var(--admin-danger,#f18e9a)]">
                       Hapus Seluruh Arsip Softcopy Lokal
                     </div>
-                    <div className="text-[12px] text-[#888] mt-0.5">
+                    <div className="text-[12px] text-[var(--admin-muted,#92989d)] mt-0.5">
                       Menghapus seluruh folder arsip lokal di storage/archive. Pastikan semua file sudah sukses terunggah ke Google Drive.
                     </div>
                   </div>
                   <div className="flex items-center gap-4 shrink-0">
-                    <span className="text-[12px] font-mono text-[#dc2626]">
+                    <span className="text-[12px] font-mono text-[var(--admin-danger,#f18e9a)]">
                       {stats?.studioStorage.archive.formatted || "0 B"}
                     </span>
                     <button
@@ -603,7 +603,7 @@ export function AdminStoragePage() {
                         });
                       }}
                       disabled={!!cleaningAction}
-                      className="px-3.5 py-1.5 bg-white border border-[#fecaca] text-[#dc2626] hover:bg-[#fef2f2] rounded-[7px] text-[12px] font-medium transition-colors cursor-pointer disabled:opacity-40"
+                      className="px-3.5 py-1.5 bg-[var(--admin-card,#1c1f20)] border border-[var(--admin-border,#2a2d2f)] text-[var(--admin-danger,#f18e9a)] hover:bg-[var(--admin-alert,#3b2d3c)] rounded-full text-[12px] font-medium transition-colors cursor-pointer disabled:opacity-40"
                     >
                       Hapus Semua
                     </button>
@@ -613,23 +613,23 @@ export function AdminStoragePage() {
             </div>
 
             {/* Box 3: Pengaturan Retensi Otomatis */}
-            <div className="bg-white border border-[#e8e8e8] rounded-[12px] p-8 sm:p-10 space-y-6">
-              <div className="pb-4 border-b border-[#f0f0f0]">
-                <h3 className="text-[17px] font-semibold text-[#202020] tracking-[-0.02em]">
+            <div className="bg-[var(--admin-card,#1c1f20)] border border-[var(--admin-border,#2a2d2f)] rounded-2xl p-8 sm:p-10 space-y-6">
+              <div className="pb-4  border-[var(--admin-border,#2a2d2f)]">
+                <h3 className="text-[16px] font-semibold text-[var(--admin-text,#f4f4f5)] tracking-[-0.02em]">
                   Otomatisasi Retensi Disk
                 </h3>
-                <p className="text-[13px] text-[#888] leading-[1.7] mt-1">
+                <p className="text-[13px] text-[var(--admin-muted,#92989d)] leading-[1.7] mt-1">
                   Server studio akan secara otomatis memeriksa dan menghapus folder arsip lokal yang melampaui batas hari secara berkala di latar belakang (setiap 6 jam).
                 </p>
               </div>
 
-              <div className="divide-y divide-[#f2f2f2]">
+              <div className="divide-y divide-[var(--admin-border,#2a2d2f)]">
                 <div className="py-4.5 first:pt-0 flex items-center justify-between gap-4">
                   <div>
-                    <label className="text-[13px] font-medium text-[#202020] block">
+                    <label className="text-[13px] font-medium text-[var(--admin-text,#f4f4f5)] block">
                       Aktifkan Pembersihan Otomatis
                     </label>
-                    <p className="text-[12px] text-[#888] mt-0.5">
+                    <p className="text-[12px] text-[var(--admin-muted,#92989d)] mt-0.5">
                       Jalankan pembersihan background tanpa perlu tindakan manual staf.
                     </p>
                   </div>
@@ -640,16 +640,16 @@ export function AdminStoragePage() {
                       onChange={(e) => setAutoCleanEnabled(e.target.checked)}
                       className="sr-only peer"
                     />
-                    <div className="w-8 h-4.5 bg-[#e0e0e0] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3.5 after:w-3.5 after:transition-all peer-checked:bg-[#171717] relative" />
+                    <div className="w-8 h-4.5 bg-[var(--admin-tab,#343638)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-[var(--admin-card,#1c1f20)] after:rounded-full after:h-3.5 after:w-3.5 after:transition-all peer-checked:bg-[#c0d0e7] relative" />
                   </label>
                 </div>
 
                 <div className="py-4.5 grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
                   <div className="md:col-span-7">
-                    <label className="text-[13px] font-medium text-[#202020] block">
+                    <label className="text-[13px] font-medium text-[var(--admin-text,#f4f4f5)] block">
                       Batas Retensi Otomatis
                     </label>
-                    <p className="text-[12px] text-[#888] mt-0.5">
+                    <p className="text-[12px] text-[var(--admin-muted,#92989d)] mt-0.5">
                       Hapus arsip lokal yang usianya melebihi batas waktu ini.
                     </p>
                   </div>
@@ -658,7 +658,7 @@ export function AdminStoragePage() {
                       value={retentionDays}
                       onChange={(e) => setRetentionDays(Number(e.target.value))}
                       disabled={!autoCleanEnabled}
-                      className="w-full border border-[#e0e0e0] focus:border-[#171717] rounded-[7px] px-3.5 py-2 text-[13px] text-[#202020] outline-none transition-colors bg-white cursor-pointer disabled:opacity-40"
+                      className="w-full border border-[var(--admin-border,#2a2d2f)] focus:border-[var(--admin-focus,#c0d0e7)] rounded-lg px-3.5 py-2 text-[13px] text-[var(--admin-text,#f4f4f5)] outline-none transition-colors bg-[var(--admin-canvas,#111114)] cursor-pointer disabled:opacity-40"
                     >
                       <option value={3}>3 Hari (Studio sangat ramai / disk kecil)</option>
                       <option value={5}>5 Hari</option>
@@ -673,7 +673,7 @@ export function AdminStoragePage() {
                   <button
                     onClick={handleSavePolicy}
                     disabled={savingPolicy}
-                    className="px-5 py-2 bg-[#171717] hover:bg-black text-white rounded-[7px] text-[13px] font-medium transition-colors cursor-pointer shadow-xs disabled:opacity-50"
+                    className="px-5 py-2 bg-[#c0d0e7] hover:bg-[#d2def0] text-[#111b23] rounded-full text-[13px] font-medium transition-colors cursor-pointer  disabled:opacity-50"
                   >
                     {savingPolicy ? "Menyimpan..." : "Simpan Pengaturan Otomatis"}
                   </button>
@@ -685,13 +685,13 @@ export function AdminStoragePage() {
 
         {/* ── TAB 2: CACHE FOTO KAMERA ── */}
         {activeTab === "cache" && (
-          <div className="bg-white border border-[#e8e8e8] rounded-[12px] p-8 sm:p-10 space-y-6">
-            <div className="pb-4 border-b border-[#f0f0f0] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="bg-[var(--admin-card,#1c1f20)] border border-[var(--admin-border,#2a2d2f)] rounded-2xl p-8 sm:p-10 space-y-6">
+            <div className="pb-4  border-[var(--admin-border,#2a2d2f)] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <h2 className="text-[17px] font-semibold text-[#202020] tracking-[-0.02em]">
+                <h2 className="text-[16px] font-semibold text-[var(--admin-text,#f4f4f5)] tracking-[-0.02em]">
                   Cache Foto Kamera (MTP Preview)
                 </h2>
-                <p className="text-[13px] text-[#888] leading-[1.7] mt-1">
+                <p className="text-[13px] text-[var(--admin-muted,#92989d)] leading-[1.7] mt-1">
                   Sampel foto sementara dari kabel USB kamera untuk pratinjau thumbnail sebelum disalin ke Kiosk.
                 </p>
               </div>
@@ -699,10 +699,10 @@ export function AdminStoragePage() {
               <div className="flex items-center gap-2.5 shrink-0">
                 <button
                   onClick={() => handleOpenFolder("camera_cache")}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-[#e6e6e6] text-[#444] hover:bg-[#f6f6f6] hover:text-[#171717] rounded-[7px] text-[12px] font-medium transition-colors cursor-pointer"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[var(--admin-card,#1c1f20)] border border-[var(--admin-border,#2a2d2f)] text-[var(--admin-secondary,#c3c7ca)] hover:bg-[var(--admin-raised,#292b2f)] hover:text-[var(--admin-text,#f4f4f5)] rounded-full text-[12px] font-medium transition-colors cursor-pointer"
                   title="Buka folder storage/camera_cache di File Explorer Windows"
                 >
-                  <FolderOpen size={13} className="text-[#888]" />
+                  <FolderOpen size={13} className="text-[var(--admin-muted,#92989d)]" />
                   <span>Buka di Explorer</span>
                 </button>
 
@@ -720,7 +720,7 @@ export function AdminStoragePage() {
                     });
                   }}
                   disabled={!!cleaningAction || (stats?.studioStorage.cameraCache?.files ?? 0) === 0}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-[#fecaca] text-[#dc2626] hover:bg-[#fef2f2] rounded-[7px] text-[12px] font-medium transition-colors cursor-pointer disabled:opacity-40"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[var(--admin-card,#1c1f20)] border border-[var(--admin-border,#2a2d2f)] text-[var(--admin-danger,#f18e9a)] hover:bg-[var(--admin-alert,#3b2d3c)] rounded-full text-[12px] font-medium transition-colors cursor-pointer disabled:opacity-40"
                 >
                   <Trash2 size={13} />
                   <span>Kosongkan Cache ({stats?.studioStorage.cameraCache?.files || 0})</span>
@@ -731,14 +731,14 @@ export function AdminStoragePage() {
             {/* List or Empty State */}
             {(!stats?.studioStorage.cameraCache?.items || stats.studioStorage.cameraCache.items.length === 0) ? (
               <div className="py-12 text-center space-y-1">
-                <p className="text-[13px] font-medium text-[#202020]">Folder cache kamera bersih</p>
-                <p className="text-[12px] text-[#888]">
+                <p className="text-[13px] font-medium text-[var(--admin-text,#f4f4f5)]">Folder cache kamera bersih</p>
+                <p className="text-[12px] text-[var(--admin-muted,#92989d)]">
                   Tidak ada file sampel sementara yang tersimpan. Foto akan terisi saat melakukan scan kamera via kabel USB.
                 </p>
               </div>
             ) : (
               <div className="space-y-4">
-                <div className="flex items-center justify-between text-[12px] text-[#888] pb-1">
+                <div className="flex items-center justify-between text-[12px] text-[var(--admin-muted,#92989d)] pb-1">
                   <span>Total {stats.studioStorage.cameraCache.items.length} file sampel</span>
                   <span className="font-mono">Ukuran disk: {stats.studioStorage.cameraCache.formatted}</span>
                 </div>
@@ -747,13 +747,13 @@ export function AdminStoragePage() {
                   {stats.studioStorage.cameraCache.items.map((file) => (
                     <div
                       key={file.name}
-                      className="flex items-center justify-between gap-3 p-3 rounded-[8px] border border-[#e8e8e8] bg-white hover:border-[#ccc] transition-colors"
+                      className="flex items-center justify-between gap-3 p-3 rounded-[8px] border border-[var(--admin-border,#2a2d2f)] bg-[var(--admin-card,#1c1f20)] hover:border-[var(--admin-border-strong,#41474e)] transition-colors"
                     >
                       <div className="min-w-0 flex-1">
-                        <div className="text-[12px] font-mono text-[#202020] truncate font-medium" title={file.name}>
+                        <div className="text-[12px] font-mono text-[var(--admin-text,#f4f4f5)] truncate font-medium" title={file.name}>
                           {file.name}
                         </div>
-                        <div className="text-[11px] text-[#888] font-mono mt-0.5">
+                        <div className="text-[12px] text-[var(--admin-muted,#92989d)] font-mono mt-0.5">
                           {file.formattedSize} · {file.timeFormatted}
                         </div>
                       </div>
@@ -772,7 +772,7 @@ export function AdminStoragePage() {
                           });
                         }}
                         disabled={!!cleaningAction}
-                        className="p-1.5 text-[#888] hover:text-[#dc2626] rounded-[5px] transition-colors cursor-pointer shrink-0"
+                        className="p-1.5 text-[var(--admin-muted,#92989d)] hover:text-[var(--admin-danger,#f18e9a)] rounded-lg transition-colors cursor-pointer shrink-0"
                         title="Hapus foto ini dari cache"
                       >
                         <Trash2 size={13} />
@@ -787,25 +787,25 @@ export function AdminStoragePage() {
 
         {/* ── TAB 3: DAFTAR ARSIP PER TANGGAL ── */}
         {activeTab === "archive" && (
-          <div className="bg-white border border-[#e8e8e8] rounded-[12px] p-8 sm:p-10 space-y-6">
-            <div className="pb-4 border-b border-[#f0f0f0] flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div className="bg-[var(--admin-card,#1c1f20)] border border-[var(--admin-border,#2a2d2f)] rounded-2xl p-8 sm:p-10 space-y-6">
+            <div className="pb-4  border-[var(--admin-border,#2a2d2f)] flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div>
-                <h2 className="text-[17px] font-semibold text-[#202020] tracking-[-0.02em]">
+                <h2 className="text-[16px] font-semibold text-[var(--admin-text,#f4f4f5)] tracking-[-0.02em]">
                   Daftar Arsip Softcopy Berdasarkan Tanggal
                 </h2>
-                <p className="text-[13px] text-[#888] leading-[1.7] mt-1">
+                <p className="text-[13px] text-[var(--admin-muted,#92989d)] leading-[1.7] mt-1">
                   Rincian folder sesi per tanggal yang tersimpan di PC. Anda dapat menghapus tanggal tertentu jika ingin menghemat memori spesifik.
                 </p>
               </div>
-              <span className="text-[12px] text-[#888] shrink-0 font-normal">
+              <span className="text-[12px] text-[var(--admin-muted,#92989d)] shrink-0 font-normal">
                 {stats?.studioStorage.archive.dateFolders.length || 0} tanggal tersimpan
               </span>
             </div>
 
-            <div className="divide-y divide-[#f2f2f2]">
+            <div className="divide-y divide-[var(--admin-border,#2a2d2f)]">
               {!stats?.studioStorage.archive.dateFolders ||
               stats.studioStorage.archive.dateFolders.length === 0 ? (
-                <div className="py-12 text-center text-[#888] text-[13px]">
+                <div className="py-12 text-center text-[var(--admin-muted,#92989d)] text-[13px]">
                   Belum ada folder arsip lokal tersimpan di hardisk.
                 </div>
               ) : (
@@ -819,24 +819,24 @@ export function AdminStoragePage() {
                     >
                       <div className="space-y-1 min-w-0">
                         <div className="flex items-center gap-2.5">
-                          <span className="font-semibold text-[13px] text-[#202020] font-mono">
+                          <span className="font-semibold text-[13px] text-[var(--admin-text,#f4f4f5)] font-mono">
                             {item.date}
                           </span>
-                          <span className="text-[11px] text-[#888]">
+                          <span className="text-[12px] text-[var(--admin-muted,#92989d)]">
                             ({isToday ? "Hari Ini" : `${item.ageDays} hari lalu`})
                           </span>
                         </div>
 
-                        <div className="flex items-center gap-2.5 text-[12px] text-[#888]">
+                        <div className="flex items-center gap-2.5 text-[12px] text-[var(--admin-muted,#92989d)]">
                           <span>{item.sessionCount} Sesi</span>
                           <span>·</span>
                           <span>{item.files} File</span>
                           <span>·</span>
-                          <span className="font-mono text-[#202020] font-medium">{item.formatted}</span>
+                          <span className="font-mono text-[var(--admin-text,#f4f4f5)] font-medium">{item.formatted}</span>
                         </div>
 
                         {item.sessionNames.length > 0 && (
-                          <div className="text-[11px] text-[#aaa] truncate max-w-lg">
+                          <div className="text-[12px] text-[var(--admin-muted,#92989d)] truncate max-w-lg">
                             Sesi: {item.sessionNames.join(", ")}
                           </div>
                         )}
@@ -858,7 +858,7 @@ export function AdminStoragePage() {
                             });
                           }}
                           disabled={!!cleaningAction}
-                          className="px-3 py-1.5 bg-white border border-[#e6e6e6] text-[#dc2626] hover:bg-[#fef2f2] hover:border-[#fecaca] rounded-[7px] text-[12px] font-medium transition-colors cursor-pointer disabled:opacity-40"
+                          className="px-3 py-1.5 bg-[var(--admin-card,#1c1f20)] border border-[var(--admin-border,#2a2d2f)] text-[var(--admin-danger,#f18e9a)] hover:bg-[var(--admin-alert,#3b2d3c)] hover:border-[var(--admin-border,#2a2d2f)] rounded-full text-[12px] font-medium transition-colors cursor-pointer disabled:opacity-40"
                         >
                           Hapus Arsip
                         </button>

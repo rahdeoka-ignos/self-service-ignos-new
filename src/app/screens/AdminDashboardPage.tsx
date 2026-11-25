@@ -11,6 +11,10 @@ import {
   Search,
   ArrowUpRight,
   Receipt,
+  Camera,
+  Printer,
+  Cloud,
+  Wallet,
 } from "lucide-react";
 import { AdminLayout } from "../components/AdminLayout";
 import { AdminConfirmModal } from "../components/AdminConfirmModal";
@@ -412,32 +416,32 @@ export function AdminDashboardPage() {
 
   return (
     <AdminLayout>
-      <div className="w-full p-6 md:p-8 space-y-8">
+      <div className="w-full px-5 pb-8 pt-3 lg:px-[34px] space-y-7">
         {/* ── 1. HEADER & CONTROL BAR ── */}
-        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 pb-6 border-b border-[#e8e8e8]">
+        <div className="flex flex-col 2xl:flex-row 2xl:items-end justify-between gap-5 pb-6 border-b border-[var(--admin-border,#2a2d2f)]">
           <div>
-            <p className="text-[10px] tracking-[0.14em] text-[#999] uppercase font-medium">
+            <p className="text-[12px] tracking-[0.14em] text-[var(--admin-muted,#92989d)] uppercase font-medium">
               OPERASIONAL & LAPORAN HARIAN
             </p>
-            <h1 className="text-[28px] sm:text-[34px] font-semibold tracking-[-0.04em] text-[#202020] leading-[1.25] mt-1.5">
+            <h1 className="text-[28px] sm:text-[30px] font-semibold tracking-[-0.04em] text-[var(--admin-text,#f4f4f5)] leading-[1.25] mt-1.5">
               Selamat {greetingTime}, Admin.
             </h1>
-            <p className="text-[13px] text-[#777] leading-[1.8] mt-1 max-w-2xl">
-              Ringkasan performa penjualan, pemakaian lembar foto, serta log transaksi Kiosk hari ini.
+            <p className="text-[13px] text-[var(--admin-muted,#92989d)] leading-[1.8] mt-1 max-w-2xl">
+              Pantau sesi foto, penjualan, dan aktivitas studio dalam satu tempat.
             </p>
           </div>
 
           {/* Quick Date Selector & Action Buttons */}
           <div className="flex items-center gap-2.5 flex-wrap shrink-0">
             {/* Quick date pills */}
-            <div className="flex items-center gap-1 bg-[#f0f0f0] p-1 rounded-[7px] border border-[#e5e5e5]">
+            <div className="flex items-center gap-1 bg-[var(--admin-control,#1e2022)] p-1 rounded-full border border-[var(--admin-border,#2a2d2f)]">
               <button
                 type="button"
                 onClick={() => setSelectedDate(todayStr)}
-                className={`px-3 py-1.5 rounded-[5px] text-[12px] font-medium transition-colors cursor-pointer ${
+                className={`px-3 py-1.5 rounded-full text-[12px] font-medium transition-colors cursor-pointer ${
                   selectedDate === todayStr
-                    ? "bg-white text-[#171717] shadow-2xs font-semibold"
-                    : "text-[#666] hover:text-[#171717]"
+                    ? "bg-[var(--admin-tab,#343638)] text-[var(--admin-text,#f4f4f5)] font-semibold"
+                    : "text-[var(--admin-secondary,#c3c7ca)] hover:text-[var(--admin-text,#f4f4f5)]"
                 }`}
               >
                 Hari Ini
@@ -450,10 +454,10 @@ export function AdminDashboardPage() {
                     key={d}
                     type="button"
                     onClick={() => setSelectedDate(d)}
-                    className={`px-3 py-1.5 rounded-[5px] text-[12px] font-medium transition-colors cursor-pointer ${
+                    className={`px-3 py-1.5 rounded-full text-[12px] font-medium transition-colors cursor-pointer ${
                       selectedDate === d
-                        ? "bg-white text-[#171717] shadow-2xs font-semibold"
-                        : "text-[#666] hover:text-[#171717]"
+                        ? "bg-[var(--admin-tab,#343638)] text-[var(--admin-text,#f4f4f5)] font-semibold"
+                        : "text-[var(--admin-secondary,#c3c7ca)] hover:text-[var(--admin-text,#f4f4f5)]"
                     }`}
                   >
                     {d.slice(5)}
@@ -462,13 +466,14 @@ export function AdminDashboardPage() {
             </div>
 
             {/* Date Picker Input */}
-            <label className="flex items-center gap-2 border border-[#e2e2e2] bg-white rounded-[7px] px-3 py-1.5 text-[12px] text-[#555] cursor-pointer hover:border-[#ccc] transition-colors">
-              <Calendar size={13} className="text-[#888]" />
+            <label className="flex items-center gap-2 border border-[var(--admin-border,#2a2d2f)] bg-[var(--admin-card,#1c1f20)] rounded-full px-3 py-1.5 text-[12px] text-[var(--admin-secondary,#c3c7ca)] cursor-pointer hover:border-[var(--admin-border-strong,#41474e)] transition-colors">
+              <Calendar size={13} className="text-[var(--admin-muted,#92989d)]" />
               <input
                 type="date"
+                aria-label="Tanggal laporan"
                 value={selectedDate}
                 onChange={(e) => setSelectedDate(e.target.value)}
-                className="border-0 bg-transparent text-[12px] text-[#444] outline-none cursor-pointer p-0 font-medium"
+                className="border-0 bg-transparent text-[12px] text-[var(--admin-secondary,#c3c7ca)] outline-none cursor-pointer p-0 font-medium"
               />
             </label>
 
@@ -477,10 +482,10 @@ export function AdminDashboardPage() {
               type="button"
               onClick={handleCopyWhatsAppText}
               disabled={!data || data.sessions.length === 0}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white border border-[#e6e6e6] text-[#444] hover:bg-[#f6f6f6] hover:text-[#171717] rounded-[7px] text-[12px] font-medium transition-colors cursor-pointer disabled:opacity-40"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[var(--admin-card,#1c1f20)] border border-[var(--admin-border,#2a2d2f)] text-[var(--admin-secondary,#c3c7ca)] hover:bg-[var(--admin-raised,#292b2f)] hover:text-[var(--admin-text,#f4f4f5)] rounded-full text-[12px] font-medium transition-colors cursor-pointer disabled:opacity-40"
               title="Salin rekap penjualan ke format pesan WhatsApp"
             >
-              {copied ? <Check size={13} className="text-[#10b981]" /> : <Copy size={13} />}
+              {copied ? <Check size={13} className="text-[var(--admin-accent-text,#c9d2e1)]" /> : <Copy size={13} />}
               <span>{copied ? "Tersalin" : "Salin WA"}</span>
             </button>
 
@@ -489,7 +494,7 @@ export function AdminDashboardPage() {
               type="button"
               onClick={handlePrintClosingReceipt}
               disabled={printingReceipt || !data || data.sessions.length === 0}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#171717] text-white hover:bg-black rounded-[7px] text-[12px] font-medium transition-colors cursor-pointer disabled:opacity-40 shadow-xs"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#c0d0e7] text-[#111b23] hover:bg-[#d2def0] rounded-full text-[12px] font-medium transition-colors cursor-pointer disabled:opacity-40 "
               title="Cetak struk rekap shift ke printer kasir"
             >
               <FileText size={13} />
@@ -501,129 +506,83 @@ export function AdminDashboardPage() {
               type="button"
               onClick={() => fetchSessions(selectedDate)}
               disabled={loading}
-              className="w-[34px] h-[34px] rounded-[7px] border border-[#e6e6e6] bg-white hover:bg-[#f6f6f6] inline-flex items-center justify-center text-[#666] cursor-pointer transition-colors"
+              className="w-[34px] h-[34px] rounded-full border border-[var(--admin-border,#2a2d2f)] bg-[var(--admin-card,#1c1f20)] hover:bg-[var(--admin-raised,#292b2f)] inline-flex items-center justify-center text-[var(--admin-secondary,#c3c7ca)] cursor-pointer transition-colors"
               title="Segarkan data sesi"
             >
-              <RefreshCw size={13} className={loading ? "animate-spin text-[#888]" : "text-[#888]"} />
+              <RefreshCw size={13} className={loading ? "animate-spin text-[var(--admin-muted,#92989d)]" : "text-[var(--admin-muted,#92989d)]"} />
             </button>
           </div>
         </div>
 
-        {/* ── 2. 4 EXECUTIVE KPI CARDS ── */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Card 1: Omset */}
-          <div className="bg-white border border-[#e8e8e8] rounded-[10px] p-5 space-y-3">
-            <span className="text-[12px] font-medium text-[#777]">Total Omset Hari Ini</span>
-            <div>
-              <div className="text-[26px] font-semibold text-[#171717] font-mono tracking-tight">
-                {formatRupiah(data?.summary.totalOmset ?? 0)}
-              </div>
-              <p className="text-[11px] text-[#888] mt-0.5">
-                Akumulasi seluruh paket, cetak & add-ons
-              </p>
-            </div>
-            <div className="pt-2 border-t border-[#f2f2f2] flex items-center justify-between text-[11px] text-[#888]">
-              <span>Tunai: {formatRupiah(data?.summary.paymentSummary?.cash ?? 0)}</span>
-              <span>QRIS: {formatRupiah(data?.summary.paymentSummary?.qris ?? 0)}</span>
-            </div>
+        <section aria-labelledby="overview-heading">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <h2 id="overview-heading" className="text-[16px] font-medium">Ringkasan studio</h2>
+            <span className="text-[12px] text-[var(--admin-muted,#92989d)]">{formatDateIndo(selectedDate)}</span>
           </div>
-
-          {/* Card 2: Total Sesi Foto */}
-          <div className="bg-white border border-[#e8e8e8] rounded-[10px] p-5 space-y-3">
-            <span className="text-[12px] font-medium text-[#777]">Total Sesi Foto</span>
-            <div>
-              <div className="text-[26px] font-semibold text-[#171717] font-mono tracking-tight">
-                {data?.summary.totalSessions ?? 0}
-                <span className="text-[14px] text-[#888] font-normal font-sans ml-1">sesi</span>
-              </div>
-              <p className="text-[11px] text-[#888] mt-0.5">
-                Total {data?.summary.totalPeople ?? 0} pengunjung terlayani
-              </p>
-            </div>
-            <div className="pt-2 border-t border-[#f2f2f2] flex items-center justify-between text-[11px] text-[#888]">
-              <span>Couple: {data?.sessions.filter((s) => s.coupleMode).length ?? 0}</span>
-              <span>Grup: {data?.sessions.filter((s) => !s.coupleMode).length ?? 0}</span>
-            </div>
+          <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 xl:grid-cols-4 xl:grid-rows-2">
+            <article className="flex min-h-[294px] min-w-0 flex-col justify-between rounded-2xl bg-[#c0d0e7] p-6 text-[#111b23] sm:col-span-2 xl:row-span-2">
+              <div className="flex items-center justify-between gap-3"><span className="text-[13px] font-medium">Total omset</span><span className="flex size-9 items-center justify-center rounded-full border border-[#111b23]/20"><Wallet size={18} strokeWidth={1.8} /></span></div>
+              <div className="my-6"><p className="break-words text-[36px] font-normal leading-tight tracking-[-2px] 2xl:text-[40px]">{formatRupiah(data?.summary.totalOmset ?? 0)}</p><p className="mt-2 text-[13px] text-[#273342]">Seluruh paket, cetak foto & add-ons</p></div>
+              <div className="grid grid-cols-2 gap-4  border-[#111b23]/20 pt-4"><div><p className="text-[12px] text-[#273342]">Pembayaran tunai</p><p className="mt-1 text-[15px] font-medium">{formatRupiah(data?.summary.paymentSummary?.cash ?? 0)}</p></div><div><p className="text-[12px] text-[#273342]">Pembayaran QRIS</p><p className="mt-1 text-[15px] font-medium">{formatRupiah(data?.summary.paymentSummary?.qris ?? 0)}</p></div></div>
+            </article>
+            <article className="flex min-h-[294px] flex-col justify-between rounded-2xl bg-[var(--admin-card,#1c1f20)] p-5 xl:row-span-2">
+              <div className="flex items-center justify-between text-[13px]"><h3 className="text-[13px]">Sesi foto</h3><Camera size={18} className="text-[var(--admin-muted,#92989d)]" /></div>
+              <div className="flex flex-1 items-center justify-center py-5"><div className="flex size-[132px] flex-col items-center justify-center rounded-full bg-[#dfb9de] text-[#644362]"><span className="text-[32px] leading-tight tracking-[-2px]">{data?.summary.totalSessions ?? 0}</span><span className="text-[12px]">sesi tercatat</span></div></div>
+              <div className="flex items-center justify-between gap-2  border-[var(--admin-border,#2a2d2f)] pt-3 text-[12px] text-[var(--admin-muted,#92989d)]"><span>{data?.summary.totalPeople ?? 0} pengunjung</span><span>{data?.sessions.filter((session) => session.coupleMode).length ?? 0} couple</span></div>
+            </article>
+            <article className="flex min-h-[141px] flex-col justify-between rounded-2xl bg-[var(--admin-card,#1c1f20)] p-5">
+              <div className="flex items-center justify-between gap-2 text-[13px]"><h3 className="text-[13px]">Kertas foto terpakai</h3><Printer size={17} className="text-[var(--admin-muted,#92989d)]" /></div>
+              <p className="mt-3 text-[30px] leading-[38px] tracking-[-1px]">{data?.summary.totalPrints.total4R ?? 0}<span className="ml-2 text-[12px] tracking-normal text-[var(--admin-muted,#92989d)]">lembar 4R</span></p>
+              <p className="mt-1 text-[12px] text-[var(--admin-muted,#92989d)]">{data?.summary.totalPrints.regular ?? 0} reguler · {data?.summary.totalPrints.bonus ?? 0} bonus · {data?.summary.totalPrints.a4 ?? 0} A4</p>
+            </article>
+            <article className="flex min-h-[141px] flex-col justify-between rounded-2xl bg-[var(--admin-card,#1c1f20)] p-5">
+              <div className="flex items-center justify-between gap-2 text-[13px]"><h3 className="text-[13px]">Klaim softcopy</h3><Cloud size={17} className="text-[var(--admin-muted,#92989d)]" /></div>
+              <p className="mt-3 text-[30px] leading-[38px] tracking-[-1px]">{data?.summary.softcopy.storyFree ?? 0}<span className="mx-2 text-[24px] text-[var(--admin-label,#737779)]">/</span>{data?.summary.softcopy.paid ?? 0}</p>
+              <p className="mt-1 text-[12px] text-[var(--admin-muted,#92989d)]">Story / berbayar · {formatRupiah(data?.summary.softcopy.paidRevenue ?? 0)}</p>
+            </article>
           </div>
-
-          {/* Card 3: Lembaran Kertas Terpakai */}
-          <div className="bg-white border border-[#e8e8e8] rounded-[10px] p-5 space-y-3">
-            <span className="text-[12px] font-medium text-[#777]">Kertas Foto Terpakai</span>
-            <div>
-              <div className="text-[26px] font-semibold text-[#171717] font-mono tracking-tight">
-                {data?.summary.totalPrints.total4R ?? 0}
-                <span className="text-[14px] text-[#888] font-normal font-sans ml-1">lbr</span>
-              </div>
-              <p className="text-[11px] text-[#888] mt-0.5">
-                {data?.summary.totalPrints.regular ?? 0} reguler + {data?.summary.totalPrints.bonus ?? 0} bonus
-              </p>
-            </div>
-            <div className="pt-2 border-t border-[#f2f2f2] flex items-center justify-between text-[11px] text-[#888]">
-              <span>Cetak 4R: {data?.summary.totalPrints.total4R ?? 0}</span>
-              <span>Cetak A4: {data?.summary.totalPrints.a4 ?? 0}</span>
-            </div>
-          </div>
-
-          {/* Card 4: Softcopy Story & Bayar */}
-          <div className="bg-white border border-[#e8e8e8] rounded-[10px] p-5 space-y-3">
-            <span className="text-[12px] font-medium text-[#777]">Klaim Softcopy Drive</span>
-            <div>
-              <div className="text-[26px] font-semibold text-[#171717] font-mono tracking-tight">
-                {data?.summary.softcopy.storyFree ?? 0}
-                <span className="text-[16px] text-[#aaa] font-normal mx-1">/</span>
-                {data?.summary.softcopy.paid ?? 0}
-              </div>
-              <p className="text-[11px] text-[#888] mt-0.5">
-                {data?.summary.softcopy.storyFree ?? 0} promo story · {data?.summary.softcopy.paid ?? 0} berbayar
-              </p>
-            </div>
-            <div className="pt-2 border-t border-[#f2f2f2] flex items-center justify-between text-[11px] text-[#888]">
-              <span>Pendapatan Softcopy:</span>
-              <span className="font-mono text-[#171717] font-medium">{formatRupiah(data?.summary.softcopy.paidRevenue ?? 0)}</span>
-            </div>
-          </div>
-        </div>
+        </section>
 
         {/* ── 3. MIDDLE PANELS: ADD-ONS BREAKDOWN & RECENT SESSION ── */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
           {/* Panel 1: Rincian Penjualan Add-Ons (7 cols) */}
-          <div className="lg:col-span-7 bg-white border border-[#e8e8e8] rounded-[12px] p-6 sm:p-8 flex flex-col justify-between space-y-6">
+          <div className="lg:col-span-7 bg-[var(--admin-card,#1c1f20)] border border-[var(--admin-border,#2a2d2f)] rounded-2xl p-6 sm:p-8 flex flex-col justify-between space-y-6">
             <div>
-              <div className="pb-4 border-b border-[#f0f0f0] flex items-center justify-between">
+              <div className="pb-4  border-[var(--admin-border,#2a2d2f)] flex items-center justify-between">
                 <div>
-                  <h2 className="text-[17px] font-semibold text-[#202020] tracking-[-0.02em]">
+                  <h2 className="text-[16px] font-semibold text-[var(--admin-text,#f4f4f5)] tracking-[-0.02em]">
                     Penjualan Add-Ons & Merchandise
                   </h2>
-                  <p className="text-[13px] text-[#888] leading-[1.7] mt-0.5">
+                  <p className="text-[13px] text-[var(--admin-muted,#92989d)] leading-[1.7] mt-0.5">
                     Rincian barang tambahan yang dibeli pengunjung di luar paket dasar.
                   </p>
                 </div>
-                <span className="text-[12px] text-[#888] font-normal shrink-0">
+                <span className="text-[12px] text-[var(--admin-muted,#92989d)] font-normal shrink-0">
                   {data?.summary.addonsSummary?.length ?? 0} jenis item
                 </span>
               </div>
 
               <div className="py-2">
                 {(data?.summary.addonsSummary?.length ?? 0) > 0 ? (
-                  <div className="divide-y divide-[#f2f2f2]">
+                  <div className="divide-y divide-[var(--admin-border,#2a2d2f)]">
                     {data?.summary.addonsSummary.map((item) => (
                       <div
                         key={item.name}
                         className="py-3.5 flex items-center justify-between gap-4"
                       >
                         <div className="min-w-0">
-                          <span className="text-[13px] font-medium text-[#202020] block">
+                          <span className="text-[13px] font-medium text-[var(--admin-text,#f4f4f5)] block">
                             {item.name}
                           </span>
-                          <span className="text-[11px] text-[#888] block mt-0.5">
+                          <span className="text-[12px] text-[var(--admin-muted,#92989d)] block mt-0.5">
                             Terjual {item.qty} pcs pada sesi hari ini
                           </span>
                         </div>
                         <div className="text-right shrink-0">
-                          <span className="text-[13px] font-semibold text-[#202020] font-mono block">
+                          <span className="text-[13px] font-semibold text-[var(--admin-text,#f4f4f5)] font-mono block">
                             {formatRupiah(item.revenue)}
                           </span>
-                          <span className="text-[11px] text-[#888] font-mono">
+                          <span className="text-[12px] text-[var(--admin-muted,#92989d)] font-mono">
                             {item.qty} item
                           </span>
                         </div>
@@ -632,8 +591,8 @@ export function AdminDashboardPage() {
                   </div>
                 ) : (
                   <div className="py-10 text-center space-y-1">
-                    <p className="text-[13px] font-medium text-[#202020]">Belum ada add-ons terjual</p>
-                    <p className="text-[12px] text-[#888]">
+                    <p className="text-[13px] font-medium text-[var(--admin-text,#f4f4f5)]">Belum ada add-ons terjual</p>
+                    <p className="text-[12px] text-[var(--admin-muted,#92989d)]">
                       Penjualan gantungan kunci, cetak ekstra, dan bingkai akan tercatat di sini.
                     </p>
                   </div>
@@ -641,63 +600,63 @@ export function AdminDashboardPage() {
               </div>
             </div>
 
-            <div className="pt-4 border-t border-[#f0f0f0] flex items-center justify-between text-[12px] text-[#777]">
-              <span>Rasio Customer Couple: <strong className="text-[#202020] font-medium font-mono">{data?.sessions.length ? `${Math.round((data.sessions.filter((s) => s.coupleMode).length / data.sessions.length) * 100)}%` : "0%"}</strong></span>
-              <span>Rata-rata 4R: <strong className="text-[#202020] font-medium font-mono">{data?.summary.totalSessions ? `${((data.summary.totalPrints.total4R ?? 0) / (data.summary.totalSessions || 1)).toFixed(1)} lbr` : "0 lbr"}</strong></span>
+            <div className="pt-4  border-[var(--admin-border,#2a2d2f)] flex items-center justify-between text-[12px] text-[var(--admin-muted,#92989d)]">
+              <span>Rasio Customer Couple: <strong className="text-[var(--admin-text,#f4f4f5)] font-medium font-mono">{data?.sessions.length ? `${Math.round((data.sessions.filter((s) => s.coupleMode).length / data.sessions.length) * 100)}%` : "0%"}</strong></span>
+              <span>Rata-rata 4R: <strong className="text-[var(--admin-text,#f4f4f5)] font-medium font-mono">{data?.summary.totalSessions ? `${((data.summary.totalPrints.total4R ?? 0) / (data.summary.totalSessions || 1)).toFixed(1)} lbr` : "0 lbr"}</strong></span>
             </div>
           </div>
 
           {/* Panel 2: Aktivitas Sesi Terakhir (5 cols) */}
-          <div className="lg:col-span-5 bg-white border border-[#e8e8e8] rounded-[12px] p-6 sm:p-8 flex flex-col justify-between space-y-6">
+          <div className="lg:col-span-5 bg-[var(--admin-card,#1c1f20)] border border-[var(--admin-border,#2a2d2f)] rounded-2xl p-6 sm:p-8 flex flex-col justify-between space-y-6">
             <div>
-              <div className="pb-4 border-b border-[#f0f0f0] flex items-center justify-between">
+              <div className="pb-4  border-[var(--admin-border,#2a2d2f)] flex items-center justify-between">
                 <div>
-                  <h2 className="text-[17px] font-semibold text-[#202020] tracking-[-0.02em]">
+                  <h2 className="text-[16px] font-semibold text-[var(--admin-text,#f4f4f5)] tracking-[-0.02em]">
                     Aktivitas Sesi Terakhir
                   </h2>
-                  <p className="text-[13px] text-[#888] leading-[1.7] mt-0.5">
+                  <p className="text-[13px] text-[var(--admin-muted,#92989d)] leading-[1.7] mt-0.5">
                     Transaksi pengunjung paling akhir di terminal Kiosk.
                   </p>
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#10b981]" />
-                  <span className="text-[12px] text-[#666] font-medium">{latestSession ? "Selesai" : "Standby"}</span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#c9d2e1]" />
+                  <span className="text-[12px] text-[var(--admin-secondary,#c3c7ca)] font-medium">{latestSession ? "Selesai" : "Standby"}</span>
                 </div>
               </div>
 
               {latestSession ? (
                 <div className="py-3 space-y-4">
                   <div className="flex items-center gap-3">
-                    <span className="w-9 h-9 rounded-full bg-[#f1f1f1] text-[#202020] font-semibold text-[13px] flex items-center justify-center shrink-0">
+                    <span className="w-9 h-9 rounded-full bg-[var(--admin-raised,#292b2f)] text-[var(--admin-text,#f4f4f5)] font-semibold text-[13px] flex items-center justify-center shrink-0">
                       {getInitials(latestSession.customerName)}
                     </span>
                     <div className="min-w-0">
-                      <h3 className="text-[15px] font-medium text-[#202020] truncate">
+                      <h3 className="text-[14px] font-medium text-[var(--admin-text,#f4f4f5)] truncate">
                         {latestSession.customerName}
                       </h3>
-                      <p className="text-[12px] text-[#888] truncate">
+                      <p className="text-[12px] text-[var(--admin-muted,#92989d)] truncate">
                         {latestSession.coupleMode ? "Couple Mode" : `${latestSession.peopleCount} Orang`} · {latestSession.prints.total} lembar 4R
                       </p>
                     </div>
                   </div>
 
-                  <div className="divide-y divide-[#f2f2f2] text-[13px]">
+                  <div className="divide-y divide-[var(--admin-border,#2a2d2f)] text-[13px]">
                     <div className="py-2.5 flex justify-between">
-                      <span className="text-[#888]">Waktu Transaksi</span>
-                      <span className="font-mono text-[#202020] font-medium">{latestSession.time} WIB</span>
+                      <span className="text-[var(--admin-muted,#92989d)]">Waktu Transaksi</span>
+                      <span className="font-mono text-[var(--admin-text,#f4f4f5)] font-medium">{latestSession.time} WIB</span>
                     </div>
                     <div className="py-2.5 flex justify-between">
-                      <span className="text-[#888]">Status Softcopy</span>
-                      <span className="text-[#202020]">{latestSession.makeStory ? "Promo Story (Gratis)" : "Softcopy Berbayar"}</span>
+                      <span className="text-[var(--admin-muted,#92989d)]">Status Softcopy</span>
+                      <span className="text-[var(--admin-text,#f4f4f5)]">{latestSession.makeStory ? "Promo Story (Gratis)" : "Softcopy Berbayar"}</span>
                     </div>
                     <div className="py-2.5 flex justify-between">
-                      <span className="text-[#888]">Total Tagihan</span>
-                      <span className="font-semibold text-[#202020] font-mono">{formatRupiah(latestSession.totalPrice)}</span>
+                      <span className="text-[var(--admin-muted,#92989d)]">Total Tagihan</span>
+                      <span className="font-semibold text-[var(--admin-text,#f4f4f5)] font-mono">{formatRupiah(latestSession.totalPrice)}</span>
                     </div>
                   </div>
                 </div>
               ) : (
-                <div className="py-12 text-center text-[#888] text-[13px]">
+                <div className="py-12 text-center text-[var(--admin-muted,#92989d)] text-[13px]">
                   Belum ada sesi tercatat di terminal hari ini.
                 </div>
               )}
@@ -708,7 +667,7 @@ export function AdminDashboardPage() {
                 href={latestSession.driveWebViewLink}
                 target="_blank"
                 rel="noreferrer"
-                className="w-full flex items-center justify-between text-[12px] font-medium text-[#202020] hover:underline pt-4 border-t border-[#f0f0f0] transition-colors"
+                className="w-full flex items-center justify-between text-[12px] font-medium text-[var(--admin-text,#f4f4f5)] hover:underline pt-4 border-t border-[var(--admin-border,#2a2d2f)] transition-colors"
               >
                 <span>Buka folder Google Drive sesi ini</span>
                 <ArrowUpRight size={14} />
@@ -718,39 +677,41 @@ export function AdminDashboardPage() {
         </div>
 
         {/* ── 4. LOG TRANSAKSI TABLE (Clean & Spacious) ── */}
-        <div className="bg-white border border-[#e8e8e8] rounded-[12px] p-6 sm:p-8 space-y-6">
-          <div className="pb-4 border-b border-[#f0f0f0] flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="bg-[var(--admin-card,#1c1f20)] border border-[var(--admin-border,#2a2d2f)] rounded-2xl p-6 sm:p-8 space-y-6">
+          <div className="pb-4  border-[var(--admin-border,#2a2d2f)] flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
               <div className="flex items-center gap-2.5">
-                <h2 className="text-[17px] font-semibold text-[#202020] tracking-[-0.02em]">
+                <h2 className="text-[16px] font-semibold text-[var(--admin-text,#f4f4f5)] tracking-[-0.02em]">
                   Log Transaksi Sesi Foto
                 </h2>
-                <span className="text-[12px] text-[#888] font-normal">
+                <span className="text-[12px] text-[var(--admin-muted,#92989d)] font-normal">
                   ({filteredSessionsList.length} dari {data?.sessions.length ?? 0} sesi)
                 </span>
               </div>
-              <p className="text-[13px] text-[#888] leading-[1.7] mt-0.5">
+              <p className="text-[13px] text-[var(--admin-muted,#92989d)] leading-[1.7] mt-0.5">
                 Daftar rekaman sesi foto, jumlah cetak kertas, dan tautan Google Drive per customer.
               </p>
             </div>
 
             {/* Filter & Search Bar */}
             <div className="flex items-center gap-2.5 flex-wrap shrink-0">
-              <div className="flex items-center gap-2 border border-[#e0e0e0] focus-within:border-[#171717] rounded-[7px] px-3 py-1.5 bg-white text-[12px] transition-colors w-full sm:w-56">
-                <Search size={13} className="text-[#999] shrink-0" />
+              <div className="flex items-center gap-2 border border-[var(--admin-border,#2a2d2f)] focus-within:border-[var(--admin-focus,#c0d0e7)] rounded-full px-3 py-1.5 bg-[var(--admin-card,#1c1f20)] text-[12px] transition-colors w-full sm:w-56">
+                <Search size={16} className="text-[var(--admin-muted,#92989d)] shrink-0" />
                 <input
                   type="search"
+                  aria-label="Cari transaksi berdasarkan nama, jam, atau ID"
                   placeholder="Cari nama / jam..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full border-0 outline-none text-[#202020] placeholder:text-[#aaa] text-[12px] p-0"
+                  className="w-full border-0 outline-none text-[var(--admin-text,#f4f4f5)] placeholder:text-[var(--admin-muted,#92989d)] text-[12px] p-0"
                 />
               </div>
 
               <select
                 value={packageFilter}
+                aria-label="Filter paket sesi"
                 onChange={(e) => setPackageFilter(e.target.value)}
-                className="border border-[#e0e0e0] focus:border-[#171717] rounded-[7px] px-3 py-1.5 text-[12px] text-[#444] bg-white outline-none cursor-pointer"
+                className="border border-[var(--admin-border,#2a2d2f)] focus:border-[var(--admin-focus,#c0d0e7)] rounded-lg px-3 py-1.5 text-[12px] text-[var(--admin-secondary,#c3c7ca)] bg-[var(--admin-canvas,#111114)] outline-none cursor-pointer"
               >
                 <option value="all">Semua Paket</option>
                 <option value="couple">Couple Mode</option>
@@ -764,8 +725,8 @@ export function AdminDashboardPage() {
           {/* Table */}
           {filteredSessionsList.length === 0 ? (
             <div className="py-16 text-center space-y-1">
-              <p className="text-[14px] font-medium text-[#202020]">Belum ada sesi yang cocok</p>
-              <p className="text-[12px] text-[#888]">
+              <p className="text-[14px] font-medium text-[var(--admin-text,#f4f4f5)]">Belum ada sesi yang cocok</p>
+              <p className="text-[12px] text-[var(--admin-muted,#92989d)]">
                 Coba ubah kata kunci pencarian atau pilih filter tanggal lain di atas.
               </p>
               {(searchQuery || packageFilter !== "all") && (
@@ -775,17 +736,18 @@ export function AdminDashboardPage() {
                     setSearchQuery("");
                     setPackageFilter("all");
                   }}
-                  className="mt-2 text-[12px] text-[#171717] font-medium hover:underline cursor-pointer"
+                  className="mt-2 text-[12px] text-[var(--admin-text,#f4f4f5)] font-medium hover:underline cursor-pointer"
                 >
                   Reset filter pencarian
                 </button>
               )}
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto rounded-2xl border border-[var(--admin-border,#2a2d2f)]">
               <table className="w-full border-collapse text-left min-w-[720px]">
+                <caption className="sr-only">Log transaksi sesi foto untuk tanggal {selectedDate}</caption>
                 <thead>
-                  <tr className="border-b border-[#eee] text-[11px] font-medium text-[#999] uppercase tracking-[0.06em]">
+                  <tr className="border-b border-[var(--admin-border,#2a2d2f)] text-[12px] font-medium text-[var(--admin-muted,#92989d)]">
                     <th className="py-3 px-4 font-medium">Customer</th>
                     <th className="py-3 px-4 font-medium">Waktu</th>
                     <th className="py-3 px-4 font-medium">Paket Sesi</th>
@@ -797,20 +759,20 @@ export function AdminDashboardPage() {
                     <th className="py-3 px-4 text-center font-medium">Aksi</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#f2f2f2] text-[13px]">
+                <tbody className="divide-y divide-[var(--admin-border,#2a2d2f)] text-[13px]">
                   {filteredSessionsList.map((s) => (
-                    <tr key={s.id} className="hover:bg-[#fafafa] transition-colors">
+                    <tr key={s.id} className="hover:bg-[var(--admin-selected,#232529)] transition-colors">
                       {/* Customer */}
                       <td className="py-3.5 px-4">
                         <div className="flex items-center gap-2.5">
-                          <span className="w-7 h-7 rounded-full bg-[#f1f1f1] text-[#444] font-medium text-[11px] flex items-center justify-center shrink-0">
+                          <span className="w-7 h-7 rounded-full bg-[var(--admin-raised,#292b2f)] text-[var(--admin-secondary,#c3c7ca)] font-medium text-[12px] flex items-center justify-center shrink-0">
                             {getInitials(s.customerName)}
                           </span>
                           <div className="min-w-0">
-                            <span className="font-medium text-[#202020] block truncate">
+                            <span className="font-medium text-[var(--admin-text,#f4f4f5)] block truncate">
                               {s.customerName}
                             </span>
-                            <span className="text-[11px] text-[#aaa] font-mono block">
+                            <span className="text-[12px] text-[var(--admin-muted,#92989d)] font-mono block">
                               {s.id}
                             </span>
                           </div>
@@ -819,28 +781,28 @@ export function AdminDashboardPage() {
 
                       {/* Time */}
                       <td className="py-3.5 px-4 whitespace-nowrap">
-                        <span className="font-mono text-[#444] text-[12px] block">
+                        <span className="font-mono text-[var(--admin-secondary,#c3c7ca)] text-[12px] block">
                           {s.time} WIB
                         </span>
-                        <span className="text-[11px] text-[#aaa] block">
+                        <span className="text-[12px] text-[var(--admin-muted,#92989d)] block">
                           {selectedDate}
                         </span>
                       </td>
 
                       {/* Paket Sesi */}
                       <td className="py-3.5 px-4 whitespace-nowrap">
-                        <span className="text-[12px] text-[#444]">
+                        <span className="text-[12px] text-[var(--admin-secondary,#c3c7ca)]">
                           {s.coupleMode ? "Couple Mode" : `${s.peopleCount} Orang`}
                         </span>
                       </td>
 
                       {/* Prints */}
                       <td className="py-3.5 px-4 whitespace-nowrap">
-                        <span className="text-[#202020] font-mono text-[12px]">
+                        <span className="text-[var(--admin-text,#f4f4f5)] font-mono text-[12px]">
                           {s.prints?.total ?? s.peopleCount} lbr 4R
                         </span>
                         {s.prints?.bonus > 0 && (
-                          <span className="text-[11px] text-[#aaa] block">
+                          <span className="text-[12px] text-[var(--admin-muted,#92989d)] block">
                             +{s.prints.bonus} bonus
                           </span>
                         )}
@@ -849,13 +811,13 @@ export function AdminDashboardPage() {
                       {/* Softcopy */}
                       <td className="py-3.5 px-4 whitespace-nowrap">
                         {s.makeStory ? (
-                          <div className="flex items-center gap-1.5 text-[12px] text-[#10b981]">
-                            <span className="w-1.5 h-1.5 rounded-full bg-[#10b981]" />
+                          <div className="flex items-center gap-1.5 text-[12px] text-[var(--admin-accent-text,#c9d2e1)]">
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#c9d2e1]" />
                             <span>Story Gratis</span>
                           </div>
                         ) : (
-                          <div className="flex items-center gap-1.5 text-[12px] text-[#888]">
-                            <span className="w-1.5 h-1.5 rounded-full bg-[#f59e0b]" />
+                          <div className="flex items-center gap-1.5 text-[12px] text-[var(--admin-muted,#92989d)]">
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#d7b8d6]" />
                             <span>Softcopy Bayar</span>
                           </div>
                         )}
@@ -864,7 +826,7 @@ export function AdminDashboardPage() {
                       {/* Addons */}
                       <td className="py-3.5 px-4">
                         {s.miscAddons?.length > 0 ? (
-                          <div className="flex flex-col gap-0.5 text-[11px] text-[#666]">
+                          <div className="flex flex-col gap-0.5 text-[12px] text-[var(--admin-secondary,#c3c7ca)]">
                             {s.miscAddons.map((a, i) => (
                               <span key={i}>
                                 {a.name} ({a.qty}x)
@@ -872,16 +834,16 @@ export function AdminDashboardPage() {
                             ))}
                           </div>
                         ) : (
-                          <span className="text-[#ccc] text-[12px]">—</span>
+                          <span className="text-[var(--admin-label,#737779)] text-[12px]">—</span>
                         )}
                       </td>
 
                       {/* Total */}
                       <td className="py-3.5 px-4 text-right whitespace-nowrap">
-                        <span className="font-semibold text-[#202020] font-mono text-[13px] block">
+                        <span className="font-semibold text-[var(--admin-text,#f4f4f5)] font-mono text-[13px] block">
                           {formatRupiah(s.totalPrice)}
                         </span>
-                        <span className="text-[10px] text-[#888] font-medium tracking-wide uppercase">
+                        <span className="text-[12px] text-[var(--admin-muted,#92989d)] font-medium tracking-wide uppercase">
                           {s.paymentMethod ? s.paymentMethod : "tunai"}
                         </span>
                       </td>
@@ -893,13 +855,13 @@ export function AdminDashboardPage() {
                             href={s.driveWebViewLink}
                             target="_blank"
                             rel="noreferrer"
-                            className="w-7 h-7 rounded-[5px] border border-[#e0e0e0] inline-flex items-center justify-center text-[#666] hover:bg-[#171717] hover:text-white hover:border-[#171717] transition-all"
+                            className="w-7 h-8 rounded-lg border border-[var(--admin-border,#2a2d2f)] inline-flex items-center justify-center text-[var(--admin-secondary,#c3c7ca)] hover:bg-[#d2def0] hover:text-[#111b23] hover:border-[var(--admin-focus,#c0d0e7)] transition-all"
                             title="Buka Folder Google Drive Customer"
                           >
                             <ExternalLink size={12} />
                           </a>
                         ) : (
-                          <span className="text-[#ccc] text-[11px]">—</span>
+                          <span className="text-[var(--admin-label,#737779)] text-[12px]">—</span>
                         )}
                       </td>
 
@@ -909,7 +871,7 @@ export function AdminDashboardPage() {
                           <button
                             type="button"
                             onClick={() => handleOpenReceipt(s)}
-                            className="w-7 h-7 rounded-[5px] text-[#666] hover:text-[#171717] hover:bg-[#f0f0f0] inline-flex items-center justify-center transition-colors cursor-pointer"
+                            className="w-7 h-8 rounded-lg text-[var(--admin-secondary,#c3c7ca)] hover:text-[var(--admin-text,#f4f4f5)] hover:bg-[var(--admin-raised,#292b2f)] inline-flex items-center justify-center transition-colors cursor-pointer"
                             title="Buka / Unduh E-Receipt Digital"
                           >
                             <Receipt size={13} />
@@ -917,7 +879,7 @@ export function AdminDashboardPage() {
                           <button
                             type="button"
                             onClick={() => handleDeleteSession(s.id, s.customerName)}
-                            className="w-7 h-7 rounded-[5px] text-[#aaa] hover:text-[#dc2626] hover:bg-[#fef2f2] inline-flex items-center justify-center transition-colors cursor-pointer"
+                            className="w-7 h-8 rounded-lg text-[var(--admin-muted,#92989d)] hover:text-[var(--admin-danger,#f18e9a)] hover:bg-[var(--admin-alert,#3b2d3c)] inline-flex items-center justify-center transition-colors cursor-pointer"
                             title="Hapus rekaman sesi ini"
                           >
                             <Trash2 size={13} />

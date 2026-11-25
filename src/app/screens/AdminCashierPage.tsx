@@ -617,30 +617,30 @@ export function AdminCashierPage() {
 
   return (
     <AdminLayout>
-      <div className="w-full p-6 md:p-8 space-y-8">
+      <div className="w-full px-5 pb-8 pt-3 lg:px-[34px] space-y-7">
         {/* ── 1. HEADER & CONTROL BAR ── */}
-        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 pb-6 border-b border-[#e8e8e8]">
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 pb-6 border-b border-[var(--admin-border,#2a2d2f)]">
           <div>
-            <p className="text-[10px] tracking-[0.14em] text-[#999] uppercase font-medium">
+            <p className="text-[12px] tracking-[0.14em] text-[var(--admin-muted,#92989d)] uppercase font-medium">
               KASIR OPERASIONAL & E-RECEIPT DIGITAL
             </p>
-            <h1 className="text-[28px] sm:text-[34px] font-semibold tracking-[-0.04em] text-[#202020] leading-[1.25] mt-1.5">
+            <h1 className="text-[28px] sm:text-[30px] font-semibold tracking-[-0.04em] text-[var(--admin-text,#f4f4f5)] leading-[1.25] mt-1.5">
               Kasir & E-Receipt Digital
             </h1>
-            <p className="text-[13px] text-[#777] leading-[1.8] mt-1 max-w-2xl">
+            <p className="text-[13px] text-[var(--admin-muted,#92989d)] leading-[1.8] mt-1 max-w-2xl">
               Catat transaksi sesi studio, sesuaikan paket & add-ons merchandise, hitung kembalian tunai atau QRIS, lalu terbitkan e-receipt digital dalam format PDF.
             </p>
           </div>
 
           {/* Tab Navigation - Typography First (Rule 2) */}
-          <div className="flex items-center gap-6 border-b border-transparent">
+          <div className="flex items-center gap-6  border-transparent">
             <button
               type="button"
               onClick={() => setActiveTab("pos")}
               className={`pb-2.5 text-[14px] transition-colors cursor-pointer ${
                 activeTab === "pos"
-                  ? "border-b-2 border-[#171717] font-semibold text-[#171717]"
-                  : "text-[#777] hover:text-[#171717] font-medium"
+                  ? " bg-[var(--admin-tab,#343638)] font-medium text-[var(--admin-text,#f4f4f5)]"
+                  : "text-[var(--admin-muted,#92989d)] hover:text-[var(--admin-text,#f4f4f5)] font-medium"
               }`}
             >
               Transaksi Baru (POS)
@@ -650,8 +650,8 @@ export function AdminCashierPage() {
               onClick={() => setActiveTab("history")}
               className={`pb-2.5 text-[14px] transition-colors cursor-pointer ${
                 activeTab === "history"
-                  ? "border-b-2 border-[#171717] font-semibold text-[#171717]"
-                  : "text-[#777] hover:text-[#171717] font-medium"
+                  ? " bg-[var(--admin-tab,#343638)] font-medium text-[var(--admin-text,#f4f4f5)]"
+                  : "text-[var(--admin-muted,#92989d)] hover:text-[var(--admin-text,#f4f4f5)] font-medium"
               }`}
             >
               Riwayat E-Receipt Hari Ini ({historySessions.length})
@@ -665,20 +665,20 @@ export function AdminCashierPage() {
             {/* ── LEFT COLUMN: INPUTS & SELECTIONS (lg:col-span-7 or 8) ── */}
             <div className="lg:col-span-7 xl:col-span-8 space-y-6">
               {/* CARD 1: IDENTITAS PELANGGAN */}
-              <div className="bg-white border border-[#e8e8e8] rounded-[10px] p-6 space-y-5">
+              <div className="bg-[var(--admin-card,#1c1f20)] border border-[var(--admin-border,#2a2d2f)] rounded-2xl p-6 space-y-5">
                 <div>
-                  <h3 className="text-[15px] font-semibold text-[#171717]">
+                  <h3 className="text-[16px] font-semibold text-[var(--admin-text,#f4f4f5)]">
                     1. Data Pelanggan
                   </h3>
-                  <p className="text-[12px] text-[#888] mt-0.5">
+                  <p className="text-[12px] text-[var(--admin-muted,#92989d)] mt-0.5">
                     Nama dan nomor kontak WhatsApp untuk penerbitan bukti transaksi.
                   </p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-[12px] font-medium text-[#444] mb-1.5">
-                      Nama Pelanggan / Pasangan <span className="text-rose-500">*</span>
+                    <label className="block text-[12px] font-medium text-[var(--admin-secondary,#c3c7ca)] mb-1.5">
+                      Nama Pelanggan / Pasangan <span className="text-[var(--admin-danger,#f18e9a)]">*</span>
                     </label>
                     <div className="relative">
                       <input
@@ -686,13 +686,13 @@ export function AdminCashierPage() {
                         value={customerName}
                         onChange={(e) => setCustomerName(e.target.value)}
                         placeholder="Contoh: Kak Sarah & Ryan"
-                        className="w-full px-3.5 py-2.5 bg-[#fafafa] border border-[#e5e5e5] rounded-[7px] text-[13px] text-[#171717] focus:bg-white focus:border-[#171717] outline-none transition-colors"
+                        className="w-full px-3.5 py-2.5 bg-[var(--admin-canvas,#111114)] border border-[var(--admin-border,#2a2d2f)] rounded-lg text-[13px] text-[var(--admin-text,#f4f4f5)] focus:bg-[var(--admin-canvas,#111114)] focus:border-[var(--admin-focus,#c0d0e7)] outline-none transition-colors"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-[12px] font-medium text-[#444] mb-1.5">
+                    <label className="block text-[12px] font-medium text-[var(--admin-secondary,#c3c7ca)] mb-1.5">
                       Nomor WhatsApp Pelanggan
                     </label>
                     <input
@@ -700,12 +700,12 @@ export function AdminCashierPage() {
                       value={customerPhone}
                       onChange={(e) => setCustomerPhone(e.target.value)}
                       placeholder="Contoh: 081234567890"
-                      className="w-full px-3.5 py-2.5 bg-[#fafafa] border border-[#e5e5e5] rounded-[7px] text-[13px] text-[#171717] focus:bg-white focus:border-[#171717] outline-none transition-colors font-mono"
+                      className="w-full px-3.5 py-2.5 bg-[var(--admin-canvas,#111114)] border border-[var(--admin-border,#2a2d2f)] rounded-lg text-[13px] text-[var(--admin-text,#f4f4f5)] focus:bg-[var(--admin-canvas,#111114)] focus:border-[var(--admin-focus,#c0d0e7)] outline-none transition-colors font-mono"
                     />
                   </div>
 
                   <div className="md:col-span-2">
-                    <label className="block text-[12px] font-medium text-[#444] mb-1.5">
+                    <label className="block text-[12px] font-medium text-[var(--admin-secondary,#c3c7ca)] mb-1.5">
                       Catatan Sesi Studio (Opsional)
                     </label>
                     <input
@@ -713,19 +713,19 @@ export function AdminCashierPage() {
                       value={notes}
                       onChange={(e) => setNotes(e.target.value)}
                       placeholder="Contoh: Request backdrop abu-abu / wisuda 4 orang"
-                      className="w-full px-3.5 py-2.5 bg-[#fafafa] border border-[#e5e5e5] rounded-[7px] text-[13px] text-[#171717] focus:bg-white focus:border-[#171717] outline-none transition-colors"
+                      className="w-full px-3.5 py-2.5 bg-[var(--admin-canvas,#111114)] border border-[var(--admin-border,#2a2d2f)] rounded-lg text-[13px] text-[var(--admin-text,#f4f4f5)] focus:bg-[var(--admin-canvas,#111114)] focus:border-[var(--admin-focus,#c0d0e7)] outline-none transition-colors"
                     />
                   </div>
                 </div>
               </div>
 
               {/* CARD 2: PAKET SESI FOTO & KUOTA ORANG */}
-              <div className="bg-white border border-[#e8e8e8] rounded-[10px] p-6 space-y-5">
+              <div className="bg-[var(--admin-card,#1c1f20)] border border-[var(--admin-border,#2a2d2f)] rounded-2xl p-6 space-y-5">
                 <div>
-                  <h3 className="text-[15px] font-semibold text-[#171717]">
+                  <h3 className="text-[16px] font-semibold text-[var(--admin-text,#f4f4f5)]">
                     2. Paket Sesi Foto
                   </h3>
-                  <p className="text-[12px] text-[#888] mt-0.5">
+                  <p className="text-[12px] text-[var(--admin-muted,#92989d)] mt-0.5">
                     Tarif dasar sesi studio dan kalkulasi otomatis penambahan orang.
                   </p>
                 </div>
@@ -740,17 +740,17 @@ export function AdminCashierPage() {
                     }}
                     className={`p-3 rounded-[8px] border text-left transition-colors cursor-pointer ${
                       packageType === "standard"
-                        ? "border-[#171717] bg-[#fafafa] shadow-2xs"
-                        : "border-[#e5e5e5] bg-white hover:border-[#ccc]"
+                        ? "border-[var(--admin-focus,#c0d0e7)] bg-[var(--admin-card,#1c1f20)] "
+                        : "border-[var(--admin-border,#2a2d2f)] bg-[var(--admin-card,#1c1f20)] hover:border-[var(--admin-border-strong,#41474e)]"
                     }`}
                   >
-                    <span className="text-[11px] uppercase tracking-wider text-[#888] font-medium block">
+                    <span className="text-[12px] uppercase tracking-wider text-[var(--admin-muted,#92989d)] font-medium block">
                       Paket Dasar
                     </span>
-                    <span className="text-[13px] font-semibold text-[#171717] block mt-0.5">
+                    <span className="text-[13px] font-semibold text-[var(--admin-text,#f4f4f5)] block mt-0.5">
                       Standar ({pricing.session.includedPeople ?? 2} Org)
                     </span>
-                    <span className="text-[12px] text-[#555] font-mono mt-1 block">
+                    <span className="text-[12px] text-[var(--admin-secondary,#c3c7ca)] font-mono mt-1 block">
                       {formatRupiah(pricing.session.basePrice ?? 100000)}
                     </span>
                   </button>
@@ -763,17 +763,17 @@ export function AdminCashierPage() {
                     }}
                     className={`p-3 rounded-[8px] border text-left transition-colors cursor-pointer ${
                       packageType === "couple"
-                        ? "border-[#171717] bg-[#fafafa] shadow-2xs"
-                        : "border-[#e5e5e5] bg-white hover:border-[#ccc]"
+                        ? "border-[var(--admin-focus,#c0d0e7)] bg-[var(--admin-card,#1c1f20)] "
+                        : "border-[var(--admin-border,#2a2d2f)] bg-[var(--admin-card,#1c1f20)] hover:border-[var(--admin-border-strong,#41474e)]"
                     }`}
                   >
-                    <span className="text-[11px] uppercase tracking-wider text-[#888] font-medium block">
+                    <span className="text-[12px] uppercase tracking-wider text-[var(--admin-muted,#92989d)] font-medium block">
                       Couple Mode
                     </span>
-                    <span className="text-[13px] font-semibold text-[#171717] block mt-0.5">
+                    <span className="text-[13px] font-semibold text-[var(--admin-text,#f4f4f5)] block mt-0.5">
                       Sesi Couple (2 Org)
                     </span>
-                    <span className="text-[12px] text-[#555] font-mono mt-1 block">
+                    <span className="text-[12px] text-[var(--admin-secondary,#c3c7ca)] font-mono mt-1 block">
                       {formatRupiah(pricing.session.basePrice ?? 100000)}
                     </span>
                   </button>
@@ -786,17 +786,17 @@ export function AdminCashierPage() {
                     }}
                     className={`p-3 rounded-[8px] border text-left transition-colors cursor-pointer ${
                       packageType === "group"
-                        ? "border-[#171717] bg-[#fafafa] shadow-2xs"
-                        : "border-[#e5e5e5] bg-white hover:border-[#ccc]"
+                        ? "border-[var(--admin-focus,#c0d0e7)] bg-[var(--admin-card,#1c1f20)] "
+                        : "border-[var(--admin-border,#2a2d2f)] bg-[var(--admin-card,#1c1f20)] hover:border-[var(--admin-border-strong,#41474e)]"
                     }`}
                   >
-                    <span className="text-[11px] uppercase tracking-wider text-[#888] font-medium block">
+                    <span className="text-[12px] uppercase tracking-wider text-[var(--admin-muted,#92989d)] font-medium block">
                       Group / Rombongan
                     </span>
-                    <span className="text-[13px] font-semibold text-[#171717] block mt-0.5">
+                    <span className="text-[13px] font-semibold text-[var(--admin-text,#f4f4f5)] block mt-0.5">
                       Grup (3+ Org)
                     </span>
-                    <span className="text-[12px] text-[#555] font-mono mt-1 block">
+                    <span className="text-[12px] text-[var(--admin-secondary,#c3c7ca)] font-mono mt-1 block">
                       +{formatRupiah(extraPersonPrice)}/org
                     </span>
                   </button>
@@ -806,17 +806,17 @@ export function AdminCashierPage() {
                     onClick={() => setPackageType("custom")}
                     className={`p-3 rounded-[8px] border text-left transition-colors cursor-pointer ${
                       packageType === "custom"
-                        ? "border-[#171717] bg-[#fafafa] shadow-2xs"
-                        : "border-[#e5e5e5] bg-white hover:border-[#ccc]"
+                        ? "border-[var(--admin-focus,#c0d0e7)] bg-[var(--admin-card,#1c1f20)] "
+                        : "border-[var(--admin-border,#2a2d2f)] bg-[var(--admin-card,#1c1f20)] hover:border-[var(--admin-border-strong,#41474e)]"
                     }`}
                   >
-                    <span className="text-[11px] uppercase tracking-wider text-[#888] font-medium block">
+                    <span className="text-[12px] uppercase tracking-wider text-[var(--admin-muted,#92989d)] font-medium block">
                       Promo / Khusus
                     </span>
-                    <span className="text-[13px] font-semibold text-[#171717] block mt-0.5">
+                    <span className="text-[13px] font-semibold text-[var(--admin-text,#f4f4f5)] block mt-0.5">
                       Tarif Custom
                     </span>
-                    <span className="text-[12px] text-[#555] font-mono mt-1 block">
+                    <span className="text-[12px] text-[var(--admin-secondary,#c3c7ca)] font-mono mt-1 block">
                       Input Bebas
                     </span>
                   </button>
@@ -824,26 +824,26 @@ export function AdminCashierPage() {
 
                 {/* Custom Base Price Input (if custom selected) */}
                 {packageType === "custom" && (
-                  <div className="p-3.5 bg-[#f9f9f9] border border-[#e5e5e5] rounded-[7px] space-y-1.5">
-                    <label className="block text-[12px] font-medium text-[#444]">
+                  <div className="p-3.5 bg-[var(--admin-card,#1c1f20)] border border-[var(--admin-border,#2a2d2f)] rounded-2xl space-y-1.5">
+                    <label className="block text-[12px] font-medium text-[var(--admin-secondary,#c3c7ca)]">
                       Nominal Tarif Sesi Dasar Custom (Rp)
                     </label>
                     <input
                       type="number"
                       value={customBasePrice}
                       onChange={(e) => setCustomBasePrice(Number(e.target.value) || 0)}
-                      className="w-full max-w-xs px-3 py-2 bg-white border border-[#ddd] rounded-[6px] text-[13px] font-mono outline-none"
+                      className="w-full max-w-xs px-3 py-2 bg-[var(--admin-canvas,#111114)] border border-[var(--admin-border,#2a2d2f)] rounded-[6px] text-[13px] font-mono outline-none"
                     />
                   </div>
                 )}
 
                 {/* People Count Counter */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-4 border-t border-[#f0f0f0]">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-4  border-[var(--admin-border,#2a2d2f)]">
                   <div>
-                    <span className="text-[13px] font-medium text-[#202020] block">
+                    <span className="text-[13px] font-medium text-[var(--admin-text,#f4f4f5)] block">
                       Jumlah Pengunjung / Orang Masuk Studio
                     </span>
-                    <span className="text-[12px] text-[#888] block">
+                    <span className="text-[12px] text-[var(--admin-muted,#92989d)] block">
                       Kapasitas paket dasar: {includedPeople} orang. Extra person: +{formatRupiah(extraPersonPrice)}/orang.
                     </span>
                   </div>
@@ -853,17 +853,17 @@ export function AdminCashierPage() {
                       type="button"
                       onClick={() => setPeopleCount((p) => Math.max(1, p - 1))}
                       disabled={peopleCount <= 1}
-                      className="w-9 h-9 rounded-[7px] border border-[#e0e0e0] bg-white hover:bg-[#f5f5f5] flex items-center justify-center text-[#555] disabled:opacity-40 cursor-pointer"
+                      className="w-9 h-9 rounded-full border border-[var(--admin-border,#2a2d2f)] bg-[var(--admin-card,#1c1f20)] hover:bg-[var(--admin-raised,#292b2f)] flex items-center justify-center text-[var(--admin-secondary,#c3c7ca)] disabled:opacity-40 cursor-pointer"
                     >
                       <Minus size={14} />
                     </button>
-                    <span className="w-10 text-center font-mono font-semibold text-[16px] text-[#171717]">
+                    <span className="w-10 text-center font-mono font-semibold text-[16px] text-[var(--admin-text,#f4f4f5)]">
                       {peopleCount}
                     </span>
                     <button
                       type="button"
                       onClick={() => setPeopleCount((p) => p + 1)}
-                      className="w-9 h-9 rounded-[7px] border border-[#e0e0e0] bg-white hover:bg-[#f5f5f5] flex items-center justify-center text-[#555] cursor-pointer"
+                      className="w-9 h-9 rounded-full border border-[var(--admin-border,#2a2d2f)] bg-[var(--admin-card,#1c1f20)] hover:bg-[var(--admin-raised,#292b2f)] flex items-center justify-center text-[var(--admin-secondary,#c3c7ca)] cursor-pointer"
                     >
                       <Plus size={14} />
                     </button>
@@ -871,11 +871,11 @@ export function AdminCashierPage() {
                 </div>
 
                 {extraPeopleCount > 0 && (
-                  <div className="p-3 bg-[#fafafa] border border-[#eaeaea] rounded-[7px] flex justify-between items-center text-[12px]">
-                    <span className="text-[#666]">
+                  <div className="p-3 bg-[var(--admin-card,#1c1f20)] border border-[var(--admin-border,#2a2d2f)] rounded-2xl flex justify-between items-center text-[12px]">
+                    <span className="text-[var(--admin-secondary,#c3c7ca)]">
                       Tambahan {extraPeopleCount} orang ({extraPeopleCount} x {formatRupiah(extraPersonPrice)})
                     </span>
-                    <span className="font-mono font-semibold text-[#171717]">
+                    <span className="font-mono font-semibold text-[var(--admin-text,#f4f4f5)]">
                       +{formatRupiah(extraPeopleCost)}
                     </span>
                   </div>
@@ -883,12 +883,12 @@ export function AdminCashierPage() {
               </div>
 
               {/* CARD 3: ADD-ONS & CETAK FOTO */}
-              <div className="bg-white border border-[#e8e8e8] rounded-[10px] p-6 space-y-6">
+              <div className="bg-[var(--admin-card,#1c1f20)] border border-[var(--admin-border,#2a2d2f)] rounded-2xl p-6 space-y-6">
                 <div>
-                  <h3 className="text-[15px] font-semibold text-[#171717]">
+                  <h3 className="text-[16px] font-semibold text-[var(--admin-text,#f4f4f5)]">
                     3. Cetak Foto & Softcopy
                   </h3>
-                  <p className="text-[12px] text-[#888] mt-0.5">
+                  <p className="text-[12px] text-[var(--admin-muted,#92989d)] mt-0.5">
                     Opsi cetak lembar foto fisik dan hak unduh softcopy Google Drive.
                   </p>
                 </div>
@@ -896,12 +896,12 @@ export function AdminCashierPage() {
                 {/* Print Count Rows */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {/* Cetak 4R */}
-                  <div className="p-4 border border-[#e5e5e5] rounded-[8px] flex items-center justify-between">
+                  <div className="p-4 border border-[var(--admin-border,#2a2d2f)] rounded-[8px] flex items-center justify-between">
                     <div>
-                      <span className="text-[13px] font-medium text-[#202020] block">
+                      <span className="text-[13px] font-medium text-[var(--admin-text,#f4f4f5)] block">
                         Cetak Foto 4R Tambahan
                       </span>
-                      <span className="text-[11.5px] text-[#888] font-mono">
+                      <span className="text-[11.5px] text-[var(--admin-muted,#92989d)] font-mono">
                         {formatRupiah(pricing.prints.print4rPrice ?? 10000)} / lembar
                       </span>
                     </div>
@@ -910,7 +910,7 @@ export function AdminCashierPage() {
                         type="button"
                         onClick={() => setPrint4rCount((c) => Math.max(0, c - 1))}
                         disabled={print4rCount <= 0}
-                        className="w-8 h-8 rounded-[6px] border border-[#ddd] bg-white hover:bg-[#f5f5f5] flex items-center justify-center text-[#555] disabled:opacity-40 cursor-pointer"
+                        className="w-8 h-8 rounded-[6px] border border-[var(--admin-border,#2a2d2f)] bg-[var(--admin-card,#1c1f20)] hover:bg-[var(--admin-raised,#292b2f)] flex items-center justify-center text-[var(--admin-secondary,#c3c7ca)] disabled:opacity-40 cursor-pointer"
                       >
                         <Minus size={13} />
                       </button>
@@ -920,7 +920,7 @@ export function AdminCashierPage() {
                       <button
                         type="button"
                         onClick={() => setPrint4rCount((c) => c + 1)}
-                        className="w-8 h-8 rounded-[6px] border border-[#ddd] bg-white hover:bg-[#f5f5f5] flex items-center justify-center text-[#555] cursor-pointer"
+                        className="w-8 h-8 rounded-[6px] border border-[var(--admin-border,#2a2d2f)] bg-[var(--admin-card,#1c1f20)] hover:bg-[var(--admin-raised,#292b2f)] flex items-center justify-center text-[var(--admin-secondary,#c3c7ca)] cursor-pointer"
                       >
                         <Plus size={13} />
                       </button>
@@ -928,12 +928,12 @@ export function AdminCashierPage() {
                   </div>
 
                   {/* Cetak A4 */}
-                  <div className="p-4 border border-[#e5e5e5] rounded-[8px] flex items-center justify-between">
+                  <div className="p-4 border border-[var(--admin-border,#2a2d2f)] rounded-[8px] flex items-center justify-between">
                     <div>
-                      <span className="text-[13px] font-medium text-[#202020] block">
+                      <span className="text-[13px] font-medium text-[var(--admin-text,#f4f4f5)] block">
                         Cetak Foto A4 (10R)
                       </span>
-                      <span className="text-[11.5px] text-[#888] font-mono">
+                      <span className="text-[11.5px] text-[var(--admin-muted,#92989d)] font-mono">
                         {formatRupiah(pricing.prints.printA4Price ?? 20000)} / lembar
                       </span>
                     </div>
@@ -942,7 +942,7 @@ export function AdminCashierPage() {
                         type="button"
                         onClick={() => setPrintA4Count((c) => Math.max(0, c - 1))}
                         disabled={printA4Count <= 0}
-                        className="w-8 h-8 rounded-[6px] border border-[#ddd] bg-white hover:bg-[#f5f5f5] flex items-center justify-center text-[#555] disabled:opacity-40 cursor-pointer"
+                        className="w-8 h-8 rounded-[6px] border border-[var(--admin-border,#2a2d2f)] bg-[var(--admin-card,#1c1f20)] hover:bg-[var(--admin-raised,#292b2f)] flex items-center justify-center text-[var(--admin-secondary,#c3c7ca)] disabled:opacity-40 cursor-pointer"
                       >
                         <Minus size={13} />
                       </button>
@@ -952,7 +952,7 @@ export function AdminCashierPage() {
                       <button
                         type="button"
                         onClick={() => setPrintA4Count((c) => c + 1)}
-                        className="w-8 h-8 rounded-[6px] border border-[#ddd] bg-white hover:bg-[#f5f5f5] flex items-center justify-center text-[#555] cursor-pointer"
+                        className="w-8 h-8 rounded-[6px] border border-[var(--admin-border,#2a2d2f)] bg-[var(--admin-card,#1c1f20)] hover:bg-[var(--admin-raised,#292b2f)] flex items-center justify-center text-[var(--admin-secondary,#c3c7ca)] cursor-pointer"
                       >
                         <Plus size={13} />
                       </button>
@@ -962,7 +962,7 @@ export function AdminCashierPage() {
 
                 {/* Softcopy Options Segmented */}
                 <div className="space-y-2 pt-2">
-                  <label className="block text-[12px] font-medium text-[#444]">
+                  <label className="block text-[12px] font-medium text-[var(--admin-secondary,#c3c7ca)]">
                     Ketentuan Softcopy Semua File
                   </label>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -971,17 +971,17 @@ export function AdminCashierPage() {
                       onClick={() => setSoftcopyOption("story_free")}
                       className={`p-3 rounded-[8px] border text-left transition-colors cursor-pointer ${
                         softcopyOption === "story_free"
-                          ? "border-[#171717] bg-[#fafafa]"
-                          : "border-[#e5e5e5] bg-white hover:border-[#ccc]"
+                          ? "border-[var(--admin-focus,#c0d0e7)] bg-[var(--admin-card,#1c1f20)]"
+                          : "border-[var(--admin-border,#2a2d2f)] bg-[var(--admin-card,#1c1f20)] hover:border-[var(--admin-border-strong,#41474e)]"
                       }`}
                     >
-                      <span className="text-[12.5px] font-semibold text-[#171717] block">
+                      <span className="text-[12.5px] font-semibold text-[var(--admin-text,#f4f4f5)] block">
                         Story IG Gratis
                       </span>
-                      <span className="text-[11px] text-[#888] block mt-0.5">
+                      <span className="text-[12px] text-[var(--admin-muted,#92989d)] block mt-0.5">
                         Free (Tukarkan tag/story)
                       </span>
-                      <span className="text-[11.5px] text-[#10b981] font-mono mt-1 block">
+                      <span className="text-[11.5px] text-[var(--admin-accent-text,#c9d2e1)] font-mono mt-1 block">
                         Rp 0 (Bonus)
                       </span>
                     </button>
@@ -991,17 +991,17 @@ export function AdminCashierPage() {
                       onClick={() => setSoftcopyOption("paid")}
                       className={`p-3 rounded-[8px] border text-left transition-colors cursor-pointer ${
                         softcopyOption === "paid"
-                          ? "border-[#171717] bg-[#fafafa]"
-                          : "border-[#e5e5e5] bg-white hover:border-[#ccc]"
+                          ? "border-[var(--admin-focus,#c0d0e7)] bg-[var(--admin-card,#1c1f20)]"
+                          : "border-[var(--admin-border,#2a2d2f)] bg-[var(--admin-card,#1c1f20)] hover:border-[var(--admin-border-strong,#41474e)]"
                       }`}
                     >
-                      <span className="text-[12.5px] font-semibold text-[#171717] block">
+                      <span className="text-[12.5px] font-semibold text-[var(--admin-text,#f4f4f5)] block">
                         Beli Softcopy All Files
                       </span>
-                      <span className="text-[11px] text-[#888] block mt-0.5">
+                      <span className="text-[12px] text-[var(--admin-muted,#92989d)] block mt-0.5">
                         Akses Google Drive penuh
                       </span>
-                      <span className="text-[11.5px] text-[#171717] font-mono mt-1 block">
+                      <span className="text-[11.5px] text-[var(--admin-text,#f4f4f5)] font-mono mt-1 block">
                         +{formatRupiah(pricing.session.softcopyCharge ?? 25000)}
                       </span>
                     </button>
@@ -1011,17 +1011,17 @@ export function AdminCashierPage() {
                       onClick={() => setSoftcopyOption("none")}
                       className={`p-3 rounded-[8px] border text-left transition-colors cursor-pointer ${
                         softcopyOption === "none"
-                          ? "border-[#171717] bg-[#fafafa]"
-                          : "border-[#e5e5e5] bg-white hover:border-[#ccc]"
+                          ? "border-[var(--admin-focus,#c0d0e7)] bg-[var(--admin-card,#1c1f20)]"
+                          : "border-[var(--admin-border,#2a2d2f)] bg-[var(--admin-card,#1c1f20)] hover:border-[var(--admin-border-strong,#41474e)]"
                       }`}
                     >
-                      <span className="text-[12.5px] font-semibold text-[#171717] block">
+                      <span className="text-[12.5px] font-semibold text-[var(--admin-text,#f4f4f5)] block">
                         Tanpa Softcopy
                       </span>
-                      <span className="text-[11px] text-[#888] block mt-0.5">
+                      <span className="text-[12px] text-[var(--admin-muted,#92989d)] block mt-0.5">
                         Hanya cetak foto fisik
                       </span>
-                      <span className="text-[11.5px] text-[#888] font-mono mt-1 block">
+                      <span className="text-[11.5px] text-[var(--admin-muted,#92989d)] font-mono mt-1 block">
                         Rp 0
                       </span>
                     </button>
@@ -1030,12 +1030,12 @@ export function AdminCashierPage() {
               </div>
 
               {/* CARD 4: MERCHANDISE & ADD-ONS (KEYCHAINS & ID CARDS) */}
-              <div className="bg-white border border-[#e8e8e8] rounded-[10px] p-6 space-y-5">
+              <div className="bg-[var(--admin-card,#1c1f20)] border border-[var(--admin-border,#2a2d2f)] rounded-2xl p-6 space-y-5">
                 <div>
-                  <h3 className="text-[15px] font-semibold text-[#171717]">
+                  <h3 className="text-[16px] font-semibold text-[var(--admin-text,#f4f4f5)]">
                     4. Merchandise Studio
                   </h3>
-                  <p className="text-[12px] text-[#888] mt-0.5">
+                  <p className="text-[12px] text-[var(--admin-muted,#92989d)] mt-0.5">
                     Gantungan kunci foto, ID Card custom, serta souvenir studio.
                   </p>
                 </div>
@@ -1043,7 +1043,7 @@ export function AdminCashierPage() {
                 {/* Keychains list */}
                 {pricing.keychains && pricing.keychains.length > 0 && (
                   <div className="space-y-2.5">
-                    <span className="text-[12px] font-medium text-[#555] block">
+                    <span className="text-[12px] font-medium text-[var(--admin-secondary,#c3c7ca)] block">
                       Varian Gantungan Kunci
                     </span>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -1054,13 +1054,13 @@ export function AdminCashierPage() {
                           return (
                             <div
                               key={k.id}
-                              className="p-3 border border-[#e5e5e5] rounded-[7px] flex items-center justify-between"
+                              className="p-3 border border-[var(--admin-border,#2a2d2f)] rounded-2xl flex items-center justify-between"
                             >
                               <div>
-                                <span className="text-[12.5px] font-medium text-[#202020] block">
+                                <span className="text-[12.5px] font-medium text-[var(--admin-text,#f4f4f5)] block">
                                   {k.name}
                                 </span>
-                                <span className="text-[11px] text-[#888] font-mono">
+                                <span className="text-[12px] text-[var(--admin-muted,#92989d)] font-mono">
                                   {formatRupiah(k.price)}
                                 </span>
                               </div>
@@ -1074,7 +1074,7 @@ export function AdminCashierPage() {
                                     }))
                                   }
                                   disabled={currentQty <= 0}
-                                  className="w-7 h-7 rounded-[5px] border border-[#ddd] bg-white hover:bg-[#f5f5f5] flex items-center justify-center text-[#555] disabled:opacity-40 cursor-pointer"
+                                  className="w-7 h-7 rounded-lg border border-[var(--admin-border,#2a2d2f)] bg-[var(--admin-card,#1c1f20)] hover:bg-[var(--admin-raised,#292b2f)] flex items-center justify-center text-[var(--admin-secondary,#c3c7ca)] disabled:opacity-40 cursor-pointer"
                                 >
                                   <Minus size={12} />
                                 </button>
@@ -1089,7 +1089,7 @@ export function AdminCashierPage() {
                                       [k.id]: (prev[k.id] || 0) + 1,
                                     }))
                                   }
-                                  className="w-7 h-7 rounded-[5px] border border-[#ddd] bg-white hover:bg-[#f5f5f5] flex items-center justify-center text-[#555] cursor-pointer"
+                                  className="w-7 h-7 rounded-lg border border-[var(--admin-border,#2a2d2f)] bg-[var(--admin-card,#1c1f20)] hover:bg-[var(--admin-raised,#292b2f)] flex items-center justify-center text-[var(--admin-secondary,#c3c7ca)] cursor-pointer"
                                 >
                                   <Plus size={12} />
                                 </button>
@@ -1103,8 +1103,8 @@ export function AdminCashierPage() {
 
                 {/* ID Cards list */}
                 {pricing.idCards && pricing.idCards.length > 0 && (
-                  <div className="space-y-2.5 pt-3 border-t border-[#f0f0f0]">
-                    <span className="text-[12px] font-medium text-[#555] block">
+                  <div className="space-y-2.5 pt-3  border-[var(--admin-border,#2a2d2f)]">
+                    <span className="text-[12px] font-medium text-[var(--admin-secondary,#c3c7ca)] block">
                       Varian ID Card Custom
                     </span>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -1115,13 +1115,13 @@ export function AdminCashierPage() {
                           return (
                             <div
                               key={k.id}
-                              className="p-3 border border-[#e5e5e5] rounded-[7px] flex items-center justify-between"
+                              className="p-3 border border-[var(--admin-border,#2a2d2f)] rounded-2xl flex items-center justify-between"
                             >
                               <div>
-                                <span className="text-[12.5px] font-medium text-[#202020] block">
+                                <span className="text-[12.5px] font-medium text-[var(--admin-text,#f4f4f5)] block">
                                   {k.name}
                                 </span>
-                                <span className="text-[11px] text-[#888] font-mono">
+                                <span className="text-[12px] text-[var(--admin-muted,#92989d)] font-mono">
                                   {formatRupiah(k.price)}
                                 </span>
                               </div>
@@ -1135,7 +1135,7 @@ export function AdminCashierPage() {
                                     }))
                                   }
                                   disabled={currentQty <= 0}
-                                  className="w-7 h-7 rounded-[5px] border border-[#ddd] bg-white hover:bg-[#f5f5f5] flex items-center justify-center text-[#555] disabled:opacity-40 cursor-pointer"
+                                  className="w-7 h-7 rounded-lg border border-[var(--admin-border,#2a2d2f)] bg-[var(--admin-card,#1c1f20)] hover:bg-[var(--admin-raised,#292b2f)] flex items-center justify-center text-[var(--admin-secondary,#c3c7ca)] disabled:opacity-40 cursor-pointer"
                                 >
                                   <Minus size={12} />
                                 </button>
@@ -1150,7 +1150,7 @@ export function AdminCashierPage() {
                                       [k.id]: (prev[k.id] || 0) + 1,
                                     }))
                                   }
-                                  className="w-7 h-7 rounded-[5px] border border-[#ddd] bg-white hover:bg-[#f5f5f5] flex items-center justify-center text-[#555] cursor-pointer"
+                                  className="w-7 h-7 rounded-lg border border-[var(--admin-border,#2a2d2f)] bg-[var(--admin-card,#1c1f20)] hover:bg-[var(--admin-raised,#292b2f)] flex items-center justify-center text-[var(--admin-secondary,#c3c7ca)] cursor-pointer"
                                 >
                                   <Plus size={12} />
                                 </button>
@@ -1163,8 +1163,8 @@ export function AdminCashierPage() {
                 )}
 
                 {/* Custom Line Item Addition */}
-                <div className="pt-3 border-t border-[#f0f0f0] space-y-3">
-                  <span className="text-[12px] font-medium text-[#555] block">
+                <div className="pt-3  border-[var(--admin-border,#2a2d2f)] space-y-3">
+                  <span className="text-[12px] font-medium text-[var(--admin-secondary,#c3c7ca)] block">
                     Tambah Item / Jasa Tambahan Manual (Opsional)
                   </span>
                   <div className="flex flex-col sm:flex-row items-center gap-2.5">
@@ -1173,7 +1173,7 @@ export function AdminCashierPage() {
                       value={newCustomName}
                       onChange={(e) => setNewCustomName(e.target.value)}
                       placeholder="Nama item (contoh: Frame Kaca A4)"
-                      className="flex-1 px-3 py-2 bg-[#fafafa] border border-[#ddd] rounded-[6px] text-[12.5px] outline-none"
+                      className="flex-1 px-3 py-2 bg-[var(--admin-canvas,#111114)] border border-[var(--admin-border,#2a2d2f)] rounded-[6px] text-[12.5px] outline-none"
                     />
                     <input
                       type="number"
@@ -1182,13 +1182,13 @@ export function AdminCashierPage() {
                         setNewCustomPrice(e.target.value === "" ? "" : Number(e.target.value))
                       }
                       placeholder="Harga (Rp)"
-                      className="w-36 px-3 py-2 bg-[#fafafa] border border-[#ddd] rounded-[6px] text-[12.5px] font-mono outline-none"
+                      className="w-36 px-3 py-2 bg-[var(--admin-canvas,#111114)] border border-[var(--admin-border,#2a2d2f)] rounded-[6px] text-[12.5px] font-mono outline-none"
                     />
                     <button
                       type="button"
                       onClick={handleAddCustomItem}
                       disabled={!newCustomName.trim()}
-                      className="px-3.5 py-2 bg-white border border-[#171717] text-[#171717] hover:bg-[#171717] hover:text-white rounded-[6px] text-[12px] font-medium transition-colors cursor-pointer disabled:opacity-40"
+                      className="px-3.5 py-2 bg-[var(--admin-card,#1c1f20)] border border-[var(--admin-border-strong,#41474e)] text-[var(--admin-secondary,#c3c7ca)] hover:bg-[#d2def0] hover:text-[#111b23] rounded-[6px] text-[12px] font-medium transition-colors cursor-pointer disabled:opacity-40"
                     >
                       + Tambah Item
                     </button>
@@ -1199,15 +1199,15 @@ export function AdminCashierPage() {
                       {customItems.map((item) => (
                         <div
                           key={item.id}
-                          className="flex items-center justify-between p-2.5 bg-[#fafafa] border border-[#eee] rounded-[6px] text-[12.5px]"
+                          className="flex items-center justify-between p-2.5 bg-[var(--admin-card,#1c1f20)] border border-[var(--admin-border,#2a2d2f)] rounded-[6px] text-[12.5px]"
                         >
-                          <span className="font-medium text-[#222]">{item.name}</span>
+                          <span className="font-medium text-[var(--admin-text,#f4f4f5)]">{item.name}</span>
                           <div className="flex items-center gap-3">
-                            <span className="font-mono text-[#555]">{formatRupiah(item.price)}</span>
+                            <span className="font-mono text-[var(--admin-secondary,#c3c7ca)]">{formatRupiah(item.price)}</span>
                             <button
                               type="button"
                               onClick={() => handleRemoveCustomItem(item.id)}
-                              className="text-[#999] hover:text-[#dc2626] transition-colors cursor-pointer"
+                              className="text-[var(--admin-muted,#92989d)] hover:text-[var(--admin-danger,#f18e9a)] transition-colors cursor-pointer"
                             >
                               <Trash2 size={13} />
                             </button>
@@ -1223,12 +1223,12 @@ export function AdminCashierPage() {
             {/* ── RIGHT COLUMN: BILLING & PAYMENT SUMMARY (lg:col-span-5 or 4) ── */}
             <div className="lg:col-span-5 xl:col-span-4 space-y-6 lg:sticky lg:top-6">
               {/* BILLING SUMMARY CARD */}
-              <div className="bg-white border border-[#e8e8e8] rounded-[10px] p-6 space-y-5">
-                <div className="flex justify-between items-baseline pb-3 border-b border-[#f0f0f0]">
-                  <h3 className="text-[15px] font-semibold text-[#171717]">
+              <div className="bg-[var(--admin-card,#1c1f20)] border border-[var(--admin-border,#2a2d2f)] rounded-2xl p-6 space-y-5">
+                <div className="flex justify-between items-baseline pb-3  border-[var(--admin-border,#2a2d2f)]">
+                  <h3 className="text-[16px] font-semibold text-[var(--admin-text,#f4f4f5)]">
                     Rincian Tagihan
                   </h3>
-                  <span className="text-[11px] text-[#888] font-mono">
+                  <span className="text-[12px] text-[var(--admin-muted,#92989d)] font-mono">
                     {compileReceiptItems().length} item
                   </span>
                 </div>
@@ -1236,96 +1236,96 @@ export function AdminCashierPage() {
                 {/* Breakdown List */}
                 <div className="space-y-2.5 text-[12.5px]">
                   <div className="flex justify-between">
-                    <span className="text-[#666]">
+                    <span className="text-[var(--admin-secondary,#c3c7ca)]">
                       Sesi Dasar ({includedPeople} orang)
                     </span>
-                    <span className="font-mono text-[#222]">{formatRupiah(basePrice)}</span>
+                    <span className="font-mono text-[var(--admin-text,#f4f4f5)]">{formatRupiah(basePrice)}</span>
                   </div>
 
                   {extraPeopleCost > 0 && (
                     <div className="flex justify-between">
-                      <span className="text-[#666]">Extra Person (+{extraPeopleCount})</span>
-                      <span className="font-mono text-[#222]">+{formatRupiah(extraPeopleCost)}</span>
+                      <span className="text-[var(--admin-secondary,#c3c7ca)]">Extra Person (+{extraPeopleCount})</span>
+                      <span className="font-mono text-[var(--admin-text,#f4f4f5)]">+{formatRupiah(extraPeopleCost)}</span>
                     </div>
                   )}
 
                   {print4rCost > 0 && (
                     <div className="flex justify-between">
-                      <span className="text-[#666]">Cetak 4R ({print4rCount}x)</span>
-                      <span className="font-mono text-[#222]">+{formatRupiah(print4rCost)}</span>
+                      <span className="text-[var(--admin-secondary,#c3c7ca)]">Cetak 4R ({print4rCount}x)</span>
+                      <span className="font-mono text-[var(--admin-text,#f4f4f5)]">+{formatRupiah(print4rCost)}</span>
                     </div>
                   )}
 
                   {printA4Cost > 0 && (
                     <div className="flex justify-between">
-                      <span className="text-[#666]">Cetak A4 ({printA4Count}x)</span>
-                      <span className="font-mono text-[#222]">+{formatRupiah(printA4Cost)}</span>
+                      <span className="text-[var(--admin-secondary,#c3c7ca)]">Cetak A4 ({printA4Count}x)</span>
+                      <span className="font-mono text-[var(--admin-text,#f4f4f5)]">+{formatRupiah(printA4Cost)}</span>
                     </div>
                   )}
 
                   {softcopyCost > 0 && (
                     <div className="flex justify-between">
-                      <span className="text-[#666]">Softcopy All Files</span>
-                      <span className="font-mono text-[#222]">+{formatRupiah(softcopyCost)}</span>
+                      <span className="text-[var(--admin-secondary,#c3c7ca)]">Softcopy All Files</span>
+                      <span className="font-mono text-[var(--admin-text,#f4f4f5)]">+{formatRupiah(softcopyCost)}</span>
                     </div>
                   )}
 
                   {keychainsCost > 0 && (
                     <div className="flex justify-between">
-                      <span className="text-[#666]">Gantungan Kunci</span>
-                      <span className="font-mono text-[#222]">+{formatRupiah(keychainsCost)}</span>
+                      <span className="text-[var(--admin-secondary,#c3c7ca)]">Gantungan Kunci</span>
+                      <span className="font-mono text-[var(--admin-text,#f4f4f5)]">+{formatRupiah(keychainsCost)}</span>
                     </div>
                   )}
 
                   {idCardsCost > 0 && (
                     <div className="flex justify-between">
-                      <span className="text-[#666]">ID Card Custom</span>
-                      <span className="font-mono text-[#222]">+{formatRupiah(idCardsCost)}</span>
+                      <span className="text-[var(--admin-secondary,#c3c7ca)]">ID Card Custom</span>
+                      <span className="font-mono text-[var(--admin-text,#f4f4f5)]">+{formatRupiah(idCardsCost)}</span>
                     </div>
                   )}
 
                   {customItemsCost > 0 && (
                     <div className="flex justify-between">
-                      <span className="text-[#666]">Item Tambahan Khusus</span>
-                      <span className="font-mono text-[#222]">+{formatRupiah(customItemsCost)}</span>
+                      <span className="text-[var(--admin-secondary,#c3c7ca)]">Item Tambahan Khusus</span>
+                      <span className="font-mono text-[var(--admin-text,#f4f4f5)]">+{formatRupiah(customItemsCost)}</span>
                     </div>
                   )}
 
                   {/* Subtotal */}
-                  <div className="pt-2 border-t border-[#f0f0f0] flex justify-between font-medium">
-                    <span className="text-[#555]">Subtotal</span>
-                    <span className="font-mono text-[#171717]">{formatRupiah(subtotal)}</span>
+                  <div className="pt-2  border-[var(--admin-border,#2a2d2f)] flex justify-between font-medium">
+                    <span className="text-[var(--admin-secondary,#c3c7ca)]">Subtotal</span>
+                    <span className="font-mono text-[var(--admin-text,#f4f4f5)]">{formatRupiah(subtotal)}</span>
                   </div>
 
                   {/* Discount Input */}
                   <div className="pt-2 flex items-center justify-between gap-3">
-                    <span className="text-[#666] text-[12px]">Potongan / Diskon</span>
+                    <span className="text-[var(--admin-secondary,#c3c7ca)] text-[12px]">Potongan / Diskon</span>
                     <div className="flex items-center gap-1">
-                      <span className="text-[#888] font-mono text-[12px]">Rp</span>
+                      <span className="text-[var(--admin-muted,#92989d)] font-mono text-[12px]">Rp</span>
                       <input
                         type="number"
                         value={discountAmount || ""}
                         onChange={(e) => setDiscountAmount(Number(e.target.value) || 0)}
                         placeholder="0"
-                        className="w-24 px-2 py-1 bg-[#fafafa] border border-[#ddd] rounded text-right font-mono text-[12px] outline-none"
+                        className="w-24 px-2 py-1 bg-[var(--admin-canvas,#111114)] border border-[var(--admin-border,#2a2d2f)] rounded text-right font-mono text-[12px] outline-none"
                       />
                     </div>
                   </div>
                 </div>
 
                 {/* Big Total Tagihan */}
-                <div className="p-4 bg-[#fafafa] border border-[#e5e5e5] rounded-[8px] space-y-1">
-                  <span className="text-[11px] font-semibold tracking-wider uppercase text-[#888]">
+                <div className="p-4 bg-[var(--admin-card,#1c1f20)] border border-[var(--admin-border,#2a2d2f)] rounded-[8px] space-y-1">
+                  <span className="text-[12px] font-semibold tracking-wider uppercase text-[var(--admin-muted,#92989d)]">
                     Total Pembayaran
                   </span>
-                  <div className="text-[28px] font-bold font-mono tracking-tight text-[#171717]">
+                  <div className="text-[28px] font-bold font-mono tracking-tight text-[var(--admin-text,#f4f4f5)]">
                     {formatRupiah(totalBill)}
                   </div>
                 </div>
 
                 {/* METODE PEMBAYARAN */}
-                <div className="space-y-3 pt-2 border-t border-[#f0f0f0]">
-                  <label className="block text-[12px] font-semibold text-[#202020]">
+                <div className="space-y-3 pt-2  border-[var(--admin-border,#2a2d2f)]">
+                  <label className="block text-[12px] font-semibold text-[var(--admin-text,#f4f4f5)]">
                     Pilih Metode Pembayaran
                   </label>
 
@@ -1335,8 +1335,8 @@ export function AdminCashierPage() {
                       onClick={() => setPaymentMethod("cash")}
                       className={`py-2 px-1 rounded-[6px] border text-center text-[12px] font-medium transition-colors cursor-pointer ${
                         paymentMethod === "cash"
-                          ? "bg-[#171717] text-white border-[#171717]"
-                          : "bg-white text-[#555] border-[#ddd] hover:border-[#aaa]"
+                          ? "bg-[#c0d0e7] text-[#111b23] border-[var(--admin-focus,#c0d0e7)]"
+                          : "bg-[var(--admin-card,#1c1f20)] text-[var(--admin-secondary,#c3c7ca)] border-[var(--admin-border,#2a2d2f)] hover:border-[var(--admin-border-strong,#41474e)]"
                       }`}
                     >
                       Tunai (Cash)
@@ -1346,8 +1346,8 @@ export function AdminCashierPage() {
                       onClick={() => setPaymentMethod("qris")}
                       className={`py-2 px-1 rounded-[6px] border text-center text-[12px] font-medium transition-colors cursor-pointer ${
                         paymentMethod === "qris"
-                          ? "bg-[#171717] text-white border-[#171717]"
-                          : "bg-white text-[#555] border-[#ddd] hover:border-[#aaa]"
+                          ? "bg-[#c0d0e7] text-[#111b23] border-[var(--admin-focus,#c0d0e7)]"
+                          : "bg-[var(--admin-card,#1c1f20)] text-[var(--admin-secondary,#c3c7ca)] border-[var(--admin-border,#2a2d2f)] hover:border-[var(--admin-border-strong,#41474e)]"
                       }`}
                     >
                       QRIS
@@ -1357,8 +1357,8 @@ export function AdminCashierPage() {
                       onClick={() => setPaymentMethod("transfer")}
                       className={`py-2 px-1 rounded-[6px] border text-center text-[12px] font-medium transition-colors cursor-pointer ${
                         paymentMethod === "transfer"
-                          ? "bg-[#171717] text-white border-[#171717]"
-                          : "bg-white text-[#555] border-[#ddd] hover:border-[#aaa]"
+                          ? "bg-[#c0d0e7] text-[#111b23] border-[var(--admin-focus,#c0d0e7)]"
+                          : "bg-[var(--admin-card,#1c1f20)] text-[var(--admin-secondary,#c3c7ca)] border-[var(--admin-border,#2a2d2f)] hover:border-[var(--admin-border-strong,#41474e)]"
                       }`}
                     >
                       Transfer
@@ -1367,16 +1367,16 @@ export function AdminCashierPage() {
 
                   {/* CASH CALCULATION BOX */}
                   {paymentMethod === "cash" ? (
-                    <div className="p-3.5 bg-[#fbfbfb] border border-[#e8e8e8] rounded-[8px] space-y-3">
+                    <div className="p-3.5 bg-[var(--admin-canvas,#111114)] border border-[var(--admin-border,#2a2d2f)] rounded-[8px] space-y-3">
                       <div>
                         <div className="flex justify-between items-center mb-1">
-                          <label className="text-[12px] font-medium text-[#444]">
+                          <label className="text-[12px] font-medium text-[var(--admin-secondary,#c3c7ca)]">
                             Nominal Uang Diterima
                           </label>
                           <button
                             type="button"
                             onClick={() => setCashReceived(totalBill)}
-                            className="text-[11px] text-[#171717] font-medium underline cursor-pointer"
+                            className="text-[12px] text-[var(--admin-text,#f4f4f5)] font-medium underline cursor-pointer"
                           >
                             Uang Pas
                           </button>
@@ -1388,7 +1388,7 @@ export function AdminCashierPage() {
                             setCashReceived(e.target.value === "" ? "" : Number(e.target.value))
                           }
                           placeholder={String(totalBill)}
-                          className="w-full px-3 py-2 bg-white border border-[#ccc] rounded-[6px] text-[15px] font-mono font-semibold text-[#171717] outline-none"
+                          className="w-full px-3 py-2 bg-[var(--admin-canvas,#111114)] border border-[var(--admin-border-strong,#41474e)] rounded-[6px] text-[15px] font-mono font-semibold text-[var(--admin-text,#f4f4f5)] outline-none"
                         />
                       </div>
 
@@ -1399,7 +1399,7 @@ export function AdminCashierPage() {
                             key={amt}
                             type="button"
                             onClick={() => setCashReceived(amt)}
-                            className="px-2 py-1 bg-white border border-[#ddd] hover:border-[#aaa] rounded text-[11px] font-mono text-[#555] cursor-pointer"
+                            className="px-2 py-1 bg-[var(--admin-card,#1c1f20)] border border-[var(--admin-border,#2a2d2f)] hover:border-[var(--admin-border-strong,#41474e)] rounded text-[12px] font-mono text-[var(--admin-secondary,#c3c7ca)] cursor-pointer"
                           >
                             {amt / 1000}k
                           </button>
@@ -1407,11 +1407,11 @@ export function AdminCashierPage() {
                       </div>
 
                       {/* Kembalian / Status */}
-                      <div className="pt-2 border-t border-[#eee] flex items-center justify-between text-[13px]">
-                        <span className="text-[#666]">Kembalian:</span>
+                      <div className="pt-2  border-[var(--admin-border,#2a2d2f)] flex items-center justify-between text-[13px]">
+                        <span className="text-[var(--admin-secondary,#c3c7ca)]">Kembalian:</span>
                         <span
                           className={`font-mono font-bold text-[15px] ${
-                            cashShortage > 0 ? "text-amber-600" : "text-[#171717]"
+                            cashShortage > 0 ? "text-[var(--admin-pending,#d7b8d6)]" : "text-[var(--admin-text,#f4f4f5)]"
                           }`}
                         >
                           {cashShortage > 0
@@ -1421,12 +1421,12 @@ export function AdminCashierPage() {
                       </div>
                     </div>
                   ) : (
-                    <div className="p-3 bg-[#fafafa] border border-[#eee] rounded-[7px] text-[12px] text-[#666] space-y-1">
-                      <div className="flex items-center gap-1.5 text-[#171717] font-medium">
-                        <Check size={14} className="text-[#10b981]" />
+                    <div className="p-3 bg-[var(--admin-card,#1c1f20)] border border-[var(--admin-border,#2a2d2f)] rounded-2xl text-[12px] text-[var(--admin-secondary,#c3c7ca)] space-y-1">
+                      <div className="flex items-center gap-1.5 text-[var(--admin-text,#f4f4f5)] font-medium">
+                        <Check size={14} className="text-[var(--admin-accent-text,#c9d2e1)]" />
                         <span>Pembayaran {paymentMethod.toUpperCase()} Terverifikasi</span>
                       </div>
-                      <p className="text-[11px] text-[#888]">
+                      <p className="text-[12px] text-[var(--admin-muted,#92989d)]">
                         Struk digital otomatis diterbitkan dengan status Lunas sebesar {formatRupiah(totalBill)}.
                       </p>
                     </div>
@@ -1434,11 +1434,11 @@ export function AdminCashierPage() {
                 </div>
 
                 {/* ACTION BUTTONS (Harmonisasi Horisontal - Rule 6) */}
-                <div className="pt-4 border-t border-[#f0f0f0] flex items-center justify-between gap-3">
+                <div className="pt-4  border-[var(--admin-border,#2a2d2f)] flex items-center justify-between gap-3">
                   <button
                     type="button"
                     onClick={() => handleResetForm(false)}
-                    className="px-3.5 py-2.5 text-[12px] font-medium text-[#777] hover:text-[#171717] hover:bg-[#f5f5f5] rounded-[7px] transition-colors cursor-pointer"
+                    className="px-3.5 py-2.5 text-[12px] font-medium text-[var(--admin-muted,#92989d)] hover:text-[var(--admin-text,#f4f4f5)] hover:bg-[var(--admin-raised,#292b2f)] rounded-full transition-colors cursor-pointer"
                   >
                     Reset Form
                   </button>
@@ -1447,7 +1447,7 @@ export function AdminCashierPage() {
                     type="button"
                     onClick={handleSaveAndGenerateReceipt}
                     disabled={savingSession || !customerName.trim()}
-                    className="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 bg-[#171717] text-white hover:bg-black rounded-[7px] text-[13px] font-medium transition-colors cursor-pointer disabled:opacity-40 shadow-xs"
+                    className="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 bg-[#c0d0e7] text-[#111b23] hover:bg-[#d2def0] rounded-full text-[13px] font-medium transition-colors cursor-pointer disabled:opacity-40 "
                   >
                     <Receipt size={15} />
                     <span>{savingSession ? "Menerbitkan..." : "Simpan & Buat E-Receipt"}</span>
@@ -1460,27 +1460,27 @@ export function AdminCashierPage() {
 
         {/* ── 3. TAB: RIWAYAT E-RECEIPT HARI INI ── */}
         {activeTab === "history" && (
-          <div className="bg-white border border-[#e8e8e8] rounded-[10px] overflow-hidden space-y-0">
+          <div className="bg-[var(--admin-card,#1c1f20)] border border-[var(--admin-border,#2a2d2f)] rounded-2xl overflow-hidden space-y-0">
             {/* Control Bar */}
-            <div className="p-5 border-b border-[#eee] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="p-5  border-[var(--admin-border,#2a2d2f)] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <h3 className="text-[15px] font-semibold text-[#171717]">
+                <h3 className="text-[16px] font-semibold text-[var(--admin-text,#f4f4f5)]">
                   Daftar Transaksi & E-Receipt Hari Ini
                 </h3>
-                <p className="text-[12px] text-[#888] mt-0.5">
+                <p className="text-[12px] text-[var(--admin-muted,#92989d)] mt-0.5">
                   Seluruh transaksi yang tercatat hari ini dapat dicetak ulang PDF-nya atau dikirimkan ke WhatsApp customer.
                 </p>
               </div>
 
               <div className="flex items-center gap-2.5">
                 <div className="relative">
-                  <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#999]" />
+                  <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--admin-muted,#92989d)]" />
                   <input
                     type="text"
                     value={historySearch}
                     onChange={(e) => setHistorySearch(e.target.value)}
                     placeholder="Cari nama / invoice..."
-                    className="pl-8 pr-3 py-1.5 bg-[#fafafa] border border-[#ddd] rounded-[6px] text-[12px] outline-none w-52"
+                    className="pl-8 pr-3 py-1.5 bg-[var(--admin-canvas,#111114)] border border-[var(--admin-border,#2a2d2f)] rounded-[6px] text-[12px] outline-none w-52"
                   />
                 </div>
 
@@ -1488,7 +1488,7 @@ export function AdminCashierPage() {
                   type="button"
                   onClick={fetchHistory}
                   disabled={loadingHistory}
-                  className="w-8 h-8 rounded-[6px] border border-[#ddd] bg-white hover:bg-[#f5f5f5] flex items-center justify-center text-[#666] cursor-pointer"
+                  className="w-8 h-8 rounded-[6px] border border-[var(--admin-border,#2a2d2f)] bg-[var(--admin-card,#1c1f20)] hover:bg-[var(--admin-raised,#292b2f)] flex items-center justify-center text-[var(--admin-secondary,#c3c7ca)] cursor-pointer"
                   title="Segarkan data"
                 >
                   <RefreshCw size={13} className={loadingHistory ? "animate-spin" : ""} />
@@ -1499,8 +1499,8 @@ export function AdminCashierPage() {
             {/* Table */}
             {filteredHistory.length === 0 ? (
               <div className="py-16 text-center space-y-1">
-                <p className="text-[14px] font-medium text-[#202020]">Belum ada transaksi hari ini</p>
-                <p className="text-[12px] text-[#888]">
+                <p className="text-[14px] font-medium text-[var(--admin-text,#f4f4f5)]">Belum ada transaksi hari ini</p>
+                <p className="text-[12px] text-[var(--admin-muted,#92989d)]">
                   Buat transaksi pertama melalui tab &quot;Transaksi Baru (POS)&quot; di atas.
                 </p>
               </div>
@@ -1508,7 +1508,7 @@ export function AdminCashierPage() {
               <div className="overflow-x-auto">
                 <table className="w-full border-collapse text-left min-w-[700px]">
                   <thead>
-                    <tr className="border-b border-[#eee] text-[11px] font-medium text-[#999] uppercase tracking-[0.06em]">
+                    <tr className="border-b border-[var(--admin-border,#2a2d2f)] text-[12px] font-medium text-[var(--admin-muted,#92989d)] uppercase tracking-[0.06em]">
                       <th className="py-3 px-4">Invoice & Waktu</th>
                       <th className="py-3 px-4">Customer</th>
                       <th className="py-3 px-4">Paket & Rincian</th>
@@ -1517,49 +1517,49 @@ export function AdminCashierPage() {
                       <th className="py-3 px-4 text-center">Aksi E-Receipt</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#f2f2f2] text-[13px]">
+                  <tbody className="divide-y divide-[var(--admin-border,#2a2d2f)] text-[13px]">
                     {filteredHistory.map((s) => (
-                      <tr key={s.id} className="hover:bg-[#fafafa] transition-colors">
+                      <tr key={s.id} className="hover:bg-[var(--admin-raised,#292b2f)] transition-colors">
                         <td className="py-3.5 px-4 whitespace-nowrap">
-                          <span className="font-mono font-medium text-[#171717] text-[12px] block">
+                          <span className="font-mono font-medium text-[var(--admin-text,#f4f4f5)] text-[12px] block">
                             {s.invoiceNumber || s.id}
                           </span>
-                          <span className="text-[11px] text-[#888] font-mono block">
+                          <span className="text-[12px] text-[var(--admin-muted,#92989d)] font-mono block">
                             {s.time} WIB
                           </span>
                         </td>
 
                         <td className="py-3.5 px-4">
-                          <span className="font-medium text-[#202020] block">
+                          <span className="font-medium text-[var(--admin-text,#f4f4f5)] block">
                             {s.customerName}
                           </span>
                           {s.customerPhone && (
-                            <span className="text-[11px] text-[#888] font-mono block">
+                            <span className="text-[12px] text-[var(--admin-muted,#92989d)] font-mono block">
                               {s.customerPhone}
                             </span>
                           )}
                         </td>
 
                         <td className="py-3.5 px-4">
-                          <span className="text-[12px] text-[#444] block">
+                          <span className="text-[12px] text-[var(--admin-secondary,#c3c7ca)] block">
                             {s.coupleMode ? "Couple Mode" : `${s.peopleCount} Orang`}
                             {s.prints?.total > 0 && ` • ${s.prints.total} lbr 4R`}
                           </span>
                           {s.miscAddons?.length > 0 && (
-                            <span className="text-[11px] text-[#888] block">
+                            <span className="text-[12px] text-[var(--admin-muted,#92989d)] block">
                               Addon: {s.miscAddons.map((m) => `${m.name} (${m.qty}x)`).join(", ")}
                             </span>
                           )}
                         </td>
 
                         <td className="py-3.5 px-4 whitespace-nowrap">
-                          <span className="px-2 py-0.5 rounded bg-[#f0f0f0] text-[#444] text-[11px] font-medium">
+                          <span className="px-2 py-0.5 rounded bg-[var(--admin-raised,#292b2f)] text-[var(--admin-secondary,#c3c7ca)] text-[12px] font-medium">
                             {s.paymentMethod ? s.paymentMethod.toUpperCase() : "TUNAI"}
                           </span>
                         </td>
 
                         <td className="py-3.5 px-4 text-right whitespace-nowrap">
-                          <span className="font-semibold text-[#171717] font-mono text-[13px]">
+                          <span className="font-semibold text-[var(--admin-text,#f4f4f5)] font-mono text-[13px]">
                             {formatRupiah(s.totalPrice)}
                           </span>
                         </td>
@@ -1568,7 +1568,7 @@ export function AdminCashierPage() {
                           <button
                             type="button"
                             onClick={() => handleRegenerateFromHistory(s)}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-[#ddd] hover:border-[#171717] text-[#171717] text-[11.5px] font-medium rounded-[5px] transition-colors cursor-pointer"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[var(--admin-card,#1c1f20)] border border-[var(--admin-border,#2a2d2f)] hover:border-[var(--admin-focus,#c0d0e7)] text-[var(--admin-text,#f4f4f5)] text-[11.5px] font-medium rounded-lg transition-colors cursor-pointer"
                           >
                             <Receipt size={12} />
                             <span>Buka E-Receipt</span>

@@ -1,8 +1,11 @@
 import { prepareGallery, publishGallery } from "./backend/photoTransfer.js";
 import { createCameraImporter } from "./backend/cameraImport.js";
+import { createImportHistory } from "./backend/importHistory.js";
+import { createDeviceWatcher } from "./backend/deviceWatcher.js";
+import { createMtpQueue } from "./backend/mtpQueue.js";
 import crypto from "crypto";
 import os from "os";
-import { exec, execSync, execFile } from "child_process";
+import { exec, execSync, execFile, spawn } from "child_process";
 import express from "express";
 import fs from "fs";
 import path from "path";
@@ -1012,8 +1015,9 @@ app.post("/api/storage-clean", (req, res) => {
           const p = path.join(CAMERA_CACHE_DIR, c);
           try {
             const stat = fs.statSync(p);
-            freedBytes += stat.size;
-            fs.unlinkSync(p);
+            // MTP previews live in per-scan subfolders.
+            freedBytes += stat.isDirectory() ? getDirectoryStats(p).bytes : stat.size;
+            fs.rmSync(p, { recursive: true, force: true });
             deletedCount++;
           } catch (e) {
             console.error(`[Storage] Gagal hapus cache ${c}:`, e.message);
@@ -1029,8 +1033,9 @@ app.post("/api/storage-clean", (req, res) => {
       if (fs.existsSync(p)) {
         try {
           const stat = fs.statSync(p);
-          freedBytes += stat.size;
-          fs.unlinkSync(p);
+          // MTP previews live in per-scan subfolders.
+          freedBytes += stat.isDirectory() ? getDirectoryStats(p).bytes : stat.size;
+          fs.rmSync(p, { recursive: true, force: true });
           deletedCount = 1;
         } catch (e) {
           return res.status(500).json({ error: `Gagal menghapus file ${safeName}: ${e.message}` });
@@ -1058,8 +1063,9 @@ app.post("/api/storage-clean", (req, res) => {
           const p = path.join(CAMERA_CACHE_DIR, c);
           try {
             const stat = fs.statSync(p);
-            freedBytes += stat.size;
-            fs.unlinkSync(p);
+            // MTP previews live in per-scan subfolders.
+            freedBytes += stat.isDirectory() ? getDirectoryStats(p).bytes : stat.size;
+            fs.rmSync(p, { recursive: true, force: true });
             deletedCount++;
           } catch {}
         }
@@ -1164,19 +1170,18 @@ function isMtpTarget(targetPath = "", presetId = "") {
   );
 }
 
-let mtpTask = Promise.resolve();
-function runMtp(args) {
-  const task = () => new Promise((resolve, reject) => {
-    execFile("powershell.exe", ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", MTP_SCRIPT_PATH, ...args],
-      { windowsHide: true, timeout: 30 * 60 * 1000, maxBuffer: 20 * 1024 * 1024, encoding: "utf8" },
-      (error, stdout) => {
-        if (error) return reject(new Error("Kamera tidak dapat diakses: " + error.message));
-        try { resolve(JSON.parse(stdout.trim().replace(/^\uFEFF/, ""))); } catch { reject(new Error("Respons kamera tidak valid.")); }
-      });
-  });
-  const result = mtpTask.then(task, task);
-  mtpTask = result.catch(() => {});
-  return result;
+// Background work (thumbnails, previews) may not hold the camera for long: a stuck transfer would
+// otherwise delay the next scan. The staff's own import keeps the long limit.
+const mtpQueue = createMtpQueue((args, options) => new Promise((resolve, reject) => {
+  execFile("powershell.exe", ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", MTP_SCRIPT_PATH, ...args],
+    { windowsHide: true, timeout: options.priority === "low" ? 3 * 60 * 1000 : 30 * 60 * 1000, maxBuffer: 20 * 1024 * 1024, encoding: "utf8" },
+    (error, stdout) => {
+      if (error) return reject(new Error("Kamera tidak dapat diakses: " + error.message));
+      try { resolve(JSON.parse(stdout.trim().replace(/^\uFEFF/, ""))); } catch { reject(new Error("Respons kamera tidak valid.")); }
+    });
+}));
+function runMtp(args, options) {
+  return mtpQueue.run(args, options);
 }
 
 async function checkMtpDevice(targetPath = "") {
@@ -1260,6 +1265,52 @@ cameraImporter = createCameraImporter({
   photosDir: PHOTOS_DIR, thumbsDir: THUMBS_DIR, storageDir: IMPORT_STORAGE_DIR, cacheDir: CAMERA_CACHE_DIR,
   runMtp, resolveFolders: resolveCameraFolders, readConfig: readCameraImportConfig, saveConfig: writeCameraImportConfig,
   beforePublish: () => { photoWatcher?.close(); photoWatcher = null; }, afterPublish: () => startFileWatcher(),
+  history: createImportHistory(path.join(SESSIONS_DIR, "import-history.json")),
+});
+
+// ── Camera / card reader plug detection (pushed to every open app screen via SSE) ──
+const SYSTEM_DRIVE = (process.env.SystemDrive || "C:").slice(0, 1).toUpperCase();
+function findCardFolders() {
+  const found = [];
+  for (const letter of "DEFGHIJKLMNOPQRSTUVWXYZ") {
+    if (letter === SYSTEM_DRIVE) continue;
+    const dcim = `${letter}:\\DCIM`;
+    try { if (fs.statSync(dcim).isDirectory()) found.push(dcim); } catch { /* No drive or no card. */ }
+  }
+  return found;
+}
+const deviceWatcher = createDeviceWatcher({
+  checkMtp: () => runMtp(["-Action", "check", "-DeviceQuery", readCameraImportConfig().presets.studio?.deviceQuery || "X-S10"]),
+  findCards: findCardFolders,
+  isBusy: () => cameraImporter.busy,
+});
+function startDeviceEvents() {
+  const child = spawn("powershell.exe", ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", path.join(__dirname, "scripts", "device-events.ps1"), "-ParentPid", String(process.pid)], { windowsHide: true });
+  let buffer = "";
+  child.stdout.on("data", (chunk) => {
+    buffer += chunk.toString("utf8");
+    const lines = buffer.split(/\r?\n/); buffer = lines.pop();
+    for (const line of lines) {
+      if (line.trim() === "ready") deviceWatcher.setEventsAlive(true);
+      else if (line.trim() === "change") deviceWatcher.notifyChange();
+    }
+  });
+  child.on("error", (err) => console.warn("[CameraImport] Detektor perangkat gagal:", err.message));
+  child.on("exit", () => {
+    deviceWatcher.setEventsAlive(false);
+    setTimeout(startDeviceEvents, 10000).unref();
+  });
+  process.once("exit", () => child.kill());
+}
+
+// Public on purpose: only says that a device was plugged in, never photo data.
+app.get("/api/camera-import/events", (req, res) => {
+  res.writeHead(200, { "Content-Type": "text/event-stream", "Cache-Control": "no-cache", Connection: "keep-alive" });
+  const send = (event) => res.write(`data: ${JSON.stringify(event)}\n\n`);
+  send({ type: "state", state: deviceWatcher.state });
+  const unsubscribe = deviceWatcher.subscribe(send);
+  const heartbeat = setInterval(() => res.write(": ping\n\n"), 25000);
+  req.on("close", () => { clearInterval(heartbeat); unsubscribe(); });
 });
 
 app.get("/api/camera-import/config", async (req, res) => {
@@ -1329,12 +1380,34 @@ app.post("/api/camera-import/scan", async (req, res) => {
 
 app.get("/api/camera-import/progress", (req, res) => res.json(cameraImporter.progress));
 
+// The grid announces the thumbnails it is about to show so they are read from the camera in one batch.
+app.post("/api/camera-import/thumbs/warm", async (req, res) => {
+  const ids = Array.isArray(req.body?.ids) ? req.body.ids.filter((id) => typeof id === "string").slice(0, 120) : [];
+  const results = await Promise.allSettled(ids.map((id) => cameraImporter.thumbnail(req.body.scanId, id)));
+  res.json({ success: true, ready: results.filter((r) => r.status === "fulfilled").length });
+});
+
+// Thumbnails for the photo grid: the device's own thumbnail over USB, a resized copy for card readers.
+app.get("/api/camera-import/thumb", async (req, res) => {
+  try {
+    const file = await cameraImporter.thumbnail(req.query.scanId, req.query.id);
+    const buffer = await sharp(file).rotate().resize({ width: 240, height: 240, fit: "inside" }).jpeg({ quality: 70 }).toBuffer();
+    res.set("Cache-Control", "private, max-age=1800").type("image/jpeg").send(buffer);
+  } catch (err) {
+    console.warn("[CameraImport] Thumbnail gagal:", req.query.id, err.message);
+    res.status(400).json({ error: err.message });
+  }
+});
+
 app.get("/api/camera-import/preview", async (req, res) => {
   try {
     const file = await cameraImporter.preview(req.query.scanId, req.query.id);
-    const buffer = await sharp(file).rotate().resize({ width: 260, height: 260, fit: "inside" }).jpeg({ quality: 75 }).toBuffer();
-    res.type("image/jpeg").send(buffer);
-  } catch (err) { res.status(400).json({ error: err.message }); }
+    const buffer = await sharp(file).rotate().resize({ width: 1200, height: 1200, fit: "inside" }).jpeg({ quality: 82 }).toBuffer();
+    res.set("Cache-Control", "private, max-age=1800").type("image/jpeg").send(buffer);
+  } catch (err) {
+    console.warn("[CameraImport] Preview gagal:", req.query.id, err.message);
+    res.status(400).json({ error: err.message });
+  }
 });
 
 app.post("/api/camera-import/import", async (req, res) => {
@@ -2691,4 +2764,6 @@ function startFileWatcher() {
 app.listen(5000, () => {
   console.log("Photo API running on http://localhost:5000");
   startFileWatcher();
+  deviceWatcher.start();
+  startDeviceEvents();
 });

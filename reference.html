@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Users · maydin.co</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+</head>
+<body class="min-w-[1280px] bg-[#111114] font-['Inter'] text-[#f4f4f5] antialiased [&_button]:transition-colors [&_button]:duration-200 [&_a]:transition-colors [&_a]:duration-200 motion-reduce:[&_button]:transition-none motion-reduce:[&_a]:transition-none">
+<div class="flex min-h-screen">
+<aside id="sidebar" aria-label="Workspace navigation" class="translate-x-0 opacity-100 transition-[translate,opacity] duration-300 ease-in-out motion-reduce:transition-none fixed inset-y-0 left-0 z-10 flex w-[301px] flex-col border-r border-[#27292b] bg-[#17191b] px-[21px] pb-[22px]">
+  <div class="flex h-[79px] shrink-0 items-start gap-[13px] border-b border-[#2a2c2e] pt-[10px]">
+    <div class="flex size-[44px] items-center justify-center rounded-full bg-[#f3f6f7] pb-[8px] text-[25px] font-bold tracking-[1px] text-[#17191b]">...</div>
+    <div><p class="text-[20px] leading-[27px] font-bold tracking-[-0.5px]">maydin.co</p><p class="text-[12px] leading-[19px] text-[#777b7d]">Pro workspace</p></div>
+    <button id="close-sidebar" type="button" aria-label="Close sidebar" aria-expanded="true" aria-controls="sidebar" class="mt-[10px] ml-auto rounded p-1 hover:bg-[#292b2f] focus-visible:outline-2 focus-visible:outline-[#c0d0e7]"><svg viewBox="0 0 24 24" aria-hidden="true" class="size-[19px] text-[#7f8488] fill-current" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M15 4v16M6 8h5m-5 4h5m-5 4h5" stroke="#17191b" stroke-width="1.7"/></svg></button>
+  </div>
+  <nav class="pt-[21px]">
+    <p class="mb-[10px] text-[12px] leading-5 font-medium tracking-[0.6px] text-[#737779]">WORKSPACE</p>
+    <a href="#overview" class="flex h-[48px] items-center gap-[13px] rounded-[13px] px-[14px] text-[16px] leading-[22px] font-medium text-[#96999b]"><svg viewBox="0 0 24 24" aria-hidden="true" class="size-[21px] fill-current" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Overview</a><a href="#projects" class="flex h-[48px] items-center gap-[13px] rounded-[13px] px-[14px] text-[16px] leading-[22px] font-medium text-[#96999b]"><svg viewBox="0 0 24 24" aria-hidden="true" class="size-[21px] fill-current" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h5l2 3h7a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></svg>Projects<span class="ml-auto rounded-lg bg-[#2b2e30] px-[7px] text-[11px] leading-[20px] font-semibold">12</span></a><a href="#analytics" class="flex h-[48px] items-center gap-[13px] rounded-[13px] px-[14px] text-[16px] leading-[22px] font-medium text-[#96999b]"><svg viewBox="0 0 24 24" aria-hidden="true" class="size-[21px] fill-current" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 3a9 9 0 1 0 10 10H11Z"/><path d="M15 2v7h7a9 9 0 0 0-7-7Z"/></svg>Analytics</a><a href="#reports" class="flex h-[48px] items-center gap-[13px] rounded-[13px] px-[14px] text-[16px] leading-[22px] font-medium text-[#96999b]"><svg viewBox="0 0 24 24" aria-hidden="true" class="size-[21px] fill-current" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M7 16V9m5 7V6m5 10v-5" stroke="#17191b" stroke-width="2"/></svg>Reports</a><a href="#chat" class="flex h-[48px] items-center gap-[13px] rounded-[13px] px-[14px] text-[16px] leading-[22px] font-medium text-[#96999b]"><svg viewBox="0 0 24 24" aria-hidden="true" class="size-[21px] fill-current" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11a9 9 0 0 1-9 9H4l1-5A9 9 0 1 1 21 11Z"/><path d="M8 8h8M8 12h5" stroke="#17191b" stroke-width="2"/></svg>Chat<span class="ml-auto rounded-lg bg-[#2b2e30] px-[7px] text-[11px] leading-[20px] font-semibold">4</span></a>
+    <p class="mt-[20px] mb-[10px] text-[12px] leading-5 font-medium tracking-[0.6px] text-[#737779]">FINANCE</p>
+    <a href="#payments" class="flex h-[48px] items-center gap-[13px] rounded-[13px] px-[14px] text-[16px] leading-[22px] font-medium text-[#96999b]"><svg viewBox="0 0 24 24" aria-hidden="true" class="size-[21px] fill-current" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="15" rx="3"/><path d="M15 10h6v6h-6a3 3 0 0 1 0-6Z" stroke="#17191b" stroke-width="1.6"/></svg>Payments</a><a href="#cards" class="flex h-[48px] items-center gap-[13px] rounded-[13px] px-[14px] text-[16px] leading-[22px] font-medium text-[#96999b]"><svg viewBox="0 0 24 24" aria-hidden="true" class="size-[21px] fill-current" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M3 10h18M6 15h4" stroke="#17191b" stroke-width="2"/></svg>Cards</a>
+    <p class="mt-[20px] mb-[10px] text-[12px] leading-5 font-medium tracking-[0.6px] text-[#737779]">PEOPLE</p>
+    <a href="#users" class="flex h-[48px] items-center gap-[13px] rounded-[13px] px-[14px] text-[16px] leading-[22px] font-medium bg-[#292b2f] text-[#f4f4f5]"><svg viewBox="0 0 24 24" aria-hidden="true" class="size-[21px] fill-current" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="3"/><circle cx="17" cy="8" r="2.5"/><path d="M2 20v-3a6 6 0 0 1 12 0v3Zm13-6a5 5 0 0 1 7 4v2h-6Z"/></svg>Users</a><a href="#staffs" class="flex h-[48px] items-center gap-[13px] rounded-[13px] px-[14px] text-[16px] leading-[22px] font-medium text-[#96999b]"><svg viewBox="0 0 24 24" aria-hidden="true" class="size-[21px] fill-current" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="15" rx="3"/><circle cx="9" cy="10" r="2" fill="#17191b"/><path d="M6 17v-1a3 3 0 0 1 6 0v1Zm9-8h3v2h-3Zm0 5h3v2h-3Z" fill="#17191b"/></svg>Staffs</a>
+  </nav>
+  <div class="mt-auto pt-6"><div class="border-t border-[#2a2c2e] pt-[21px]"><a href="#settings" class="flex h-[48px] items-center gap-[13px] rounded-[13px] px-[14px] text-[16px] leading-[22px] font-medium text-[#96999b]"><svg viewBox="0 0 24 24" aria-hidden="true" class="size-[21px] fill-current" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m9 2 6 0 1 3 3 1 3 5-2 3 0 3-5 4-3-1-3 1-5-4v-3l-2-3 3-5 3-1Z"/><circle cx="12" cy="12" r="3" fill="#17191b"/></svg>Settings</a></div>
+    <div class="mt-[20px] rounded-[19px] bg-[#292b2f] px-[17px] py-[17px]">
+      <div class="flex justify-between text-[13px] leading-[20px] font-medium"><span>Storage</span><span>72%</span></div>
+      <div class="mt-[10px] h-[6px] rounded-full bg-[#1b1d20]"><div class="h-full w-[72%] rounded-full bg-[#c4d3e9]"></div></div>
+      <p class="mt-[10px] text-[12px] leading-[18px] text-[#85898e]">36.2 GB of 50 GB used</p>
+    </div>
+  </div>
+</aside>
+<main id="main-content" class="transition-[margin-left] duration-300 ease-in-out motion-reduce:transition-none ml-[301px] min-w-0 flex-1 px-[34px] pt-[20px] pb-8 pr-[10px]">
+  <header class="flex h-[39px] items-center gap-3">
+<button id="open-sidebar" type="button" aria-label="Open sidebar" aria-expanded="false" aria-controls="sidebar" class="hidden rounded-lg border border-[#34373b] bg-[#1c1e20] px-3 py-2 text-sm">☰</button>
+    <div class="flex h-[38px] items-center gap-[12px] rounded-full border border-[#27292b] bg-[#1c1e20] px-[14px] text-[14px] leading-5"><span class="text-[#797d81]">Workspace</span><span class="text-[#515558]">/</span><span class="font-medium text-[#d3d5d7]">Users</span></div>
+    <button type="button" id="notifications-button" aria-label="Notifications: 3 unread" class="ml-auto relative flex size-[40px] items-center justify-center rounded-full border border-[#282a2d] bg-[#1c1e20]"><svg viewBox="0 0 24 24" aria-hidden="true" class="size-[20px] text-[#e4e6e8] fill-current" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17h14l-2-4V9a5 5 0 0 0-10 0v4ZM10 20h4"/></svg><span class="absolute -top-[9px] -right-[6px] flex size-[21px] items-center justify-center rounded-full bg-[#f18e9a] text-[12px] font-semibold text-[#652631]">3</span></button>
+  </header>
+  <h1 id="page-title" class="mt-[26px] text-[44px] leading-[53px] font-semibold tracking-[-1.8px]">Users</h1>
+  <p id="workspace-summary" class="mt-[10px] text-[17px] leading-[25px] text-[#929397]">2,847 customers across 418 companies · 4 plans · synced 2 min ago</p>
+  <div class="mt-[24px] flex h-[40px] items-center gap-[11px]">
+    <div id="status-tabs" aria-label="User status" class="flex h-full items-center rounded-full bg-[#1e2022] p-1 text-[13px] leading-[18px] font-medium text-[#929599]"><button type="button" aria-pressed="true" class="rounded-full bg-[#343638] px-[13px] py-[7px] text-[#f0f0f1]">All users</button><button type="button" class="px-[15px] py-[7px]">Active</button><button type="button" class="px-[15px] py-[7px]">Invited</button></div>
+    <label class="flex h-full w-[258px] items-center gap-[9px] rounded-full border border-[#2c2e30] bg-[#1c1e20] px-[13px] text-[#777b7e]"><svg viewBox="0 0 24 24" aria-hidden="true" class="size-[16px] shrink-0 fill-none stroke-current" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6"/><path d="m15 15 5 5"/></svg><input type="search" id="user-search" aria-label="Search users" placeholder="Search name, email or company" class="w-full min-w-0 bg-transparent text-[12px] leading-5 text-[#d3d5d7] outline-none placeholder:text-[#797d80]" /></label>
+    <button id="filter-button" aria-haspopup="dialog" type="button" class="flex h-full items-center gap-[7px] rounded-full border border-[#292b2e] bg-[#1e2022] px-[14px] text-[13px] font-medium text-[#b9bdc0]"><svg viewBox="0 0 24 24" aria-hidden="true" class="size-[15px] fill-current" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h18l-7 8v6l-4-2v-4Z"/></svg> Filter</button>
+    <button id="invite-button" type="button" class="ml-auto flex h-full items-center gap-[7px] rounded-full bg-[#f5f5f7] px-[14px] text-[13px] font-semibold text-[#202124]"><svg viewBox="0 0 24 24" aria-hidden="true" class="size-[14px] fill-current" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12h8m-4-4v8" stroke="#f5f5f7" stroke-width="2"/></svg> Invite user</button>
+  </div>
+  <section aria-labelledby="overview-heading" class="mt-[25px]">
+    <div class="mb-[13px] flex items-center gap-[11px] text-[13px] leading-[21px]"><h2 id="overview-heading" class="text-[16px] font-medium">Overview</h2><p class="text-[#6d7176]">Nov 2026 · vs October</p><a id="report-button" href="#users-table" class="ml-auto text-[12px] text-[#999ca0]">View report</a></div>
+    <div class="grid h-[294px] grid-cols-[minmax(0,2.06fr)_minmax(0,1fr)_minmax(0,1fr)] gap-[14px]">
+      <article class="relative overflow-hidden rounded-[16px] border border-[#c7d5e9] bg-[#c0d0e7] p-[19px] text-[#111b23]">
+        <h3 class="text-[13px] leading-5 font-medium text-[#5a6e7f]">Active top users this month</h3>
+        <span class="absolute top-[19px] right-[19px] flex items-center gap-[5px] rounded-full bg-[#10171e] px-[9px] py-[4px] text-[10px] leading-[14px] font-medium text-[#f0f3f6]"><span class="size-[6px] rounded-full bg-[#d7e1eb]"></span>312 online now</span>
+        <div aria-label="Active user portraits" class="absolute top-[57px] right-[24px] h-[207px] w-[225px]">
+          <img src="https://i.pravatar.cc/120?img=47" alt="User portrait" class="shrink-0 rounded-full object-cover absolute top-[18px] left-[4px] size-[61px] border-[3px] border-[#cfdbec]" /><img src="https://i.pravatar.cc/120?img=49" alt="User portrait" class="shrink-0 rounded-full object-cover absolute top-[10px] left-[72px] size-[43px] border-2 border-[#d6dfed]" /><img src="https://i.pravatar.cc/120?img=12" alt="User portrait" class="shrink-0 rounded-full object-cover absolute top-[90px] left-[61px] size-[55px] border-[3px] border-[#d1dded]" /><img src="https://i.pravatar.cc/120?img=13" alt="User portrait" class="shrink-0 rounded-full object-cover absolute top-[89px] left-[9px] size-[42px] border-2 border-[#d4dfed]" /><img src="https://i.pravatar.cc/120?img=9" alt="User portrait" class="shrink-0 rounded-full object-cover absolute top-[104px] left-[113px] size-[62px] border-[3px] border-[#cfdbec]" /><img src="https://i.pravatar.cc/120?img=11" alt="User portrait" class="shrink-0 rounded-full object-cover absolute top-[103px] right-0 size-[47px] border-2 border-[#d7e1ef]" /><img src="https://i.pravatar.cc/120?img=44" alt="User portrait" class="shrink-0 rounded-full object-cover absolute top-[13px] right-[9px] z-10 size-[113px] border-[11px] border-[#a9bed1] ring-[7px] ring-[#b7c9df]" />
+          <span class="absolute top-[138px] left-[66px] flex size-[33px] items-center justify-center rounded-full bg-[#f1f5f7] text-[10px] font-medium text-[#88969e]">TL</span>
+          <span class="absolute top-[-4px] right-[3px] flex size-[34px] items-center justify-center rounded-full bg-[#e1c6e4] text-[11px] font-medium text-[#a76e9d]">AO</span>
+          <span class="absolute right-[5px] bottom-[6px] flex size-[51px] items-center justify-center rounded-full border border-[#b4c4da] bg-[#0d1822] text-[11px] font-medium text-white shadow-lg">+2.1k</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true" class="absolute top-[67px] right-[48px] z-20 size-[32px] fill-current" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m7 2 1 12-4-2-2 2 6 8 4-2 5-7-2-2-2 2V7l-2-1-1 6V3Z" fill="white" stroke="#17191b" stroke-width="1.2"/></svg>
+        </div>
+        <p class="absolute bottom-[51px] left-[19px] text-[60px] leading-[67px] font-normal tracking-[-3.6px]">2,184</p>
+        <p class="absolute bottom-[18px] left-[19px] text-[13px] leading-5 text-[#576d82]">+8.2% vs Oct · 77% of 2,847 seats</p>
+      </article>
+      <article class="relative overflow-hidden rounded-[15px] bg-[#1c1f20] p-[19px]">
+        <h3 class="text-[13px] leading-5 text-[#8c9093]">Users by plan</h3>
+        <div class="absolute top-[66px] left-[18px] flex size-[121px] flex-col items-center justify-center rounded-full bg-[#cec3c3] text-[#29282b]"><span class="text-[18px] leading-[22px] font-medium tracking-[-0.6px]">1,412</span><span class="text-[11px] leading-[17px] text-[#746d70]">Free</span></div>
+        <div class="absolute top-[38px] right-[46px] flex size-[84px] flex-col items-center justify-center rounded-full bg-[#c3d1e8] text-[#263a50]"><span class="text-[16px] leading-5 font-medium">806</span><span class="text-[10px] leading-[15px] text-[#6a7e95]">Pro</span></div>
+        <div class="absolute top-[135px] right-[42px] flex size-[70px] flex-col items-center justify-center rounded-full bg-[#dfb9de] text-[#644362]"><span class="text-[15px] leading-5 font-medium">482</span><span class="text-[10px] leading-[15px] text-[#986e95]">Team</span></div>
+        <div class="absolute bottom-[50px] left-[96px] flex size-[61px] flex-col items-center justify-center rounded-full bg-[#303337]"><span class="text-[12px] leading-[16px] font-medium text-[#b6b8be]">147</span><span class="text-[8px] leading-3 text-[#85888f]">Enterprise</span></div>
+        <p class="absolute bottom-[18px] left-[19px] text-[11px] leading-4 text-[#777c80]">Free 50% · Pro 28% · Team 17%</p>
+      </article>
+      <div class="grid grid-rows-2 gap-[12px]">
+        <article class="relative rounded-[15px] bg-[#1c1f20] p-[19px]"><h3 class="text-[13px] leading-5 text-[#8c9093]">New this month</h3><p class="absolute bottom-[22px] left-[19px] text-[36px] leading-[42px] tracking-[-1.7px]">186</p><div class="absolute right-[19px] bottom-[29px] flex -space-x-[10px]"><img src="https://i.pravatar.cc/120?img=53" alt="User portrait" class="shrink-0 rounded-full object-cover size-[29px] border-2 border-[#1c1f20]" /><img src="https://i.pravatar.cc/120?img=49" alt="User portrait" class="shrink-0 rounded-full object-cover size-[29px] border-2 border-[#1c1f20]" /><img src="https://i.pravatar.cc/120?img=12" alt="User portrait" class="shrink-0 rounded-full object-cover size-[29px] border-2 border-[#1c1f20]" /><img src="https://i.pravatar.cc/120?img=47" alt="User portrait" class="shrink-0 rounded-full object-cover size-[29px] border-2 border-[#1c1f20]" /><span class="flex size-[29px] items-center justify-center rounded-full border-2 border-[#1c1f20] bg-[#2e3135] text-[8px] text-[#c2c4c7]">+82</span></div></article>
+        <article class="relative rounded-[15px] bg-[#1c1f20] p-[19px]"><h3 class="text-[13px] leading-5 text-[#8c9093]">Pending invites</h3><div class="absolute bottom-[22px] left-[19px] flex items-center gap-[9px]"><p class="text-[36px] leading-[42px] tracking-[-1.7px]">23</p><span class="text-[12px] text-[#777d80]">of 186</span></div><span class="absolute right-[19px] bottom-[32px] rounded-full bg-[#3b2d3c] px-[9px] py-[3px] text-[10px] leading-4 font-medium text-[#c5a6c2]">5 expire soon</span></article>
+      </div>
+    </div>
+  </section>
+  <section aria-labelledby="all-users-heading" class="mt-[23px]">
+    <div class="mb-[13px] flex h-[36px] items-center gap-[14px]"><h2 id="all-users-heading" class="text-[14px] leading-5 font-medium">All users</h2><p id="results-summary" aria-live="polite" class="text-[13px] leading-5 text-[#65696f]">2,847 customers · sorted by last seen</p><button type="button" id="sort-button" aria-haspopup="dialog" aria-label="Sort users" class="flex size-[35px] items-center justify-center rounded-full border border-[#292c2f] bg-[#1c1e20] text-[#92989d]"><svg viewBox="0 0 24 24" aria-hidden="true" class="size-[19px] fill-none stroke-current" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4h12M6 20h12M12 4v16m-3-3 3 3 3-3"/></svg></button><div id="view-toggle" aria-label="User view" class="flex h-[36px] items-center gap-1 rounded-full border border-[#2b2e30] bg-[#1c1f20] p-1 text-[12px] font-medium"><button type="button" aria-pressed="true" class="flex items-center gap-[6px] rounded-full bg-[#34373a] px-[10px] py-[4px] text-[#e0e2e4]"><svg viewBox="0 0 24 24" aria-hidden="true" class="size-[13px] fill-current" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M7 16V9m5 7V6m5 10v-5" stroke="#17191b" stroke-width="2"/></svg> Table</button><button type="button" class="flex items-center gap-[6px] px-[9px] py-[4px] text-[#8d9297]"><svg viewBox="0 0 24 24" aria-hidden="true" class="size-[13px] fill-current" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg> Cards</button></div></div>
+    <div id="results-stage" class="translate-y-0 opacity-100 transition-[opacity,translate] duration-150 ease-out motion-reduce:transition-none">
+    <div id="table-view" class="overflow-hidden rounded-[16px] border border-[#202325] bg-[#1c1f20]">
+      <table id="users-table" class="w-full table-fixed border-collapse text-left text-[13px] leading-[19px]">
+        <caption class="sr-only">Workspace users, plans, companies, account status, usage and last seen</caption>
+        <colgroup><col class="w-[4.3%]"/><col class="w-[27%]"/><col class="w-[12.1%]"/><col class="w-[14.6%]"/><col class="w-[12.5%]"/><col class="w-[19.2%]"/><col class="w-[10.3%]"/></colgroup>
+        <thead><tr class="h-[44px] border-b border-[#2a2d2f] text-[12px] font-normal text-[#777c80]"><th class="pl-[18px] font-normal"><input type="checkbox" id="select-all" aria-label="Select all visible users" class="size-[17px] appearance-none rounded-[5px] border-2 border-[#3c4144] bg-transparent align-middle checked:border-[#ecf0f1] checked:bg-[#ecf0f1] checked:bg-[url('data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2016%2016%22%3E%3Cpath%20d=%22m3%208%203%203%207-7%22%20fill=%22none%22%20stroke=%22%2323292d%22%20stroke-width=%222%22/%3E%3C/svg%3E')]" /></th><th class="font-normal">User</th><th class="font-normal">Plan</th><th class="font-normal">Company</th><th class="font-normal">Status</th><th class="font-normal">Usage · 30d</th><th class="font-normal">Last seen</th></tr></thead>
+        <tbody><tr class="h-[62px] border-b border-[#2a2d2f] last:border-0 "><td class="pl-[18px]"><input type="checkbox" aria-label="Select Sofia Marin" class="size-[17px] appearance-none rounded-[5px] border-2 border-[#3c4144] bg-transparent align-middle checked:border-[#ecf0f1] checked:bg-[#ecf0f1] checked:bg-[url('data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2016%2016%22%3E%3Cpath%20d=%22m3%208%203%203%207-7%22%20fill=%22none%22%20stroke=%22%2323292d%22%20stroke-width=%222%22/%3E%3C/svg%3E')]" /></td><td><div class="flex items-center gap-[10px]"><img src="https://i.pravatar.cc/120?img=47" alt="Sofia Marin" class="shrink-0 rounded-full object-cover size-[35px] border-2 border-[#66716e]" /><div class="min-w-0"><p class="truncate font-medium text-[#e4e6e8]">Sofia Marin</p><p class="truncate text-[12px] leading-[18px] text-[#858b8e]">sofia@ledgerly.com</p></div></div></td><td><span class="rounded-full px-[9px] py-[4px] text-[11px] leading-4 bg-[#2a2d30] text-[#b9bdc0] font-medium">Team</span></td><td class="text-[#bcc0c3]">Ledgerly</td><td><span class="flex items-center gap-[8px] whitespace-nowrap text-[#bcc1c6]"><span class="size-[7px] shrink-0 rounded-full bg-[#c9d2e1]"></span>Active</span></td><td><div class="flex items-center gap-[9px]"><span class="h-[4px] w-[51px] shrink-0 rounded-full bg-[#34383b]"><span class="block h-full w-[48px] rounded-full bg-[#e6eaec]"></span></span><span class="whitespace-nowrap text-[12px] text-[#c3c7ca]">142 sessions</span></div></td><td class="whitespace-nowrap text-[12px] text-[#92989d]">Just now</td></tr>
+<tr class="h-[62px] border-b border-[#2a2d2f] last:border-0 bg-[#232529]"><td class="pl-[18px]"><input type="checkbox" aria-label="Select Daniel Brooks" checked class="size-[17px] appearance-none rounded-[5px] border-2 border-[#3c4144] bg-transparent align-middle checked:border-[#ecf0f1] checked:bg-[#ecf0f1] checked:bg-[url('data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2016%2016%22%3E%3Cpath%20d=%22m3%208%203%203%207-7%22%20fill=%22none%22%20stroke=%22%2323292d%22%20stroke-width=%222%22/%3E%3C/svg%3E')]" /></td><td><div class="flex items-center gap-[10px]"><img src="https://i.pravatar.cc/120?img=12" alt="Daniel Brooks" class="shrink-0 rounded-full object-cover size-[35px] border-2 border-[#66716e]" /><div class="min-w-0"><p class="truncate font-medium text-[#e4e6e8]">Daniel Brooks</p><p class="truncate text-[12px] leading-[18px] text-[#858b8e]">daniel@northwindlabs.io</p></div></div></td><td><span class="rounded-full px-[9px] py-[4px] text-[11px] leading-4 bg-[#c4d0e2] text-[#273342] font-semibold">Enterprise</span></td><td class="text-[#bcc0c3]">Northwind Labs</td><td><span class="flex items-center gap-[8px] whitespace-nowrap text-[#bcc1c6]"><span class="size-[7px] shrink-0 rounded-full bg-[#c9d2e1]"></span>Active</span></td><td><div class="flex items-center gap-[9px]"><span class="h-[4px] w-[51px] shrink-0 rounded-full bg-[#34383b]"><span class="block h-full w-[40px] rounded-full bg-[#e6eaec]"></span></span><span class="whitespace-nowrap text-[12px] text-[#c3c7ca]">118 sessions</span></div></td><td class="whitespace-nowrap text-[12px] text-[#92989d]">6 min ago</td></tr>
+<tr class="h-[62px] border-b border-[#2a2d2f] last:border-0 "><td class="pl-[18px]"><input type="checkbox" aria-label="Select Aisha Rahman" class="size-[17px] appearance-none rounded-[5px] border-2 border-[#3c4144] bg-transparent align-middle checked:border-[#ecf0f1] checked:bg-[#ecf0f1] checked:bg-[url('data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2016%2016%22%3E%3Cpath%20d=%22m3%208%203%203%207-7%22%20fill=%22none%22%20stroke=%22%2323292d%22%20stroke-width=%222%22/%3E%3C/svg%3E')]" /></td><td><div class="flex items-center gap-[10px]"><img src="https://i.pravatar.cc/120?img=49" alt="Aisha Rahman" class="shrink-0 rounded-full object-cover size-[35px] border-2 border-[#66716e]" /><div class="min-w-0"><p class="truncate font-medium text-[#e4e6e8]">Aisha Rahman</p><p class="truncate text-[12px] leading-[18px] text-[#858b8e]">aisha@kitehealth.com</p></div></div></td><td><span class="rounded-full px-[9px] py-[4px] text-[11px] leading-4 bg-[#2a2d30] text-[#b9bdc0] font-medium">Pro</span></td><td class="text-[#bcc0c3]">Kite Health</td><td><span class="flex items-center gap-[8px] whitespace-nowrap text-[#bcc1c6]"><span class="size-[7px] shrink-0 rounded-full bg-[#d7b8d6]"></span>Trial · 9d left</span></td><td><div class="flex items-center gap-[9px]"><span class="h-[4px] w-[51px] shrink-0 rounded-full bg-[#34383b]"><span class="block h-full w-[23px] rounded-full bg-[#e6eaec]"></span></span><span class="whitespace-nowrap text-[12px] text-[#c3c7ca]">64 sessions</span></div></td><td class="whitespace-nowrap text-[12px] text-[#92989d]">1 h ago</td></tr>
+<tr class="h-[62px] border-b border-[#2a2d2f] last:border-0 "><td class="pl-[18px]"><input type="checkbox" aria-label="Select Marco Bellini" class="size-[17px] appearance-none rounded-[5px] border-2 border-[#3c4144] bg-transparent align-middle checked:border-[#ecf0f1] checked:bg-[#ecf0f1] checked:bg-[url('data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2016%2016%22%3E%3Cpath%20d=%22m3%208%203%203%207-7%22%20fill=%22none%22%20stroke=%22%2323292d%22%20stroke-width=%222%22/%3E%3C/svg%3E')]" /></td><td><div class="flex items-center gap-[10px]"><img src="https://i.pravatar.cc/120?img=13" alt="Marco Bellini" class="shrink-0 rounded-full object-cover size-[35px] border-2 border-[#66716e]" /><div class="min-w-0"><p class="truncate font-medium text-[#e4e6e8]">Marco Bellini</p><p class="truncate text-[12px] leading-[18px] text-[#858b8e]">marco@fieldwork.studio</p></div></div></td><td><span class="rounded-full px-[9px] py-[4px] text-[11px] leading-4 bg-[#2a2d30] text-[#b9bdc0] font-medium">Pro</span></td><td class="text-[#bcc0c3]">Fieldwork Studio</td><td><span class="flex items-center gap-[8px] whitespace-nowrap text-[#bcc1c6]"><span class="size-[7px] shrink-0 rounded-full bg-[#72777c]"></span>Inactive</span></td><td><div class="flex items-center gap-[9px]"><span class="h-[4px] w-[51px] shrink-0 rounded-full bg-[#34383b]"><span class="block h-full w-[3px] rounded-full bg-[#e6eaec]"></span></span><span class="whitespace-nowrap text-[12px] text-[#73787c]">6 sessions</span></div></td><td class="whitespace-nowrap text-[12px] text-[#92989d]">21 days ago</td></tr>
+<tr class="h-[62px] border-b border-[#2a2d2f] last:border-0 "><td class="pl-[18px]"><input type="checkbox" aria-label="Select Hannah Cole" class="size-[17px] appearance-none rounded-[5px] border-2 border-[#3c4144] bg-transparent align-middle checked:border-[#ecf0f1] checked:bg-[#ecf0f1] checked:bg-[url('data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2016%2016%22%3E%3Cpath%20d=%22m3%208%203%203%207-7%22%20fill=%22none%22%20stroke=%22%2323292d%22%20stroke-width=%222%22/%3E%3C/svg%3E')]" /></td><td><div class="flex items-center gap-[10px]"><img src="https://i.pravatar.cc/120?img=44" alt="Hannah Cole" class="shrink-0 rounded-full object-cover size-[35px] border-2 border-[#66716e]" /><div class="min-w-0"><p class="truncate font-medium text-[#e4e6e8]">Hannah Cole</p><p class="truncate text-[12px] leading-[18px] text-[#858b8e]">hannah@orbitpay.com</p></div></div></td><td><span class="rounded-full px-[9px] py-[4px] text-[11px] leading-4 bg-[#2a2d30] text-[#b9bdc0] font-medium">Team</span></td><td class="text-[#bcc0c3]">Orbitpay</td><td><span class="flex items-center gap-[8px] whitespace-nowrap text-[#bcc1c6]"><span class="size-[7px] shrink-0 rounded-full bg-[#c9d2e1]"></span>Active</span></td><td><div class="flex items-center gap-[9px]"><span class="h-[4px] w-[51px] shrink-0 rounded-full bg-[#34383b]"><span class="block h-full w-[33px] rounded-full bg-[#e6eaec]"></span></span><span class="whitespace-nowrap text-[12px] text-[#c3c7ca]">97 sessions</span></div></td><td class="whitespace-nowrap text-[12px] text-[#92989d]">Yesterday</td></tr>
+<tr class="h-[62px] border-b border-[#2a2d2f] last:border-0 "><td class="pl-[18px]"><input type="checkbox" aria-label="Select Kenji Mori" class="size-[17px] appearance-none rounded-[5px] border-2 border-[#3c4144] bg-transparent align-middle checked:border-[#ecf0f1] checked:bg-[#ecf0f1] checked:bg-[url('data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2016%2016%22%3E%3Cpath%20d=%22m3%208%203%203%207-7%22%20fill=%22none%22%20stroke=%22%2323292d%22%20stroke-width=%222%22/%3E%3C/svg%3E')]" /></td><td><div class="flex items-center gap-[10px]"><img src="https://i.pravatar.cc/120?img=11" alt="Kenji Mori" class="shrink-0 rounded-full object-cover size-[35px] border-2 border-[#66716e]" /><div class="min-w-0"><p class="truncate font-medium text-[#e4e6e8]">Kenji Mori</p><p class="truncate text-[12px] leading-[18px] text-[#858b8e]">kenji.mori@gmail.com</p></div></div></td><td><span class="rounded-full px-[9px] py-[4px] text-[11px] leading-4 bg-[#2a2d30] text-[#b9bdc0] font-medium">Free</span></td><td class="text-[#bcc0c3]">Personal</td><td><span class="flex items-center gap-[8px] whitespace-nowrap text-[#bcc1c6]"><span class="size-[7px] shrink-0 rounded-full bg-[#d7b8d6]"></span>Invited</span></td><td><span class="text-[#72777b]">—</span></td><td class="whitespace-nowrap text-[12px] text-[#92989d]">Invite sent 2d ago</td></tr>
+<tr class="h-[62px] border-b border-[#2a2d2f] last:border-0 "><td class="pl-[18px]"><input type="checkbox" aria-label="Select Nora Lindahl" class="size-[17px] appearance-none rounded-[5px] border-2 border-[#3c4144] bg-transparent align-middle checked:border-[#ecf0f1] checked:bg-[#ecf0f1] checked:bg-[url('data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2016%2016%22%3E%3Cpath%20d=%22m3%208%203%203%207-7%22%20fill=%22none%22%20stroke=%22%2323292d%22%20stroke-width=%222%22/%3E%3C/svg%3E')]" /></td><td><div class="flex items-center gap-[10px]"><img src="https://i.pravatar.cc/120?img=53" alt="Nora Lindahl" class="shrink-0 rounded-full object-cover size-[35px] border-2 border-[#66716e]" /><div class="min-w-0"><p class="truncate font-medium text-[#e4e6e8]">Nora Lindahl</p><p class="truncate text-[12px] leading-[18px] text-[#858b8e]">nora@brightloop.co</p></div></div></td><td><span class="rounded-full px-[9px] py-[4px] text-[11px] leading-4 bg-[#2a2d30] text-[#b9bdc0] font-medium">Pro</span></td><td class="text-[#bcc0c3]">Brightloop</td><td><span class="flex items-center gap-[8px] whitespace-nowrap text-[#bcc1c6]"><span class="size-[7px] shrink-0 rounded-full bg-[#c9d2e1]"></span>Active</span></td><td><div class="flex items-center gap-[9px]"><span class="h-[4px] w-[51px] shrink-0 rounded-full bg-[#34383b]"><span class="block h-full w-[19px] rounded-full bg-[#e6eaec]"></span></span><span class="whitespace-nowrap text-[12px] text-[#c3c7ca]">53 sessions</span></div></td><td class="whitespace-nowrap text-[12px] text-[#92989d]">2 days ago</td></tr>
+<tr class="h-[62px] border-b border-[#2a2d2f] last:border-0 "><td class="pl-[18px]"><input type="checkbox" aria-label="Select Owen Hartley" class="size-[17px] appearance-none rounded-[5px] border-2 border-[#3c4144] bg-transparent align-middle checked:border-[#ecf0f1] checked:bg-[#ecf0f1] checked:bg-[url('data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2016%2016%22%3E%3Cpath%20d=%22m3%208%203%203%207-7%22%20fill=%22none%22%20stroke=%22%2323292d%22%20stroke-width=%222%22/%3E%3C/svg%3E')]" /></td><td><div class="flex items-center gap-[10px]"><img src="https://i.pravatar.cc/120?img=33" alt="Owen Hartley" class="shrink-0 rounded-full object-cover size-[35px] border-2 border-[#66716e]" /><div class="min-w-0"><p class="truncate font-medium text-[#e4e6e8]">Owen Hartley</p><p class="truncate text-[12px] leading-[18px] text-[#858b8e]">owen@frame.io</p></div></div></td><td><span class="rounded-full px-[9px] py-[4px] text-[11px] leading-4 bg-[#c4d0e2] text-[#273342] font-semibold">Enterprise</span></td><td class="text-[#bcc0c3]">Frame</td><td><span class="flex items-center gap-[8px] whitespace-nowrap text-[#bcc1c6]"><span class="size-[7px] shrink-0 rounded-full bg-[#c9d2e1]"></span>Active</span></td><td><div class="flex items-center gap-[9px]"><span class="h-[4px] w-[51px] shrink-0 rounded-full bg-[#34383b]"><span class="block h-full w-[29px] rounded-full bg-[#e6eaec]"></span></span><span class="whitespace-nowrap text-[12px] text-[#c3c7ca]">87 sessions</span></div></td><td class="whitespace-nowrap text-[12px] text-[#92989d]">3 days ago</td></tr></tbody>
+      </table>
+    </div>
+    <div id="cards-view" class="hidden grid-cols-3 gap-4"></div>
+    <div id="empty-state" class="hidden rounded-2xl border border-dashed border-[#34373b] py-14 text-center"><h3 class="text-lg font-medium">No users found</h3><p class="mt-2 text-sm text-[#92989d]">Try another search or reset your filters.</p><button id="reset-filters" type="button" class="mt-4 rounded-full bg-[#c0d0e7] px-4 py-2 text-sm text-[#111114]">Reset filters</button></div>
+    </div>
+    <div class="mt-4 flex items-center gap-3 text-xs text-[#92989d]"><span id="selection-summary" aria-live="polite">No users selected</span><button id="clear-selection" type="button" class="hidden rounded-full border border-[#34373b] px-3 py-1">Clear selection</button><span class="ml-auto">Demo data · saved in this browser</span></div>
+  </section>
+</main>
+</div>
+<dialog id="app-dialog" aria-labelledby="dialog-title" class="backdrop:opacity-0 backdrop:transition-opacity backdrop:duration-200 motion-reduce:backdrop:transition-none opacity-0 scale-95 transition-[opacity,scale] duration-200 ease-out motion-reduce:transition-none m-auto max-h-[85vh] w-[440px] max-w-[90vw] overflow-y-auto rounded-2xl border border-[#3c4144] bg-[#1c1f20] p-6 text-[#f4f4f5] shadow-2xl backdrop:bg-black/70">
+  <div class="mb-5 flex items-center justify-between gap-4"><h2 id="dialog-title" class="text-xl font-semibold"></h2><button id="close-dialog" type="button" aria-label="Close dialog" class="rounded-lg px-2 py-1 text-xl text-[#92989d] hover:bg-[#343638]">×</button></div>
+  <div id="dialog-content" class="text-sm leading-6"></div>
+</dialog>
+<div id="toast" role="status" class="translate-y-3 opacity-0 transition-[opacity,translate] duration-200 ease-out motion-reduce:transition-none fixed right-6 bottom-6 z-50 hidden max-w-sm rounded-xl border border-[#41474e] bg-[#c0d0e7] px-5 py-3 text-sm text-[#111b23] shadow-xl"></div>
+<script>
+(() => {
+  'use strict';
+  const seedUsers = [
+    ['Sofia Marin','sofia@ledgerly.com','Team','Ledgerly','Active',142,'Just now',47,0],
+    ['Daniel Brooks','daniel@northwindlabs.io','Enterprise','Northwind Labs','Active',118,'6 min ago',12,6],
+    ['Aisha Rahman','aisha@kitehealth.com','Pro','Kite Health','Trial',64,'1 h ago',49,60],
+    ['Marco Bellini','marco@fieldwork.studio','Pro','Fieldwork Studio','Inactive',6,'21 days ago',13,30240],
+    ['Hannah Cole','hannah@orbitpay.com','Team','Orbitpay','Active',97,'Yesterday',44,1440],
+    ['Kenji Mori','kenji.mori@gmail.com','Free','Personal','Invited',0,'Invite sent 2d ago',11,2880],
+    ['Nora Lindahl','nora@brightloop.co','Pro','Brightloop','Active',53,'2 days ago',53,2880],
+    ['Owen Hartley','owen@frame.io','Enterprise','Frame','Active',87,'3 days ago',33,4320],
+    ['Maya Putri','maya@studio.id','Team','Studio Nusantara','Active',125,'12 min ago',45,12],
+    ['Rizky Pratama','rizky@karya.id','Pro','Karya Digital','Invited',0,'Invite sent today',14,480],
+    ['Emma Wilson','emma@atlas.io','Free','Atlas','Inactive',12,'7 days ago',48,10080],
+    ['Liam Chen','liam@brightloop.co','Pro','Brightloop','Trial',42,'4 h ago',15,240],
+    ['Dewi Lestari','dewi@ledgerly.com','Team','Ledgerly','Active',108,'30 min ago',46,30],
+    ['Arjun Patel','arjun@kitehealth.com','Free','Kite Health','Invited',0,'Invite sent yesterday',16,1440],
+    ['Chloe Martin','chloe@atlas.io','Enterprise','Atlas','Active',76,'8 h ago',43,480],
+    ['Fajar Hidayat','fajar@karya.id','Free','Karya Digital','Inactive',3,'14 days ago',17,20160]
+  ].map((v,i) => ({id:i+1,name:v[0],email:v[1],plan:v[2],company:v[3],status:v[4],sessions:v[5],lastSeen:v[6],avatar:v[7],minutes:v[8]}));
+  const plans = ['Free','Pro','Team','Enterprise'];
+  const statuses = ['Active','Invited','Trial','Inactive'];
+  function visibleUsers(users, state) {
+    const query = state.query.trim().toLowerCase();
+    return users.filter(u => (state.tab === 'All users' || u.status === state.tab)
+      && (!state.plan || u.plan === state.plan)
+      && (!state.status || u.status === state.status)
+      && u.sessions >= state.minSessions
+      && `${u.name} ${u.email} ${u.company}`.toLowerCase().includes(query))
+      .sort((a,b) => ({
+        recent: () => a.minutes-b.minutes,
+        oldest: () => b.minutes-a.minutes,
+        name: () => a.name.localeCompare(b.name),
+        'name-desc': () => b.name.localeCompare(a.name),
+        usage: () => b.sessions-a.sessions,
+        'usage-asc': () => a.sessions-b.sessions
+      }[state.sort] || (() => 0))() || a.id-b.id);
+  }
+  function createInvite(values, users) {
+    const name = String(values.name || '').trim();
+    const email = String(values.email || '').trim().toLowerCase();
+    const company = String(values.company || '').trim() || 'Personal';
+    if (!name || name.length > 80) throw new Error('Enter a name between 1 and 80 characters.');
+    if (email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error('Enter a valid email address.');
+    if (company.length > 100) throw new Error('Company name must be 100 characters or fewer.');
+    if (!plans.includes(values.plan)) throw new Error('Choose a valid plan.');
+    if (users.some(u => u.email.toLowerCase() === email)) throw new Error('This email already belongs to a workspace user.');
+    return {id:Math.max(0,...users.map(u => u.id))+1,name,email,company,plan:values.plan,status:'Invited',sessions:0,lastSeen:'Invite sent just now',avatar:32,minutes:0};
+  }
+  // Each new interaction cancels an older pending animation commit.
+  function createTransitionQueue(schedule = setTimeout, cancel = clearTimeout) {
+    let timer, version = 0;
+    return {
+      cancel() { version++; cancel(timer); },
+      run(task, delay) {
+        this.cancel();
+        const current = version;
+        if (!delay) { task(); return; }
+        timer = schedule(() => { if (current === version) task(); }, delay);
+      }
+    };
+  }
+  // Pure model functions can also be checked with Node without a browser.
+  if (typeof document === 'undefined') {
+    module.exports = {seedUsers, visibleUsers, createInvite, createTransitionQueue};
+    return;
+  }
+  const $ = s => document.querySelector(s);
+  const $$ = s => [...document.querySelectorAll(s)];
+  const escape = value => String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const storageKey = 'maydin-users-demo-v1';
+  let users = seedUsers.map(u => ({...u}));
+  try {
+    const saved = JSON.parse(localStorage.getItem(storageKey));
+    if (Array.isArray(saved) && saved.length && new Set(saved.map(u => u.id)).size === saved.length && saved.every(u =>
+      Number.isSafeInteger(u.id) && u.id > 0 && ['name','email','company','lastSeen'].every(k => typeof u[k] === 'string')
+      && plans.includes(u.plan) && statuses.includes(u.status) && Number.isFinite(u.sessions) && u.sessions >= 0
+      && Number.isFinite(u.minutes) && u.minutes >= 0 && Number.isInteger(u.avatar) && u.avatar > 0 && u.avatar <= 70)) users = saved;
+  } catch { /* Storage is optional for local-file previews. */ }
+  const state = {tab:'All users',query:'',plan:'',status:'',minSessions:0,sort:'recent',view:'table'};
+  const selected = new Set();
+  const rowTemplate = $('#users-table tbody tr').cloneNode(true);
+  const dialog = $('#app-dialog');
+  const inputClass = 'mt-1 w-full rounded-lg border border-[#41474e] bg-[#111114] px-3 py-2 text-sm text-[#f4f4f5] outline-none focus:border-[#c0d0e7]';
+  const actionClass = 'rounded-full bg-[#c0d0e7] px-4 py-2 text-sm font-medium text-[#111b23] hover:bg-[#d2def0]';
+  const secondaryClass = 'rounded-full border border-[#41474e] px-4 py-2 text-sm text-[#c3c7ca] hover:bg-[#292b2f]';
+  const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const duration = ms => motion.matches ? 0 : ms;
+  const resultsQueue = createTransitionQueue();
+  const dialogQueue = createTransitionQueue();
+  const toastQueue = createTransitionQueue();
+  let toastTimer, toastVersion = 0, dialogVersion = 0, dialogClosing = false;
+  function reveal(element, visible, offset = 'translate-y-2') {
+    element.classList.toggle('opacity-0', !visible);
+    element.classList.toggle('opacity-100', visible);
+    element.classList.toggle(offset, !visible);
+    element.classList.toggle('translate-y-0', visible);
+  }
+  function nextFrame(task) {
+    // Two frames allow newly displayed elements to paint their start state.
+    if (motion.matches) { task(); return; }
+    requestAnimationFrame(() => requestAnimationFrame(task));
+  }
+  function notify(message) {
+    const toast = $('#toast');
+    const version = ++toastVersion;
+    toastQueue.cancel();
+    clearTimeout(toastTimer);
+    toast.textContent = message;
+    toast.classList.remove('hidden');
+    nextFrame(() => {
+      if (version !== toastVersion) return;
+      reveal(toast, true, 'translate-y-3');
+      toastTimer = setTimeout(() => {
+        reveal(toast, false, 'translate-y-3');
+        toastQueue.run(() => toast.classList.add('hidden'), duration(200));
+      }, 4000);
+    });
+  }
+  function persist() {
+    try { localStorage.setItem(storageKey,JSON.stringify(users)); }
+    catch { notify('Changes are available for this session; browser storage is unavailable.'); }
+  }
+  function openDialog(title, html) {
+    dialogQueue.cancel();
+    dialogClosing = false;
+    const version = ++dialogVersion;
+    $('#dialog-title').textContent = title;
+    $('#dialog-content').innerHTML = html;
+    if (!dialog.open) dialog.showModal();
+    nextFrame(() => {
+      if (version !== dialogVersion) return;
+      dialog.classList.remove('opacity-0', 'scale-95', 'backdrop:opacity-0');
+      dialog.classList.add('opacity-100', 'scale-100', 'backdrop:opacity-100');
+    });
+  }
+  function closeDialog() {
+    if (!dialog.open || dialogClosing) return;
+    dialogClosing = true;
+    dialogVersion++;
+    dialog.classList.remove('opacity-100', 'scale-100', 'backdrop:opacity-100');
+    dialog.classList.add('opacity-0', 'scale-95', 'backdrop:opacity-0');
+    dialogQueue.run(() => { dialog.close(); dialogClosing = false; }, duration(200));
+  }
+  $('#close-dialog').addEventListener('click', closeDialog);
+  dialog.addEventListener('cancel', e => { e.preventDefault(); closeDialog(); });
+  dialog.addEventListener('click', e => { if (e.target === dialog) {
+    const rect = dialog.getBoundingClientRect();
+    if (e.clientX < rect.left || e.clientX > rect.right || e.clientY < rect.top || e.clientY > rect.bottom) closeDialog();
+  }});
+  function toggleSidebar(open) {
+    // Keep the sidebar mounted so its slide-out can finish.
+    $('#sidebar').classList.toggle('-translate-x-full',!open);
+    $('#sidebar').classList.toggle('translate-x-0',open);
+    $('#sidebar').classList.toggle('opacity-0',!open);
+    $('#sidebar').classList.toggle('opacity-100',open);
+    $('#sidebar').inert = !open;
+    $('#sidebar').setAttribute('aria-hidden',String(!open));
+    $('#main-content').classList.toggle('ml-[301px]',open);
+    $('#main-content').classList.toggle('ml-0',!open);
+    $('#open-sidebar').classList.toggle('hidden',open);
+    $('#close-sidebar').setAttribute('aria-expanded',String(open));
+    $('#open-sidebar').setAttribute('aria-expanded',String(open));
+    (open ? $('#close-sidebar') : $('#open-sidebar')).focus();
+  }
+  $('#close-sidebar').addEventListener('click', () => toggleSidebar(false));
+  $('#open-sidebar').addEventListener('click', () => toggleSidebar(true));
+  const sortLabels = {recent:'last seen',oldest:'oldest activity',name:'name A–Z','name-desc':'name Z–A',usage:'highest usage','usage-asc':'lowest usage'};
+  const statusLabel = u => u.status === 'Trial' ? 'Trial · 9d left' : u.status;
+  function planBadge(u) {
+    return `<span class="rounded-full px-[9px] py-[4px] text-[11px] leading-4 ${u.plan === 'Enterprise' ? 'bg-[#c4d0e2] text-[#273342]' : 'bg-[#2a2d30] text-[#b9bdc0]'}">${u.plan}</span>`;
+  }
+  function statusBadge(u) {
+    return `<span class="flex items-center gap-2 whitespace-nowrap text-[#bcc1c6]"><span class="size-[7px] rounded-full ${u.status === 'Active' ? 'bg-[#c9d2e1]' : u.status === 'Inactive' ? 'bg-[#72777c]' : 'bg-[#d7b8d6]'}"></span>${statusLabel(u)}</span>`;
+  }
+  let renderedKey = null;
+  function render() {
+    const stage = $('#results-stage');
+    const key = JSON.stringify([state.view, state.tab, state.sort, visibleUsers(users,state).map(u => u.id)]);
+    const commit = () => {
+      const focused = document.activeElement;
+      const userId = focused?.dataset.userId;
+      const profileId = focused?.dataset.profile;
+      renderContent();
+      renderedKey = key;
+      stage.inert = false;
+      stage.setAttribute('aria-busy','false');
+      // Selection updates replace rows; retain keyboard focus on the same control.
+      if (userId || profileId) {
+        const scope = state.view === 'table' ? $('#table-view') : $('#cards-view');
+        scope.querySelector(userId ? `[data-user-id="${userId}"]` : `[data-profile="${profileId}"]`)?.focus({preventScroll:true});
+      }
+      reveal(stage,true);
+    };
+    resultsQueue.cancel();
+    if (renderedKey === null || renderedKey === key || motion.matches) { commit(); return; }
+    stage.inert = true;
+    stage.setAttribute('aria-busy','true');
+    reveal(stage,false);
+    resultsQueue.run(commit,duration(150));
+  }
+  function renderContent() {
+    const shown = visibleUsers(users,state);
+    $('#all-users-heading').textContent = state.tab;
+    $('#results-summary').textContent = `${shown.length} of ${users.length} customers · sorted by ${sortLabels[state.sort]}`;
+    $$('#status-tabs button').forEach(b => {
+      const active = b.textContent.trim() === state.tab;
+      b.setAttribute('aria-pressed',String(active));
+      b.className = `rounded-full px-[15px] py-[7px] focus-visible:outline-2 focus-visible:outline-[#c0d0e7] transition-colors duration-200 motion-reduce:transition-none ${active ? 'bg-[#343638] text-[#f0f0f1]' : 'text-[#929599]'}`;
+    });
+    $$('#view-toggle button').forEach((b,i) => {
+      const active = state.view === (i === 0 ? 'table' : 'cards');
+      b.setAttribute('aria-pressed',String(active));
+      b.className = `flex items-center gap-[6px] rounded-full px-[10px] py-[4px] focus-visible:outline-2 focus-visible:outline-[#c0d0e7] transition-colors duration-200 motion-reduce:transition-none ${active ? 'bg-[#34373a] text-[#e0e2e4]' : 'text-[#8d9297]'}`;
+    });
+    $('#table-view').classList.toggle('hidden',state.view !== 'table' || !shown.length);
+    $('#cards-view').classList.toggle('hidden',state.view !== 'cards' || !shown.length);
+    $('#cards-view').classList.toggle('grid',state.view === 'cards' && !!shown.length);
+    $('#empty-state').classList.toggle('hidden',!!shown.length);
+    const filterCount = Number(!!state.plan) + Number(!!state.status) + Number(state.minSessions > 0);
+    $('#filter-button').lastChild.textContent = ` Filter${filterCount ? ` (${filterCount})` : ''}`;
+    $('#filter-button').classList.toggle('border-[#c0d0e7]',!!filterCount);
+    const body = $('#users-table tbody');
+    body.replaceChildren();
+    shown.forEach(u => {
+      const row = rowTemplate.cloneNode(true);
+      row.classList.add('transition-colors','duration-200','motion-reduce:transition-none');
+      row.classList.toggle('bg-[#232529]',selected.has(u.id));
+      const cells = row.cells;
+      const check = row.querySelector('input');
+      check.checked = selected.has(u.id);
+      check.dataset.userId = u.id;
+      check.setAttribute('aria-label',`Select ${u.name}`);
+      const img = cells[1].querySelector('img');
+      img.src = `https://i.pravatar.cc/120?img=${u.avatar}`;
+      img.alt = u.name;
+      const name = cells[1].querySelector('p');
+      name.replaceChildren();
+      const profile = document.createElement('button');
+      profile.type = 'button';
+      profile.textContent = u.name;
+      profile.dataset.profile = u.id;
+      profile.className = 'max-w-full truncate text-left hover:underline';
+      name.append(profile);
+      cells[1].querySelectorAll('p')[1].textContent = u.email;
+      cells[2].innerHTML = planBadge(u);
+      cells[3].textContent = u.company;
+      cells[4].innerHTML = statusBadge(u);
+      // A fixed set of utility classes keeps usage styling in Tailwind.
+      const widths = ['w-0','w-1/5','w-2/5','w-3/5','w-4/5','w-full'];
+      cells[5].innerHTML = u.sessions ? `<div class="flex items-center gap-[9px]"><span class="h-1 w-[51px] shrink-0 rounded-full bg-[#34383b]"><span class="block h-full rounded-full bg-[#e6eaec] ${widths[Math.min(5,Math.ceil(u.sessions/30))]}"></span></span><span class="whitespace-nowrap text-xs text-[#c3c7ca]">${u.sessions} sessions</span></div>` : '<span class="text-[#72777b]">—</span>';
+      cells[6].textContent = u.lastSeen;
+      body.append(row);
+    });
+    $('#cards-view').innerHTML = shown.map(u => `<article class="transition-colors duration-200 motion-reduce:transition-none rounded-2xl border ${selected.has(u.id) ? 'border-[#c0d0e7]' : 'border-[#2a2d2f]'} bg-[#1c1f20] p-5 text-sm leading-5">
+      <div class="flex items-center justify-between"><img src="https://i.pravatar.cc/120?img=${u.avatar}" alt="${escape(u.name)}" class="size-12 rounded-full object-cover"/><input type="checkbox" data-user-id="${u.id}" aria-label="Select ${escape(u.name)}" ${selected.has(u.id) ? 'checked' : ''} class="size-4 accent-[#c0d0e7]"/></div>
+      <button type="button" data-profile="${u.id}" class="mt-4 block max-w-full truncate text-left font-semibold hover:underline">${escape(u.name)}</button><p class="truncate text-xs text-[#858b8e]">${escape(u.email)}</p><p class="mt-3 truncate text-[#bcc0c3]">${escape(u.company)}</p>
+      <div class="mt-4 flex items-center justify-between gap-2">${planBadge(u)}${statusBadge(u)}</div><div class="mt-4 flex justify-between border-t border-[#34373b] pt-3 text-xs text-[#92989d]"><span>${u.sessions} sessions</span><span>${escape(u.lastSeen)}</span></div></article>`).join('');
+    const selectedShown = shown.filter(u => selected.has(u.id)).length;
+    $('#select-all').checked = !!shown.length && selectedShown === shown.length;
+    $('#select-all').indeterminate = selectedShown > 0 && selectedShown < shown.length;
+    $('#select-all').disabled = !shown.length;
+    $('#selection-summary').textContent = selected.size ? `${selected.size} user${selected.size === 1 ? '' : 's'} selected (${selectedShown} visible)` : 'No users selected';
+    $('#clear-selection').classList.toggle('hidden',!selected.size);
+    updateOverview();
+  }
+  function updateOverview() {
+    const active = users.filter(u => u.status === 'Active').length;
+    const invited = users.filter(u => u.status === 'Invited').length;
+    $('#workspace-summary').textContent = `${users.length} demo customers across ${new Set(users.map(u => u.company)).size} companies · 4 plans · saved locally`;
+    const overview = $('[aria-labelledby="overview-heading"]');
+    overview.querySelector('p.text-\\[60px\\]').textContent = active;
+    overview.querySelector('p.text-\\[60px\\]').nextElementSibling.textContent = `${Math.round(active/users.length*100)}% of ${users.length} demo seats active`;
+    const articles = overview.querySelectorAll('article');
+    const planCard = articles[1];
+    ['Free','Pro','Team','Enterprise'].forEach((plan,i) => {
+      planCard.querySelectorAll('div.absolute')[i].querySelector('span').textContent = users.filter(u => u.plan === plan).length;
+    });
+    planCard.querySelector('p').textContent = ['Free','Pro','Team'].map(p => `${p} ${Math.round(users.filter(u => u.plan === p).length/users.length*100)}%`).join(' · ');
+    articles[2].querySelector('p').textContent = users.length;
+    articles[3].querySelector('p').textContent = invited;
+    articles[3].querySelector('div > span').textContent = `of ${users.length}`;
+    articles[3].lastElementChild.textContent = `${invited ? 1 : 0} expire soon`;
+    overview.querySelector('span.absolute.top-\\[19px\\]').lastChild.textContent = `${active} online now`;
+    overview.querySelector('span.absolute.bottom-\\[6px\\]').textContent = `+${Math.max(0,active-7)}`;
+    articles[2].querySelector('div > span').textContent = `+${Math.max(0,users.length-4)}`;
+  }
+  $$('#status-tabs button').forEach(b => b.addEventListener('click',() => {state.tab=b.textContent.trim();render();}));
+  $$('#view-toggle button').forEach((b,i) => b.addEventListener('click',() => {state.view=i===0?'table':'cards';render();}));
+  $('#user-search').addEventListener('input',e => {state.query=e.target.value;render();});
+  function resetFilters() {
+    Object.assign(state,{tab:'All users',query:'',plan:'',status:'',minSessions:0});
+    $('#user-search').value='';render();
+  }
+  $('#reset-filters').addEventListener('click',resetFilters);
+  $('#clear-selection').addEventListener('click',() => {selected.clear();render();});
+  $('#select-all').addEventListener('change',e => {
+    visibleUsers(users,state).forEach(u => e.target.checked ? selected.add(u.id) : selected.delete(u.id));render();
+  });
+  $('[aria-labelledby="all-users-heading"]').addEventListener('change',e => {
+    if (!e.target.matches('[data-user-id]')) return;
+    const id=Number(e.target.dataset.userId);
+    e.target.checked ? selected.add(id) : selected.delete(id);render();
+  });
+  $('[aria-labelledby="all-users-heading"]').addEventListener('click',e => {
+    const button = e.target.closest('[data-profile]');
+    if (!button) return;
+    const u=users.find(u => u.id===Number(button.dataset.profile));
+    openDialog('User details',`<p class="text-lg font-medium">${escape(u.name)}</p><p class="text-[#92989d]">${escape(u.email)}</p><dl class="mt-5 grid grid-cols-2 gap-3"><dt>Company</dt><dd>${escape(u.company)}</dd><dt>Plan</dt><dd>${u.plan}</dd><dt>Status</dt><dd>${statusLabel(u)}</dd><dt>Usage · 30d</dt><dd>${u.sessions} sessions</dd><dt>Last seen</dt><dd>${escape(u.lastSeen)}</dd></dl>`);
+  });
+  const options = (items,value,all) => (all ? `<option value="">${all}</option>` : '') + items.map(v => `<option value="${v}" ${v===value?'selected':''}>${v}</option>`).join('');
+  $('#filter-button').addEventListener('click',() => {
+    openDialog('Filter users',`<form id="filter-form" class="space-y-4"><p class="text-xs text-[#92989d]">Filters combine with the current status tab and search.</p><label class="block">Plan<select name="plan" class="${inputClass}">${options(plans,state.plan,'All plans')}</select></label><label class="block">Status<select name="status" class="${inputClass}">${options(statuses,state.status,'All statuses')}</select></label><label class="block">Minimum sessions<input name="minSessions" type="number" min="0" max="100000" step="1" required value="${state.minSessions}" class="${inputClass}"/></label><div class="flex justify-between gap-3 pt-2"><button id="reset-dialog-filters" type="button" class="${secondaryClass}">Reset all</button><button class="${actionClass}" type="submit">Apply filters</button></div></form>`);
+    $('#filter-form').addEventListener('submit',e => {
+      e.preventDefault();const values=new FormData(e.target);
+      Object.assign(state,{plan:values.get('plan'),status:values.get('status'),minSessions:Number(values.get('minSessions'))});
+      render();closeDialog();
+    });
+    $('#reset-dialog-filters').addEventListener('click',() => {resetFilters();closeDialog();});
+  });
+  $('#sort-button').addEventListener('click',() => {
+    const labels = {recent:'Last seen · newest first',oldest:'Last seen · oldest first',name:'Name · A to Z','name-desc':'Name · Z to A',usage:'Usage · highest first','usage-asc':'Usage · lowest first'};
+    openDialog('Sort users',`<form id="sort-form"><label class="block">Sort by<select name="sort" class="${inputClass}">${Object.entries(labels).map(([v,label])=>`<option value="${v}" ${state.sort===v?'selected':''}>${label}</option>`).join('')}</select></label><button type="submit" class="${actionClass} mt-5">Apply sorting</button></form>`);
+    $('#sort-form').addEventListener('submit',e => {e.preventDefault();state.sort=new FormData(e.target).get('sort');render();closeDialog();});
+  });
+  $('#invite-button').addEventListener('click',() => {
+    openDialog('Invite user',`<form id="invite-form" class="space-y-4"><p class="text-xs text-[#92989d]">Demo invitation: saved locally. No email will be sent.</p><label class="block">Full name<input name="name" autocomplete="name" required maxlength="80" class="${inputClass}"/></label><label class="block">Email<input name="email" type="email" autocomplete="email" required maxlength="254" class="${inputClass}"/></label><label class="block">Company<input name="company" maxlength="100" class="${inputClass}" placeholder="Personal"/></label><label class="block">Plan<select name="plan" class="${inputClass}">${options(plans,'Team')}</select></label><p id="invite-error" role="alert" class="text-xs text-[#f18e9a]"></p><div class="flex justify-end gap-3"><button id="cancel-invite" type="button" class="${secondaryClass}">Cancel</button><button type="submit" class="${actionClass}">Create invitation</button></div></form>`);
+    $('#cancel-invite').addEventListener('click',closeDialog);
+    $('#invite-form').addEventListener('submit',e => {
+      e.preventDefault();
+      try {
+        const u=createInvite(Object.fromEntries(new FormData(e.target)),users);
+        users.push(u);persist();resetFilters();state.tab='Invited';state.sort='recent';render();closeDialog();notify(`Demo invitation created for ${u.name}.`);
+      } catch(error) {$('#invite-error').textContent=error.message;}
+    });
+  });
+  function openReport() {
+    const shown = visibleUsers(users,state);
+    openDialog('Workspace report',`<p class="text-xs text-[#92989d]">Current filtered demo data · ${shown.length} users</p><dl class="mt-4 grid grid-cols-2 gap-3"><dt>Active</dt><dd>${shown.filter(u=>u.status==='Active').length}</dd><dt>Invited</dt><dd>${shown.filter(u=>u.status==='Invited').length}</dd><dt>Sessions · 30d</dt><dd>${shown.reduce((sum,u)=>sum+u.sessions,0)}</dd></dl><button id="export-csv" type="button" class="${actionClass} mt-6">Download CSV</button>`);
+    $('#export-csv').addEventListener('click',() => {
+      const csvCell=value => '"'+String(value).replace(/^[=+@\-\t\r]/,"'$&").replace(/"/g,'""')+'"';
+      const rows=[['Name','Email','Plan','Company','Status','Sessions','Last seen'],...shown.map(u=>[u.name,u.email,u.plan,u.company,u.status,u.sessions,u.lastSeen])];
+      const url=URL.createObjectURL(new Blob(['\uFEFF'+rows.map(row=>row.map(csvCell).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8;'}));
+      const a=document.createElement('a');a.href=url;a.download='maydin-users-demo.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);notify('Report downloaded.');
+    });
+  }
+  $('#report-button').addEventListener('click',e => {e.preventDefault();openReport();});
+  $('#notifications-button').addEventListener('click',() => {
+    openDialog('Notifications',`<ul class="space-y-4"><li class="rounded-lg bg-[#292b2f] p-3">Your November workspace report is ready.</li><li class="rounded-lg bg-[#292b2f] p-3">${users.filter(u=>u.status==='Invited').length} demo invitations are pending.</li><li class="rounded-lg bg-[#292b2f] p-3">Workspace storage is at 72%.</li></ul><button id="mark-read" type="button" class="${actionClass} mt-5">Mark all as read</button>`);
+    $('#mark-read').addEventListener('click',() => {
+      $('#notifications-button > span').classList.add('hidden');$('#notifications-button').setAttribute('aria-label','Notifications: no unread');closeDialog();notify('All notifications marked as read.');
+    });
+  });
+  const demoModules = {
+    projects:['Website redesign · In progress','Mobile onboarding · In review','Customer portal · Planned'],
+    analytics:['Monthly sessions: '+users.reduce((sum,u)=>sum+u.sessions,0),'Demo conversion rate: 8.2%','Demo retention: 92%'],
+    chat:['Sofia: The November report is ready.','Daniel: Thanks, I will review it today.'],
+    payments:['INV-2026-011 · $299 · Paid','INV-2026-012 · $149 · Pending'],
+    cards:['Visa ending 4242 · Default','Mastercard ending 5555 · Backup'],
+    staffs:['Alex Morgan · Workspace admin','Maya Putri · Support manager']
+  };
+  $$('#sidebar a').forEach(link => link.addEventListener('click',e => {
+    e.preventDefault();const module=link.getAttribute('href').slice(1);
+    if (module==='users' || module==='overview') {$(module==='users'?'[aria-labelledby="all-users-heading"]':'[aria-labelledby="overview-heading"]').scrollIntoView({behavior:motion.matches?'instant':'smooth',block:'start'});return;}
+    if (module==='reports') {openReport();return;}
+    if (module==='settings') {
+      openDialog('Workspace settings',`<p class="text-[#92989d]">Choose the user directory layout.</p><div class="mt-4 flex gap-3"><button id="settings-table" type="button" class="${secondaryClass}">Table view</button><button id="settings-cards" type="button" class="${secondaryClass}">Cards view</button></div>`);
+      ['table','cards'].forEach(view => $(`#settings-${view}`).addEventListener('click',()=>{state.view=view;render();closeDialog();}));return;
+    }
+    openDialog(module.charAt(0).toUpperCase()+module.slice(1),`<p class="mb-4 text-xs text-[#92989d]">Workspace demo</p><ul class="space-y-3">${(demoModules[module]||[]).map(item=>`<li class="rounded-lg border border-[#34373b] p-3">${escape(item)}</li>`).join('')}</ul>`);
+  }));
+  render();
+})();
+
+</script>
+</body>
+</html>

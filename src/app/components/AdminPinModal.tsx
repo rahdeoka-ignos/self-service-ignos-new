@@ -126,25 +126,25 @@ export function AdminPinModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[99999] bg-black/40 backdrop-blur-xs flex items-center justify-center p-4 select-none font-['Manrope',sans-serif] animate-in fade-in duration-150">
-      <div className="max-w-sm w-full bg-white border border-[#e5e5e5] rounded-3xl p-6 sm:p-8 shadow-2xl text-center space-y-6 text-[#171717]">
+    <div className="fixed inset-0 z-[99999] bg-black/70  flex items-center justify-center p-4 select-none font-['Inter',sans-serif] animate-in fade-in duration-150">
+      <div className="max-w-sm w-full bg-[var(--admin-card,#1c1f20)] border border-[var(--admin-border,#2a2d2f)] rounded-3xl p-6 sm:p-8 shadow-2xl text-center space-y-6 text-[var(--admin-text,#f4f4f5)]">
         {/* Top Header Row */}
-        <div className="flex items-center justify-between text-[#888]">
+        <div className="flex items-center justify-between text-[var(--admin-muted,#92989d)]">
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-lg text-neutral-400 hover:text-[#171717] hover:bg-neutral-100 transition-colors cursor-pointer"
+            className="p-1.5 rounded-lg text-[var(--admin-muted,#92989d)] hover:text-[var(--admin-text,#f4f4f5)] hover:bg-[var(--admin-raised,#292b2f)] transition-colors cursor-pointer"
             title="Batal / Kembali"
           >
             <ArrowLeft size={18} />
           </button>
-          <div className="inline-flex items-center px-2.5 py-1 rounded-full bg-neutral-100 border border-neutral-200 text-neutral-600 text-[11px] font-semibold tracking-wider uppercase">
+          <div className="inline-flex items-center px-2.5 py-1 rounded-full bg-[var(--admin-raised,#292b2f)] border border-[var(--admin-border-interactive,#34373b)] text-[var(--admin-secondary,#c3c7ca)] text-[12px] font-semibold tracking-wider uppercase">
             <span>Akses Staf Studio</span>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-lg text-neutral-400 hover:text-[#171717] hover:bg-neutral-100 transition-colors cursor-pointer"
+            className="p-1.5 rounded-lg text-[var(--admin-muted,#92989d)] hover:text-[var(--admin-text,#f4f4f5)] hover:bg-[var(--admin-raised,#292b2f)] transition-colors cursor-pointer"
             title="Tutup"
           >
             <X size={18} />
@@ -153,13 +153,13 @@ export function AdminPinModal({
 
         {/* Lock Icon & Title */}
         <div className="space-y-1.5">
-          <div className="w-14 h-14 mx-auto rounded-2xl bg-neutral-100 border border-neutral-200 flex items-center justify-center text-[#171717] shadow-2xs mb-2">
+          <div className="w-14 h-14 mx-auto rounded-2xl bg-[var(--admin-raised,#292b2f)] border border-[var(--admin-border-interactive,#34373b)] flex items-center justify-center text-[var(--admin-text,#f4f4f5)]  mb-2">
             <Lock size={24} strokeWidth={2} />
           </div>
-          <h2 className="text-xl font-bold text-[#171717] tracking-tight">
+          <h2 className="text-[18px] font-semibold text-[var(--admin-text,#f4f4f5)] tracking-tight">
             Masukkan PIN Admin
           </h2>
-          <p className="text-xs text-[#737373]">
+          <p className="text-xs text-[var(--admin-muted,#92989d)]">
             Ketik PIN 4-8 digit, lalu tekan Masuk.
           </p>
         </div>
@@ -174,8 +174,8 @@ export function AdminPinModal({
                   key={idx}
                   className={`w-3.5 h-3.5 rounded-full transition-all duration-150 ${
                     isFilled
-                      ? "bg-[#171717] scale-110 shadow-sm"
-                      : "border-2 border-neutral-300 bg-transparent"
+                      ? "bg-[#c0d0e7] scale-110 shadow-sm"
+                      : "border-2 border-[var(--admin-border-interactive,#34373b)] bg-transparent"
                   }`}
                 />
               );
@@ -184,14 +184,14 @@ export function AdminPinModal({
 
           {/* Feedback / Lockout message */}
           {errorMsg && (
-            <div className="mt-3 p-2 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium animate-in fade-in">
+            <div className="mt-3 p-2 rounded-lg bg-[var(--admin-alert,#3b2d3c)] border border-rose-200 text-[var(--admin-danger,#f18e9a)] text-xs font-medium animate-in fade-in">
               {errorMsg}
             </div>
           )}
 
           {isLockedOut && (
-            <div className="mt-3 p-2 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-xs font-medium inline-flex items-center gap-1.5">
-              <ShieldAlert size={14} className="text-amber-600" />
+            <div className="mt-3 p-2 rounded-lg bg-[var(--admin-alert,#3b2d3c)] border border-amber-200 text-[var(--admin-pending,#d7b8d6)] text-xs font-medium inline-flex items-center gap-1.5">
+              <ShieldAlert size={14} className="text-[var(--admin-pending,#d7b8d6)]" />
               <span>Sistem terkunci sementara ({lockoutTimer}s)</span>
             </div>
           )}
@@ -205,7 +205,7 @@ export function AdminPinModal({
               type="button"
               disabled={isVerifying || isLockedOut}
               onClick={() => handleKeyPress(digit)}
-              className="h-14 rounded-2xl bg-[#fafafa] hover:bg-neutral-100 active:bg-neutral-200 active:scale-95 border border-[#e5e5e5] text-[#171717] font-bold text-xl transition-all cursor-pointer shadow-2xs flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed"
+              className="h-14 rounded-2xl bg-[var(--admin-card,#1c1f20)] hover:bg-[var(--admin-raised,#292b2f)] active:bg-[var(--admin-raised,#292b2f)] active:scale-95 border border-[var(--admin-border,#2a2d2f)] text-[var(--admin-text,#f4f4f5)] font-bold text-xl transition-all cursor-pointer  flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed"
             >
               {digit}
             </button>
@@ -216,7 +216,7 @@ export function AdminPinModal({
             type="button"
             disabled={isVerifying || isLockedOut || pin.length === 0}
             onClick={handleClear}
-            className="h-14 rounded-2xl bg-white hover:bg-neutral-100 active:scale-95 border border-[#e5e5e5] text-neutral-400 hover:text-neutral-700 font-medium text-xs uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed"
+            className="h-14 rounded-2xl bg-[var(--admin-card,#1c1f20)] hover:bg-[var(--admin-raised,#292b2f)] active:scale-95 border border-[var(--admin-border,#2a2d2f)] text-[var(--admin-muted,#92989d)] hover:text-[var(--admin-secondary,#c3c7ca)] font-medium text-xs uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed"
           >
             Clear
           </button>
@@ -225,7 +225,7 @@ export function AdminPinModal({
             type="button"
             disabled={isVerifying || isLockedOut}
             onClick={() => handleKeyPress("0")}
-            className="h-14 rounded-2xl bg-[#fafafa] hover:bg-neutral-100 active:bg-neutral-200 active:scale-95 border border-[#e5e5e5] text-[#171717] font-bold text-xl transition-all cursor-pointer shadow-2xs flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed"
+            className="h-14 rounded-2xl bg-[var(--admin-card,#1c1f20)] hover:bg-[var(--admin-raised,#292b2f)] active:bg-[var(--admin-raised,#292b2f)] active:scale-95 border border-[var(--admin-border,#2a2d2f)] text-[var(--admin-text,#f4f4f5)] font-bold text-xl transition-all cursor-pointer  flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed"
           >
             0
           </button>
@@ -234,7 +234,7 @@ export function AdminPinModal({
             type="button"
             disabled={isVerifying || isLockedOut || pin.length === 0}
             onClick={handleDelete}
-            className="h-14 rounded-2xl bg-white hover:bg-neutral-100 active:scale-95 border border-[#e5e5e5] text-neutral-400 hover:text-neutral-700 transition-all cursor-pointer flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed"
+            className="h-14 rounded-2xl bg-[var(--admin-card,#1c1f20)] hover:bg-[var(--admin-raised,#292b2f)] active:scale-95 border border-[var(--admin-border,#2a2d2f)] text-[var(--admin-muted,#92989d)] hover:text-[var(--admin-secondary,#c3c7ca)] transition-all cursor-pointer flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed"
           >
             <Delete size={20} />
           </button>
@@ -245,7 +245,7 @@ export function AdminPinModal({
           {isVerifying ? "Memeriksa..." : "Masuk"}
         </button>
         {/* Footer Hint */}
-        <p className="text-[11px] text-neutral-400 leading-tight">
+        <p className="text-[12px] text-[var(--admin-muted,#92989d)] leading-tight">
           Hanya untuk pemilik dan staf kasir studio.
         </p>
       </div>

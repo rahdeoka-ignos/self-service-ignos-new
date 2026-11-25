@@ -89,10 +89,42 @@ test('publication failure rolls back both old gallery directories', async t => {
   const stagePhotos = path.join(f.storageDir, 'photos'), stageThumbs = path.join(f.storageDir, 'thumbs');
   fs.mkdirSync(stagePhotos); fs.mkdirSync(stageThumbs);
   fs.writeFileSync(path.join(stagePhotos, 'new.jpg'), f.jpeg);
-  const io = { ...fs, renameSync: (from, to) => { if (from === stageThumbs) throw new Error('simulated locked folder'); fs.renameSync(from, to); } };
+  fs.writeFileSync(path.join(stageThumbs, 'new.jpg'), f.jpeg);
+  const io = { ...fs, renameSync: (from, to) => { if (path.dirname(from) === stageThumbs) throw new Error('simulated locked file'); fs.renameSync(from, to); } };
   assert.throws(() => publishGallery({ ...f, stagePhotos, stageThumbs, backupDir: path.join(f.storageDir, 'backup'), io }), /dipulihkan/);
   assert.deepEqual(fs.readdirSync(f.photosDir), ['old.jpg']);
   assert.deepEqual(fs.readdirSync(f.thumbsDir), ['old.jpg']);
+});
+
+test('a photo briefly locked (antivirus scan) is retried instead of failing the import', async t => {
+  const f = await fixture(t);
+  const stagePhotos = path.join(f.storageDir, 'photos'), stageThumbs = path.join(f.storageDir, 'thumbs');
+  fs.mkdirSync(stagePhotos); fs.mkdirSync(stageThumbs);
+  fs.writeFileSync(path.join(stagePhotos, 'new.jpg'), f.jpeg);
+  fs.writeFileSync(path.join(stageThumbs, 'new.jpg'), f.jpeg);
+  let locks = 3;
+  const io = { ...fs, renameSync: (from, to) => {
+    if (from === path.join(stagePhotos, 'new.jpg') && locks-- > 0) throw Object.assign(new Error('EPERM: operation not permitted, rename'), { code: 'EPERM' });
+    fs.renameSync(from, to);
+  } };
+  publishGallery({ ...f, stagePhotos, stageThumbs, backupDir: path.join(f.storageDir, 'backup'), io, retryDelayMs: 1 });
+  assert.deepEqual(fs.readdirSync(f.photosDir), ['new.jpg']);
+});
+
+test('gallery is replaced even when the gallery folder itself cannot be renamed (open in Explorer)', async t => {
+  const f = await fixture(t);
+  const stagePhotos = path.join(f.storageDir, 'photos'), stageThumbs = path.join(f.storageDir, 'thumbs');
+  fs.mkdirSync(stagePhotos); fs.mkdirSync(stageThumbs);
+  fs.writeFileSync(path.join(stagePhotos, 'new.jpg'), f.jpeg);
+  fs.writeFileSync(path.join(stageThumbs, 'new.jpg'), f.jpeg);
+  const locked = new Set([f.photosDir, f.thumbsDir]);
+  const io = { ...fs, renameSync: (from, to) => { if (locked.has(from) || locked.has(to)) throw new Error('EPERM: operation not permitted, rename'); fs.renameSync(from, to); } };
+  const backupDir = path.join(f.storageDir, 'backup');
+  publishGallery({ ...f, stagePhotos, stageThumbs, backupDir, io });
+  assert.deepEqual(fs.readdirSync(f.photosDir), ['new.jpg']);
+  assert.deepEqual(fs.readdirSync(f.thumbsDir), ['new.jpg']);
+  assert.deepEqual(fs.readdirSync(path.join(backupDir, 'photos')), ['old.jpg']);
+  assert.deepEqual(fs.readdirSync(path.join(backupDir, 'thumbs')), ['old.jpg']);
 });
 
 test('USB imports exact confirmed identities including duplicate filenames in separate folders', async t => {
@@ -113,4 +145,27 @@ test('USB imports exact confirmed identities including duplicate filenames in se
   await f.importer.import({ scanId: scan.scanId, firstId: 'A/same.jpg', lastId: 'B/same.jpg' });
   assert.deepEqual(received.files.map(x => x.id), ['A/same.jpg', 'B/same.jpg']);
   assert.equal(new Set(fs.readdirSync(f.photosDir)).size, 2);
+});
+
+test('USB scan does not copy photos by itself; a large preview is copied once and reused', async t => {
+  let jpeg; const imports = [];
+  const files = Array.from({ length: 8 }, (_, i) => ({ id: `100_FUJI/DSCF000${i}.JPG`, name: `DSCF000${i}.JPG`, folderName: '100_FUJI',
+    capturedAt: `2026-01-01T10:0${i}:00`, size: 0 }));
+  const f = await fixture(t, async args => {
+    if (args[1] === 'scan') return { success: true, deviceName: 'test', storageName: 'card', files: files.map(x => ({ ...x, size: jpeg.length })) };
+    const manifest = JSON.parse(fs.readFileSync(args[args.indexOf('-ManifestPath') + 1], 'utf8'));
+    imports.push(manifest.files.map(x => x.id));
+    const dest = args[args.indexOf('-DestDir') + 1];
+    manifest.files.forEach(file => fs.writeFileSync(path.join(dest, file.destName), jpeg));
+    return { success: true, count: manifest.files.length };
+  });
+  jpeg = f.jpeg;
+  const scan = await f.importer.scan({ presetId: 'studio' });
+  await new Promise(r => setTimeout(r, 20));
+  assert.equal(imports.length, 0, 'the grid uses camera thumbnails; nothing is copied until asked');
+  const other = scan.candidates[2];
+  const [a, b] = await Promise.all([f.importer.preview(scan.scanId, other.id), f.importer.preview(scan.scanId, other.id)]);
+  assert.equal(a, b);
+  await f.importer.preview(scan.scanId, other.id);
+  assert.deepEqual(imports, [[other.id]]);
 });

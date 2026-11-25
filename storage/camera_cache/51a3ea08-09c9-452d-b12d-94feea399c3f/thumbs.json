@@ -1,0 +1,366 @@
+{
+  "deviceName": "X-S10",
+  "storageName": "External Memory",
+  "files": [
+    {
+      "id": "280_FUJI/DSCF0023.JPG",
+      "name": "DSCF0023.JPG",
+      "folderName": "280_FUJI",
+      "destName": "thumb-1.jpg"
+    },
+    {
+      "id": "280_FUJI/DSCF0024.JPG",
+      "name": "DSCF0024.JPG",
+      "folderName": "280_FUJI",
+      "destName": "thumb-2.jpg"
+    },
+    {
+      "id": "280_FUJI/DSCF0025.JPG",
+      "name": "DSCF0025.JPG",
+      "folderName": "280_FUJI",
+      "destName": "thumb-3.jpg"
+    },
+    {
+      "id": "280_FUJI/DSCF0026.JPG",
+      "name": "DSCF0026.JPG",
+      "folderName": "280_FUJI",
+      "destName": "thumb-4.jpg"
+    },
+    {
+      "id": "280_FUJI/DSCF0027.JPG",
+      "name": "DSCF0027.JPG",
+      "folderName": "280_FUJI",
+      "destName": "thumb-5.jpg"
+    },
+    {
+      "id": "280_FUJI/DSCF0028.JPG",
+      "name": "DSCF0028.JPG",
+      "folderName": "280_FUJI",
+      "destName": "thumb-6.jpg"
+    },
+    {
+      "id": "280_FUJI/DSCF0029.JPG",
+      "name": "DSCF0029.JPG",
+      "folderName": "280_FUJI",
+      "destName": "thumb-7.jpg"
+    },
+    {
+      "id": "280_FUJI/DSCF0030.JPG",
+      "name": "DSCF0030.JPG",
+      "folderName": "280_FUJI",
+      "destName": "thumb-8.jpg"
+    },
+    {
+      "id": "280_FUJI/DSCF0031.JPG",
+      "name": "DSCF0031.JPG",
+      "folderName": "280_FUJI",
+      "destName": "thumb-9.jpg"
+    },
+    {
+      "id": "280_FUJI/DSCF0032.JPG",
+      "name": "DSCF0032.JPG",
+      "folderName": "280_FUJI",
+      "destName": "thumb-10.jpg"
+    },
+    {
+      "id": "280_FUJI/DSCF0033.JPG",
+      "name": "DSCF0033.JPG",
+      "folderName": "280_FUJI",
+      "destName": "thumb-11.jpg"
+    },
+    {
+      "id": "280_FUJI/DSCF0034.JPG",
+      "name": "DSCF0034.JPG",
+      "folderName": "280_FUJI",
+      "destName": "thumb-12.jpg"
+    },
+    {
+      "id": "280_FUJI/DSCF0035.JPG",
+      "name": "DSCF0035.JPG",
+      "folderName": "280_FUJI",
+      "destName": "thumb-13.jpg"
+    },
+    {
+      "id": "280_FUJI/DSCF0036.JPG",
+      "name": "DSCF0036.JPG",
+      "folderName": "280_FUJI",
+      "destName": "thumb-14.jpg"
+    },
+    {
+      "id": "280_FUJI/DSCF0037.JPG",
+      "name": "DSCF0037.JPG",
+      "folderName": "280_FUJI",
+      "destName": "thumb-15.jpg"
+    },
+    {
+      "id": "280_FUJI/DSCF0038.JPG",
+      "name": "DSCF0038.JPG",
+      "folderName": "280_FUJI",
+      "destName": "thumb-16.jpg"
+    },
+    {
+      "id": "280_FUJI/DSCF0039.JPG",
+      "name": "DSCF0039.JPG",
+      "folderName": "280_FUJI",
+      "destName": "thumb-17.jpg"
+    },
+    {
+      "id": "280_FUJI/DSCF0040.JPG",
+      "name": "DSCF0040.JPG",
+      "folderName": "280_FUJI",
+      "destName": "thumb-18.jpg"
+    },
+    {
+      "id": "280_FUJI/DSCF0041.JPG",
+      "name": "DSCF0041.JPG",
+      "folderName": "280_FUJI",
+      "destName": "thumb-19.jpg"
+    },
+    {
+      "id": "280_FUJI/DSCF0042.JPG",
+      "name": "DSCF0042.JPG",
+      "folderName": "280_FUJI",
+      "destName": "thumb-20.jpg"
+    },
+    {
+      "id": "280_FUJI/DSCF0043.JPG",
+      "name": "DSCF0043.JPG",
+      "folderName": "280_FUJI",
+      "destName": "thumb-21.jpg"
+    },
+    {
+      "id": "280_FUJI/DSCF0044.JPG",
+      "name": "DSCF0044.JPG",
+      "folderName": "280_FUJI",
+      "destName": "thumb-22.jpg"
+    },
+    {
+      "id": "280_FUJI/DSCF0216.JPG",
+      "name": "DSCF0216.JPG",
+      "folderName": "280_FUJI",
+      "destName": "thumb-23.jpg"
+    },
+    {
+      "id": "280_FUJI/DSCF0217.JPG",
+      "name": "DSCF0217.JPG",
+      "folderName": "280_FUJI",
+      "destName": "thumb-24.jpg"
+    },
+    {
+      "id": "280_FUJI/DSCF0218.JPG",
+      "name": "DSCF0218.JPG",
+      "folderName": "280_FUJI",
+      "destName": "thumb-25.jpg"
+    },
+    {
+      "id": "280_FUJI/DSCF0219.JPG",
+      "name": "DSCF0219.JPG",
+      "folderName": "280_FUJI",
+      "destName": "thumb-26.jpg"
+    },
+    {
+      "id": "280_FUJI/DSCF0220.JPG",
+      "name": "DSCF0220.JPG",
+      "folderName": "280_FUJI",
+      "destName": "thumb-27.jpg"
+    },
+    {
+      "id": "280_FUJI/DSCF0221.JPG",
+      "name": "DSCF0221.JPG",
+      "folderName": "280_FUJI",
+      "destName": "thumb-28.jpg"
+    },
+    {
+      "id": "280_FUJI/DSCF0222.JPG",
+      "name": "DSCF0222.JPG",
+      "folderName": "280_FUJI",
+      "destName": "thumb-29.jpg"
+    },
+    {
+      "id": "280_FUJI/DSCF0223.JPG",
+      "name": "DSCF0223.JPG",
+      "folderName": "280_FUJI",
+      "destName": "thumb-30.jpg"
+    },
+    {
+      "id": "280_FUJI/DSCF0224.JPG",
+      "name": "DSCF0224.JPG",
+      "folderName": "280_FUJI",
+      "destName": "thumb-31.jpg"
+    },
+    {
+      "id": "280_FUJI/DSCF0225.JPG",
+      "name": "DSCF0225.JPG",
+      "folderName": "280_FUJI",
+      "destName": "thumb-32.jpg"
+    },
+    {
+      "id": "280_FUJI/DSCF0226.JPG",
+      "name": "DSCF0226.JPG",
+      "folderName": "280_FUJI",
+      "destName": "thumb-33.jpg"
+    },
+    {
+      "id": "280_FUJI/DSCF0227.JPG",
+      "name": "DSCF0227.JPG",
+      "folderName": "280_FUJI",
+      "destName": "thumb-34.jpg"
+    },
+    {
+      "id": "280_FUJI/DSCF0228.JPG",
+      "name": "DSCF0228.JPG",
+      "folderName": "280_FUJI",
+      "destName": "thumb-35.jpg"
+    },
+    {
+      "id": "280_FUJI/DSCF0229.JPG",
+      "name": "DSCF0229.JPG",
+      "folderName": "280_FUJI",
+      "destName": "thumb-36.jpg"
+    },
+    {
+      "id": "280_FUJI/DSCF0230.JPG",
+      "name": "DSCF0230.JPG",
+      "folderName": "280_FUJI",
+      "destName": "thumb-37.jpg"
+    },
+    {
+      "id": "280_FUJI/DSCF0231.JPG",
+      "name": "DSCF0231.JPG",
+      "folderName": "280_FUJI",
+      "destName": "thumb-38.jpg"
+    },
+    {
+      "id": "280_FUJI/DSCF0232.JPG",
+      "name": "DSCF0232.JPG",
+      "folderName": "280_FUJI",
+      "destName": "thumb-39.jpg"
+    },
+    {
+      "id": "280_FUJI/DSCF0233.JPG",
+      "name": "DSCF0233.JPG",
+      "folderName": "280_FUJI",
+      "destName": "thumb-40.jpg"
+    },
+    {
+      "id": "280_FUJI/DSCF0234.JPG",
+      "name": "DSCF0234.JPG",
+      "folderName": "280_FUJI",
+      "destName": "thumb-41.jpg"
+    },
+    {
+      "id": "280_FUJI/DSCF0235.JPG",
+      "name": "DSCF0235.JPG",
+      "folderName": "280_FUJI",
+      "destName": "thumb-42.jpg"
+    },
+    {
+      "id": "280_FUJI/DSCF0236.JPG",
+      "name": "DSCF0236.JPG",
+      "folderName": "280_FUJI",
+      "destName": "thumb-43.jpg"
+    },
+    {
+      "id": "280_FUJI/DSCF0237.JPG",
+      "name": "DSCF0237.JPG",
+      "folderName": "280_FUJI",
+      "destName": "thumb-44.jpg"
+    },
+    {
+      "id": "280_FUJI/DSCF0238.JPG",
+      "name": "DSCF0238.JPG",
+      "folderName": "280_FUJI",
+      "destName": "thumb-45.jpg"
+    },
+    {
+      "id": "280_FUJI/DSCF0239.JPG",
+      "name": "DSCF0239.JPG",
+      "folderName": "280_FUJI",
+      "destName": "thumb-46.jpg"
+    },
+    {
+      "id": "280_FUJI/DSCF0240.JPG",
+      "name": "DSCF0240.JPG",
+      "folderName": "280_FUJI",
+      "destName": "thumb-47.jpg"
+    },
+    {
+      "id": "280_FUJI/DSCF0241.JPG",
+      "name": "DSCF0241.JPG",
+      "folderName": "280_FUJI",
+      "destName": "thumb-48.jpg"
+    },
+    {
+      "id": "280_FUJI/DSCF0242.JPG",
+      "name": "DSCF0242.JPG",
+      "folderName": "280_FUJI",
+      "destName": "thumb-49.jpg"
+    },
+    {
+      "id": "280_FUJI/DSCF0243.JPG",
+      "name": "DSCF0243.JPG",
+      "folderName": "280_FUJI",
+      "destName": "thumb-50.jpg"
+    },
+    {
+      "id": "280_FUJI/DSCF0244.JPG",
+      "name": "DSCF0244.JPG",
+      "folderName": "280_FUJI",
+      "destName": "thumb-51.jpg"
+    },
+    {
+      "id": "280_FUJI/DSCF0245.JPG",
+      "name": "DSCF0245.JPG",
+      "folderName": "280_FUJI",
+      "destName": "thumb-52.jpg"
+    },
+    {
+      "id": "280_FUJI/DSCF0246.JPG",
+      "name": "DSCF0246.JPG",
+      "folderName": "280_FUJI",
+      "destName": "thumb-53.jpg"
+    },
+    {
+      "id": "280_FUJI/DSCF0247.JPG",
+      "name": "DSCF0247.JPG",
+      "folderName": "280_FUJI",
+      "destName": "thumb-54.jpg"
+    },
+    {
+      "id": "280_FUJI/DSCF0248.JPG",
+      "name": "DSCF0248.JPG",
+      "folderName": "280_FUJI",
+      "destName": "thumb-55.jpg"
+    },
+    {
+      "id": "280_FUJI/DSCF0249.JPG",
+      "name": "DSCF0249.JPG",
+      "folderName": "280_FUJI",
+      "destName": "thumb-56.jpg"
+    },
+    {
+      "id": "280_FUJI/DSCF0250.JPG",
+      "name": "DSCF0250.JPG",
+      "folderName": "280_FUJI",
+      "destName": "thumb-57.jpg"
+    },
+    {
+      "id": "280_FUJI/DSCF0251.JPG",
+      "name": "DSCF0251.JPG",
+      "folderName": "280_FUJI",
+      "destName": "thumb-58.jpg"
+    },
+    {
+      "id": "280_FUJI/DSCF0252.JPG",
+      "name": "DSCF0252.JPG",
+      "folderName": "280_FUJI",
+      "destName": "thumb-59.jpg"
+    },
+    {
+      "id": "280_FUJI/DSCF0253.JPG",
+      "name": "DSCF0253.JPG",
+      "folderName": "280_FUJI",
+      "destName": "thumb-60.jpg"
+    }
+  ]
+}

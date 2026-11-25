@@ -91,28 +91,28 @@ _Terima kasih telah berfoto bersama kami di ${receiptData.studioName || "IGNOS S
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
-      <div className="bg-white rounded-xl max-w-xl w-full max-h-[92vh] flex flex-col shadow-2xl border border-[#e5e5e5] overflow-hidden">
+      <div className="bg-[var(--admin-card,#1c1f20)] rounded-xl max-w-xl w-full max-h-[92vh] flex flex-col shadow-2xl border border-[var(--admin-border-interactive,#34373b)] overflow-hidden">
         {/* Modal Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-[#f0f0f0]">
+        <div className="flex items-center justify-between px-6 py-4  border-[#f0f0f0]">
           <div>
-            <span className="text-[10px] tracking-[0.14em] text-[#999] uppercase font-semibold">
+            <span className="text-[12px] tracking-[0.14em] text-[#999] uppercase font-semibold">
               E-Receipt Digital Berhasil Diterbitkan
             </span>
-            <h2 className="text-[17px] font-semibold text-[#171717]">
+            <h2 className="text-[18px] font-semibold text-[var(--admin-text,#f4f4f5)]">
               {receiptData.invoiceNumber} — {receiptData.customerName}
             </h2>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-[#888] hover:text-[#171717] hover:bg-[#f5f5f5] transition-colors cursor-pointer"
+            className="w-8 h-8 rounded-lg flex items-center justify-center text-[var(--admin-muted,#92989d)] hover:text-[var(--admin-text,#f4f4f5)] hover:bg-[var(--admin-raised,#292b2f)] transition-colors cursor-pointer"
           >
             <X size={16} />
           </button>
         </div>
 
         {/* Modal Body / E-Receipt Paper Preview with generous breathing room */}
-        <div className="flex-1 overflow-y-auto p-6 sm:p-8 bg-[#f7f7f8] flex justify-center">
+        <div className="flex-1 overflow-y-auto p-6 sm:p-8 bg-[var(--admin-canvas,#111114)] flex justify-center">
           <div className="w-full max-w-[420px] bg-white rounded-xl border border-[#e5e5e5] p-7 sm:p-8 shadow-sm space-y-6 font-sans text-[#171717]">
             {/* Studio Header */}
             <div className="text-center space-y-1.5">
@@ -247,11 +247,11 @@ _Terima kasih telah berfoto bersama kami di ${receiptData.studioName || "IGNOS S
             </div>
 
             {/* Footer note */}
-            <div className="text-center pt-2 space-y-1.5 text-[11px] text-[#888]">
+            <div className="text-center pt-2 space-y-1.5 text-[12px] text-[var(--admin-muted,#92989d)]">
               <p className="font-semibold text-[#333]">{receiptData.footerNote || "Terima kasih telah berfoto bersama kami!"}</p>
               <p className="text-[10.5px]">Simpan nota digital ini sebagai bukti pemesanan & pengambilan foto.</p>
               {receiptData.studioInstagram && (
-                <p className="text-[10.5px] text-[#666]">
+                <p className="text-[10.5px] text-[var(--admin-secondary,#c3c7ca)]">
                   {formatContactIg(receiptData.studioInstagram)}
                 </p>
               )}
@@ -260,11 +260,11 @@ _Terima kasih telah berfoto bersama kami di ${receiptData.studioName || "IGNOS S
         </div>
 
         {/* Modal Actions */}
-        <div className="p-4 px-6 bg-white border-t border-[#f0f0f0] flex flex-wrap items-center justify-between gap-3">
+        <div className="p-4 px-6 bg-[var(--admin-card,#1c1f20)]  border-[#f0f0f0] flex flex-wrap items-center justify-between gap-3">
           <button
             type="button"
             onClick={onNewTransaction}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 text-[12px] font-medium text-[#666] hover:text-[#171717] hover:bg-[#f5f5f5] rounded-md transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 text-[12px] font-medium text-[var(--admin-secondary,#c3c7ca)] hover:text-[var(--admin-text,#f4f4f5)] hover:bg-[var(--admin-raised,#292b2f)] rounded-md transition-colors cursor-pointer"
           >
             <RotateCcw size={14} />
             <span>Transaksi Baru</span>
@@ -276,7 +276,7 @@ _Terima kasih telah berfoto bersama kami di ${receiptData.studioName || "IGNOS S
                 href={blobUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 text-[12px] font-medium text-[#444] hover:text-[#171717] bg-white border border-[#e5e5e5] hover:bg-[#f7f7f7] rounded-md transition-colors"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 text-[12px] font-medium text-[#444] hover:text-[var(--admin-text,#f4f4f5)] bg-[var(--admin-card,#1c1f20)] border border-[var(--admin-border-interactive,#34373b)] hover:bg-[#f7f7f7] rounded-md transition-colors"
                 title="Buka PDF di tab browser baru"
               >
                 <ExternalLink size={13} />
@@ -296,7 +296,7 @@ _Terima kasih telah berfoto bersama kami di ${receiptData.studioName || "IGNOS S
             <button
               type="button"
               onClick={onDownload}
-              className="inline-flex items-center gap-1.5 px-4 py-2 text-[12px] font-medium bg-[#171717] text-white hover:bg-black rounded-md transition-colors cursor-pointer shadow-xs"
+              className="inline-flex items-center gap-1.5 px-4 py-2 text-[12px] font-medium bg-[#c0d0e7] text-[#111b23] hover:bg-[#d2def0] rounded-md transition-colors cursor-pointer shadow-xs"
             >
               <Download size={13} />
               <span>Unduh PDF E-Receipt</span>

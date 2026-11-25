@@ -1,33 +1,40 @@
 {
-  "selectedPreset": "studio",
+  "selectedPreset": "custom",
   "presets": {
     "studio": {
       "id": "studio",
       "name": "Foto Studio (Fujifilm X-S10)",
       "path": "This PC\\X-S10\\External Memory\\DCIM",
       "defaultMinutes": 30,
-      "isConnected": true
+      "isConnected": false,
+      "detectedFolders": []
     },
     "fotobox": {
       "id": "fotobox",
       "name": "Fotobox (Card Reader E:)",
       "path": "E:\\DCIM",
       "defaultMinutes": 30,
-      "isConnected": false
+      "isConnected": false,
+      "detectedFolders": []
     },
     "custom": {
       "id": "custom",
       "name": "Folder Kustom",
-      "path": "This PC\\X-S10\\External Memory\\DCIM",
+      "path": "D:\\DCIM\\280_FUJI",
       "defaultMinutes": 30,
-      "isConnected": true
+      "isConnected": false,
+      "detectedFolders": []
     }
   },
   "lastImport": {
-    "timestamp": "2026-11-01T09:31:32.715Z",
-    "preset": "studio",
-    "count": 167,
-    "bytes": 0,
-    "formattedSize": "167 Foto"
+    "timestamp": "2026-11-25T11:42:08.385Z",
+    "preset": "custom",
+    "count": 81,
+    "bytes": 346484772,
+    "formattedSize": "330.4 MB",
+    "firstFile": "DSCF0181.JPG",
+    "lastFile": "DSCF0261.JPG",
+    "earliestTime": "10/11/2020, 03.44.03",
+    "latestTime": "10/11/2020, 04.14.40"
   }
 }

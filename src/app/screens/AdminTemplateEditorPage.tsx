@@ -1587,9 +1587,9 @@ export function AdminTemplateEditorPage() {
         <div className="p-8 text-center py-24">
           <RefreshCw
             size={32}
-            className="animate-spin mx-auto text-black mb-3"
+            className="animate-spin mx-auto text-[var(--admin-accent-text,#c0d0e7)] mb-3"
           />
-          <p className="font-bold text-gray-600">
+          <p className="font-bold text-[var(--admin-secondary,#c3c7ca)]">
             Memuat data template editor...
           </p>
         </div>
@@ -1601,19 +1601,19 @@ export function AdminTemplateEditorPage() {
     <AdminLayout>
       <div className="w-full p-6 md:p-8 space-y-6 min-w-0">
         {/* ── TOP NAVIGATION & HEADER ── */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-zinc-200">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-[var(--admin-border-interactive,#34373b)]">
           <div>
             <button
               onClick={() => navigate("/admin/templates")}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-zinc-200 rounded-lg font-medium text-xs bg-white text-zinc-700 hover:bg-zinc-50 hover:text-zinc-950 transition-colors mb-2.5 cursor-pointer shadow-xs"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-[var(--admin-border-interactive,#34373b)] rounded-lg font-medium text-xs bg-[var(--admin-card,#1c1f20)] text-[var(--admin-secondary,#c3c7ca)] hover:bg-[var(--admin-raised,#292b2f)] hover:text-[var(--admin-text,#f4f4f5)] transition-colors mb-2.5 cursor-pointer "
             >
               <ArrowLeft size={13} />
               <span>Kembali ke Daftar Template</span>
             </button>
-            <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-zinc-950 leading-tight">
+            <h1 className="text-[28px] md:text-[30px] font-semibold tracking-tight text-[var(--admin-text,#f4f4f5)] leading-tight">
               {isEdit ? `Edit Template: ${name}` : "Tambah Template Baru"}
             </h1>
-            <p className="text-zinc-500 text-xs md:text-sm mt-0.5">
+            <p className="text-[var(--admin-muted,#92989d)] text-xs md:text-sm mt-0.5">
               {isEdit
                 ? "Perbarui tata letak, koordinat custom slot, atau ganti file gambar template."
                 : "Buat template foto baru lengkap dengan pengaturan layout bawaan atau custom slot."}
@@ -1623,14 +1623,14 @@ export function AdminTemplateEditorPage() {
           <div className="flex items-center gap-2.5 flex-wrap shrink-0">
             <button
               onClick={() => navigate("/admin/templates")}
-              className="px-3.5 py-2 bg-white text-zinc-700 font-medium border border-zinc-200 rounded-lg hover:bg-zinc-50 hover:text-zinc-950 transition-colors cursor-pointer text-xs shadow-xs"
+              className="px-3.5 py-2 bg-[var(--admin-card,#1c1f20)] text-[var(--admin-secondary,#c3c7ca)] font-medium border border-[var(--admin-border-interactive,#34373b)] rounded-lg hover:bg-[var(--admin-raised,#292b2f)] hover:text-[var(--admin-text,#f4f4f5)] transition-colors cursor-pointer text-xs "
             >
               Batal
             </button>
             <button
               onClick={handleSave}
               disabled={saving}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-zinc-900 text-white font-medium rounded-lg hover:bg-black transition-colors text-xs shadow-xs cursor-pointer disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#c0d0e7] text-[#111b23] font-medium rounded-lg hover:bg-[#d2def0] transition-colors text-xs  cursor-pointer disabled:opacity-50"
             >
               <Save size={14} />
               <span>
@@ -1647,19 +1647,19 @@ export function AdminTemplateEditorPage() {
         {/* ── SECTION 1: INFORMASI TEMPLATE & GAMBAR ── */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
           {/* Card: Konfigurasi Dasar */}
-          <div className="lg:col-span-6 bg-white border border-zinc-200 rounded-xl p-5 shadow-xs space-y-4">
-            <h2 className="text-sm font-semibold text-zinc-950 flex items-center gap-2 border-b border-zinc-100 pb-3">
+          <div className="lg:col-span-6 bg-[var(--admin-card,#1c1f20)] border border-[var(--admin-border-interactive,#34373b)] rounded-xl p-5  space-y-4">
+            <h2 className="text-[16px] font-semibold text-[var(--admin-text,#f4f4f5)] flex items-center gap-2  border-[var(--admin-border-interactive,#34373b)] pb-3">
               <Layers size={16} />
               <span>Informasi & Pengaturan Layout</span>
             </h2>
 
             {/* Nama Template */}
             <div>
-              <label className="text-[11px] font-medium uppercase tracking-wider text-zinc-500 block mb-1">
+              <label className="text-[12px] font-medium uppercase tracking-wider text-[var(--admin-muted,#92989d)] block mb-1">
                 Nama Template {!isEdit && "*"}
               </label>
               {isEdit ? (
-                <div className="px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-lg font-mono font-medium text-xs text-zinc-800">
+                <div className="px-3 py-2 bg-[var(--admin-card,#1c1f20)] border border-[var(--admin-border-interactive,#34373b)] rounded-lg font-mono font-medium text-xs text-[var(--admin-text,#f4f4f5)]">
                   {name}
                 </div>
               ) : (
@@ -1670,10 +1670,10 @@ export function AdminTemplateEditorPage() {
                     setName(e.target.value.toLowerCase().replace(/\s+/g, "-"))
                   }
                   placeholder="contoh: vintage-love, summer-vibe"
-                  className="w-full px-3 py-2 border border-zinc-200 rounded-lg text-xs font-medium outline-none bg-white focus:border-zinc-400 placeholder:text-zinc-400"
+                  className="w-full px-3 py-2 border border-[var(--admin-border-interactive,#34373b)] rounded-lg text-xs font-medium outline-none bg-[var(--admin-canvas,#111114)] focus:border-[var(--admin-border-interactive,#34373b)] placeholder:text-[var(--admin-muted,#92989d)]"
                 />
               )}
-              <p className="text-[11px] text-zinc-400 mt-1">
+              <p className="text-[12px] text-[var(--admin-muted,#92989d)] mt-1">
                 Digunakan sebagai nama folder di server (huruf kecil & tanda
                 hubung).
               </p>
@@ -1682,7 +1682,7 @@ export function AdminTemplateEditorPage() {
             {/* Kategori */}
             {!isEdit && (
               <div>
-                <label className="text-[11px] font-medium uppercase tracking-wider text-zinc-500 block mb-1">
+                <label className="text-[12px] font-medium uppercase tracking-wider text-[var(--admin-muted,#92989d)] block mb-1">
                   Kategori Template *
                 </label>
                 <select
@@ -1695,7 +1695,7 @@ export function AdminTemplateEditorPage() {
                       setCategory(e.target.value);
                     }
                   }}
-                  className="w-full border border-zinc-200 rounded-lg px-3 py-2 text-xs font-medium outline-none bg-white cursor-pointer focus:border-zinc-400"
+                  className="w-full border border-[var(--admin-border-interactive,#34373b)] rounded-lg px-3 py-2 text-xs font-medium outline-none bg-[var(--admin-canvas,#111114)] cursor-pointer focus:border-[var(--admin-border-interactive,#34373b)]"
                 >
                   {categories.map((c) => (
                     <option key={c.id} value={c.id}>
@@ -1706,9 +1706,9 @@ export function AdminTemplateEditorPage() {
                 </select>
 
                 {creatingCategory && (
-                  <div className="mt-2.5 grid grid-cols-2 gap-2.5 p-3 bg-zinc-50 border border-dashed border-zinc-300 rounded-lg">
+                  <div className="mt-2.5 grid grid-cols-2 gap-2.5 p-3 bg-[var(--admin-card,#1c1f20)] border border-dashed border-[var(--admin-border-interactive,#34373b)] rounded-lg">
                     <div>
-                      <span className="text-[10px] font-medium text-zinc-400 uppercase">
+                      <span className="text-[12px] font-medium text-[var(--admin-muted,#92989d)] uppercase">
                         ID Kategori
                       </span>
                       <input
@@ -1720,11 +1720,11 @@ export function AdminTemplateEditorPage() {
                             e.target.value.toLowerCase().replace(/\s+/g, "-"),
                           )
                         }
-                        className="w-full border border-zinc-200 rounded-md px-2.5 py-1.5 text-xs font-medium bg-white outline-none focus:border-zinc-400"
+                        className="w-full border border-[var(--admin-border-interactive,#34373b)] rounded-md px-2.5 py-1.5 text-xs font-medium bg-[var(--admin-canvas,#111114)] outline-none focus:border-[var(--admin-border-interactive,#34373b)]"
                       />
                     </div>
                     <div>
-                      <span className="text-[10px] font-medium text-zinc-400 uppercase">
+                      <span className="text-[12px] font-medium text-[var(--admin-muted,#92989d)] uppercase">
                         Nama Tampilan
                       </span>
                       <input
@@ -1732,7 +1732,7 @@ export function AdminTemplateEditorPage() {
                         placeholder="misal: Graduation 2026"
                         value={newCategoryName}
                         onChange={(e) => setNewCategoryName(e.target.value)}
-                        className="w-full border border-zinc-200 rounded-md px-2.5 py-1.5 text-xs font-medium bg-white outline-none focus:border-zinc-400"
+                        className="w-full border border-[var(--admin-border-interactive,#34373b)] rounded-md px-2.5 py-1.5 text-xs font-medium bg-[var(--admin-canvas,#111114)] outline-none focus:border-[var(--admin-border-interactive,#34373b)]"
                       />
                     </div>
                   </div>
@@ -1742,7 +1742,7 @@ export function AdminTemplateEditorPage() {
 
             {/* Tipe Layout */}
             <div>
-              <label className="text-[11px] font-medium uppercase tracking-wider text-zinc-500 block mb-1">
+              <label className="text-[12px] font-medium uppercase tracking-wider text-[var(--admin-muted,#92989d)] block mb-1">
                 Tipe Layout Foto *
               </label>
               <select
@@ -1754,7 +1754,7 @@ export function AdminTemplateEditorPage() {
                     setSlots([]);
                   }
                 }}
-                className="w-full border border-zinc-200 rounded-lg px-3 py-2 text-xs font-medium outline-none bg-white cursor-pointer focus:border-zinc-400"
+                className="w-full border border-[var(--admin-border-interactive,#34373b)] rounded-lg px-3 py-2 text-xs font-medium outline-none bg-[var(--admin-canvas,#111114)] cursor-pointer focus:border-[var(--admin-border-interactive,#34373b)]"
               >
                 {LAYOUT_OPTIONS.map((o) => (
                   <option key={o.value} value={o.value}>
@@ -1762,7 +1762,7 @@ export function AdminTemplateEditorPage() {
                   </option>
                 ))}
               </select>
-              <p className="text-[11px] text-zinc-400 mt-1">
+              <p className="text-[12px] text-[var(--admin-muted,#92989d)] mt-1">
                 Pilih <strong>Custom (Atur Sendiri)</strong> untuk mengatur
                 posisi, ukuran, dan jumlah slot foto secara bebas.
               </p>
@@ -1770,20 +1770,20 @@ export function AdminTemplateEditorPage() {
           </div>
 
           {/* Card: Upload Gambar */}
-          <div className="lg:col-span-6 bg-white border border-zinc-200 rounded-xl p-5 shadow-xs space-y-4">
-            <h2 className="text-sm font-semibold text-zinc-950 flex items-center gap-2 border-b border-zinc-100 pb-3">
+          <div className="lg:col-span-6 bg-[var(--admin-card,#1c1f20)] border border-[var(--admin-border-interactive,#34373b)] rounded-xl p-5  space-y-4">
+            <h2 className="text-[16px] font-semibold text-[var(--admin-text,#f4f4f5)] flex items-center gap-2  border-[var(--admin-border-interactive,#34373b)] pb-3">
               <Upload size={16} />
               <span>File Gambar Template (4R - 2400×3600px)</span>
             </h2>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {/* Background */}
-              <div className="border border-zinc-200 rounded-xl p-3 bg-zinc-50/50 flex flex-col justify-between">
+              <div className="border border-[var(--admin-border-interactive,#34373b)] rounded-xl p-3 bg-[var(--admin-card,#1c1f20)]/50 flex flex-col justify-between">
                 <div>
-                  <span className="text-xs font-medium text-zinc-900 block mb-0.5">
+                  <span className="text-xs font-medium text-[var(--admin-text,#f4f4f5)] block mb-0.5">
                     Background {!isEdit && "*"}
                   </span>
-                  <p className="text-[10px] text-zinc-400 mb-2">
+                  <p className="text-[12px] text-[var(--admin-muted,#92989d)] mb-2">
                     background.png
                   </p>
                   <input
@@ -1792,31 +1792,31 @@ export function AdminTemplateEditorPage() {
                     onChange={(e) =>
                       setBackgroundFile(e.target.files?.[0] || null)
                     }
-                    className="text-[11px] file:mr-2 file:py-1 file:px-2 file:rounded-md file:border file:border-zinc-200 file:text-[10px] file:font-medium file:bg-white file:text-zinc-700 hover:file:bg-zinc-50 cursor-pointer w-full text-zinc-500"
+                    className="text-[12px] file:mr-2 file:py-1 file:px-2 file:rounded-md file:border file:border-[var(--admin-border-interactive,#34373b)] file:text-[12px] file:font-medium file:bg-[var(--admin-canvas,#111114)] file:text-[var(--admin-secondary,#c3c7ca)] hover:file:bg-[var(--admin-canvas,#111114)] cursor-pointer w-full text-[var(--admin-muted,#92989d)]"
                   />
                 </div>
                 {backgroundFile ? (
-                  <p className="text-[10px] text-emerald-700 font-medium mt-2 truncate flex items-center gap-1">
+                  <p className="text-[12px] text-[var(--admin-accent-text,#c0d0e7)] font-medium mt-2 truncate flex items-center gap-1">
                     <Check size={11} strokeWidth={2.5} /> {backgroundFile.name}
                   </p>
                 ) : existingBgUrl ? (
-                  <p className="text-[10px] text-blue-700 font-medium mt-2 truncate">
+                  <p className="text-[12px] text-[var(--admin-accent-text,#c0d0e7)] font-medium mt-2 truncate">
                     ✓ File tersedia di server
                   </p>
                 ) : (
-                  <p className="text-[10px] text-zinc-400 mt-2 italic">
+                  <p className="text-[12px] text-[var(--admin-muted,#92989d)] mt-2 italic">
                     Belum ada file
                   </p>
                 )}
               </div>
 
               {/* Overlay */}
-              <div className="border border-zinc-200 rounded-xl p-3 bg-zinc-50/50 flex flex-col justify-between">
+              <div className="border border-[var(--admin-border-interactive,#34373b)] rounded-xl p-3 bg-[var(--admin-card,#1c1f20)]/50 flex flex-col justify-between">
                 <div>
-                  <span className="text-xs font-medium text-zinc-900 block mb-0.5">
+                  <span className="text-xs font-medium text-[var(--admin-text,#f4f4f5)] block mb-0.5">
                     Overlay (Opsional)
                   </span>
-                  <p className="text-[10px] text-zinc-400 mb-2">
+                  <p className="text-[12px] text-[var(--admin-muted,#92989d)] mb-2">
                     overlay.png (transparan)
                   </p>
                   <input
@@ -1825,31 +1825,31 @@ export function AdminTemplateEditorPage() {
                     onChange={(e) =>
                       setOverlayFile(e.target.files?.[0] || null)
                     }
-                    className="text-[11px] file:mr-2 file:py-1 file:px-2 file:rounded-md file:border file:border-zinc-200 file:text-[10px] file:font-medium file:bg-white file:text-zinc-700 hover:file:bg-zinc-50 cursor-pointer w-full text-zinc-500"
+                    className="text-[12px] file:mr-2 file:py-1 file:px-2 file:rounded-md file:border file:border-[var(--admin-border-interactive,#34373b)] file:text-[12px] file:font-medium file:bg-[var(--admin-canvas,#111114)] file:text-[var(--admin-secondary,#c3c7ca)] hover:file:bg-[var(--admin-canvas,#111114)] cursor-pointer w-full text-[var(--admin-muted,#92989d)]"
                   />
                 </div>
                 {overlayFile ? (
-                  <p className="text-[10px] text-emerald-700 font-medium mt-2 truncate flex items-center gap-1">
+                  <p className="text-[12px] text-[var(--admin-accent-text,#c0d0e7)] font-medium mt-2 truncate flex items-center gap-1">
                     <Check size={11} strokeWidth={2.5} /> {overlayFile.name}
                   </p>
                 ) : existingOverlayUrl ? (
-                  <p className="text-[10px] text-blue-700 font-medium mt-2 truncate">
+                  <p className="text-[12px] text-[var(--admin-accent-text,#c0d0e7)] font-medium mt-2 truncate">
                     ✓ Overlay tersedia
                   </p>
                 ) : (
-                  <p className="text-[10px] text-zinc-400 mt-2 italic">
+                  <p className="text-[12px] text-[var(--admin-muted,#92989d)] mt-2 italic">
                     Tanpa overlay
                   </p>
                 )}
               </div>
 
               {/* Preview */}
-              <div className="border border-zinc-200 rounded-xl p-3 bg-zinc-50/50 flex flex-col justify-between">
+              <div className="border border-[var(--admin-border-interactive,#34373b)] rounded-xl p-3 bg-[var(--admin-card,#1c1f20)]/50 flex flex-col justify-between">
                 <div>
-                  <span className="text-xs font-medium text-zinc-900 block mb-0.5">
+                  <span className="text-xs font-medium text-[var(--admin-text,#f4f4f5)] block mb-0.5">
                     Preview (Opsional)
                   </span>
-                  <p className="text-[10px] text-zinc-400 mb-2">
+                  <p className="text-[12px] text-[var(--admin-muted,#92989d)] mb-2">
                     preview.png thumbnail
                   </p>
                   <input
@@ -1858,22 +1858,22 @@ export function AdminTemplateEditorPage() {
                     onChange={(e) =>
                       setPreviewFile(e.target.files?.[0] || null)
                     }
-                    className="text-[11px] file:mr-2 file:py-1 file:px-2 file:rounded-md file:border file:border-zinc-200 file:text-[10px] file:font-medium file:bg-white file:text-zinc-700 hover:file:bg-zinc-50 cursor-pointer w-full text-zinc-500"
+                    className="text-[12px] file:mr-2 file:py-1 file:px-2 file:rounded-md file:border file:border-[var(--admin-border-interactive,#34373b)] file:text-[12px] file:font-medium file:bg-[var(--admin-canvas,#111114)] file:text-[var(--admin-secondary,#c3c7ca)] hover:file:bg-[var(--admin-canvas,#111114)] cursor-pointer w-full text-[var(--admin-muted,#92989d)]"
                   />
                 </div>
                 {previewFile ? (
-                  <p className="text-[10px] text-emerald-700 font-medium mt-2 truncate flex items-center gap-1">
+                  <p className="text-[12px] text-[var(--admin-accent-text,#c0d0e7)] font-medium mt-2 truncate flex items-center gap-1">
                     <Check size={11} strokeWidth={2.5} /> {previewFile.name}
                   </p>
                 ) : (
-                  <p className="text-[10px] text-zinc-400 mt-2 italic">
+                  <p className="text-[12px] text-[var(--admin-muted,#92989d)] mt-2 italic">
                     Otomatis dari background
                   </p>
                 )}
               </div>
             </div>
 
-            <p className="text-xs text-zinc-500 font-normal bg-zinc-50 border border-zinc-200 p-2.5 rounded-lg">
+            <p className="text-xs text-[var(--admin-muted,#92989d)] font-normal bg-[var(--admin-card,#1c1f20)] border border-[var(--admin-border-interactive,#34373b)] p-2.5 rounded-lg">
               💡 <strong>Tips:</strong> Ukuran ideal gambar adalah{" "}
               <strong>2400 × 3600 pixel</strong> (proporsi 2:3 cetak foto 4R).
               Gambar background akan langsung tampil pada visual canvas di
@@ -1884,14 +1884,14 @@ export function AdminTemplateEditorPage() {
 
         {/* ── SECTION 2: CUSTOM SLOT STUDIO (FULL WIDTH & SPACIOUS) ── */}
         {layout === "custom" && (
-          <div className="bg-white border border-zinc-200 rounded-xl p-5 md:p-6 shadow-xs space-y-5">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3.5 border-b border-zinc-100 gap-3">
+          <div className="bg-[var(--admin-card,#1c1f20)] border border-[var(--admin-border-interactive,#34373b)] rounded-xl p-5 md:p-6  space-y-5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3.5  border-[var(--admin-border-interactive,#34373b)] gap-3">
               <div>
-                <h2 className="text-base font-semibold text-zinc-950 flex items-center gap-2">
+                <h2 className="text-[16px] font-semibold text-[var(--admin-text,#f4f4f5)] flex items-center gap-2">
                   <Move size={17} />
                   <span>Studio Custom Slot Foto</span>
                 </h2>
-                <p className="text-xs text-zinc-500 font-normal mt-0.5">
+                <p className="text-xs text-[var(--admin-muted,#92989d)] font-normal mt-0.5">
                   Atur posisi dan ukuran slot foto secara leluasa. Drag untuk
                   menggeser, tarik handle untuk mengubah ukuran.
                 </p>
@@ -1900,7 +1900,7 @@ export function AdminTemplateEditorPage() {
               {/* Studio Toolbar */}
               <div className="flex items-center gap-1.5 flex-wrap">
                 {/* Undo / Redo buttons */}
-                <div className="flex items-center gap-0.5 border border-zinc-200 rounded-lg p-0.5 bg-white shadow-xs">
+                <div className="flex items-center gap-0.5 border border-[var(--admin-border-interactive,#34373b)] rounded-lg p-0.5 bg-[var(--admin-card,#1c1f20)] ">
                   <button
                     type="button"
                     onClick={undo}
@@ -1908,8 +1908,8 @@ export function AdminTemplateEditorPage() {
                     title="Undo (Ctrl+Z)"
                     className={`p-1.5 rounded-md transition-colors ${
                       past.length === 0
-                        ? "opacity-30 cursor-not-allowed text-zinc-400"
-                        : "hover:bg-zinc-100 hover:text-zinc-950 cursor-pointer text-zinc-700"
+                        ? "opacity-30 cursor-not-allowed text-[var(--admin-muted,#92989d)]"
+                        : "hover:bg-[var(--admin-raised,#292b2f)] hover:text-[var(--admin-text,#f4f4f5)] cursor-pointer text-[var(--admin-secondary,#c3c7ca)]"
                     }`}
                   >
                     <Undo2 size={14} />
@@ -1921,8 +1921,8 @@ export function AdminTemplateEditorPage() {
                     title="Redo (Ctrl+Y)"
                     className={`p-1.5 rounded-md transition-colors ${
                       future.length === 0
-                        ? "opacity-30 cursor-not-allowed text-zinc-400"
-                        : "hover:bg-zinc-100 hover:text-zinc-950 cursor-pointer text-zinc-700"
+                        ? "opacity-30 cursor-not-allowed text-[var(--admin-muted,#92989d)]"
+                        : "hover:bg-[var(--admin-raised,#292b2f)] hover:text-[var(--admin-text,#f4f4f5)] cursor-pointer text-[var(--admin-secondary,#c3c7ca)]"
                     }`}
                   >
                     <Redo2 size={14} />
@@ -1930,7 +1930,7 @@ export function AdminTemplateEditorPage() {
                 </div>
 
                 {/* Figma-style Alignment Bar */}
-                <div className="flex items-center gap-0.5 border border-zinc-200 rounded-lg p-0.5 bg-white shadow-xs">
+                <div className="flex items-center gap-0.5 border border-[var(--admin-border-interactive,#34373b)] rounded-lg p-0.5 bg-[var(--admin-card,#1c1f20)] ">
                   <button
                     type="button"
                     onClick={() => alignSelected("left")}
@@ -1942,8 +1942,8 @@ export function AdminTemplateEditorPage() {
                     }
                     className={`p-1.5 rounded-md transition-colors ${
                       selectedSlots.length === 0
-                        ? "opacity-30 cursor-not-allowed text-zinc-400"
-                        : "hover:bg-zinc-100 hover:text-zinc-950 cursor-pointer text-zinc-700"
+                        ? "opacity-30 cursor-not-allowed text-[var(--admin-muted,#92989d)]"
+                        : "hover:bg-[var(--admin-raised,#292b2f)] hover:text-[var(--admin-text,#f4f4f5)] cursor-pointer text-[var(--admin-secondary,#c3c7ca)]"
                     }`}
                   >
                     <AlignStartHorizontal size={14} />
@@ -1959,8 +1959,8 @@ export function AdminTemplateEditorPage() {
                     }
                     className={`p-1.5 rounded-md transition-colors ${
                       selectedSlots.length === 0
-                        ? "opacity-30 cursor-not-allowed text-zinc-400"
-                        : "hover:bg-zinc-100 hover:text-zinc-950 cursor-pointer text-zinc-700"
+                        ? "opacity-30 cursor-not-allowed text-[var(--admin-muted,#92989d)]"
+                        : "hover:bg-[var(--admin-raised,#292b2f)] hover:text-[var(--admin-text,#f4f4f5)] cursor-pointer text-[var(--admin-secondary,#c3c7ca)]"
                     }`}
                   >
                     <AlignCenterHorizontal size={14} />
@@ -1976,14 +1976,14 @@ export function AdminTemplateEditorPage() {
                     }
                     className={`p-1.5 rounded-md transition-colors ${
                       selectedSlots.length === 0
-                        ? "opacity-30 cursor-not-allowed text-zinc-400"
-                        : "hover:bg-zinc-100 hover:text-zinc-950 cursor-pointer text-zinc-700"
+                        ? "opacity-30 cursor-not-allowed text-[var(--admin-muted,#92989d)]"
+                        : "hover:bg-[var(--admin-raised,#292b2f)] hover:text-[var(--admin-text,#f4f4f5)] cursor-pointer text-[var(--admin-secondary,#c3c7ca)]"
                     }`}
                   >
                     <AlignEndHorizontal size={14} />
                   </button>
 
-                  <div className="w-[1px] h-3.5 bg-zinc-200 mx-0.5" />
+                  <div className="w-[1px] h-3.5 bg-[var(--admin-raised,#292b2f)] mx-0.5" />
 
                   <button
                     type="button"
@@ -1996,8 +1996,8 @@ export function AdminTemplateEditorPage() {
                     }
                     className={`p-1.5 rounded-md transition-colors ${
                       selectedSlots.length === 0
-                        ? "opacity-30 cursor-not-allowed text-zinc-400"
-                        : "hover:bg-zinc-100 hover:text-zinc-950 cursor-pointer text-zinc-700"
+                        ? "opacity-30 cursor-not-allowed text-[var(--admin-muted,#92989d)]"
+                        : "hover:bg-[var(--admin-raised,#292b2f)] hover:text-[var(--admin-text,#f4f4f5)] cursor-pointer text-[var(--admin-secondary,#c3c7ca)]"
                     }`}
                   >
                     <AlignStartVertical size={14} />
@@ -2013,8 +2013,8 @@ export function AdminTemplateEditorPage() {
                     }
                     className={`p-1.5 rounded-md transition-colors ${
                       selectedSlots.length === 0
-                        ? "opacity-30 cursor-not-allowed text-zinc-400"
-                        : "hover:bg-zinc-100 hover:text-zinc-950 cursor-pointer text-zinc-700"
+                        ? "opacity-30 cursor-not-allowed text-[var(--admin-muted,#92989d)]"
+                        : "hover:bg-[var(--admin-raised,#292b2f)] hover:text-[var(--admin-text,#f4f4f5)] cursor-pointer text-[var(--admin-secondary,#c3c7ca)]"
                     }`}
                   >
                     <AlignCenterVertical size={14} />
@@ -2030,8 +2030,8 @@ export function AdminTemplateEditorPage() {
                     }
                     className={`p-1.5 rounded-md transition-colors ${
                       selectedSlots.length === 0
-                        ? "opacity-30 cursor-not-allowed text-zinc-400"
-                        : "hover:bg-zinc-100 hover:text-zinc-950 cursor-pointer text-zinc-700"
+                        ? "opacity-30 cursor-not-allowed text-[var(--admin-muted,#92989d)]"
+                        : "hover:bg-[var(--admin-raised,#292b2f)] hover:text-[var(--admin-text,#f4f4f5)] cursor-pointer text-[var(--admin-secondary,#c3c7ca)]"
                     }`}
                   >
                     <AlignEndVertical size={14} />
@@ -2039,12 +2039,12 @@ export function AdminTemplateEditorPage() {
 
                   {selectedSlots.length >= 3 && (
                     <>
-                      <div className="w-[1px] h-3.5 bg-zinc-200 mx-0.5" />
+                      <div className="w-[1px] h-3.5 bg-[var(--admin-raised,#292b2f)] mx-0.5" />
                       <button
                         type="button"
                         onClick={() => alignSelected("distribute-h")}
                         title="Distribusi Rata Jarak Horizontal"
-                        className="p-1.5 rounded-md transition-colors hover:bg-zinc-100 hover:text-zinc-950 cursor-pointer text-zinc-700"
+                        className="p-1.5 rounded-md transition-colors hover:bg-[var(--admin-raised,#292b2f)] hover:text-[var(--admin-text,#f4f4f5)] cursor-pointer text-[var(--admin-secondary,#c3c7ca)]"
                       >
                         <AlignHorizontalDistributeCenter size={14} />
                       </button>
@@ -2052,7 +2052,7 @@ export function AdminTemplateEditorPage() {
                         type="button"
                         onClick={() => alignSelected("distribute-v")}
                         title="Distribusi Rata Jarak Vertikal"
-                        className="p-1.5 rounded-md transition-colors hover:bg-zinc-100 hover:text-zinc-950 cursor-pointer text-zinc-700"
+                        className="p-1.5 rounded-md transition-colors hover:bg-[var(--admin-raised,#292b2f)] hover:text-[var(--admin-text,#f4f4f5)] cursor-pointer text-[var(--admin-secondary,#c3c7ca)]"
                       >
                         <AlignVerticalDistributeCenter size={14} />
                       </button>
@@ -2062,7 +2062,7 @@ export function AdminTemplateEditorPage() {
 
                 {/* Layer Stacking Order Bar */}
                 <div
-                  className="flex items-center gap-0.5 border border-zinc-200 rounded-lg p-0.5 bg-white shadow-xs"
+                  className="flex items-center gap-0.5 border border-[var(--admin-border-interactive,#34373b)] rounded-lg p-0.5 bg-[var(--admin-card,#1c1f20)] "
                   title="Urutan Tumpukan Layer Slot (Z-Index)"
                 >
                   <button
@@ -2072,8 +2072,8 @@ export function AdminTemplateEditorPage() {
                     title="Bawa ke Paling Depan (Ctrl+Shift+])"
                     className={`p-1.5 rounded-md transition-colors ${
                       selectedSlots.length !== 1 || selectedSlots[0] === slots.length - 1
-                        ? "opacity-30 cursor-not-allowed text-zinc-400"
-                        : "hover:bg-zinc-100 hover:text-zinc-950 cursor-pointer text-zinc-700"
+                        ? "opacity-30 cursor-not-allowed text-[var(--admin-muted,#92989d)]"
+                        : "hover:bg-[var(--admin-raised,#292b2f)] hover:text-[var(--admin-text,#f4f4f5)] cursor-pointer text-[var(--admin-secondary,#c3c7ca)]"
                     }`}
                   >
                     <BringToFront size={14} />
@@ -2085,8 +2085,8 @@ export function AdminTemplateEditorPage() {
                     title="Naik 1 Layer (Ctrl+])"
                     className={`p-1.5 rounded-md transition-colors ${
                       selectedSlots.length !== 1 || selectedSlots[0] === slots.length - 1
-                        ? "opacity-30 cursor-not-allowed text-zinc-400"
-                        : "hover:bg-zinc-100 hover:text-zinc-950 cursor-pointer text-zinc-700"
+                        ? "opacity-30 cursor-not-allowed text-[var(--admin-muted,#92989d)]"
+                        : "hover:bg-[var(--admin-raised,#292b2f)] hover:text-[var(--admin-text,#f4f4f5)] cursor-pointer text-[var(--admin-secondary,#c3c7ca)]"
                     }`}
                   >
                     <ChevronUp size={14} />
@@ -2098,8 +2098,8 @@ export function AdminTemplateEditorPage() {
                     title="Turun 1 Layer (Ctrl+[)"
                     className={`p-1.5 rounded-md transition-colors ${
                       selectedSlots.length !== 1 || selectedSlots[0] === 0
-                        ? "opacity-30 cursor-not-allowed text-zinc-400"
-                        : "hover:bg-zinc-100 hover:text-zinc-950 cursor-pointer text-zinc-700"
+                        ? "opacity-30 cursor-not-allowed text-[var(--admin-muted,#92989d)]"
+                        : "hover:bg-[var(--admin-raised,#292b2f)] hover:text-[var(--admin-text,#f4f4f5)] cursor-pointer text-[var(--admin-secondary,#c3c7ca)]"
                     }`}
                   >
                     <ChevronDown size={14} />
@@ -2111,8 +2111,8 @@ export function AdminTemplateEditorPage() {
                     title="Kirim ke Paling Belakang (Ctrl+Shift+[)"
                     className={`p-1.5 rounded-md transition-colors ${
                       selectedSlots.length !== 1 || selectedSlots[0] === 0
-                        ? "opacity-30 cursor-not-allowed text-zinc-400"
-                        : "hover:bg-zinc-100 hover:text-zinc-950 cursor-pointer text-zinc-700"
+                        ? "opacity-30 cursor-not-allowed text-[var(--admin-muted,#92989d)]"
+                        : "hover:bg-[var(--admin-raised,#292b2f)] hover:text-[var(--admin-text,#f4f4f5)] cursor-pointer text-[var(--admin-secondary,#c3c7ca)]"
                     }`}
                   >
                     <SendToBack size={14} />
@@ -2122,7 +2122,7 @@ export function AdminTemplateEditorPage() {
                 <button
                   type="button"
                   onClick={addSlot}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-zinc-900 text-white rounded-lg text-xs font-medium hover:bg-black transition-colors shadow-xs cursor-pointer"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#c0d0e7] text-[#111b23] rounded-lg text-xs font-medium hover:bg-[#d2def0] transition-colors  cursor-pointer"
                 >
                   <Plus size={13} />
                   <span>Tambah Slot</span>
@@ -2133,8 +2133,8 @@ export function AdminTemplateEditorPage() {
                   onClick={() => setSnapEnabled((v) => !v)}
                   className={`px-2.5 py-1.5 border rounded-lg text-xs font-medium transition-colors cursor-pointer ${
                     snapEnabled
-                      ? "bg-zinc-900 text-white border-zinc-900 shadow-xs"
-                      : "bg-white text-zinc-700 border-zinc-200 hover:bg-zinc-50"
+                      ? "bg-[#c0d0e7] text-[#111b23] border-[var(--admin-border-interactive,#34373b)] "
+                      : "bg-[var(--admin-card,#1c1f20)] text-[var(--admin-secondary,#c3c7ca)] border-[var(--admin-border-interactive,#34373b)] hover:bg-[var(--admin-raised,#292b2f)]"
                   }`}
                 >
                   Snap: {snapEnabled ? "ON" : "OFF"}
@@ -2145,8 +2145,8 @@ export function AdminTemplateEditorPage() {
                   onClick={() => setShowGrid((v) => !v)}
                   className={`px-2.5 py-1.5 border rounded-lg text-xs font-medium transition-colors cursor-pointer ${
                     showGrid
-                      ? "bg-zinc-900 text-white border-zinc-900 shadow-xs"
-                      : "bg-white text-zinc-700 border-zinc-200 hover:bg-zinc-50"
+                      ? "bg-[#c0d0e7] text-[#111b23] border-[var(--admin-border-interactive,#34373b)] "
+                      : "bg-[var(--admin-card,#1c1f20)] text-[var(--admin-secondary,#c3c7ca)] border-[var(--admin-border-interactive,#34373b)] hover:bg-[var(--admin-raised,#292b2f)]"
                   }`}
                 >
                   Grid: {showGrid ? "ON" : "OFF"}
@@ -2157,8 +2157,8 @@ export function AdminTemplateEditorPage() {
                   onClick={() => setSmartGuidesEnabled((v) => !v)}
                   className={`px-2.5 py-1.5 border rounded-lg text-xs font-medium transition-colors cursor-pointer flex items-center gap-1 ${
                     smartGuidesEnabled
-                      ? "bg-zinc-900 text-white border-zinc-900 shadow-xs"
-                      : "bg-white text-zinc-700 border-zinc-200 hover:bg-zinc-50"
+                      ? "bg-[#c0d0e7] text-[#111b23] border-[var(--admin-border-interactive,#34373b)] "
+                      : "bg-[var(--admin-card,#1c1f20)] text-[var(--admin-secondary,#c3c7ca)] border-[var(--admin-border-interactive,#34373b)] hover:bg-[var(--admin-raised,#292b2f)]"
                   }`}
                   title="Garis pandu magnetik otomatis ala Figma untuk menempelkan slot lurus dengan slot lain"
                 >
@@ -2172,8 +2172,8 @@ export function AdminTemplateEditorPage() {
                   onClick={() => setShowDummyPhotos((v) => !v)}
                   className={`px-2.5 py-1.5 border rounded-lg text-xs font-medium transition-colors cursor-pointer flex items-center gap-1.5 ${
                     showDummyPhotos
-                      ? "bg-zinc-900 text-white border-zinc-900 shadow-xs"
-                      : "bg-white text-zinc-700 border-zinc-200 hover:bg-zinc-50"
+                      ? "bg-[#c0d0e7] text-[#111b23] border-[var(--admin-border-interactive,#34373b)] "
+                      : "bg-[var(--admin-card,#1c1f20)] text-[var(--admin-secondary,#c3c7ca)] border-[var(--admin-border-interactive,#34373b)] hover:bg-[var(--admin-raised,#292b2f)]"
                   }`}
                   title="Tampilkan foto contoh manusia nyata pada setiap slot untuk simulasi hasil cetak sesungguhnya"
                 >
@@ -2187,8 +2187,8 @@ export function AdminTemplateEditorPage() {
                   onClick={() => setShowSafeMargin((v) => !v)}
                   className={`px-2.5 py-1.5 border rounded-lg text-xs font-medium transition-colors cursor-pointer flex items-center gap-1.5 ${
                     showSafeMargin
-                      ? "bg-zinc-900 text-white border-zinc-900 shadow-xs"
-                      : "bg-white text-zinc-700 border-zinc-200 hover:bg-zinc-50"
+                      ? "bg-[#c0d0e7] text-[#111b23] border-[var(--admin-border-interactive,#34373b)] "
+                      : "bg-[var(--admin-card,#1c1f20)] text-[var(--admin-secondary,#c3c7ca)] border-[var(--admin-border-interactive,#34373b)] hover:bg-[var(--admin-raised,#292b2f)]"
                   }`}
                   title="Tampilkan garis batas aman potong kertas foto 4R (~3mm / 60px)"
                 >
@@ -2199,82 +2199,82 @@ export function AdminTemplateEditorPage() {
             </div>
 
             {/* Keyboard Shortcuts Hint Bar */}
-            <div className="flex items-center gap-2 flex-wrap text-[11px] font-medium text-zinc-500 bg-zinc-50 border border-zinc-200 px-3 py-1.5 rounded-lg">
-              <span className="text-zinc-800 font-semibold uppercase text-[10px] tracking-wider flex items-center gap-1">
+            <div className="flex items-center gap-2 flex-wrap text-[12px] font-medium text-[var(--admin-muted,#92989d)] bg-[var(--admin-card,#1c1f20)] border border-[var(--admin-border-interactive,#34373b)] px-3 py-1.5 rounded-lg">
+              <span className="text-[var(--admin-text,#f4f4f5)] font-semibold uppercase text-[12px] tracking-wider flex items-center gap-1">
                 Shortcuts:
               </span>
               <span className="inline-flex items-center gap-1">
-                <kbd className="px-1.5 py-0.2 bg-white border border-zinc-300 rounded text-[10px] font-mono shadow-xs font-medium text-zinc-800">
+                <kbd className="px-1.5 py-0.2 bg-[var(--admin-card,#1c1f20)] border border-[var(--admin-border-interactive,#34373b)] rounded text-[12px] font-mono  font-medium text-[var(--admin-text,#f4f4f5)]">
                   Ctrl+Z
                 </kbd>{" "}
                 Undo
               </span>
-              <span className="text-zinc-300">•</span>
+              <span className="text-[var(--admin-muted,#92989d)]">•</span>
               <span className="inline-flex items-center gap-1">
-                <kbd className="px-1.5 py-0.2 bg-white border border-zinc-300 rounded text-[10px] font-mono shadow-xs font-medium text-zinc-800">
+                <kbd className="px-1.5 py-0.2 bg-[var(--admin-card,#1c1f20)] border border-[var(--admin-border-interactive,#34373b)] rounded text-[12px] font-mono  font-medium text-[var(--admin-text,#f4f4f5)]">
                   Ctrl+Y
                 </kbd>{" "}
                 Redo
               </span>
-              <span className="text-zinc-300">•</span>
+              <span className="text-[var(--admin-muted,#92989d)]">•</span>
               <span className="inline-flex items-center gap-1">
-                <kbd className="px-1.5 py-0.2 bg-white border border-zinc-300 rounded text-[10px] font-mono shadow-xs font-medium text-zinc-800">
+                <kbd className="px-1.5 py-0.2 bg-[var(--admin-card,#1c1f20)] border border-[var(--admin-border-interactive,#34373b)] rounded text-[12px] font-mono  font-medium text-[var(--admin-text,#f4f4f5)]">
                   Shift + Klik
                 </kbd>{" "}
                 Pilih Banyak
               </span>
-              <span className="text-zinc-300">•</span>
+              <span className="text-[var(--admin-muted,#92989d)]">•</span>
               <span className="inline-flex items-center gap-1">
-                <kbd className="px-1.5 py-0.2 bg-white border border-zinc-300 rounded text-[10px] font-mono shadow-xs font-medium text-zinc-800">
+                <kbd className="px-1.5 py-0.2 bg-[var(--admin-card,#1c1f20)] border border-[var(--admin-border-interactive,#34373b)] rounded text-[12px] font-mono  font-medium text-[var(--admin-text,#f4f4f5)]">
                   Ctrl+C
                 </kbd>{" "}
                 Copy
               </span>
-              <span className="text-zinc-300">•</span>
+              <span className="text-[var(--admin-muted,#92989d)]">•</span>
               <span className="inline-flex items-center gap-1">
-                <kbd className="px-1.5 py-0.2 bg-white border border-zinc-300 rounded text-[10px] font-mono shadow-xs font-medium text-zinc-800">
+                <kbd className="px-1.5 py-0.2 bg-[var(--admin-card,#1c1f20)] border border-[var(--admin-border-interactive,#34373b)] rounded text-[12px] font-mono  font-medium text-[var(--admin-text,#f4f4f5)]">
                   Ctrl+V
                 </kbd>{" "}
                 Paste
               </span>
-              <span className="text-zinc-300">•</span>
+              <span className="text-[var(--admin-muted,#92989d)]">•</span>
               <span className="inline-flex items-center gap-1">
-                <kbd className="px-1.5 py-0.2 bg-white border border-zinc-300 rounded text-[10px] font-mono shadow-xs font-medium text-zinc-800">
+                <kbd className="px-1.5 py-0.2 bg-[var(--admin-card,#1c1f20)] border border-[var(--admin-border-interactive,#34373b)] rounded text-[12px] font-mono  font-medium text-[var(--admin-text,#f4f4f5)]">
                   Ctrl+D
                 </kbd>{" "}
                 Duplikat
               </span>
-              <span className="text-zinc-300">•</span>
+              <span className="text-[var(--admin-muted,#92989d)]">•</span>
               <span className="inline-flex items-center gap-1">
-                <kbd className="px-1.5 py-0.2 bg-white border border-zinc-300 rounded text-[10px] font-mono shadow-xs font-medium text-zinc-800">
+                <kbd className="px-1.5 py-0.2 bg-[var(--admin-card,#1c1f20)] border border-[var(--admin-border-interactive,#34373b)] rounded text-[12px] font-mono  font-medium text-[var(--admin-text,#f4f4f5)]">
                   Del
                 </kbd>{" "}
                 Hapus
               </span>
-              <span className="text-zinc-300">•</span>
+              <span className="text-[var(--admin-muted,#92989d)]">•</span>
               <span className="inline-flex items-center gap-1">
-                <kbd className="px-1.5 py-0.2 bg-white border border-zinc-300 rounded text-[10px] font-mono shadow-xs font-medium text-zinc-800">
+                <kbd className="px-1.5 py-0.2 bg-[var(--admin-card,#1c1f20)] border border-[var(--admin-border-interactive,#34373b)] rounded text-[12px] font-mono  font-medium text-[var(--admin-text,#f4f4f5)]">
                   ↑ ↓ ← →
                 </kbd>{" "}
                 Geser
               </span>
-              <span className="text-zinc-300">•</span>
+              <span className="text-[var(--admin-muted,#92989d)]">•</span>
               <span className="inline-flex items-center gap-1">
-                <kbd className="px-1.5 py-0.2 bg-white border border-zinc-300 rounded text-[10px] font-mono shadow-xs font-medium text-zinc-800">
+                <kbd className="px-1.5 py-0.2 bg-[var(--admin-card,#1c1f20)] border border-[var(--admin-border-interactive,#34373b)] rounded text-[12px] font-mono  font-medium text-[var(--admin-text,#f4f4f5)]">
                   Ctrl + [ / ]
                 </kbd>{" "}
                 Layer
               </span>
-              <span className="text-zinc-300">•</span>
+              <span className="text-[var(--admin-muted,#92989d)]">•</span>
               <span className="inline-flex items-center gap-1">
-                <kbd className="px-1.5 py-0.2 bg-white border border-zinc-300 rounded text-[10px] font-mono shadow-xs font-medium text-zinc-800">
+                <kbd className="px-1.5 py-0.2 bg-[var(--admin-card,#1c1f20)] border border-[var(--admin-border-interactive,#34373b)] rounded text-[12px] font-mono  font-medium text-[var(--admin-text,#f4f4f5)]">
                   Shift + Tarik
                 </kbd>{" "}
                 Proporsional
               </span>
-              <span className="text-zinc-300">•</span>
+              <span className="text-[var(--admin-muted,#92989d)]">•</span>
               <span className="inline-flex items-center gap-1">
-                <kbd className="px-1.5 py-0.2 bg-white border border-zinc-300 rounded text-[10px] font-mono shadow-xs font-medium text-zinc-800">
+                <kbd className="px-1.5 py-0.2 bg-[var(--admin-card,#1c1f20)] border border-[var(--admin-border-interactive,#34373b)] rounded text-[12px] font-mono  font-medium text-[var(--admin-text,#f4f4f5)]">
                   Esc
                 </kbd>{" "}
                 Batal
@@ -2286,19 +2286,19 @@ export function AdminTemplateEditorPage() {
               {/* Column 1: The Interactive Canvas */}
               <div className="xl:col-span-5 flex flex-col items-center">
                 <div className="w-full flex items-center justify-between mb-2 px-1">
-                  <span className="text-xs font-medium uppercase tracking-wider text-zinc-400">
+                  <span className="text-xs font-medium uppercase tracking-wider text-[var(--admin-muted,#92989d)]">
                     Preview Canvas (Skala 1:5)
                   </span>
                   {selectedSlots.length === 1 && slots[selectedSlots[0]] ? (
-                    <span className="text-xs font-medium text-zinc-800 bg-zinc-100 px-2 py-0.5 rounded-full border border-zinc-200">
+                    <span className="text-xs font-medium text-[var(--admin-text,#f4f4f5)] bg-[var(--admin-raised,#292b2f)] px-2 py-0.5 rounded-full border border-[var(--admin-border-interactive,#34373b)]">
                       Slot {slots[selectedSlots[0]].slotNumber} terpilih (↑↓←→)
                     </span>
                   ) : selectedSlots.length > 1 ? (
-                    <span className="text-xs font-medium text-zinc-800 bg-zinc-100 px-2 py-0.5 rounded-full border border-zinc-200">
+                    <span className="text-xs font-medium text-[var(--admin-text,#f4f4f5)] bg-[var(--admin-raised,#292b2f)] px-2 py-0.5 rounded-full border border-[var(--admin-border-interactive,#34373b)]">
                       {selectedSlots.length} slot terpilih (Del)
                     </span>
                   ) : (
-                    <span className="text-xs text-zinc-400">
+                    <span className="text-xs text-[var(--admin-muted,#92989d)]">
                       Klik slot untuk memilih
                     </span>
                   )}
@@ -2307,7 +2307,7 @@ export function AdminTemplateEditorPage() {
                 {/* Canvas Container */}
                 <div
                   ref={canvasRef}
-                  className="relative rounded-xl select-none overflow-hidden border border-zinc-800 shadow-md"
+                  className="relative rounded-xl select-none overflow-hidden border border-[var(--admin-border-interactive,#34373b)] shadow-md"
                   style={{
                     width: EDITOR_W,
                     height: EDITOR_H,
@@ -2333,7 +2333,7 @@ export function AdminTemplateEditorPage() {
                     />
                   ) : (
                     <div
-                      className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center p-6 text-gray-400"
+                      className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center p-6 text-[var(--admin-muted,#92989d)]"
                       style={{ zIndex: 0 }}
                     >
                       <Layers size={36} className="mb-2 opacity-50" />
@@ -2392,7 +2392,7 @@ export function AdminTemplateEditorPage() {
                     g.axis === "v" ? (
                       <div
                         key={`gap-v-${idx}`}
-                        className="absolute pointer-events-none z-35 flex items-center justify-center border-t-2 border-b-2 border-dashed border-pink-500 bg-pink-500/15"
+                        className="absolute pointer-events-none z-35 flex items-center justify-center   border-dashed border-pink-500 bg-pink-500/15"
                         style={{
                           top: g.from * SCALE_Y,
                           height: Math.max(1, (g.to - g.from) * SCALE_Y),
@@ -2433,7 +2433,7 @@ export function AdminTemplateEditorPage() {
                         bottom: SAFE_PRINT_MARGIN * SCALE_Y,
                       }}
                     >
-                      <div className="absolute top-1 left-1.5 bg-rose-600/90 text-white text-[8px] font-black px-1.5 py-0.5 rounded shadow-xs flex items-center gap-1 select-none">
+                      <div className="absolute top-1 left-1.5 bg-rose-600/90 text-white text-[8px] font-black px-1.5 py-0.5 rounded  flex items-center gap-1 select-none">
                         <Scissors size={9} />
                         <span>BATAS POTONG (3mm)</span>
                       </div>
@@ -2458,8 +2458,8 @@ export function AdminTemplateEditorPage() {
                           isSel
                             ? "border-3 border-black bg-blue-400/50 shadow-lg ring-2 ring-black/40"
                             : isBreachingMargin
-                              ? "border-2 border-rose-500 bg-rose-200/40 hover:border-black hover:bg-rose-300/40"
-                              : "border-2 border-blue-600 bg-blue-200/40 hover:border-black hover:bg-blue-300/40"
+                              ? "border-2 border-rose-500 bg-[var(--admin-alert,#3b2d3c)]/40 hover:border-black hover:bg-rose-300/40"
+                              : "border-2 border-blue-600 bg-[var(--admin-raised,#292b2f)]/40 hover:border-black hover:bg-blue-300/40"
                         }`}
                         style={{
                           left: s.x * SCALE_X,
@@ -2524,13 +2524,13 @@ export function AdminTemplateEditorPage() {
                         >
                           <span>{s.slotNumber}</span>
                           {isBreachingMargin && (
-                            <Scissors size={9} className="text-rose-200" />
+                            <Scissors size={9} className="text-[var(--admin-danger,#f18e9a)]" />
                           )}
                         </span>
 
                         {/* Dimensions Label */}
                         {s.width * SCALE_X > 60 && s.height * SCALE_Y > 26 && (
-                          <span className="absolute bottom-1 right-1 text-[9px] font-mono font-bold text-gray-800 bg-white/90 px-1 py-0.5 rounded shadow pointer-events-none z-10">
+                          <span className="absolute bottom-1 right-1 text-[9px] font-mono font-bold text-[var(--admin-text,#f4f4f5)] bg-[var(--admin-card,#1c1f20)]/90 px-1 py-0.5 rounded shadow pointer-events-none z-10">
                             {s.width}×{s.height}
                           </span>
                         )}
@@ -2570,13 +2570,13 @@ export function AdminTemplateEditorPage() {
                       s.x + s.width > PRINT_W - SAFE_PRINT_MARGIN ||
                       s.y + s.height > PRINT_H - SAFE_PRINT_MARGIN,
                   ) && (
-                    <div className="w-full mt-3 p-3 bg-rose-50/80 border border-rose-200 rounded-xl text-rose-900 text-xs font-medium flex items-start gap-2.5 shadow-xs">
+                    <div className="w-full mt-3 p-3 bg-[var(--admin-alert,#3b2d3c)]/80 border border-rose-200 rounded-xl text-[var(--admin-danger,#f18e9a)] text-xs font-medium flex items-start gap-2.5 ">
                       <Scissors
                         size={15}
-                        className="text-rose-600 shrink-0 mt-0.5"
+                        className="text-[var(--admin-danger,#f18e9a)] shrink-0 mt-0.5"
                       />
                       <div className="leading-snug">
-                        <strong className="font-semibold text-rose-800 block mb-0.5">
+                        <strong className="font-semibold text-[var(--admin-danger,#f18e9a)] block mb-0.5">
                           Peringatan Garis Potong 4R:
                         </strong>
                         Slot{" "}
@@ -2596,15 +2596,15 @@ export function AdminTemplateEditorPage() {
                     </div>
                   )}
 
-                <p className="text-[11px] text-zinc-400 font-medium mt-3 text-center">
+                <p className="text-[12px] text-[var(--admin-muted,#92989d)] font-medium mt-3 text-center">
                   Cetak 4R: 2400 × 3600 px · Tahan Shift saat resize untuk rasio proporsional · Tahan Shift + Klik untuk pilih banyak
                 </p>
               </div>
 
               {/* Column 2: Detailed Slot List & Numeric Fine-tuning */}
               <div className="xl:col-span-7 flex flex-col gap-3">
-                <div className="flex items-center justify-between pb-2 border-b border-zinc-200">
-                  <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
+                <div className="flex items-center justify-between pb-2  border-[var(--admin-border-interactive,#34373b)]">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-[var(--admin-muted,#92989d)]">
                     Daftar & Koordinat Slot ({slots.length} Slot)
                   </p>
                   {slots.length > 0 && (
@@ -2627,7 +2627,7 @@ export function AdminTemplateEditorPage() {
                           },
                         });
                       }}
-                      className="text-xs text-rose-600 hover:text-rose-700 font-medium cursor-pointer transition-colors"
+                      className="text-xs text-[var(--admin-danger,#f18e9a)] hover:text-[var(--admin-danger,#f18e9a)] font-medium cursor-pointer transition-colors"
                     >
                       Hapus Semua
                     </button>
@@ -2636,13 +2636,13 @@ export function AdminTemplateEditorPage() {
 
                 {/* Multi-Selection Bulk Actions Banner */}
                 {selectedSlots.length > 1 && (
-                  <div className="bg-zinc-900 text-white rounded-xl p-3.5 border border-zinc-800 shadow-sm animate-fadeIn space-y-3">
+                  <div className="bg-[var(--admin-raised,#292b2f)] text-[var(--admin-text,#f4f4f5)] rounded-xl p-3.5 border border-[var(--admin-border-interactive,#34373b)] shadow-sm animate-fadeIn space-y-3">
                     <div className="flex items-center justify-between flex-wrap gap-2">
                       <div className="flex items-center gap-2">
                         <span className="font-semibold text-xs text-white">
                           {selectedSlots.length} Slot Terpilih
                         </span>
-                        <span className="text-[11px] text-zinc-400 hidden sm:inline">
+                        <span className="text-[12px] text-[var(--admin-muted,#92989d)] hidden sm:inline">
                           (Tahan Shift untuk pilih/lepas)
                         </span>
                       </div>
@@ -2650,7 +2650,7 @@ export function AdminTemplateEditorPage() {
                         <button
                           type="button"
                           onClick={duplicateSelected}
-                          className="px-2.5 py-1 text-xs font-medium bg-zinc-800 text-zinc-200 hover:bg-zinc-700 hover:text-white rounded-md border border-zinc-700 flex items-center gap-1.5 transition-colors cursor-pointer"
+                          className="px-2.5 py-1 text-xs font-medium bg-[#c0d0e7] text-[#111b23] hover:bg-[#d2def0] rounded-md border border-[var(--admin-border-interactive,#34373b)] flex items-center gap-1.5 transition-colors cursor-pointer"
                         >
                           <Copy size={12} />
                           Duplikat ({selectedSlots.length})
@@ -2658,7 +2658,7 @@ export function AdminTemplateEditorPage() {
                         <button
                           type="button"
                           onClick={deleteSelected}
-                          className="px-2.5 py-1 text-xs font-medium bg-rose-950/60 text-rose-300 hover:bg-rose-900/80 rounded-md border border-rose-800/80 flex items-center gap-1.5 transition-colors cursor-pointer"
+                          className="px-2.5 py-1 text-xs font-medium bg-rose-950/60 text-[var(--admin-danger,#f18e9a)] hover:bg-rose-900/80 rounded-md border border-rose-800/80 flex items-center gap-1.5 transition-colors cursor-pointer"
                         >
                           <Trash2 size={12} />
                           Hapus ({selectedSlots.length})
@@ -2667,15 +2667,15 @@ export function AdminTemplateEditorPage() {
                     </div>
 
                     {/* Quick Alignment controls inside banner */}
-                    <div className="pt-2 border-t border-zinc-800 flex items-center gap-2 flex-wrap text-xs">
-                      <span className="text-zinc-400 font-medium text-[10px] uppercase tracking-wider shrink-0">
+                    <div className="pt-2  border-[var(--admin-border-interactive,#34373b)] flex items-center gap-2 flex-wrap text-xs">
+                      <span className="text-[var(--admin-muted,#92989d)] font-medium text-[12px] uppercase tracking-wider shrink-0">
                         Align:
                       </span>
-                      <div className="flex items-center gap-0.5 bg-zinc-800/70 p-0.5 rounded-lg border border-zinc-700/60 flex-wrap">
+                      <div className="flex items-center gap-0.5 bg-[#c0d0e7]/70 p-0.5 rounded-lg border border-[var(--admin-border-interactive,#34373b)]/60 flex-wrap">
                         <button
                           type="button"
                           onClick={() => alignSelected("left")}
-                          className="px-2 py-1 rounded hover:bg-zinc-700 text-zinc-300 hover:text-white font-medium flex items-center gap-1 text-[11px] transition-colors cursor-pointer"
+                          className="px-2 py-1 rounded hover:bg-[var(--admin-raised,#292b2f)] text-[var(--admin-muted,#92989d)] hover:text-white font-medium flex items-center gap-1 text-[12px] transition-colors cursor-pointer"
                           title="Rata Kiri"
                         >
                           <AlignStartHorizontal size={13} />
@@ -2684,7 +2684,7 @@ export function AdminTemplateEditorPage() {
                         <button
                           type="button"
                           onClick={() => alignSelected("h-center")}
-                          className="px-2 py-1 rounded hover:bg-zinc-700 text-zinc-300 hover:text-white font-medium flex items-center gap-1 text-[11px] transition-colors cursor-pointer"
+                          className="px-2 py-1 rounded hover:bg-[var(--admin-raised,#292b2f)] text-[var(--admin-muted,#92989d)] hover:text-white font-medium flex items-center gap-1 text-[12px] transition-colors cursor-pointer"
                           title="Rata Tengah Horizontal"
                         >
                           <AlignCenterHorizontal size={13} />
@@ -2693,17 +2693,17 @@ export function AdminTemplateEditorPage() {
                         <button
                           type="button"
                           onClick={() => alignSelected("right")}
-                          className="px-2 py-1 rounded hover:bg-zinc-700 text-zinc-300 hover:text-white font-medium flex items-center gap-1 text-[11px] transition-colors cursor-pointer"
+                          className="px-2 py-1 rounded hover:bg-[var(--admin-raised,#292b2f)] text-[var(--admin-muted,#92989d)] hover:text-white font-medium flex items-center gap-1 text-[12px] transition-colors cursor-pointer"
                           title="Rata Kanan"
                         >
                           <AlignEndHorizontal size={13} />
                           <span>Kanan</span>
                         </button>
-                        <div className="w-[1px] h-3.5 bg-zinc-700 mx-0.5 hidden sm:block" />
+                        <div className="w-[1px] h-3.5 bg-[var(--admin-raised,#292b2f)] mx-0.5 hidden sm:block" />
                         <button
                           type="button"
                           onClick={() => alignSelected("top")}
-                          className="px-2 py-1 rounded hover:bg-zinc-700 text-zinc-300 hover:text-white font-medium flex items-center gap-1 text-[11px] transition-colors cursor-pointer"
+                          className="px-2 py-1 rounded hover:bg-[var(--admin-raised,#292b2f)] text-[var(--admin-muted,#92989d)] hover:text-white font-medium flex items-center gap-1 text-[12px] transition-colors cursor-pointer"
                           title="Rata Atas"
                         >
                           <AlignStartVertical size={13} />
@@ -2712,7 +2712,7 @@ export function AdminTemplateEditorPage() {
                         <button
                           type="button"
                           onClick={() => alignSelected("v-center")}
-                          className="px-2 py-1 rounded hover:bg-zinc-700 text-zinc-300 hover:text-white font-medium flex items-center gap-1 text-[11px] transition-colors cursor-pointer"
+                          className="px-2 py-1 rounded hover:bg-[var(--admin-raised,#292b2f)] text-[var(--admin-muted,#92989d)] hover:text-white font-medium flex items-center gap-1 text-[12px] transition-colors cursor-pointer"
                           title="Rata Tengah Vertikal"
                         >
                           <AlignCenterVertical size={13} />
@@ -2721,7 +2721,7 @@ export function AdminTemplateEditorPage() {
                         <button
                           type="button"
                           onClick={() => alignSelected("bottom")}
-                          className="px-2 py-1 rounded hover:bg-zinc-700 text-zinc-300 hover:text-white font-medium flex items-center gap-1 text-[11px] transition-colors cursor-pointer"
+                          className="px-2 py-1 rounded hover:bg-[var(--admin-raised,#292b2f)] text-[var(--admin-muted,#92989d)] hover:text-white font-medium flex items-center gap-1 text-[12px] transition-colors cursor-pointer"
                           title="Rata Bawah"
                         >
                           <AlignEndVertical size={13} />
@@ -2729,11 +2729,11 @@ export function AdminTemplateEditorPage() {
                         </button>
                         {selectedSlots.length >= 3 && (
                           <>
-                            <div className="w-[1px] h-3.5 bg-zinc-700 mx-0.5 hidden sm:block" />
+                            <div className="w-[1px] h-3.5 bg-[var(--admin-raised,#292b2f)] mx-0.5 hidden sm:block" />
                             <button
                               type="button"
                               onClick={() => alignSelected("distribute-h")}
-                              className="px-2 py-1 rounded hover:bg-zinc-700 text-zinc-300 hover:text-white font-medium flex items-center gap-1 text-[11px] transition-colors cursor-pointer"
+                              className="px-2 py-1 rounded hover:bg-[var(--admin-raised,#292b2f)] text-[var(--admin-muted,#92989d)] hover:text-white font-medium flex items-center gap-1 text-[12px] transition-colors cursor-pointer"
                               title="Distribusi Rata Jarak Horizontal"
                             >
                               <AlignHorizontalDistributeCenter size={13} />
@@ -2742,7 +2742,7 @@ export function AdminTemplateEditorPage() {
                             <button
                               type="button"
                               onClick={() => alignSelected("distribute-v")}
-                              className="px-2 py-1 rounded hover:bg-zinc-700 text-zinc-300 hover:text-white font-medium flex items-center gap-1 text-[11px] transition-colors cursor-pointer"
+                              className="px-2 py-1 rounded hover:bg-[var(--admin-raised,#292b2f)] text-[var(--admin-muted,#92989d)] hover:text-white font-medium flex items-center gap-1 text-[12px] transition-colors cursor-pointer"
                               title="Distribusi Rata Jarak Vertikal"
                             >
                               <AlignVerticalDistributeCenter size={13} />
@@ -2756,18 +2756,18 @@ export function AdminTemplateEditorPage() {
                 )}
 
                 {slots.length === 0 ? (
-                  <div className="py-14 text-center border border-dashed border-zinc-300 rounded-xl bg-zinc-50/50">
-                    <Layers size={28} className="text-zinc-300 mx-auto mb-2" />
-                    <p className="font-semibold text-zinc-700 text-sm">
+                  <div className="py-14 text-center border border-dashed border-[var(--admin-border-interactive,#34373b)] rounded-xl bg-[var(--admin-card,#1c1f20)]/50">
+                    <Layers size={28} className="text-[var(--admin-muted,#92989d)] mx-auto mb-2" />
+                    <p className="font-semibold text-[var(--admin-secondary,#c3c7ca)] text-sm">
                       Belum ada slot yang dibuat.
                     </p>
-                    <p className="text-xs text-zinc-500 mt-1 mb-4">
+                    <p className="text-xs text-[var(--admin-muted,#92989d)] mt-1 mb-4">
                       Klik tombol "+ Tambah Slot Baru" untuk mulai meletakkan foto.
                     </p>
                     <button
                       type="button"
                       onClick={addSlot}
-                      className="px-3.5 py-1.5 text-xs font-medium bg-zinc-900 text-white rounded-lg hover:bg-black transition-colors cursor-pointer shadow-xs inline-flex items-center gap-1"
+                      className="px-3.5 py-1.5 text-xs font-medium bg-[#c0d0e7] text-[#111b23] rounded-lg hover:bg-[#d2def0] transition-colors cursor-pointer  inline-flex items-center gap-1"
                     >
                       <Plus size={13} />
                       Tambah Slot Pertama
@@ -2789,10 +2789,10 @@ export function AdminTemplateEditorPage() {
                           key={i}
                           className={`border rounded-xl p-3.5 transition-all cursor-pointer ${
                             isSel
-                              ? "border-zinc-900 bg-zinc-50/70 shadow-xs ring-1 ring-zinc-900"
+                              ? "border-[var(--admin-border-interactive,#34373b)] bg-[var(--admin-card,#1c1f20)]/70  ring-1 ring-zinc-900"
                               : isBreachingMargin
-                                ? "border-rose-300 bg-rose-50/30 hover:border-zinc-400 hover:bg-rose-50/50 shadow-xs"
-                                : "border-zinc-200 bg-white hover:border-zinc-300 hover:bg-zinc-50/30 shadow-xs"
+                                ? "border-rose-300 bg-[var(--admin-alert,#3b2d3c)]/30 hover:border-[var(--admin-border-interactive,#34373b)] hover:bg-[var(--admin-alert,#3b2d3c)]/50 "
+                                : "border-[var(--admin-border-interactive,#34373b)] bg-[var(--admin-card,#1c1f20)] hover:border-[var(--admin-border-interactive,#34373b)] hover:bg-[var(--admin-raised,#292b2f)]/30 "
                           }`}
                           onClick={(e) => {
                             if (e.shiftKey) {
@@ -2811,23 +2811,23 @@ export function AdminTemplateEditorPage() {
                               <span
                                 className={`text-xs px-2 py-0.5 rounded-md font-semibold ${
                                   isSel
-                                    ? "bg-zinc-900 text-white"
+                                    ? "bg-[#c0d0e7] text-[#111b23]"
                                     : isBreachingMargin
-                                      ? "bg-rose-100 text-rose-700 border border-rose-200"
-                                      : "bg-zinc-100 text-zinc-700 border border-zinc-200"
+                                      ? "bg-[var(--admin-alert,#3b2d3c)] text-[var(--admin-danger,#f18e9a)] border border-rose-200"
+                                      : "bg-[var(--admin-raised,#292b2f)] text-[var(--admin-secondary,#c3c7ca)] border border-[var(--admin-border-interactive,#34373b)]"
                                 }`}
                               >
                                 Slot {s.slotNumber}
                               </span>
-                              <span className="text-xs font-mono text-zinc-500">
+                              <span className="text-xs font-mono text-[var(--admin-muted,#92989d)]">
                                 {s.width} × {s.height} px
                               </span>
-                              <span className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-zinc-100 text-zinc-600 border border-zinc-200">
+                              <span className="text-[12px] font-medium px-2 py-0.5 rounded-md bg-[var(--admin-raised,#292b2f)] text-[var(--admin-secondary,#c3c7ca)] border border-[var(--admin-border-interactive,#34373b)]">
                                 Layer {i + 1}/{slots.length}
                               </span>
                               {isBreachingMargin && (
                                 <span
-                                  className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-rose-50 text-rose-700 border border-rose-200 flex items-center gap-1"
+                                  className="text-[12px] font-medium px-2 py-0.5 rounded-md bg-[var(--admin-alert,#3b2d3c)] text-[var(--admin-danger,#f18e9a)] border border-rose-200 flex items-center gap-1"
                                   title="Slot ini melewati batas potong aman 3mm"
                                 >
                                   <Scissors size={10} />
@@ -2839,7 +2839,7 @@ export function AdminTemplateEditorPage() {
                             <div className="flex items-center gap-1.5">
                               {/* Layer Order Controls (Z-Index) */}
                               <div
-                                className="flex items-center border border-zinc-200 rounded-lg overflow-hidden bg-white shadow-xs mr-1"
+                                className="flex items-center border border-[var(--admin-border-interactive,#34373b)] rounded-lg overflow-hidden bg-[var(--admin-card,#1c1f20)]  mr-1"
                                 title="Pengaturan Urutan Layer (Z-Index)"
                               >
                                 <button
@@ -2851,8 +2851,8 @@ export function AdminTemplateEditorPage() {
                                   disabled={i === slots.length - 1}
                                   className={`p-1.5 transition-colors ${
                                     i === slots.length - 1
-                                      ? "opacity-25 cursor-not-allowed text-zinc-300"
-                                      : "hover:bg-zinc-100 cursor-pointer text-zinc-600 hover:text-zinc-900"
+                                      ? "opacity-25 cursor-not-allowed text-[var(--admin-muted,#92989d)]"
+                                      : "hover:bg-[var(--admin-raised,#292b2f)] cursor-pointer text-[var(--admin-secondary,#c3c7ca)] hover:text-[var(--admin-text,#f4f4f5)]"
                                   }`}
                                   title="Bawa ke Paling Depan (Ctrl+Shift+])"
                                 >
@@ -2865,10 +2865,10 @@ export function AdminTemplateEditorPage() {
                                     bringForward(i);
                                   }}
                                   disabled={i === slots.length - 1}
-                                  className={`p-1.5 transition-colors border-l border-zinc-200 ${
+                                  className={`p-1.5 transition-colors border-l border-[var(--admin-border-interactive,#34373b)] ${
                                     i === slots.length - 1
-                                      ? "opacity-25 cursor-not-allowed text-zinc-300"
-                                      : "hover:bg-zinc-100 cursor-pointer text-zinc-600 hover:text-zinc-900"
+                                      ? "opacity-25 cursor-not-allowed text-[var(--admin-muted,#92989d)]"
+                                      : "hover:bg-[var(--admin-raised,#292b2f)] cursor-pointer text-[var(--admin-secondary,#c3c7ca)] hover:text-[var(--admin-text,#f4f4f5)]"
                                   }`}
                                   title="Naik 1 Layer (Ctrl+])"
                                 >
@@ -2881,10 +2881,10 @@ export function AdminTemplateEditorPage() {
                                     sendBackward(i);
                                   }}
                                   disabled={i === 0}
-                                  className={`p-1.5 transition-colors border-l border-zinc-200 ${
+                                  className={`p-1.5 transition-colors border-l border-[var(--admin-border-interactive,#34373b)] ${
                                     i === 0
-                                      ? "opacity-25 cursor-not-allowed text-zinc-300"
-                                      : "hover:bg-zinc-100 cursor-pointer text-zinc-600 hover:text-zinc-900"
+                                      ? "opacity-25 cursor-not-allowed text-[var(--admin-muted,#92989d)]"
+                                      : "hover:bg-[var(--admin-raised,#292b2f)] cursor-pointer text-[var(--admin-secondary,#c3c7ca)] hover:text-[var(--admin-text,#f4f4f5)]"
                                   }`}
                                   title="Turun 1 Layer (Ctrl+[)"
                                 >
@@ -2897,10 +2897,10 @@ export function AdminTemplateEditorPage() {
                                     sendToBack(i);
                                   }}
                                   disabled={i === 0}
-                                  className={`p-1.5 transition-colors border-l border-zinc-200 ${
+                                  className={`p-1.5 transition-colors border-l border-[var(--admin-border-interactive,#34373b)] ${
                                     i === 0
-                                      ? "opacity-25 cursor-not-allowed text-zinc-300"
-                                      : "hover:bg-zinc-100 cursor-pointer text-zinc-600 hover:text-zinc-900"
+                                      ? "opacity-25 cursor-not-allowed text-[var(--admin-muted,#92989d)]"
+                                      : "hover:bg-[var(--admin-raised,#292b2f)] cursor-pointer text-[var(--admin-secondary,#c3c7ca)] hover:text-[var(--admin-text,#f4f4f5)]"
                                   }`}
                                   title="Kirim ke Paling Belakang (Ctrl+Shift+[)"
                                 >
@@ -2914,7 +2914,7 @@ export function AdminTemplateEditorPage() {
                                   e.stopPropagation();
                                   duplicateSlot(i);
                                 }}
-                                className="px-2.5 py-1 text-xs font-medium border border-zinc-200 rounded-lg bg-white hover:bg-zinc-50 text-zinc-700 transition-colors flex items-center gap-1 shadow-xs cursor-pointer"
+                                className="px-2.5 py-1 text-xs font-medium border border-[var(--admin-border-interactive,#34373b)] rounded-lg bg-[var(--admin-card,#1c1f20)] hover:bg-[var(--admin-raised,#292b2f)] text-[var(--admin-secondary,#c3c7ca)] transition-colors flex items-center gap-1  cursor-pointer"
                                 title="Duplikat slot ini"
                               >
                                 <Copy size={12} />
@@ -2926,7 +2926,7 @@ export function AdminTemplateEditorPage() {
                                   e.stopPropagation();
                                   removeSlot(i);
                                 }}
-                                className="p-1.5 text-xs font-medium border border-rose-200 text-rose-600 rounded-lg hover:bg-rose-50 transition-colors cursor-pointer"
+                                className="p-1.5 text-xs font-medium border border-rose-200 text-[var(--admin-danger,#f18e9a)] rounded-lg hover:bg-[var(--admin-alert,#3b2d3c)] transition-colors cursor-pointer"
                                 title="Hapus slot"
                               >
                                 <Trash2 size={13} />
@@ -2935,9 +2935,9 @@ export function AdminTemplateEditorPage() {
                           </div>
 
                           {/* Numeric Inputs Grid */}
-                          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 pt-2.5 border-t border-zinc-100">
+                          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 pt-2.5  border-[var(--admin-border-interactive,#34373b)]">
                             <div>
-                              <span className="text-[10px] font-medium uppercase text-zinc-400 block mb-1">
+                              <span className="text-[12px] font-medium uppercase text-[var(--admin-muted,#92989d)] block mb-1">
                                 Posisi X
                               </span>
                               <input
@@ -2946,11 +2946,11 @@ export function AdminTemplateEditorPage() {
                                 onChange={(e) =>
                                   updateField(i, "x", Number(e.target.value))
                                 }
-                                className="w-full border border-zinc-200 rounded-md px-2 py-1 text-xs font-mono text-zinc-800 bg-white hover:border-zinc-300 focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 outline-none transition-colors"
+                                className="w-full border border-[var(--admin-border-interactive,#34373b)] rounded-md px-2 py-1 text-xs font-mono text-[var(--admin-text,#f4f4f5)] bg-[var(--admin-canvas,#111114)] hover:border-[var(--admin-border-interactive,#34373b)] focus:border-[var(--admin-border-interactive,#34373b)] focus:ring-1 focus:ring-zinc-900 outline-none transition-colors"
                               />
                             </div>
                             <div>
-                              <span className="text-[10px] font-medium uppercase text-zinc-400 block mb-1">
+                              <span className="text-[12px] font-medium uppercase text-[var(--admin-muted,#92989d)] block mb-1">
                                 Posisi Y
                               </span>
                               <input
@@ -2959,11 +2959,11 @@ export function AdminTemplateEditorPage() {
                                 onChange={(e) =>
                                   updateField(i, "y", Number(e.target.value))
                                 }
-                                className="w-full border border-zinc-200 rounded-md px-2 py-1 text-xs font-mono text-zinc-800 bg-white hover:border-zinc-300 focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 outline-none transition-colors"
+                                className="w-full border border-[var(--admin-border-interactive,#34373b)] rounded-md px-2 py-1 text-xs font-mono text-[var(--admin-text,#f4f4f5)] bg-[var(--admin-canvas,#111114)] hover:border-[var(--admin-border-interactive,#34373b)] focus:border-[var(--admin-border-interactive,#34373b)] focus:ring-1 focus:ring-zinc-900 outline-none transition-colors"
                               />
                             </div>
                             <div>
-                              <span className="text-[10px] font-medium uppercase text-zinc-400 block mb-1">
+                              <span className="text-[12px] font-medium uppercase text-[var(--admin-muted,#92989d)] block mb-1">
                                 Lebar (W)
                               </span>
                               <input
@@ -2976,11 +2976,11 @@ export function AdminTemplateEditorPage() {
                                     Number(e.target.value),
                                   )
                                 }
-                                className="w-full border border-zinc-200 rounded-md px-2 py-1 text-xs font-mono text-zinc-800 bg-white hover:border-zinc-300 focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 outline-none transition-colors"
+                                className="w-full border border-[var(--admin-border-interactive,#34373b)] rounded-md px-2 py-1 text-xs font-mono text-[var(--admin-text,#f4f4f5)] bg-[var(--admin-canvas,#111114)] hover:border-[var(--admin-border-interactive,#34373b)] focus:border-[var(--admin-border-interactive,#34373b)] focus:ring-1 focus:ring-zinc-900 outline-none transition-colors"
                               />
                             </div>
                             <div>
-                              <span className="text-[10px] font-medium uppercase text-zinc-400 block mb-1">
+                              <span className="text-[12px] font-medium uppercase text-[var(--admin-muted,#92989d)] block mb-1">
                                 Tinggi (H)
                               </span>
                               <input
@@ -2993,11 +2993,11 @@ export function AdminTemplateEditorPage() {
                                     Number(e.target.value),
                                   )
                                 }
-                                className="w-full border border-zinc-200 rounded-md px-2 py-1 text-xs font-mono text-zinc-800 bg-white hover:border-zinc-300 focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 outline-none transition-colors"
+                                className="w-full border border-[var(--admin-border-interactive,#34373b)] rounded-md px-2 py-1 text-xs font-mono text-[var(--admin-text,#f4f4f5)] bg-[var(--admin-canvas,#111114)] hover:border-[var(--admin-border-interactive,#34373b)] focus:border-[var(--admin-border-interactive,#34373b)] focus:ring-1 focus:ring-zinc-900 outline-none transition-colors"
                               />
                             </div>
                             <div>
-                              <span className="text-[10px] font-medium uppercase text-zinc-400 block mb-1">
+                              <span className="text-[12px] font-medium uppercase text-[var(--admin-muted,#92989d)] block mb-1">
                                 Radius (R)
                               </span>
                               <input
@@ -3010,11 +3010,11 @@ export function AdminTemplateEditorPage() {
                                     Number(e.target.value),
                                   )
                                 }
-                                className="w-full border border-zinc-200 rounded-md px-2 py-1 text-xs font-mono text-zinc-800 bg-white hover:border-zinc-300 focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 outline-none transition-colors"
+                                className="w-full border border-[var(--admin-border-interactive,#34373b)] rounded-md px-2 py-1 text-xs font-mono text-[var(--admin-text,#f4f4f5)] bg-[var(--admin-canvas,#111114)] hover:border-[var(--admin-border-interactive,#34373b)] focus:border-[var(--admin-border-interactive,#34373b)] focus:ring-1 focus:ring-zinc-900 outline-none transition-colors"
                               />
                             </div>
                             <div>
-                              <span className="text-[10px] font-medium uppercase text-zinc-400 block mb-1">
+                              <span className="text-[12px] font-medium uppercase text-[var(--admin-muted,#92989d)] block mb-1">
                                 Rotasi (°)
                               </span>
                               <input
@@ -3027,7 +3027,7 @@ export function AdminTemplateEditorPage() {
                                     Number(e.target.value),
                                   )
                                 }
-                                className="w-full border border-zinc-200 rounded-md px-2 py-1 text-xs font-mono text-zinc-800 bg-white hover:border-zinc-300 focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 outline-none transition-colors"
+                                className="w-full border border-[var(--admin-border-interactive,#34373b)] rounded-md px-2 py-1 text-xs font-mono text-[var(--admin-text,#f4f4f5)] bg-[var(--admin-canvas,#111114)] hover:border-[var(--admin-border-interactive,#34373b)] focus:border-[var(--admin-border-interactive,#34373b)] focus:ring-1 focus:ring-zinc-900 outline-none transition-colors"
                               />
                             </div>
                           </div>

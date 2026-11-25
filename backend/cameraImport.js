@@ -7,9 +7,18 @@ import { exifDateTime, selectPhotoWindow, selectConfirmedRange } from "./photoSe
 import { prepareGallery, publishGallery, verifyPhoto } from "./photoTransfer.js";
 
 export function createCameraImporter({ photosDir, thumbsDir, storageDir, cacheDir, runMtp, resolveFolders,
-  readConfig, saveConfig, beforePublish = () => {}, afterPublish = () => {} }) {
+  readConfig, saveConfig, beforePublish = () => {}, afterPublish = () => {},
+  history = { lookup: () => undefined, record: () => {} }, thumbBatchDelay = 120 }) {
   const scans = new Map();
   const previews = new Map();
+  const thumbs = new Map();
+  let thumbQueue = [];
+  let thumbTimer = null;
+  // Nothing in the cache outlives the process (scans live in memory), so start clean.
+  try { for (const entry of fs.readdirSync(cacheDir)) fs.rmSync(path.join(cacheDir, entry), { recursive: true, force: true }); }
+  catch { /* Missing or locked cache entries are not fatal. */ }
+  // Thumbnails and previews wait behind scans/imports and are dropped once a newer scan exists.
+  const background = (scan) => ({ priority: "low", cancelled: () => scan.superseded === true });
   let busy = false;
   let progress = { phase: "idle", verified: 0, total: 0 };
   const getScan = (id) => {
@@ -17,21 +26,86 @@ export function createCameraImporter({ photosDir, thumbsDir, storageDir, cacheDi
     if (!scan || Date.now() > scan.expiresAt) throw new Error("Hasil scan kedaluwarsa. Scan ulang sebelum impor.");
     return scan;
   };
+  const dropScan = (id) => {
+    const scan = scans.get(id);
+    scans.delete(id);
+    for (const map of [previews, thumbs]) for (const key of map.keys()) if (key.startsWith(`${id}/`)) map.delete(key);
+    for (const dir of scan?.previewDirs || []) {
+      try { fs.rmSync(dir, { recursive: true, force: true }); } catch { /* Locked preview files are removed with the cache later. */ }
+    }
+  };
+  // Every MTP call re-opens the device, so the photos for one view are copied in a single call.
+  const fetchPreviews = (scan, files) => {
+    const pending = files.filter((f) => !previews.has(`${scan.id}/${f.id}`));
+    if (!pending.length) return;
+    const work = childPath(cacheDir, crypto.randomUUID());
+    scan.previewDirs.push(work);
+    const items = pending.map((f, i) => ({ ...f, destName: `preview-${i + 1}.jpg` }));
+    const batch = (async () => {
+      fs.mkdirSync(work, { recursive: true });
+      const manifest = path.join(work, "selection.json");
+      writeJsonAtomic(manifest, { deviceName: scan.deviceName, storageName: scan.storageName, files: items });
+      const result = await runMtp(["-Action", "import", "-DeviceQuery", scan.deviceQuery, "-SubFolder", "all", "-ManifestPath", manifest, "-DestDir", work], background(scan));
+      if (!result.success) throw new Error(cameraErrorMessage(result.error, "Preview kamera gagal dibuat."));
+    })();
+    for (const item of items) {
+      const key = `${scan.id}/${item.id}`;
+      const promise = batch.then(async () => {
+        const target = path.join(work, item.destName);
+        await verifyPhoto(target, item.size);
+        return target;
+      });
+      previews.set(key, promise);
+      promise.catch(() => previews.delete(key));
+    }
+  };
+  // The photo grid asks for many thumbnails at once. Requests arriving close together are sent to
+  // the camera as one batch, which reads the small thumbnail the camera already stores instead of
+  // copying the full photo. A missing thumbnail is reported, never replaced by a full copy: on the
+  // X-S10 that flooded the camera with transfers and delayed scans and imports.
+  const flushThumbs = () => {
+    thumbTimer = null;
+    const queue = thumbQueue; thumbQueue = [];
+    const byScan = new Map();
+    for (const job of queue) byScan.set(job.scan, [...(byScan.get(job.scan) || []), job]);
+    for (const [scan, jobs] of byScan) {
+      const work = childPath(cacheDir, crypto.randomUUID());
+      scan.previewDirs.push(work);
+      const items = jobs.map((job, i) => ({ id: job.file.id, name: job.file.name, folderName: job.file.folderName, destName: `thumb-${i + 1}.jpg` }));
+      const batch = (async () => {
+        fs.mkdirSync(work, { recursive: true });
+        const manifest = path.join(work, "thumbs.json");
+        writeJsonAtomic(manifest, { deviceName: scan.deviceName, storageName: scan.storageName, files: items });
+        const result = await runMtp(["-Action", "thumbs", "-DeviceQuery", scan.deviceQuery, "-ManifestPath", manifest, "-DestDir", work], background(scan));
+        if (!result.success) throw new Error(cameraErrorMessage(result.error, "Thumbnail kamera gagal dibaca."));
+        const errors = new Map((Array.isArray(result.files) ? result.files : result.files ? [result.files] : []).map((f) => [f.id, f.error]));
+        return items.map((item) => ({ target: path.join(work, item.destName), error: errors.get(item.id) }));
+      })();
+      jobs.forEach((job, i) => {
+        batch.then((outcomes) => {
+          const { target, error } = outcomes[i];
+          if (fs.existsSync(target) && fs.statSync(target).size > 0) return target;
+          throw new Error(cameraErrorMessage(error, "Thumbnail tidak tersedia."));
+        }).then(job.resolve, job.reject);
+      });
+    }
+  };
   const timeLabel = (ms) => ms == null ? "Waktu tidak tersedia" : new Date(ms).toLocaleString("id-ID");
   const publicFile = (file, scanId) => ({
     id: file.id, name: file.name, folderName: file.folderName, size: file.size,
-    timeFormatted: timeLabel(file.timeMs), timeSource: file.timeSource, group: file.group,
-    selected: file.selected, previewUrl: `/api/camera-import/preview?scanId=${scanId}&id=${encodeURIComponent(file.id)}`,
+    timeMs: file.timeMs, timeFormatted: timeLabel(file.timeMs), timeSource: file.timeSource, group: file.group,
+    selected: file.selected, importedAt: file.importedAt || null,
+    previewUrl: `/api/camera-import/preview?scanId=${scanId}&id=${encodeURIComponent(file.id)}`,
+    thumbUrl: `/api/camera-import/thumb?scanId=${scanId}&id=${encodeURIComponent(file.id)}`,
   });
   return {
     get busy() { return busy; },
     get progress() { return progress; },
     async scan({ presetId = "studio", customPath, filter = "custom_min", minutes, subFolder = "all" } = {}) {
       if (busy) throw new Error("Tunggu impor yang sedang berlangsung selesai.");
-      for (const [id, scan] of scans) if (Date.now() > scan.expiresAt) {
-        scans.delete(id);
-        for (const key of previews.keys()) if (key.startsWith(`${id}/`)) previews.delete(key);
-      }
+      for (const [id, scan] of scans) if (Date.now() > scan.expiresAt) dropScan(id);
+      // A new scan replaces the previous grid: its pending thumbnail work no longer needs the camera.
+      for (const scan of scans.values()) scan.superseded = true;
       const config = readConfig();
       const preset = config.presets[presetId];
       if (!preset) throw new Error("Sumber foto tidak dikenal.");
@@ -71,8 +145,10 @@ export function createCameraImporter({ photosDir, thumbsDir, storageDir, cacheDi
       }
       if (new Set(files.map((f) => f.id)).size !== files.length) throw new Error("Identitas file ambigu. Pilih satu folder sumber.");
       const selection = selectPhotoWindow(files, { filter, minutes: duration });
+      // Imported photos are only labelled; the time-based recommendation is unchanged.
+      for (const file of selection.candidates) file.importedAt = history.lookup(file)?.importedAt || null;
       const id = crypto.randomUUID();
-      const scan = { ...selection, id, presetId, isMtp, deviceName, storageName, deviceQuery: preset.deviceQuery || "X-S10", expiresAt: Date.now() + 30 * 60000 };
+      const scan = { ...selection, id, presetId, isMtp, deviceName, storageName, deviceQuery: preset.deviceQuery || "X-S10", expiresAt: Date.now() + 30 * 60000, previewDirs: [] };
       scans.set(id, scan);
       const selected = selection.candidates.filter((f) => f.selected);
       const sample = selected.length <= 6 ? selected : [...selected.slice(0, 3), ...selected.slice(-3)];
@@ -82,6 +158,8 @@ export function createCameraImporter({ photosDir, thumbsDir, storageDir, cacheDi
         candidates: selection.candidates.map((f) => publicFile(f, id)), toleranceCount: selection.candidates.filter((f) => f.group === "tolerance").length,
         unknownCount: selection.candidates.filter((f) => f.group === "unknown").length,
         fallbackCount: selection.candidates.filter((f) => f.timeSource === "modified").length,
+        importedCount: selection.candidates.filter((f) => f.importedAt).length,
+        deviceName: deviceName || null,
         gaps: selection.gaps, previews: sample.map((f) => publicFile(f, id)) };
     },
     async preview(scanId, fileId) {
@@ -89,29 +167,29 @@ export function createCameraImporter({ photosDir, thumbsDir, storageDir, cacheDi
       const file = scan.candidates.find((f) => f.id === fileId);
       if (!file) throw new Error("Foto bukan bagian hasil scan.");
       if (!scan.isMtp) return file.fullPath;
-      const key = `${scanId}/${fileId}`;
-      if (!previews.has(key)) {
-        const promise = (async () => {
-          const work = childPath(cacheDir, crypto.randomUUID());
-          fs.mkdirSync(work, { recursive: true });
-          const manifest = path.join(work, "selection.json");
-          writeJsonAtomic(manifest, { deviceName: scan.deviceName, storageName: scan.storageName, files: [{ ...file, destName: "preview.jpg" }] });
-          const result = await runMtp(["-Action", "import", "-DeviceQuery", scan.deviceQuery, "-SubFolder", "all", "-ManifestPath", manifest, "-DestDir", work]);
-          if (!result.success) throw new Error(result.error);
-          const target = path.join(work, "preview.jpg");
-          await verifyPhoto(target, file.size);
-          return target;
-        })();
-        previews.set(key, promise);
-        promise.catch(() => previews.delete(key));
-      }
-      return previews.get(key);
+      fetchPreviews(scan, [file]);
+      return previews.get(`${scanId}/${fileId}`);
     },
-    async import({ scanId, firstId, lastId, clearExistingPhotos = true }) {
+    async thumbnail(scanId, fileId) {
+      const scan = getScan(scanId);
+      const file = scan.candidates.find((f) => f.id === fileId);
+      if (!file) throw new Error("Foto bukan bagian hasil scan.");
+      if (!scan.isMtp) return file.fullPath;
+      const key = `${scanId}/${fileId}`;
+      if (!thumbs.has(key)) {
+        const promise = new Promise((resolve, reject) => thumbQueue.push({ scan, file, resolve, reject }));
+        thumbs.set(key, promise);
+        promise.catch(() => thumbs.delete(key));
+        if (thumbQueue.length >= 60) { clearTimeout(thumbTimer); flushThumbs(); }
+        else if (!thumbTimer) thumbTimer = setTimeout(flushThumbs, thumbBatchDelay);
+      }
+      return thumbs.get(key);
+    },
+    async import({ scanId, ids, firstId, lastId, clearExistingPhotos = true }) {
       if (busy) throw new Error("Impor lain masih berlangsung.");
       const scan = getScan(scanId);
-      const selection = selectConfirmedRange(scan, firstId, lastId);
-      const signature = JSON.stringify([firstId, lastId, clearExistingPhotos]);
+      const selection = ids === undefined ? selectConfirmedRange(scan, firstId, lastId) : selectPhotoIds(scan, ids);
+      const signature = JSON.stringify([ids === undefined ? [firstId, lastId] : [...new Set(ids)].sort(), clearExistingPhotos]);
       if (scan.completed) {
         if (scan.completed.signature !== signature) throw new Error("Sesi ini sudah diimpor. Scan ulang untuk pilihan baru.");
         return scan.completed.result;
@@ -129,7 +207,7 @@ export function createCameraImporter({ photosDir, thumbsDir, storageDir, cacheDi
               const manifest = path.join(workDir, "selection.json");
               writeJsonAtomic(manifest, { deviceName: scan.deviceName, storageName: scan.storageName, files });
               const result = await runMtp(["-Action", "import", "-DeviceQuery", scan.deviceQuery, "-SubFolder", "all", "-ManifestPath", manifest, "-DestDir", destination]);
-              if (!result.success || result.count !== files.length) throw new Error(result.error || "Jumlah foto yang tersalin belum lengkap.");
+              if (!result.success || result.count !== files.length) throw new Error(cameraErrorMessage(result.error, "Jumlah foto yang tersalin belum lengkap."));
             } else {
               for (const file of files) {
                 const before = await fs.promises.stat(file.fullPath);
@@ -153,7 +231,7 @@ export function createCameraImporter({ photosDir, thumbsDir, storageDir, cacheDi
         config.lastImport = { timestamp: new Date().toISOString(), preset: scan.presetId, count: files.length, bytes: prepared.bytes,
           formattedSize: `${(prepared.bytes / 1048576).toFixed(1)} MB`, firstFile: files[0].name, lastFile: files.at(-1).name,
           earliestTime: timeLabel(files[0].timeMs), latestTime: timeLabel(files.at(-1).timeMs) };
-        try { saveConfig(config); writeJsonAtomic(path.join(workDir, "result.json"), result); }
+        try { saveConfig(config); writeJsonAtomic(path.join(workDir, "result.json"), result); history.record(files, { jobId }); }
         catch { result.warning = "Foto siap, tetapi riwayat impor belum tersimpan."; }
         return result;
       } catch (error) {
@@ -162,4 +240,25 @@ export function createCameraImporter({ photosDir, thumbsDir, storageDir, cacheDi
       } finally { busy = false; }
     },
   };
+}
+
+// Staff may pick any photos (Ctrl/Shift selection). Every id must come from this scan.
+export function selectPhotoIds(scan, ids) {
+  if (!Array.isArray(ids) || !ids.length || ids.length > 5000 || ids.some((id) => typeof id !== "string")) {
+    throw new Error("Pilih minimal satu foto dari hasil scan.");
+  }
+  const wanted = new Set(ids);
+  const selection = scan.candidates.filter((f) => wanted.has(f.id));
+  if (selection.length !== wanted.size) throw new Error("Ada foto yang bukan bagian hasil scan. Scan ulang.");
+  return selection;
+}
+
+// Windows reports a camera that refuses to hand out photo data as "Access is denied" (0x80070005)
+// or a failed thumbnail extraction (0x8004B200). Staff need the action, not the HRESULT.
+export function cameraErrorMessage(error, fallback) {
+  if (!error) return fallback;
+  if (/0x80070005|E_ACCESSDENIED|Access is denied|0x8004B200/i.test(error)) {
+    return "Kamera menolak akses ke file foto. Cabut kabel USB, matikan lalu nyalakan kamera, colok lagi, lalu klik Scan Ulang. Jangan buka kamera di Windows Explorer saat impor.";
+  }
+  return error;
 }

@@ -1,0 +1,36 @@
+{
+  "deviceName": "X-S10",
+  "storageName": "External Memory",
+  "files": [
+    {
+      "id": "280_FUJI/DSCF0231.JPG",
+      "name": "DSCF0231.JPG",
+      "folderName": "280_FUJI",
+      "destName": "thumb-1.jpg"
+    },
+    {
+      "id": "280_FUJI/DSCF0232.JPG",
+      "name": "DSCF0232.JPG",
+      "folderName": "280_FUJI",
+      "destName": "thumb-2.jpg"
+    },
+    {
+      "id": "280_FUJI/DSCF0233.JPG",
+      "name": "DSCF0233.JPG",
+      "folderName": "280_FUJI",
+      "destName": "thumb-3.jpg"
+    },
+    {
+      "id": "280_FUJI/DSCF0234.JPG",
+      "name": "DSCF0234.JPG",
+      "folderName": "280_FUJI",
+      "destName": "thumb-4.jpg"
+    },
+    {
+      "id": "280_FUJI/DSCF0235.JPG",
+      "name": "DSCF0235.JPG",
+      "folderName": "280_FUJI",
+      "destName": "thumb-5.jpg"
+    }
+  ]
+}

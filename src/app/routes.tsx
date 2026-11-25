@@ -36,6 +36,7 @@ import { LicenseProvider } from "../context/LicenseContext";
 import { SecurityProvider } from "../context/SecurityContext";
 import { KioskLockoutGuard } from "./components/KioskLockoutGuard";
 import { AdminRouteGuard } from "./components/AdminRouteGuard";
+import { CameraPlugWatcher } from "./components/CameraPlugWatcher";
 
 function RootLayout() {
   const location = useLocation();
@@ -49,6 +50,7 @@ function RootLayout() {
               <div data-kiosk-theme={!isAdmin ? "active" : undefined} style={{ display: "contents" }}><Outlet /></div>
               {!isAdmin && <KioskPrinterAlertModal />}
               {!isAdmin && <KioskLockoutGuard />}
+              <CameraPlugWatcher />
             </LicenseProvider>
           </BrandingProvider>
         </PricingProvider>
