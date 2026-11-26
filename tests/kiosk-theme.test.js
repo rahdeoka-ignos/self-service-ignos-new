@@ -144,6 +144,45 @@ function label(tree) {
   if (typeof tree === 'string') return tree;
   return tree?.props ? label(tree.props.children) : '';
 }
+
+test('illustration packs survive customization and server-confirmed saves', async () => {
+  const h = harness();
+  const custom = { ...h.presets['woset-play'], presetId: 'custom', primaryColor: '#446655', homeHeadline: 'Cerita kita' };
+  h.fetch(async (_url, init) => response(JSON.parse(init.body)));
+  assert.equal(await h.render().saveTheme(custom), true);
+  assert.equal(h.render().theme.assetPack, 'woset-play');
+  assert.equal(h.render().theme.homeHeadline, 'Cerita kita');
+  assert.equal(h.writes.at(-1).assetPack, 'woset-play');
+});
+
+test('legacy themes normalize safely and unknown illustration packs cannot be saved', async () => {
+  const h = harness();
+  const legacy = { ...h.presets['clean-minimal'] };
+  delete legacy.assetPack;
+  assert.equal(h.utils.normalizeTheme(legacy).assetPack, 'none');
+  const illustrated = { ...h.presets['woset-play'] };
+  delete illustrated.assetPack;
+  assert.equal(h.utils.normalizeTheme(illustrated).assetPack, 'woset-play');
+  assert.equal(h.utils.normalizeTheme({ ...legacy, assetPack: '../unknown' }).assetPack, 'none');
+  h.fetch(() => assert.fail('Unknown asset packs must not reach server'));
+  assert.equal(await h.render().saveTheme({ ...h.presets['woset-play'], assetPack: '../unknown' }), false);
+});
+
+test('Woset preset selection is a draft and applies illustrations only after Save', async () => {
+  const h = harness();
+  h.fetch(async (_url, init) => init ? response(JSON.parse(init.body)) : { ok: true, json: async () => h.presets['neo-brutalism'] });
+  h.render(); h.runEffects(); await flush(); h.render();
+  h.renderEditor(); h.runEffects();
+  const preset = nodes(h.renderEditor()).find(node => node.type === 'button' && node.props?.onClick?.toString().includes('handleApplyPreset("woset-play")'));
+  assert.ok(preset);
+  preset.props.onClick();
+  assert.equal(h.render().theme.assetPack, 'none');
+  const save = nodes(h.renderEditor()).find(node => node.type === 'button' && label(node).includes('Terapkan ke Kiosk'));
+  await save.props.onClick();
+  assert.equal(h.render().theme.assetPack, 'woset-play');
+  assert.equal(h.render().theme.presetId, 'woset-play');
+});
+
 test('editing a preset stays in draft, survives refresh, and only applies after Save', async () => {
   const h = harness();
   let current = h.presets['neo-brutalism'];

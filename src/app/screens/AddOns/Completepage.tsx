@@ -1,3 +1,4 @@
+import { WosetArtwork } from "../../components/WosetArtwork";
 import { apiFetch as fetch } from "../../../utils/api";
 import { useState, useRef, useEffect } from "react";
 import { QRCodeSVG } from "qrcode.react";
@@ -458,9 +459,9 @@ export function CompletePage() {
 
   const Divider = () => (
     <div className="relative my-3">
-      <div className="border-t-4 border-dashed border-gray-300" />
-      <div className="absolute -left-9 -top-3 w-6 h-6 bg-gray-100 border-4 border-black rounded-full" />
-      <div className="absolute -right-9 -top-3 w-6 h-6 bg-gray-100 border-4 border-black rounded-full" />
+      <div data-kiosk-ui="divider" className="border-t-4 border-dashed border-gray-300" />
+      <div data-kiosk-ui="surface" className="absolute -left-9 -top-3 w-6 h-6 bg-gray-100 border-4 border-black rounded-full" />
+      <div data-kiosk-ui="surface" className="absolute -right-9 -top-3 w-6 h-6 bg-gray-100 border-4 border-black rounded-full" />
     </div>
   );
 
@@ -518,6 +519,7 @@ export function CompletePage() {
         <div className="max-w-6xl w-full">
           {/* ── JUDUL & SUBJUDUL HALAMAN ── */}
           <div className="text-center mb-8">
+            {theme?.assetPack === "woset-play" && <WosetArtwork scene="ready" className="mx-auto mb-3 h-[140px] w-[220px]" />}
             <h1 className="text-4xl sm:text-5xl font-black mb-2 text-black tracking-tight">
               Sesi Selesai! 🎉
             </h1>
@@ -529,10 +531,10 @@ export function CompletePage() {
           {/* ── DUA KOLOM SEIMBANG: SOFTCOPY & STRUK KASIR ── */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start mb-12">
             {/* ── KOLOM 1: SOFTCOPY QR CODE (BACKGROUND PUTIH & BALANCED HEIGHT) ── */}
-            <div className="bg-white border-4 border-black rounded-3xl p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] text-center relative overflow-hidden flex flex-col items-center">
+            <div data-kiosk-ui="media" className="bg-white border-4 border-black rounded-3xl p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] text-center relative overflow-hidden flex flex-col items-center">
               {/* Header Card */}
               <div>
-                <div className="inline-flex items-center bg-black text-white px-5 py-2 rounded-full font-black text-sm tracking-wider uppercase mb-3 shadow-[2px_2px_0px_0px_rgba(0,0,0,0.15)]">
+                <div data-kiosk-ui="surface" className="inline-flex items-center bg-black text-white px-5 py-2 rounded-full font-black text-sm tracking-wider uppercase mb-3 shadow-[2px_2px_0px_0px_rgba(0,0,0,0.15)]">
                   <span>Softcopy Foto Kamu</span>
                 </div>
                 <h2 className="text-3xl font-black mb-2 text-black leading-tight">
@@ -546,14 +548,14 @@ export function CompletePage() {
               {/* Center Content (QR Code & Actions) */}
               <div className="w-full flex flex-col items-center">
                 {driveLoading ? (
-                  <div className="bg-gray-50 border-4 border-black rounded-2xl p-8 flex flex-col items-center justify-center gap-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] w-full">
+                  <div data-kiosk-ui="surface" className="bg-gray-50 border-4 border-black rounded-2xl p-8 flex flex-col items-center justify-center gap-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] w-full">
                     <Loader2 size={44} className="animate-spin text-black" />
                     <p className="text-base font-bold text-gray-800">Menyiapkan link Google Drive kamu...</p>
                   </div>
                 ) : driveData?.webViewLink ? (
                   <div className="flex flex-col items-center gap-4 w-full">
                     {/* QR Code Container */}
-                    <div className="bg-white p-4 border-4 border-black rounded-3xl shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] inline-block">
+                    <div data-kiosk-ui="media" className="bg-white p-4 border-4 border-black rounded-3xl shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] inline-block">
                       <QRCodeSVG
                         value={driveData.webViewLink}
                         size={230}
@@ -566,12 +568,12 @@ export function CompletePage() {
                       <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">
                         Folder Google Drive:
                       </p>
-                      <p className="text-sm font-black bg-gray-50 px-4 py-1.5 rounded-xl border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] inline-block">
+                      <p data-kiosk-ui="badge" className="text-sm font-black bg-gray-50 px-4 py-1.5 rounded-xl border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] inline-block">
                         {driveData.folderName}
                       </p>
                     </div>
 
-                    <a
+                    <a data-kiosk-ui="control"
                       href={driveData.webViewLink}
                       target="_blank"
                       rel="noreferrer"
@@ -582,16 +584,16 @@ export function CompletePage() {
                     </a>
                   </div>
                 ) : (
-                  <div className="p-4 bg-gray-50 border-4 border-black rounded-2xl text-black text-sm font-bold shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] w-full">
+                  <div data-kiosk-ui="surface" className="p-4 bg-gray-50 border-4 border-black rounded-2xl text-black text-sm font-bold shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] w-full">
                     Link Google Drive sedang disiapkan server. Kasir dapat membantu memeriksa softcopy foto Anda.
                   </div>
                 )}
               </div>
 
               {/* Bottom Footer (Upload Progress) */}
-              <div className="w-full mt-4 pt-3 border-t-2 border-dashed border-gray-200">
+              <div data-kiosk-ui="divider" className="w-full mt-4 pt-3 border-t-2 border-dashed border-gray-200">
                 {uploadProgress && uploadProgress.total > 0 ? (
-                  <div className="w-full bg-gray-50 p-3 border-2 border-black rounded-xl shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] text-left">
+                  <div data-kiosk-ui="surface" className="w-full bg-gray-50 p-3 border-2 border-black rounded-xl shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] text-left">
                     <div className="flex justify-between items-center mb-1 text-xs font-bold">
                       <span className="flex items-center gap-1.5">
                         {uploadProgress.isUploading ? (
@@ -890,14 +892,14 @@ export function CompletePage() {
         </div>
 
         {(receiptError || completionError || uploadProgress?.error) && (
-          <div role="alert" className="border-2 border-black bg-white p-5 mb-6 text-center">
+          <div data-kiosk-ui="surface" role="alert" className="border-2 border-black bg-white p-5 mb-6 text-center">
             {completionError || receiptError || uploadProgress?.error} Silakan hubungi staf sebelum melanjutkan.
             {completionError && <button disabled={driveLoading} onClick={autoUploadDrive} className="block mx-auto mt-3 underline">Coba simpan sesi lagi</button>}
           </div>
         )}
         {/* Back home */}
         <div className="flex justify-center">
-            <button
+            <button data-kiosk-ui="control"
               disabled={driveLoading || !!completionError}
               onClick={() => {
                 clearSessionData();

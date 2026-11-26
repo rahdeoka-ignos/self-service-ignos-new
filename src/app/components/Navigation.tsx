@@ -6,6 +6,8 @@ import { BrutalistButton } from "./BrutalistButton";
 import { useKioskTheme } from "../../context/KioskThemeContext";
 import { CameraImportModal } from "./CameraImportModal";
 
+import { WosetArtwork, type WosetScene } from "./WosetArtwork";
+
 interface NavigationProps {
   currentStep: number;
   totalSteps: number;
@@ -21,10 +23,12 @@ export function Navigation({
   const { i18n } = useTranslation();
   const [cameraImportOpen, setCameraImportOpen] = useState(false);
 
+  let illustrated = false;
   let studioName = "IGNOS STUDIO";
   let logoUrl = "";
   try {
     const { theme } = useKioskTheme();
+    illustrated = theme.assetPack === "woset-play";
     if (theme.studioName) studioName = theme.studioName;
     if (theme.logoUrl) logoUrl = theme.logoUrl;
   } catch {}
@@ -53,7 +57,7 @@ export function Navigation({
 
           <div className="flex items-center gap-3">
             {Array.from({ length: totalSteps }, (_, i) => (
-              <div
+              illustrated ? <div key={i} aria-label={`Langkah ${i + 1}${i + 1 === currentStep ? ", sekarang" : ""}`} aria-current={i + 1 === currentStep ? "step" : undefined} className={`relative flex h-[58px] w-[54px] flex-col items-center ${i + 1 > currentStep ? "opacity-35" : ""}`}><WosetArtwork scene={(["friends", "studio", "frames", "keepsake", "ready"] as WosetScene[])[i % 5]} className="h-10 w-12" /><span className={`mt-0.5 rounded-full px-2 text-[11px] ${i + 1 === currentStep ? "bg-[#d6c574]" : ""}`}>{i + 1}</span></div> : <div
                 key={i}
                 className={`w-12 h-12 border-4 border-black rounded-full flex items-center justify-center text-xl font-bold ${
                   i + 1 <= currentStep

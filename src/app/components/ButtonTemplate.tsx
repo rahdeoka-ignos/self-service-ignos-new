@@ -1,5 +1,7 @@
 import { ButtonHTMLAttributes } from "react";
 
+import { useKioskTheme } from "../../context/KioskThemeContext";
+
 interface ButtonTemplateProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: "primary" | "secondary" | "outline";
   size?: "sm" | "md" | "lg";
@@ -12,6 +14,10 @@ export function ButtonTemplate({
   children,
   ...props
 }: ButtonTemplateProps) {
+  let illustrated = false;
+  try { illustrated = useKioskTheme().theme.assetPack === "woset-play"; } catch {}
+  const resolvedClassName = illustrated ? className.replace(/(?:hover:)?!text-(?:black|white)\b/g, "") : className;
+
   const baseClasses =
     "border-4 border-black transition-all active:translate-x-1 active:translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed";
 
@@ -29,7 +35,7 @@ export function ButtonTemplate({
 
   return (
     <button
-      className={`${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${className}`}
+      className={`${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${resolvedClassName}`}
       {...props}
     >
       {children}

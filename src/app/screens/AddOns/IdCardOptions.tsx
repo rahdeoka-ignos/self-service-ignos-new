@@ -1,3 +1,4 @@
+import { KioskQuantityControl } from "../../components/KioskQuantityControl";
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router";
 import { BrutalistCard } from "../../components/BrutalistCard";
@@ -83,12 +84,12 @@ export function IdCardOptions() {
             {idCardList.map((opt) => {
               const qty = quantities[opt.id] || 0;
               return (
-                <BrutalistCard
+                <BrutalistCard data-kiosk-ui="surface" data-kiosk-selected={qty > 0}
                   key={opt.id}
-                  className={`p-0 overflow-hidden flex flex-col ${qty > 0 ? "border-8" : ""}`}
+                  className={`woset-product-card p-0 overflow-hidden flex flex-col ${qty > 0 ? "border-8" : ""}`}
                 >
                   {/* Image */}
-                  <div className="w-full aspect-square overflow-hidden border-b-4 border-black">
+                  <div data-kiosk-ui="divider" className="w-full aspect-square overflow-hidden border-b-4 border-black">
                     <img
                       src={opt.image}
                       alt={`${opt.name} ${opt.subtitle}`}
@@ -109,25 +110,7 @@ export function IdCardOptions() {
                       {formatPrice(opt.price)}
                     </p>
 
-                    {/* Qty control */}
-                    <div className="flex items-center gap-3 mt-auto">
-                      <button
-                        onClick={() => setQty(opt.id, qty - 1)}
-                        disabled={qty <= 0}
-                        className="w-10 h-10 border-4 border-black font-bold text-xl flex items-center justify-center disabled:opacity-30 hover:bg-black hover:text-white transition cursor-pointer"
-                      >
-                        <Minus size={16} strokeWidth={4} />
-                      </button>
-                      <div className="flex-1 text-center text-3xl font-bold border-4 border-black py-1">
-                        {qty}
-                      </div>
-                      <button
-                        onClick={() => setQty(opt.id, qty + 1)}
-                        className="w-10 h-10 border-4 border-black font-bold text-xl flex items-center justify-center hover:bg-black hover:text-white transition cursor-pointer"
-                      >
-                        <Plus size={16} strokeWidth={4} />
-                      </button>
-                    </div>
+                    <KioskQuantityControl value={qty} label={opt.name} onChange={value => setQty(opt.id, value)} />
                   </div>
                 </BrutalistCard>
               );
@@ -136,7 +119,7 @@ export function IdCardOptions() {
 
           {/* Summary */}
           {totalQty > 0 && (
-            <div className="border-4 border-black bg-white p-6 mb-8 rounded-xl">
+            <div data-kiosk-ui="surface" className="border-4 border-black bg-white p-6 mb-8 rounded-xl">
               <h3 className="text-2xl font-bold mb-3">Ringkasan Pesanan</h3>
               <div className="space-y-2">
                 {idCardList.filter((o) => (quantities[o.id] || 0) > 0).map(
@@ -151,7 +134,7 @@ export function IdCardOptions() {
                     </div>
                   ),
                 )}
-                <div className="border-t-4 border-black pt-2 flex justify-between text-2xl font-bold">
+                <div data-kiosk-ui="divider" className="border-t-4 border-black pt-2 flex justify-between text-2xl font-bold">
                   <span>Total</span>
                   <span>{formatPrice(totalPrice)}</span>
                 </div>
@@ -161,7 +144,7 @@ export function IdCardOptions() {
 
           {/* Actions */}
           <div className="flex gap-6">
-            <button
+            <button data-kiosk-ui="control"
               onClick={() => navigate(-1)}
               className="flex-1 text-xl font-bold border-4 border-black px-10 py-4 bg-white hover:bg-black hover:text-white transition"
             >

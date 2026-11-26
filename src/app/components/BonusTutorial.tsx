@@ -25,7 +25,7 @@ export function BonusTutorial({ peopleCount, onClose }: BonusTutorialProps) {
       className="fixed inset-0 z-[200] flex items-center justify-center p-6"
       style={{ backgroundColor: "rgba(0,0,0,0.75)" }}
     >
-      <div className="bg-white border-4 border-black rounded-3xl shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] p-10 w-full max-w-lg relative">
+      <div data-kiosk-ui="dialog" className="bg-white border-4 border-black rounded-3xl shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] p-10 w-full max-w-lg relative">
         {/* Skip */}
         <button
           onClick={onClose}
@@ -35,8 +35,8 @@ export function BonusTutorial({ peopleCount, onClose }: BonusTutorialProps) {
         </button>
 
         {/* Progress bar */}
-        <div className="h-2 bg-gray-200 border-2 border-black rounded-full mb-6 overflow-hidden">
-          <div
+        <div data-kiosk-ui="surface" className="h-2 bg-gray-200 border-2 border-black rounded-full mb-6 overflow-hidden">
+          <div data-kiosk-ui="icon"
             className="h-full bg-black rounded-full transition-all duration-500"
             style={{ width: `${((step + 1) / STEPS.length) * 100}%` }}
           />
@@ -45,7 +45,7 @@ export function BonusTutorial({ peopleCount, onClose }: BonusTutorialProps) {
         {/* Dots */}
         <div className="flex justify-center gap-3 mb-8">
           {STEPS.map((s) => (
-            <div
+            <div data-kiosk-ui="icon"
               key={s.id}
               className={`w-3 h-3 rounded-full border-[3px] border-black transition-all duration-300
                 ${step === s.id ? "bg-black scale-125" : step > s.id ? "bg-yellow-300" : "bg-white"}`}
@@ -56,7 +56,7 @@ export function BonusTutorial({ peopleCount, onClose }: BonusTutorialProps) {
         {/* ── Step 0: Apa ini? ── */}
         {step === 0 && (
           <div className="animate-[slideUp_0.35s_ease_forwards]">
-            <div className="w-20 h-20 rounded-full bg-yellow-300 border-4 border-black flex items-center justify-center text-4xl mx-auto mb-5 animate-pulse">
+            <div data-kiosk-ui="icon" className="w-20 h-20 rounded-full bg-yellow-300 border-4 border-black flex items-center justify-center text-4xl mx-auto mb-5 animate-pulse">
               🎁
             </div>
             <h2 className="text-3xl font-black text-center leading-tight mb-3">
@@ -71,24 +71,24 @@ export function BonusTutorial({ peopleCount, onClose }: BonusTutorialProps) {
             </p>
 
             {/* Mini illustration */}
-            <div className="border-4 border-black rounded-2xl p-4 mt-5 bg-gray-50 relative">
+            <div data-kiosk-ui="surface" className="border-4 border-black rounded-2xl p-4 mt-5 bg-gray-50 relative">
               <div className="grid grid-cols-2 gap-3 relative">
-                <div className="border-3 border-black rounded-xl p-4 flex flex-col items-center gap-2 bg-white shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
+                <div data-kiosk-ui="surface" className="border-3 border-black rounded-xl p-4 flex flex-col items-center gap-2 bg-white shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
                   <span className="text-3xl">🎁</span>
                   <span className="font-black text-sm">Ikut Bonus</span>
-                  <span className="text-xs font-black bg-yellow-300 border-2 border-black rounded-full px-3 py-1">
+                  <span data-kiosk-ui="badge" className="text-xs font-black bg-yellow-300 border-2 border-black rounded-full px-3 py-1">
                     GRATIS +print
                   </span>
                 </div>
-                <div className="border-3 border-black rounded-xl p-4 flex flex-col items-center gap-2 bg-white shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
+                <div data-kiosk-ui="surface" className="border-3 border-black rounded-xl p-4 flex flex-col items-center gap-2 bg-white shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
                   <span className="text-3xl">✕</span>
                   <span className="font-black text-sm">Lewati</span>
-                  <span className="text-xs font-black border-2 border-black rounded-full px-3 py-1">
+                  <span data-kiosk-ui="badge" className="text-xs font-black border-2 border-black rounded-full px-3 py-1">
                     Lanjut saja
                   </span>
                 </div>
                 {/* VS badge */}
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-9 h-9 bg-black text-white rounded-full flex items-center justify-center text-xs font-black z-10">
+                <div data-kiosk-ui="icon" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-9 h-9 bg-black text-white rounded-full flex items-center justify-center text-xs font-black z-10">
                   VS
                 </div>
               </div>
@@ -99,7 +99,7 @@ export function BonusTutorial({ peopleCount, onClose }: BonusTutorialProps) {
         {/* ── Step 1: Cara ikut bonus ── */}
         {step === 1 && (
           <div>
-            <div
+            <div data-kiosk-ui="icon"
               className="w-20 h-20 rounded-full bg-green-300 border-4 border-black flex items-center justify-center text-4xl mx-auto mb-5"
               style={{ animation: "wiggle 1s ease infinite" }}
             >
@@ -114,7 +114,7 @@ export function BonusTutorial({ peopleCount, onClose }: BonusTutorialProps) {
               Selesaikan 2 langkah berikut dan tunjukkan ke kasir.
             </p>
 
-            <div className="border-4 border-black rounded-2xl p-4 mt-5 bg-gray-50">
+            <div data-kiosk-ui="surface" className="border-4 border-black rounded-2xl p-4 mt-5 bg-gray-50">
               <div className="flex flex-col gap-3">
                 {[
                   { icon: "📍", text: "Beri ulasan bintang 5 di Google Maps" },
@@ -127,7 +127,7 @@ export function BonusTutorial({ peopleCount, onClose }: BonusTutorialProps) {
                         ↓
                       </div>
                     )}
-                    <div
+                    <div data-kiosk-ui="surface"
                       className={`flex items-center gap-3 border-3 border-black rounded-xl px-4 py-3 font-black text-sm shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]
                         ${item.bonus ? "bg-yellow-300" : "bg-white"}`}
                     >
@@ -144,7 +144,7 @@ export function BonusTutorial({ peopleCount, onClose }: BonusTutorialProps) {
         {/* ── Step 2: Berapa bonus ── */}
         {step === 2 && (
           <div>
-            <div className="w-20 h-20 rounded-full bg-blue-300 border-4 border-black flex items-center justify-center text-4xl mx-auto mb-5">
+            <div data-kiosk-ui="icon" className="w-20 h-20 rounded-full bg-blue-300 border-4 border-black flex items-center justify-center text-4xl mx-auto mb-5">
               🖨️
             </div>
             <h2 className="text-3xl font-black text-center leading-tight mb-3">
@@ -155,12 +155,12 @@ export function BonusTutorial({ peopleCount, onClose }: BonusTutorialProps) {
             <p className="text-lg text-gray-600 font-bold text-center leading-relaxed">
               Sesimu sekarang:{" "}
               <strong className="text-black">{peopleCount} orang</strong> →{" "}
-              <span className="bg-yellow-300 px-2 border-2 border-black rounded-lg">
+              <span data-kiosk-ui="badge" className="bg-yellow-300 px-2 border-2 border-black rounded-lg">
                 {bonusCount} print total
               </span>
             </p>
 
-            <div className="border-4 border-black rounded-2xl p-4 mt-5 bg-gray-50 flex flex-col gap-3">
+            <div data-kiosk-ui="surface" className="border-4 border-black rounded-2xl p-4 mt-5 bg-gray-50 flex flex-col gap-3">
               {[
                 {
                   range: "1–3 orang",
@@ -173,7 +173,7 @@ export function BonusTutorial({ peopleCount, onClose }: BonusTutorialProps) {
                   example: "4 orang → 8 print (1 template bonus bersama)",
                 },
               ].map((row, i) => (
-                <div
+                <div data-kiosk-ui="surface"
                   key={i}
                   className={`flex items-center gap-3 border-3 border-black rounded-xl px-4 py-3 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]
                     ${
@@ -190,7 +190,7 @@ export function BonusTutorial({ peopleCount, onClose }: BonusTutorialProps) {
                       {row.example}
                     </p>
                   </div>
-                  <span className="text-xs font-black border-2 border-black bg-white rounded-lg px-2 py-1">
+                  <span data-kiosk-ui="badge" className="text-xs font-black border-2 border-black bg-white rounded-lg px-2 py-1">
                     {row.desc}
                   </span>
                 </div>
@@ -202,7 +202,7 @@ export function BonusTutorial({ peopleCount, onClose }: BonusTutorialProps) {
         {/* ── Step 3: Siap! ── */}
         {step === 3 && (
           <div>
-            <div className="w-20 h-20 rounded-full bg-yellow-300 border-4 border-black flex items-center justify-center text-4xl mx-auto mb-5 animate-bounce">
+            <div data-kiosk-ui="icon" className="w-20 h-20 rounded-full bg-yellow-300 border-4 border-black flex items-center justify-center text-4xl mx-auto mb-5 animate-bounce">
               🚀
             </div>
             <h2 className="text-3xl font-black text-center leading-tight mb-3">
@@ -217,7 +217,7 @@ export function BonusTutorial({ peopleCount, onClose }: BonusTutorialProps) {
               lanjut.
             </p>
 
-            <div className="border-4 border-black rounded-2xl p-5 mt-5 bg-green-50">
+            <div data-kiosk-ui="surface" className="border-4 border-black rounded-2xl p-5 mt-5 bg-green-50">
               <p className="text-xs font-black text-gray-500 mb-3 uppercase tracking-widest">
                 Checklist jika ikut bonus:
               </p>
@@ -245,7 +245,7 @@ export function BonusTutorial({ peopleCount, onClose }: BonusTutorialProps) {
         {/* ── Navigation buttons ── */}
         <div className="flex gap-3 mt-8">
           {step > 0 && (
-            <button
+            <button data-kiosk-ui="control"
               onClick={prev}
               className="flex-1 py-4 border-4 border-black rounded-xl font-black text-lg bg-white hover:bg-black hover:text-white transition-colors shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 cursor-pointer"
             >
@@ -253,14 +253,14 @@ export function BonusTutorial({ peopleCount, onClose }: BonusTutorialProps) {
             </button>
           )}
           {step < STEPS.length - 1 ? (
-            <button
+            <button data-kiosk-ui="control"
               onClick={next}
               className="flex-1 py-4 border-4 border-black rounded-xl font-black text-lg bg-black text-white hover:bg-gray-800 transition-colors shadow-[4px_4px_0px_0px_rgba(0,0,0,0.3)] cursor-pointer"
             >
               Lanjut →
             </button>
           ) : (
-            <button
+            <button data-kiosk-ui="control"
               onClick={onClose}
               className="flex-1 py-4 border-4 border-black rounded-xl font-black text-lg bg-yellow-300 hover:bg-yellow-400 transition-colors shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 cursor-pointer"
             >

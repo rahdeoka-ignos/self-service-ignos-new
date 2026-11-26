@@ -12,6 +12,10 @@ export function TimerBar({ minutes, seconds, timeLeft }: TimerBarProps) {
 
   return (
     <div
+      data-kiosk-ui="timer"
+      data-timer-state={isCritical ? "critical" : isUrgent ? "urgent" : "normal"}
+      role="timer"
+      aria-label={`Sisa waktu ${minutes} menit ${seconds} detik`}
       className={`fixed top-37 right-3 z-50 flex items-center gap-3 
         border-4 border-black px-7 py-3 rounded-2xl font-extrabold text-xl
         shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-colors duration-500
@@ -24,6 +28,7 @@ export function TimerBar({ minutes, seconds, timeLeft }: TimerBarProps) {
         }`}
     >
       <Timer size={22} strokeWidth={2.5} />
+      <span className="woset-timer-label hidden">Sisa waktu</span>
       <span className="tabular-nums tracking-widest text-3xl font-extrabold">
         {minutes}:{seconds}
       </span>

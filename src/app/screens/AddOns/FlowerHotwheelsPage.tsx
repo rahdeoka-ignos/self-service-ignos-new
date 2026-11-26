@@ -1,3 +1,4 @@
+import { KioskQuantityControl } from "../../components/KioskQuantityControl";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { BrutalistCard } from "../../components/BrutalistCard";
@@ -48,26 +49,9 @@ export function FlowerHotwheelsPage() {
               <p className="text-xl text-gray-700">{currentContent.question}</p>
             </div>
 
-            <BrutalistCard className="p-10 text-center">
-              {/* Quantity Control */}
-              <div className="flex items-center justify-center gap-6 mb-10">
-                <button
-                  onClick={() => setQuantity((q) => Math.max(0, q - 1))}
-                  className="border-4 border-black px-6 py-3 text-2xl font-bold"
-                >
-                  -
-                </button>
-
-                <div className="text-5xl font-bold w-24 text-center">
-                  {quantity}
-                </div>
-
-                <button
-                  onClick={() => setQuantity((q) => q + 1)}
-                  className="border-4 border-black px-6 py-3 text-2xl font-bold"
-                >
-                  +
-                </button>
+            <BrutalistCard data-kiosk-ui="surface" className="p-10 text-center">
+              <div className="mx-auto mb-10 max-w-[280px]">
+                <KioskQuantityControl value={quantity} label={currentContent.title} onChange={setQuantity} />
               </div>
 
               {/* Actions */}
@@ -99,7 +83,7 @@ export function FlowerHotwheelsPage() {
               </h1>
             </div>
 
-            <BrutalistCard className="p-10 text-center">
+            <BrutalistCard data-kiosk-ui="surface" className="p-10 text-center">
               <div className="text-6xl mb-4">{currentContent.emoji}</div>
 
               <h2 className="text-3xl font-bold mb-6">Total Tambahan</h2>

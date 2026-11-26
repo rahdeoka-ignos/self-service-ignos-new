@@ -13,7 +13,13 @@ import { BrutalistButton } from "../../components/BrutalistButton";
 import { Trans, useTranslation } from "react-i18next";
 import { usePricing } from "../../../context/PricingContext";
 
+import { useKioskTheme } from "../../../context/KioskThemeContext";
+import { WosetChoiceCard } from "../../components/WosetChoiceCard";
+import { WosetArtwork } from "../../components/WosetArtwork";
+
 export function StoryQuestion() {
+  const { theme } = useKioskTheme();
+  const illustrated = theme.assetPack === "woset-play";
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation();
@@ -111,10 +117,10 @@ export function StoryQuestion() {
       <div className="flex items-center justify-center min-h-screen p-12 pt-36 pb-20">
         <div className="max-w-6xl w-full">
           {/* Header */}
-          <div className="text-center mb-14">
-            <div className="w-28 h-28 bg-black rounded-full flex items-center justify-center mx-auto mb-8 border-4 border-black">
+          <div className={illustrated ? "mb-8 text-center" : "text-center mb-14"}>
+            {illustrated ? <WosetArtwork scene="friends" className="mx-auto mb-4 h-[120px] w-[270px]" /> : (<div data-kiosk-ui="icon" className="w-28 h-28 bg-black rounded-full flex items-center justify-center mx-auto mb-8 border-4 border-black">
               <Instagram size={56} className="text-white" strokeWidth={2} />
-            </div>
+            </div>)}
             <h1 className="text-7xl font-bold mb-5">{t("story.title")}</h1>
             <p className="text-3xl text-gray-600 leading-relaxed">
               <Trans
@@ -127,9 +133,12 @@ export function StoryQuestion() {
           </div>
 
           {/* Choice Cards */}
-          <div className="grid grid-cols-2 gap-7 mb-10">
+          {illustrated ? <div className="mb-8 grid gap-5 md:grid-cols-2">
+            <WosetChoiceCard scene="friends" title={t("story.choices.yes.title")} description={<Trans i18nKey="story.choices.yes.description" components={{ 1: <strong /> }} />} badge="+ Rp 0" selected={choice === "yes"} onClick={() => setChoice("yes")} />
+            <WosetChoiceCard scene="frames" tone="green" title={t("story.choices.no.title")} description={<Trans i18nKey="story.choices.no.description" components={{ 1: <strong /> }} />} badge={<>+ {formatPrice(softcopyCharge)}</>} selected={choice === "no"} onClick={() => setChoice("no")} />
+          </div> : (<div className="grid grid-cols-2 gap-7 mb-10">
             {/* YES */}
-            <button
+            <button data-kiosk-ui="control"
               onClick={() => setChoice("yes")}
               className={`
                 group flex flex-col items-start gap-6 p-10 border-4 border-black rounded-2xl text-left transition-all cursor-pointer
@@ -140,7 +149,7 @@ export function StoryQuestion() {
                 }
               `}
             >
-              <div
+              <div data-kiosk-ui="icon"
                 className={`w-20 h-20 rounded-full border-4 flex items-center justify-center shrink-0 transition-colors
                 ${choice === "yes" ? "border-white bg-green-400" : "border-black bg-green-300 group-hover:border-white group-hover:bg-green-400"}`}
               >
@@ -165,7 +174,7 @@ export function StoryQuestion() {
                   />
                 </p>
               </div>
-              <span
+              <span data-kiosk-ui="badge"
                 className={`text-lg font-bold px-5 py-2 border-2 rounded-full transition-colors mt-1
                 ${choice === "yes" ? "border-white text-white" : "border-black group-hover:border-white"}`}
               >
@@ -174,7 +183,7 @@ export function StoryQuestion() {
             </button>
 
             {/* NO */}
-            <button
+            <button data-kiosk-ui="control"
               onClick={() => setChoice("no")}
               className={`
                 group flex flex-col items-start gap-6 p-10 border-4 border-black rounded-2xl text-left transition-all cursor-pointer
@@ -185,7 +194,7 @@ export function StoryQuestion() {
                 }
               `}
             >
-              <div
+              <div data-kiosk-ui="icon"
                 className={`w-20 h-20 rounded-full border-4 flex items-center justify-center shrink-0 transition-colors
                 ${choice === "no" ? "border-white bg-red-400" : "border-black bg-red-300 group-hover:border-white group-hover:bg-red-400"}`}
               >
@@ -206,20 +215,20 @@ export function StoryQuestion() {
                   />
                 </p>
               </div>
-              <span
+              <span data-kiosk-ui="badge"
                 className={`text-lg font-bold px-5 py-2 border-2 rounded-full transition-colors mt-1
                 ${choice === "no" ? "border-white text-white" : "border-black group-hover:border-white"}`}
               >
                 + {formatPrice(softcopyCharge)}
               </span>
             </button>
-          </div>
+          </div>)}
 
           {/* Instagram username inputs — shown when "yes" */}
           {choice === "yes" && (
-            <div className="bg-white border-4 border-black rounded-2xl p-10 mb-10 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+            <div data-kiosk-ui="surface" className="woset-panel bg-white border-4 border-black rounded-2xl p-10 mb-10 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
               {/* Instruction */}
-              <div className="flex items-start gap-4 mb-8 p-6 bg-yellow-50 border-2 border-yellow-400 rounded-xl">
+              <div data-kiosk-ui="surface" className="flex items-start gap-4 mb-8 p-6 bg-yellow-50 border-2 border-yellow-400 rounded-xl">
                 <Instagram
                   size={28}
                   className="text-yellow-600 shrink-0 mt-0.5"
@@ -249,15 +258,15 @@ export function StoryQuestion() {
                 {usernames.map((username, i) => (
                   <div key={i} className="flex items-center gap-4">
                     {/* Number badge */}
-                    <div className="w-11 h-11 bg-black text-white rounded-full flex items-center justify-center text-lg font-bold shrink-0">
+                    <div data-kiosk-ui="icon" className="w-11 h-11 bg-black text-white rounded-full flex items-center justify-center text-lg font-bold shrink-0">
                       {i + 1}
                     </div>
                     {/* Input */}
-                    <div
-                      className={`flex-1 flex items-center border-4 rounded-xl overflow-hidden transition-colors
+                    <div data-kiosk-ui="field"
+                      className={`woset-field flex-1 flex items-center border-4 rounded-xl overflow-hidden transition-colors
                       ${errors[i] ? "border-red-500" : "border-black"}`}
                     >
-                      <div className="bg-gray-100 border-r-4 border-black px-4 h-full flex items-center py-4">
+                      <div data-kiosk-ui="divider" className="woset-field-prefix bg-gray-100 border-r-4 border-black px-4 h-full flex items-center py-4">
                         <AtSign
                           size={24}
                           strokeWidth={2.5}
@@ -287,8 +296,8 @@ export function StoryQuestion() {
 
           {/* Extra charge info & Customer Name Input — shown when "no" */}
           {choice === "no" && (
-            <div className="bg-white border-4 border-black rounded-2xl p-10 mb-10 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] space-y-8">
-              <div className="flex items-center justify-between pb-6 border-b-2 border-gray-200">
+            <div data-kiosk-ui="surface" className="woset-panel bg-white border-4 border-black rounded-2xl p-10 mb-10 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] space-y-8">
+              <div data-kiosk-ui="divider" className="flex items-center justify-between pb-6 border-b-2 border-gray-200">
                 <div>
                   <p className="font-bold text-2xl">
                     {t("story.extraCharge.title")}
@@ -310,12 +319,12 @@ export function StoryQuestion() {
                   Nama ini akan digunakan untuk penamaan folder Google Drive softcopy foto kamu.
                 </p>
 
-                <div
-                  className={`flex items-center border-4 rounded-xl overflow-hidden transition-colors ${
+                <div data-kiosk-ui="field"
+                  className={`woset-field flex items-center border-4 rounded-xl overflow-hidden transition-colors ${
                     customerNameError ? "border-red-500" : "border-black"
                   }`}
                 >
-                  <div className="bg-gray-100 border-r-4 border-black px-4 h-full flex items-center py-4">
+                  <div data-kiosk-ui="divider" className="woset-field-prefix bg-gray-100 border-r-4 border-black px-4 h-full flex items-center py-4">
                     <User
                       size={24}
                       strokeWidth={2.5}
@@ -345,9 +354,9 @@ export function StoryQuestion() {
 
           {/* Actions */}
           <div className="flex gap-6">
-            <button
+            <button data-kiosk-ui="control"
               onClick={() => navigate(-1)}
-              className="flex-1 text-2xl font-bold border-4 border-black px-10 py-5 bg-white hover:bg-black hover:text-white transition-colors rounded-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1"
+              className="woset-plain-button flex-1 text-2xl font-bold border-4 border-black px-10 py-5 bg-white hover:bg-black hover:text-white transition-colors rounded-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1"
             >
               {t("story.actions.back")}
             </button>

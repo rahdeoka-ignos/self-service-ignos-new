@@ -1,9 +1,10 @@
+import { KioskQuantityControl } from "../../components/KioskQuantityControl";
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router";
 import { BrutalistCard } from "../../components/BrutalistCard";
 import { BrutalistButton } from "../../components/BrutalistButton";
 import { Navigation } from "../../components/Navigation";
-import { Minus, Plus, ShoppingBag } from "lucide-react";
+import { ShoppingBag } from "lucide-react";
 import { usePricing } from "../../../context/PricingContext";
 import { DEFAULT_PRICING } from "../../../types/pricing";
 
@@ -80,10 +81,10 @@ export function KeychainOptions() {
               const qty = quantities[opt.id] || 0;
               const isSelected = qty > 0;
               return (
-                <div
+                <div data-kiosk-ui="surface" data-kiosk-selected={isSelected}
                   key={opt.id}
                   className={`
-                    flex flex-col bg-white rounded-2xl overflow-hidden transition-all duration-200
+                    woset-product-card flex flex-col bg-white rounded-2xl overflow-hidden transition-all duration-200
                     border-4 border-black
                     ${
                       isSelected
@@ -94,7 +95,7 @@ export function KeychainOptions() {
                 >
                   {/* Selected badge */}
                   <div className="relative">
-                    <div className="w-full aspect-square overflow-hidden border-b-4 border-black">
+                    <div data-kiosk-ui="divider" className="w-full aspect-square overflow-hidden border-b-4 border-black">
                       <img
                         src={opt.image}
                         alt={opt.name}
@@ -107,7 +108,7 @@ export function KeychainOptions() {
                       />
                     </div>
                     {isSelected && (
-                      <div className="absolute top-3 right-3 bg-black text-white text-sm font-bold px-3 py-1 rounded-full border-2 border-black">
+                      <div data-kiosk-ui="surface" className="absolute top-3 right-3 bg-black text-white text-sm font-bold px-3 py-1 rounded-full border-2 border-black">
                         ×{qty}
                       </div>
                     )}
@@ -123,25 +124,7 @@ export function KeychainOptions() {
                       {formatPrice(opt.price)}
                     </p>
 
-                    {/* Qty control */}
-                    <div className="flex items-center gap-2 mt-auto">
-                      <button
-                        onClick={() => setQty(opt.id, qty - 1)}
-                        disabled={qty <= 0}
-                        className="w-10 h-10 border-4 border-black font-bold flex items-center justify-center disabled:opacity-25 hover:bg-black hover:text-white transition-colors cursor-pointer rounded-lg"
-                      >
-                        <Minus size={16} strokeWidth={4} />
-                      </button>
-                      <div className="flex-1 text-center text-2xl font-bold border-4 border-black py-1.5 rounded-lg bg-gray-50">
-                        {qty}
-                      </div>
-                      <button
-                        onClick={() => setQty(opt.id, qty + 1)}
-                        className="w-10 h-10 border-4 border-black font-bold flex items-center justify-center hover:bg-black hover:text-white transition-colors cursor-pointer rounded-lg"
-                      >
-                        <Plus size={16} strokeWidth={4} />
-                      </button>
-                    </div>
+                    <KioskQuantityControl value={qty} label={opt.name} onChange={value => setQty(opt.id, value)} />
                   </div>
                 </div>
               );
@@ -150,9 +133,9 @@ export function KeychainOptions() {
 
           {/* Summary */}
           {totalQty > 0 && (
-            <div className="border-4 border-black bg-white rounded-2xl p-7 mb-8 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+            <div data-kiosk-ui="surface" className="border-4 border-black bg-white rounded-2xl p-7 mb-8 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 bg-black rounded-full flex items-center justify-center shrink-0">
+                <div data-kiosk-ui="icon" className="w-10 h-10 bg-black rounded-full flex items-center justify-center shrink-0">
                   <ShoppingBag
                     size={20}
                     className="text-white"
@@ -169,7 +152,7 @@ export function KeychainOptions() {
                       className="flex justify-between items-center text-lg"
                     >
                       <div className="flex items-center gap-3">
-                        <img
+                        <img data-kiosk-ui="media"
                           src={opt.image}
                           alt={opt.name}
                           className="w-10 h-10 object-cover border-2 border-black rounded-lg"
@@ -191,7 +174,7 @@ export function KeychainOptions() {
                     </div>
                   ),
                 )}
-                <div className="border-t-4 border-black pt-3 mt-3 flex justify-between text-2xl font-bold">
+                <div data-kiosk-ui="divider" className="border-t-4 border-black pt-3 mt-3 flex justify-between text-2xl font-bold">
                   <span>Total</span>
                   <span>{formatPrice(totalPrice)}</span>
                 </div>
@@ -201,7 +184,7 @@ export function KeychainOptions() {
 
           {/* Actions */}
           <div className="flex gap-5">
-            <button
+            <button data-kiosk-ui="control"
               onClick={() => navigate(-1)}
               className="flex-1 text-xl font-bold border-4 border-black px-10 py-4 bg-white hover:bg-black hover:text-white transition-colors rounded-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1"
             >

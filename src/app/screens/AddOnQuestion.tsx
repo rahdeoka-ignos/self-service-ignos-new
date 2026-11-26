@@ -5,6 +5,9 @@ import { useKioskTheme } from "../../context/KioskThemeContext";
 import { usePricing } from "../../context/PricingContext";
 import { DEFAULT_PRICING } from "../../types/pricing";
 
+import { WosetProductMedia } from "../components/WosetProductMedia";
+import { WosetArtwork } from "../components/WosetArtwork";
+
 export function AddOnQuestion() {
   const location = useLocation();
   const peopleCount = location.state?.peopleCount || 1;
@@ -16,6 +19,8 @@ export function AddOnQuestion() {
   try {
     themeConfig = useKioskTheme().theme;
   } catch {}
+
+  const illustrated = themeConfig?.assetPack === "woset-play";
 
   const handleSkipOrFinish = () => {
     const nextState = {
@@ -97,17 +102,19 @@ export function AddOnQuestion() {
 
   return (
     <div className="kiosk-screen min-h-screen bg-gray-100 p-10 pt-14 pb-20">
-      <div className="w-screen-3xl mx-auto">
+      <div className={illustrated ? "mx-auto max-w-[1440px]" : "w-screen-3xl mx-auto"}>
         {/* Title */}
         <div className="text-center mb-7">
+          {themeConfig?.assetPack === "woset-play" && <WosetArtwork scene="keepsake" className="mx-auto mb-2 h-[140px] w-[220px]" />}
           <h1 className="text-6xl font-bold mb-5">{t("addons.title")}</h1>
           {/* <p className="text-3xl text-gray-600">{t("addons.subtitle")}</p> */}
         </div>
 
         {/* Addons Grid */}
-        <div className="grid grid-cols-6 gap-6">
+        <div className={illustrated ? "grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" : "grid grid-cols-6 gap-6"}>
           {addons.map((addon) => (
-            <div
+            <button data-kiosk-ui="control"
+              type="button"
               key={addon.id}
               onClick={() => {
                 const baseState = {
@@ -139,11 +146,11 @@ export function AddOnQuestion() {
                   });
                 }
               }}
-              className="group flex flex-col bg-white border-4 border-black rounded-2xl overflow-hidden cursor-pointer shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all duration-150"
+              className={illustrated ? "woset-product-card group flex flex-col overflow-hidden rounded-[28px] border border-[#252820]/35 bg-[#6278a4]/10 text-left text-[#252820] transition-colors hover:border-[#252820] hover:bg-[#d6c574]/15 motion-reduce:transition-none" : "group flex flex-col bg-white border-4 border-black rounded-2xl overflow-hidden cursor-pointer shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all duration-150"}
             >
               {/* Image */}
-              <div className="relative w-full aspect-square overflow-hidden border-b-4 border-black">
-                {isVideo(addon.image) ? (
+              <div data-kiosk-ui="divider" className={illustrated ? "relative aspect-[4/3] w-full overflow-hidden" : "relative w-full aspect-square overflow-hidden border-b-4 border-black"}>
+                {illustrated ? <WosetProductMedia key={addon.image} source={addon.image} title={addon.title} scene={addon.id.includes("print") ? "frames" : addon.id.includes("bingkai") ? "frames" : "keepsake"} /> : isVideo(addon.image) ? (
                   <video
                     src={addon.image}
                     className="w-full h-full object-cover"
@@ -165,7 +172,7 @@ export function AddOnQuestion() {
                   />
                 )}
                 {addon.isPreorder && (
-                  <span className="absolute top-3 left-3 text-sm font-bold bg-yellow-300 border-2 border-black px-3 py-1 rounded-full">
+                  <span data-kiosk-ui="badge" className="absolute top-3 left-3 text-sm font-bold bg-yellow-300 border-2 border-black px-3 py-1 rounded-full">
                     PO
                   </span>
                 )}
@@ -179,20 +186,20 @@ export function AddOnQuestion() {
                 <p className="text-lg font-bold text-black mb-4">
                   {formatPrice(addon.price)}
                 </p>
-                <button className="mt-auto w-full text-base font-bold border-2 border-black py-3 rounded-lg bg-white group-hover:bg-black group-hover:text-white transition-colors flex items-center justify-center gap-2">
+                <span data-kiosk-ui="badge" className={illustrated ? "mt-auto flex min-h-10 w-full items-center justify-center gap-2 rounded-full border border-[#252820]/35 py-2 text-[13px] font-medium" : "mt-auto w-full text-base font-bold border-2 border-black py-3 rounded-lg bg-white group-hover:bg-black group-hover:text-white transition-colors flex items-center justify-center gap-2"}>
                   {t("addons.addButton")}{" "}
                   <ArrowRight size={18} strokeWidth={3} />
-                </button>
+                </span>
               </div>
-            </div>
+            </button>
           ))}
         </div>
 
         {/* Skip Button */}
         <div className="flex justify-center mt-7">
-          <button
+          <button data-kiosk-ui="control"
             onClick={handleSkipOrFinish}
-            className="text-2xl font-bold border-4 border-black px-16 py-5 bg-white hover:bg-black hover:text-white transition-colors rounded-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1"
+            className="woset-plain-button text-2xl font-bold border-4 border-black px-16 py-5 bg-white hover:bg-black hover:text-white transition-colors rounded-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1"
           >
             {t("addons.skip")}
           </button>

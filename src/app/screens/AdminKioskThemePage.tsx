@@ -5,6 +5,7 @@ import {
   Camera,
   Users,
 } from "lucide-react";
+import { WosetArtwork } from "../components/WosetArtwork";
 import { AdminLayout } from "../components/AdminLayout";
 import { AdminConfirmModal } from "../components/AdminConfirmModal";
 import { useKioskTheme } from "../../context/KioskThemeContext";
@@ -204,7 +205,7 @@ export function AdminKioskThemePage() {
                       ? "Romantic Champagne"
                       : theme.presetId === "dark-studio"
                         ? "Cyber Noir"
-                        : "Custom Style"}
+                        : theme.presetId === "woset-play" ? "Woset Play" : "Custom Style"}
               </div>
               <p className="text-[12px] text-[var(--admin-muted,#92989d)] mt-0.5">
                 {theme.presetId === "custom" ? "Penyesuaian manual" : "Preset siap pakai"}
@@ -482,6 +483,19 @@ export function AdminKioskThemePage() {
                       <span className="text-[12px] text-[var(--admin-muted,#92989d)] ml-auto font-mono">Noir</span>
                     </div>
                   </div>
+                  <button type="button" onClick={() => handleApplyPreset("woset-play")} aria-pressed={theme.presetId === "woset-play"} className={`overflow-hidden rounded-2xl border text-left transition-colors sm:col-span-2 ${theme.presetId === "woset-play" ? "border-[var(--admin-focus,#c0d0e7)]" : "border-[var(--admin-border,#2a2d2f)] hover:border-[var(--admin-border-strong,#41474e)]"}`}>
+                    <div className="flex flex-col items-center gap-5 bg-[#eae9e5] p-5 text-[#252820] sm:flex-row">
+                      <WosetArtwork scene="welcome" className="h-[150px] w-full max-w-[310px]" />
+                      <div className="flex-1"><span className="mb-2 inline-block rounded-full border border-[#252820]/30 px-2.5 py-1 text-[11px]">7 aset ilustrasi SVG</span><h3 className="text-[18px] font-semibold">Woset Play</h3><p className="mt-2 text-[13px] leading-6">Dunia studio bergambar: karakter kamera, booth, teman foto, susunan frame, suvenir, dan printer. Ilustrasi mengikuti perjalanan pelanggan.</p><p className="mt-3 text-[12px] font-semibold">{theme.presetId === "woset-play" ? "Preset dipilih" : "Pilih Woset Play"} ↗</p></div>
+                    </div>
+                  </button>
+                </div>
+                <div className="rounded-xl border border-[var(--admin-border,#2a2d2f)] p-4">
+                  <label htmlFor="kiosk-asset-pack" className="block text-[13px] font-medium">Paket ilustrasi</label>
+                  <p className="mt-1 text-[12px] leading-5 text-[var(--admin-muted,#92989d)]">Paket aset tetap mengikuti tema saat warna dan teks dikustomisasi. Pilih Tanpa ilustrasi untuk kembali ke tampilan biasa.</p>
+                  <select id="kiosk-asset-pack" value={theme.assetPack} onChange={event => updateThemeField("assetPack", event.target.value as KioskThemeConfig["assetPack"])} className="mt-3 w-full rounded-lg border border-[var(--admin-border-strong,#41474e)] bg-[var(--admin-canvas,#111114)] px-3 py-2 text-[13px]">
+                    <option value="none">Tanpa ilustrasi</option><option value="woset-play">Woset Play — illustrated studio</option>
+                  </select>
                 </div>
               </div>
             )}
@@ -947,6 +961,13 @@ export function AdminKioskThemePage() {
                     fontFamily: fontMap[theme.fontFamily] || "sans-serif",
                   }}
                 >
+                  {theme.assetPack === "woset-play" ? (
+                    <div className="flex h-full flex-col items-center justify-between gap-2 text-center">
+                      <span className="text-[12px] font-semibold">{theme.studioName}</span>
+                      <div><p className="font-['Gaegu',cursive] text-[25px] font-bold leading-none">{theme.homeHeadline}</p><WosetArtwork scene="welcome" className="mx-auto h-[125px] w-full" /></div>
+                      <div className="grid w-full grid-cols-2 gap-2">{(["studio", "booth"] as const).map((scene, index) => <div key={scene} className="flex items-center gap-1 rounded-xl border border-current/25 p-1.5"><WosetArtwork scene={scene} className="h-12 w-14" /><span className="text-[10px] font-medium">{index ? "Photo Box" : "Photo Studio"} ↗</span></div>)}</div>
+                    </div>
+                  ) : (<>
                   {/* Top Branding */}
                   <div className="text-center pt-2">
                     {theme.logoUrl && (
@@ -1059,12 +1080,13 @@ export function AdminKioskThemePage() {
                       ? "• MODE SEWA WEDDING / EVENT AKTIF •"
                       : "IGNOS PHOTOBOOTH SYSTEM"}
                   </div>
+                  </>)}
                 </div>
               </div>
 
               <div className="pt-2 text-center">
                 <span className="text-[12px] text-[var(--admin-muted,#92989d)]">
-                  Perubahan warna & font akan langsung diperbarui di simulasi bilik.
+                  Warna, teks, dan paket ilustrasi mengikuti draft tema. Terapkan untuk mengaktifkan di kiosk.
                 </span>
               </div>
             </div>

@@ -1,3 +1,4 @@
+import { KioskQuantityControl } from "../components/KioskQuantityControl";
 import { apiFetch as fetch } from "../../utils/api";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
@@ -106,40 +107,23 @@ export function BingkaiA4Page() {
         </div>
 
         {step === 0 && (
-          <BrutalistCard className="p-8">
+          <BrutalistCard data-kiosk-ui="surface" className="p-8">
             {/* Color Selection with Quantity */}
             <div className="mb-10">
               <h2 className="text-2xl font-bold mb-6">Pilih Warna & Jumlah</h2>
               <div className="grid grid-cols-3 gap-6">
                 {colors.map((color) => (
-                  <div
+                  <div data-kiosk-ui="surface" data-kiosk-selected={quantities[color.id] > 0}
                     key={color.id}
                     className="border-4 border-black rounded-xl p-4 flex flex-col items-center gap-4 bg-white"
                   >
-                    <div
+                    <div data-kiosk-ui="swatch"
                       className={`w-24 h-24 rounded-lg border-2 border-black ${color.class}`}
                     />
 
                     <span className="text-lg font-bold">{color.name}</span>
 
-                    {/* Quantity Control */}
-                    <div className="flex items-center gap-3">
-                      <button
-                        onClick={() => updateQty(color.id, -1)}
-                        className="border-4 border-black px-3 py-1 text-lg font-bold bg-white active:bg-gray-100 cursor-pointer"
-                      >
-                        -
-                      </button>
-                      <div className="text-xl font-bold w-10 text-center">
-                        {quantities[color.id]}
-                      </div>
-                      <button
-                        onClick={() => updateQty(color.id, 1)}
-                        className="border-4 border-black px-3 py-1 text-lg font-bold bg-white active:bg-gray-100 cursor-pointer"
-                      >
-                        +
-                      </button>
-                    </div>
+                    <KioskQuantityControl value={quantities[color.id]} label={`Bingkai ${color.name}`} onChange={value => updateQty(color.id, value - quantities[color.id])} />
                   </div>
                 ))}
               </div>
@@ -166,7 +150,7 @@ export function BingkaiA4Page() {
         )}
 
         {step === 1 && (
-          <BrutalistCard className="p-8">
+          <BrutalistCard data-kiosk-ui="surface" className="p-8">
             <h2 className="text-2xl font-bold mb-6">Pilih Foto untuk Bingkai</h2>
 
             {loadingGallery ? (
@@ -176,12 +160,12 @@ export function BingkaiA4Page() {
                 {selectedFramesList.map((frame) => {
                   const selectedPhoto = framePhotos[frame.index];
                   return (
-                    <div
+                    <div data-kiosk-ui="surface"
                       key={frame.index}
                       className="border-4 border-black rounded-xl p-6 flex items-center justify-between bg-white"
                     >
                       <div className="flex items-center gap-4">
-                        <div
+                        <div data-kiosk-ui="swatch"
                           className={`w-12 h-12 rounded border-2 border-black ${frame.colorClass}`}
                         />
                         <div>
@@ -192,12 +176,12 @@ export function BingkaiA4Page() {
 
                       {selectedPhoto ? (
                         <div className="flex items-center gap-4">
-                          <img
+                          <img data-kiosk-ui="media"
                             src={selectedPhoto.thumb}
                             alt="Selected"
                             className="w-20 h-28 object-cover border-4 border-black rounded-lg"
                           />
-                          <button
+                          <button data-kiosk-ui="control"
                             onClick={() => setActiveFrameIndex(frame.index)}
                             className="border-4 border-black bg-yellow-300 hover:bg-yellow-400 font-bold px-6 py-2 text-lg cursor-pointer transition-colors"
                           >
@@ -205,7 +189,7 @@ export function BingkaiA4Page() {
                           </button>
                         </div>
                       ) : (
-                        <button
+                        <button data-kiosk-ui="control"
                           onClick={() => setActiveFrameIndex(frame.index)}
                           className="border-4 border-black bg-black text-white hover:bg-gray-800 font-bold px-6 py-3 text-lg cursor-pointer transition-colors"
                         >
@@ -239,7 +223,7 @@ export function BingkaiA4Page() {
             {/* Gallery Selection Modal */}
             {activeFrameIndex !== null && (
               <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-8">
-                <div className="bg-white border-4 border-black rounded-2xl w-full max-w-4xl p-8 flex flex-col max-h-[85vh] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+                <div data-kiosk-ui="dialog" className="bg-white border-4 border-black rounded-2xl w-full max-w-4xl p-8 flex flex-col max-h-[85vh] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
                   <h3 className="text-3xl font-bold mb-6">
                     Pilih Foto untuk Bingkai {selectedFramesList[activeFrameIndex]?.colorName}
                   </h3>
@@ -251,7 +235,7 @@ export function BingkaiA4Page() {
                   ) : (
                     <div className="flex-1 overflow-y-auto grid grid-cols-4 gap-6 p-2">
                       {gallery.map((photo, i) => (
-                        <div
+                        <div data-kiosk-ui="surface"
                           key={i}
                           onClick={() => {
                             setFramePhotos((prev) => ({
@@ -272,7 +256,7 @@ export function BingkaiA4Page() {
                     </div>
                   )}
 
-                  <button
+                  <button data-kiosk-ui="control"
                     onClick={() => setActiveFrameIndex(null)}
                     className="mt-6 border-4 border-black bg-white hover:bg-gray-100 font-bold py-3 text-xl w-full cursor-pointer transition-colors"
                   >
@@ -285,7 +269,7 @@ export function BingkaiA4Page() {
         )}
 
         {step === 2 && (
-          <BrutalistCard className="p-10 text-center">
+          <BrutalistCard data-kiosk-ui="surface" className="p-10 text-center">
             <div className="text-6xl mb-4">✅</div>
             <h2 className="text-3xl font-bold mb-4">Tambahan Berhasil!</h2>
             <p className="text-xl text-gray-700 mb-6">
@@ -293,7 +277,7 @@ export function BingkaiA4Page() {
             </p>
 
             {/* Detail Pesanan */}
-            <div className="border-4 border-black rounded-xl p-6 mb-6 text-left bg-white">
+            <div data-kiosk-ui="surface" className="border-4 border-black rounded-xl p-6 mb-6 text-left bg-white">
               <h3 className="text-2xl font-bold mb-4 text-center">
                 Detail Tambahan
               </h3>
@@ -303,7 +287,7 @@ export function BingkaiA4Page() {
                   selectedFramesList.map((frame) => {
                     const photo = framePhotos[frame.index];
                     return (
-                      <div
+                      <div data-kiosk-ui="divider"
                         key={frame.index}
                         className="flex items-center justify-between border-b-2 border-gray-100 pb-2"
                       >
@@ -314,7 +298,7 @@ export function BingkaiA4Page() {
                           <span className="text-lg font-bold">Bingkai {frame.colorName}</span>
                         </div>
                         {photo && (
-                          <img
+                          <img data-kiosk-ui="media"
                             src={photo.thumb}
                             alt="Selected"
                             className="w-12 h-18 object-cover border-2 border-black rounded"

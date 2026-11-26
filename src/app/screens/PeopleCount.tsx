@@ -7,6 +7,10 @@ import { BrutalistButton } from "../components/BrutalistButton";
 import { Navigation } from "../components/Navigation";
 import { preloadGallery } from "../../utils/photoPreloader";
 
+import { WosetChoiceCard } from "../components/WosetChoiceCard";
+import { WosetArtwork } from "../components/WosetArtwork";
+import { useKioskTheme } from "../../context/KioskThemeContext";
+
 // ─── Template Mode Modal ──────────────────────────────────────────────────────
 
 interface TemplateModeModalProps {
@@ -21,6 +25,20 @@ function TemplateModeModal({
   onClose,
 }: TemplateModeModalProps) {
   const { t } = useTranslation();
+  const { theme } = useKioskTheme();
+
+  if (theme.assetPack === "woset-play") {
+    return <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[#252820]/45 p-6" onClick={onClose}>
+      <div role="dialog" aria-modal="true" aria-labelledby="woset-print-mode-title" className="woset-panel relative max-h-[90dvh] w-full max-w-[1040px] overflow-y-auto p-6 pt-16 sm:p-10 sm:pt-16" onClick={event => event.stopPropagation()}>
+        <button type="button" onClick={onClose} aria-label="Tutup" className="absolute right-5 top-5 flex size-10 items-center justify-center rounded-full border border-[#252820]/35"><X size={20} strokeWidth={1.5} /></button>
+        <header className="mb-7 text-center"><h2 id="woset-print-mode-title" className="woset-display text-[40px] font-bold leading-tight">{t("templateModal.title")}</h2><p className="mt-3 text-[16px] leading-6 opacity-75">{t("templateModal.subtitle")} <strong>{count}</strong> {t("templateModal.subtitlePeople")}</p></header>
+        <div className="grid gap-5 md:grid-cols-2">
+          <WosetChoiceCard scene="frames" title={t("templateModal.singleTemplate.title")} description={t("templateModal.singleTemplate.description", { count })} badge={t("templateModal.singleTemplate.badge")} onClick={() => onSelect(true)} />
+          <WosetChoiceCard scene="friends" tone="green" title={t("templateModal.multipleTemplate.title")} description={t("templateModal.multipleTemplate.description")} badge={t("templateModal.multipleTemplate.badge")} onClick={() => onSelect(false)} />
+        </div>
+      </div>
+    </div>;
+  }
 
   return (
     <div
@@ -28,12 +46,12 @@ function TemplateModeModal({
       style={{ backgroundColor: "rgba(0,0,0,0.6)" }}
       onClick={onClose}
     >
-      <div
+      <div data-kiosk-ui="dialog"
         className="bg-white border-4 border-black rounded-3xl px-20 py-16 h-[60%] w-7xl relative shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] flex flex-col justify-center"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close button */}
-        <button
+        <button data-kiosk-ui="control"
           onClick={onClose}
           className="absolute top-6 right-6 w-16 h-16 flex items-center justify-center border-2 border-black rounded-full hover:bg-black hover:text-white transition-colors cursor-pointer"
         >
@@ -53,11 +71,11 @@ function TemplateModeModal({
 
         <div className="grid grid-cols-2 gap-8">
           {/* Option A — Single template for everyone */}
-          <button
+          <button data-kiosk-ui="control"
             onClick={() => onSelect(true)}
             className="group flex flex-col items-start gap-6 p-10 border-4 border-black rounded-2xl bg-white hover:bg-black hover:text-white transition-all cursor-pointer shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1"
           >
-            <div className="w-24 h-24 rounded-full border-4 border-black group-hover:border-white flex items-center justify-center bg-yellow-300 group-hover:bg-yellow-400 transition-colors shrink-0">
+            <div data-kiosk-ui="icon" className="w-24 h-24 rounded-full border-4 border-black group-hover:border-white flex items-center justify-center bg-yellow-300 group-hover:bg-yellow-400 transition-colors shrink-0">
               <Layout size={48} strokeWidth={2.5} className="text-black" />
             </div>
             <div className="text-left w-full flex-1">
@@ -68,17 +86,17 @@ function TemplateModeModal({
                 {t("templateModal.singleTemplate.description", { count })}
               </p>
             </div>
-            <span className="text-base font-bold px-5 py-2 border-2 border-black group-hover:border-white rounded-full">
+            <span data-kiosk-ui="badge" className="text-base font-bold px-5 py-2 border-2 border-black group-hover:border-white rounded-full">
               {t("templateModal.singleTemplate.badge")}
             </span>
           </button>
 
           {/* Option B — Template per person / pair */}
-          <button
+          <button data-kiosk-ui="control"
             onClick={() => onSelect(false)}
             className="group flex flex-col items-start gap-6 p-10 border-4 border-black rounded-2xl bg-white hover:bg-black hover:text-white transition-all cursor-pointer shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1"
           >
-            <div className="w-24 h-24 rounded-full border-4 border-black group-hover:border-white flex items-center justify-center bg-blue-300 group-hover:bg-blue-400 transition-colors shrink-0">
+            <div data-kiosk-ui="icon" className="w-24 h-24 rounded-full border-4 border-black group-hover:border-white flex items-center justify-center bg-blue-300 group-hover:bg-blue-400 transition-colors shrink-0">
               <LayoutGrid size={48} strokeWidth={2.5} className="text-black" />
             </div>
             <div className="text-left w-full flex-1">
@@ -89,7 +107,7 @@ function TemplateModeModal({
                 {t("templateModal.multipleTemplate.description")}
               </p>
             </div>
-            <span className="text-base font-bold px-5 py-2 border-2 border-black group-hover:border-white rounded-full">
+            <span data-kiosk-ui="badge" className="text-base font-bold px-5 py-2 border-2 border-black group-hover:border-white rounded-full">
               {t("templateModal.multipleTemplate.badge")}
             </span>
           </button>
@@ -102,6 +120,8 @@ function TemplateModeModal({
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 export function PeopleCount() {
+  const { theme } = useKioskTheme();
+  const illustrated = theme.assetPack === "woset-play";
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation();
@@ -204,12 +224,12 @@ export function PeopleCount() {
       )}
 
       <div className="flex items-center justify-center min-h-screen p-8 pt-32">
-        <BrutalistCard className="max-w-2xl w-full p-16">
+        <BrutalistCard data-kiosk-ui="surface" className="woset-people-card max-w-2xl w-full p-16">
           <div className="text-center">
             <div className="mb-8">
-              <div className="w-24 h-24 kiosk-icon bg-black rounded-full flex items-center justify-center mx-auto mb-6 border-4 border-black">
+              {illustrated ? <WosetArtwork scene="friends" className="mx-auto mb-4 h-[150px] w-full max-w-[380px]" /> : <div data-kiosk-ui="icon" className="w-24 h-24 kiosk-icon bg-black rounded-full flex items-center justify-center mx-auto mb-6 border-4 border-black">
                 <Users size={48} className="text-white" strokeWidth={3} />
-              </div>
+              </div>}
               <h1 className="text-5xl font-bold mb-4">
                 {t("peopleCount.title")}
               </h1>
@@ -230,7 +250,7 @@ export function PeopleCount() {
                   <Minus size={32} strokeWidth={4} />
                 </BrutalistButton>
 
-                <div className="text-9xl font-bold min-w-[200px] text-center border-8 border-black rounded-3xl py-8 px-12 bg-white">
+                <div data-kiosk-ui="surface" className={`font-bold min-w-[160px] text-center py-6 px-8 ${illustrated ? "woset-display text-8xl" : "text-9xl border-8 border-black rounded-3xl bg-white"}`}>
                   {count}
                 </div>
 

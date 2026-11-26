@@ -401,10 +401,10 @@ export function PasFotoPage() {
         <Navigation currentStep={1} totalSteps={3} />
 
         <div className="flex-1 flex items-center justify-center pt-32 pb-8 px-8">
-          <div className="max-w-2xl w-full bg-white border-4 border-black rounded-3xl p-16 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+          <div data-kiosk-ui="surface" className="max-w-2xl w-full bg-white border-4 border-black rounded-3xl p-16 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
             <div className="text-center">
               <div className="mb-8">
-                <div className="w-24 h-24 bg-black rounded-full flex items-center justify-center mx-auto mb-6 border-4 border-black">
+                <div data-kiosk-ui="icon" className="w-24 h-24 bg-black rounded-full flex items-center justify-center mx-auto mb-6 border-4 border-black">
                   <Printer size={48} className="text-white" strokeWidth={3} />
                 </div>
                 <h1 className="text-5xl font-bold mb-4">
@@ -429,7 +429,7 @@ export function PasFotoPage() {
                     <Minus size={32} strokeWidth={4} />
                   </BrutalistButton>
 
-                  <div className="text-9xl font-bold min-w-[200px] text-center border-8 border-black rounded-3xl py-8 px-12 bg-white select-none">
+                  <div data-kiosk-ui="surface" className="text-9xl font-bold min-w-[200px] text-center border-8 border-black rounded-3xl py-8 px-12 bg-white select-none">
                     {tempQty}
                   </div>
 
@@ -459,7 +459,7 @@ export function PasFotoPage() {
                 >
                   Lanjutkan ke Pilih Ukuran →
                 </BrutalistButton>
-                <button
+                <button data-kiosk-ui="control"
                   onClick={() => navigate(-1)}
                   className="text-xl font-bold border-4 border-black px-12 py-4 bg-white hover:bg-black hover:text-white transition-colors rounded-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1"
                 >
@@ -502,7 +502,7 @@ export function PasFotoPage() {
                     const isCurrentSelected =
                       selectedRatios[ratioSelectIndex] === opt.id;
                     return (
-                      <button
+                      <button data-kiosk-ui="control"
                         key={opt.id}
                         onClick={() => {
                           setSelectedRatios((prev) => ({
@@ -520,7 +520,7 @@ export function PasFotoPage() {
                           ${isCurrentSelected ? "ring-8 ring-black" : ""}`}
                       >
                         {opt.badge && (
-                          <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-yellow-300 border-2 border-black text-black text-xs font-black px-3 py-1 rounded-full whitespace-nowrap">
+                          <span data-kiosk-ui="badge" className="absolute -top-3 left-1/2 -translate-x-1/2 bg-yellow-300 border-2 border-black text-black text-xs font-black px-3 py-1 rounded-full whitespace-nowrap">
                             {opt.badge}
                           </span>
                         )}
@@ -530,7 +530,7 @@ export function PasFotoPage() {
                           className="flex items-center justify-center w-full mb-4"
                           style={{ height: 100 }}
                         >
-                          <div
+                          <div data-kiosk-ui="surface"
                             className="bg-gray-900 border-4 border-black group-hover:bg-black transition-colors"
                             style={{
                               width:
@@ -561,7 +561,7 @@ export function PasFotoPage() {
                 </div>
 
                 <div className="flex justify-center mt-10">
-                  <button
+                  <button data-kiosk-ui="control"
                     onClick={() => {
                       if (ratioSelectIndex > 0) {
                         setRatioSelectIndex((prev) => prev - 1);
@@ -577,7 +577,7 @@ export function PasFotoPage() {
               </div>
 
               {/* RIGHT COLUMN: Selection Summary */}
-              <div className="col-span-4 bg-white border-4 border-black rounded-2xl p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] overflow-y-auto flex flex-col h-[70vh]">
+              <div data-kiosk-ui="surface" className="col-span-4 bg-white border-4 border-black rounded-2xl p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] overflow-y-auto flex flex-col h-[70vh]">
                 <h2 className="text-2xl font-bold mb-6 border-b-4 border-black pb-3">
                   Daftar Pilihan Cetak
                 </h2>
@@ -591,7 +591,7 @@ export function PasFotoPage() {
                     const isActive = ratioSelectIndex === idx;
 
                     return (
-                      <div
+                      <div data-kiosk-selected={isActive} data-kiosk-ui="surface"
                         key={idx}
                         onClick={() => {
                           setRatioSelectIndex(idx);
@@ -600,7 +600,7 @@ export function PasFotoPage() {
                           ${isActive ? "bg-black text-white" : "bg-white text-black hover:bg-gray-50"}
                           ${selectedRatioId ? "shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]" : "border-dashed border-gray-300 shadow-none opacity-50"}`}
                       >
-                        <div
+                        <div data-kiosk-selected={isActive} data-kiosk-ui="icon"
                           className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg border-2 border-black
                           ${isActive ? "bg-white text-black" : "bg-black text-white"}`}
                         >
@@ -617,7 +617,7 @@ export function PasFotoPage() {
                           </p>
                         </div>
                         {selectedRatioId && (
-                          <div className="w-8 h-8 flex items-center justify-center bg-green-100 text-green-700 border-2 border-green-600 rounded-full text-base font-black">
+                          <div data-kiosk-ui="icon" className="w-8 h-8 flex items-center justify-center bg-green-100 text-green-700 border-2 border-green-600 rounded-full text-base font-black">
                             ✓
                           </div>
                         )}
@@ -627,7 +627,7 @@ export function PasFotoPage() {
                 </div>
 
                 {allRatiosSelected && (
-                  <div className="mt-6 border-t-4 border-black pt-6">
+                  <div data-kiosk-ui="divider" className="mt-6 border-t-4 border-black pt-6">
                     <BrutalistButton
                       onClick={() => {
                         setRatiosSelected(true);
@@ -670,7 +670,7 @@ export function PasFotoPage() {
                 const ratioOpt = RATIO_OPTIONS.find((r) => r.id === ratioId);
                 const hasPhoto = !!filledSlots[idx];
                 return (
-                  <button
+                  <button data-kiosk-selected={isActive} data-kiosk-ui="control"
                     key={idx}
                     onClick={() => setActiveArrangeIndex(idx)}
                     className={`text-lg px-6 py-3 font-bold border-4 border-black rounded-xl transition-all cursor-pointer shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none relative
@@ -681,7 +681,7 @@ export function PasFotoPage() {
                       }`}
                   >
                     {hasPhoto && (
-                      <span className="absolute -top-2.5 -right-2.5 w-6 h-6 bg-green-400 border-2 border-black rounded-full text-xs text-black flex items-center justify-center font-black">
+                      <span data-kiosk-ui="badge" className="absolute -top-2.5 -right-2.5 w-6 h-6 bg-green-400 border-2 border-black rounded-full text-xs text-black flex items-center justify-center font-black">
                         ✓
                       </span>
                     )}
@@ -695,11 +695,11 @@ export function PasFotoPage() {
           <div className="grid grid-cols-12 gap-8 flex-1 overflow-hidden mb-5 max-h-[80dvh]">
             {/* LEFT — Gallery */}
             <div className="col-span-8 h-full">
-              <div className="bg-white border-4 border-black rounded-2xl p-6 h-full shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+              <div data-kiosk-ui="surface" className="bg-white border-4 border-black rounded-2xl p-6 h-full shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
                 <div className="flex justify-between items-center mb-4">
                   <h2 className="text-2xl font-bold">Pilih Foto</h2>
                   {!preloadStatus.isDone && preloadStatus.total > 0 && (
-                    <span className="bg-yellow-300 border-2 border-black px-3 py-1 font-bold text-sm shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] animate-pulse">
+                    <span data-kiosk-ui="badge" className="bg-yellow-300 border-2 border-black px-3 py-1 font-bold text-sm shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] animate-pulse">
                       ⏳ Memuat foto ({preloadStatus.loaded}/
                       {preloadStatus.total})...
                     </span>
@@ -708,7 +708,7 @@ export function PasFotoPage() {
                 <div className="grid grid-cols-5 gap-3 max-h-[850px] overflow-y-auto pr-2">
                   {photoGallery.length === 0
                     ? Array.from({ length: 10 }).map((_, idx) => (
-                        <div
+                        <div data-kiosk-ui="surface"
                           key={idx}
                           className="relative aspect-square bg-gray-200 animate-pulse border-4 border-black rounded-xl overflow-hidden flex items-center justify-center min-h-[120px]"
                         >
@@ -719,7 +719,7 @@ export function PasFotoPage() {
                         const isSelected =
                           filledSlots[activeArrangeIndex] === photo.full;
                         return (
-                          <div
+                          <div data-kiosk-selected={isSelected} data-kiosk-ui="surface"
                             key={i}
                             onClick={() => {
                               setFilledSlots((prev) => ({
@@ -759,10 +759,10 @@ export function PasFotoPage() {
 
             {/* RIGHT — Preview slot + actions */}
             <div className="col-span-4 flex flex-col gap-4 h-[80dvh]">
-              <div className="bg-white border-4 border-black rounded-2xl p-5 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex flex-col flex-1 overflow-hidden">
+              <div data-kiosk-ui="surface" className="bg-white border-4 border-black rounded-2xl p-5 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex flex-col flex-1 overflow-hidden">
                 <div className="flex items-center justify-between mb-3 flex-shrink-0">
                   <h2 className="text-xl font-bold">Preview</h2>
-                  <button
+                  <button data-kiosk-ui="control"
                     onClick={() => {
                       setRatiosSelected(false);
                       setRatioSelectIndex(activeArrangeIndex);
@@ -874,7 +874,7 @@ export function PasFotoPage() {
               </div>
 
               {/* Info card */}
-              <div className="bg-white border-4 border-black rounded-2xl p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex-shrink-0">
+              <div data-kiosk-ui="surface" className="bg-white border-4 border-black rounded-2xl p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex-shrink-0">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <p className="text-sm font-bold text-gray-500 mb-1">
@@ -902,11 +902,11 @@ export function PasFotoPage() {
       {/* Modal Preview */}
       {previewOpen && previewUrl && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-xl border-4 border-black max-w-lg w-full mx-4">
+          <div data-kiosk-ui="dialog" className="bg-white p-6 rounded-xl border-4 border-black max-w-lg w-full mx-4">
             <h2 className="text-2xl font-bold mb-4 text-center">
               Preview Cetak
             </h2>
-            <img
+            <img data-kiosk-ui="media"
               src={previewUrl}
               className="w-full rounded-lg border-4 border-black"
               style={{ maxHeight: "60vh", objectFit: "contain" }}
@@ -936,7 +936,7 @@ export function PasFotoPage() {
       {/* Modal Sukses */}
       {successOpen && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
-          <div className="bg-white p-8 rounded-xl border-4 border-black max-w-md w-full mx-4 text-center shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+          <div data-kiosk-ui="dialog" className="bg-white p-8 rounded-xl border-4 border-black max-w-md w-full mx-4 text-center shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
             <div className="text-6xl mb-4">🎉</div>
             <h2 className="text-3xl font-bold mb-2">Berhasil!</h2>
             <p className="text-xl text-gray-600 mb-8">

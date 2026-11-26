@@ -241,11 +241,11 @@ export function IdCardArrangement() {
           <div className="grid grid-cols-12 gap-8 flex-1 overflow-hidden mb-5">
             {/* LEFT - Gallery */}
             <div className="col-span-8 h-[80dvh]">
-              <BrutalistCard className="p-6 h-full flex flex-col overflow-hidden">
+              <BrutalistCard data-kiosk-ui="surface" className="p-6 h-full flex flex-col overflow-hidden">
                 <div className="flex justify-between items-center mb-6 flex-shrink-0">
                   <h2 className="text-3xl font-bold">Photo Gallery</h2>
                   {!preloadStatus.isDone && preloadStatus.total > 0 && (
-                    <span className="bg-yellow-300 border-4 border-black px-4 py-2 font-bold text-lg shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] animate-pulse">
+                    <span data-kiosk-ui="badge" className="bg-yellow-300 border-4 border-black px-4 py-2 font-bold text-lg shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] animate-pulse">
                       ⏳ Memuat foto ({preloadStatus.loaded}/{preloadStatus.total})...
                     </span>
                   )}
@@ -253,7 +253,7 @@ export function IdCardArrangement() {
                 <div className="grid grid-cols-5 gap-4 flex-1 overflow-y-auto pr-2 min-h-0">
                   {photoGallery.length === 0 ? (
                     Array.from({ length: 10 }).map((_, idx) => (
-                      <div
+                      <div data-kiosk-ui="surface"
                         key={idx}
                         className="relative aspect-square bg-gray-200 animate-pulse border-4 border-black rounded-xl overflow-hidden flex items-center justify-center min-h-[150px]"
                       >
@@ -262,7 +262,7 @@ export function IdCardArrangement() {
                     ))
                   ) : (
                     photoGallery.map((photo, index) => (
-                      <BrutalistCard
+                      <BrutalistCard data-kiosk-ui="surface"
                         key={index}
                         interactive
                         onClick={() => handlePhotoClick(photo)}
@@ -274,7 +274,7 @@ export function IdCardArrangement() {
                           decoding="async"
                           className="w-full h-full object-cover"
                         />
-                        <button
+                        <button data-kiosk-ui="control"
                           className="absolute top-2 right-2 z-50 bg-white text-black text-base font-bold px-3 py-1 rounded-lg border-2 border-black opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black hover:text-white cursor-pointer"
                           onClick={(e) => {
                             e.stopPropagation();
@@ -295,11 +295,11 @@ export function IdCardArrangement() {
             {/* RIGHT - ID Card Slots */}
             <div className="col-span-4 h-[80dvh] flex flex-col gap-4 overflow-hidden">
               {/* Slot tabs */}
-              <BrutalistCard className="p-4 flex-shrink-0">
+              <BrutalistCard data-kiosk-ui="surface" className="p-4 flex-shrink-0">
                 <h2 className="text-xl font-bold mb-3">Pilih Slot</h2>
                 <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
                   {slots.map((slot, idx) => (
-                    <button
+                    <button data-kiosk-selected={activeSlot === idx} data-kiosk-ui="control"
                       key={idx}
                       onClick={() => setActiveSlot(idx)}
                       className={`px-3 py-2 border-4 border-black font-bold text-base cursor-pointer transition-all flex items-center gap-2 ${
@@ -324,11 +324,11 @@ export function IdCardArrangement() {
               </BrutalistCard>
 
               {/* Active slot preview */}
-              <BrutalistCard className="p-4 flex flex-col flex-1 overflow-hidden">
+              <BrutalistCard data-kiosk-ui="surface" className="p-4 flex flex-col flex-1 overflow-hidden">
                 {activeSlotItem && (
                   <>
                     <div className="flex items-center gap-3 mb-3 flex-shrink-0">
-                      <img
+                      <img data-kiosk-ui="media"
                         src={activeSlotItem.orderImage}
                         className="w-12 h-12 object-cover border-2 border-black rounded"
                         onError={(e) => {
@@ -802,11 +802,11 @@ export function IdCardArrangement() {
       {/* Modal Preview Print */}
       {previewOpen && previewUrl && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-xl border-4 border-black h-auto">
+          <div data-kiosk-ui="dialog" className="bg-white p-6 rounded-xl border-4 border-black h-auto">
             <h2 className="text-3xl font-bold mb-4 text-center">
               Print Preview
             </h2>
-            <img
+            <img data-kiosk-ui="media"
               src={previewUrl}
               className="w-full rounded-lg border-4 border-black"
             />
@@ -828,14 +828,14 @@ export function IdCardArrangement() {
           className="fixed inset-0 bg-black/80 flex items-center justify-center z-50"
           onClick={() => setPreviewPhotoOpen(false)}
         >
-          <div
+          <div data-kiosk-ui="dialog"
             className="bg-white p-6 rounded-xl border-4 border-black max-w-3xl w-full mx-4"
             onClick={(e) => e.stopPropagation()}
           >
             <h2 className="text-3xl font-bold mb-4 text-center">
               Preview Gambar ({previewPhotoIndex + 1} / {photoGallery.length})
             </h2>
-            <img
+            <img data-kiosk-ui="media"
               src={previewPhotoUrl}
               className="w-full rounded-lg border-4 border-black aspect-[4/6] object-cover"
             />
@@ -893,7 +893,7 @@ export function IdCardArrangement() {
       {/* Modal Konfirmasi */}
       {confirmOpen && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-xl border-4 border-black max-w-3xl w-full">
+          <div data-kiosk-ui="dialog" className="bg-white p-6 rounded-xl border-4 border-black max-w-3xl w-full">
             <h2 className="text-3xl font-bold mb-2 text-center">
               Konfirmasi Cetak
             </h2>
@@ -925,7 +925,7 @@ export function IdCardArrangement() {
       {/* Modal Sukses */}
       {successOpen && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-xl border-4 border-black max-w-md w-full text-center">
+          <div data-kiosk-ui="dialog" className="bg-white p-6 rounded-xl border-4 border-black max-w-md w-full text-center">
             <div className="text-6xl mb-4">🎉</div>
             <h2 className="text-3xl font-bold mb-2">Berhasil!</h2>
             <p className="text-xl text-gray-600 mb-6">

@@ -83,7 +83,7 @@ export function BrutalistButton({
 
   return (
     <button
-      className={`border transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${sizeClasses[size]} ${className}`}
+      className={`kiosk-button border transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${sizeClasses[size]} ${className}`}
       style={dynamicStyle}
       {...props}
     >

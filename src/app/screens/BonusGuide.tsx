@@ -51,11 +51,11 @@ export function BonusGuide() {
             {t("bonusGuide.subtitle")}
           </p>
 
-          <BrutalistCard className="p-12 mb-12">
+          <BrutalistCard data-kiosk-ui="surface" className="p-12 mb-12">
             <div className="grid md:grid-cols-2 gap-12 items-center">
               {/* QR Code */}
               <div className="flex flex-col items-center">
-                <div className="bg-white p-6 border-4 border-black">
+                <div data-kiosk-ui="media" className="bg-white p-6 border-4 border-black">
                   <QRCodeSVG value={reviewLink} size={220} />
                 </div>
                 <p className="text-2xl font-bold mt-6">
@@ -105,9 +105,9 @@ export function BonusGuide() {
       {/* Timer Modal */}
       {showTimerModal && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
-          <div className="bg-white border-4 border-black rounded-2xl p-10 max-w-lg w-full mx-4 text-center shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+          <div data-kiosk-ui="dialog" className="bg-white border-4 border-black rounded-2xl p-10 max-w-lg w-full mx-4 text-center shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
             {/* Icon */}
-            <div
+            <div data-kiosk-ui="icon"
               onClick={() => setShowDuration((v) => !v)}
               className="w-24 h-24 bg-black rounded-full flex items-center justify-center mx-auto mb-6"
             >
@@ -121,7 +121,7 @@ export function BonusGuide() {
               selama:
             </p>
 
-            <div className="border-4 border-black rounded-2xl p-8 mb-8 bg-gray-50">
+            <div data-kiosk-ui="surface" className="woset-timer-display border-4 border-black rounded-2xl p-8 mb-8 bg-gray-50">
               <p className="text-8xl font-bold tracking-tight">
                 {String(Math.floor(duration / 60)).padStart(2, "0")}:00
               </p>
@@ -138,7 +138,7 @@ export function BonusGuide() {
               <div className="flex items-center justify-center gap-4 mb-6">
                 <p className="text-lg font-bold text-gray-600">Durasi Sesi:</p>
                 {[10, 15, 20, 30].map((min) => (
-                  <button
+                  <button data-kiosk-selected={duration === min * 60} data-kiosk-ui="control"
                     key={min}
                     onClick={() => setDuration(min * 60)}
                     className={`border-4 border-black px-4 py-2 rounded-xl font-bold text-lg transition-all
@@ -156,7 +156,7 @@ export function BonusGuide() {
 
             {/* Actions */}
             <div className="flex gap-4">
-              <button
+              <button data-kiosk-ui="control"
                 onClick={() => setShowTimerModal(false)}
                 className="flex-1 text-xl font-bold border-4 border-black px-6 py-4 bg-white hover:bg-black hover:text-white transition-colors rounded-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1"
               >

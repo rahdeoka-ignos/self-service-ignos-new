@@ -5,6 +5,8 @@ interface BrutalistCardProps extends HTMLAttributes<HTMLDivElement> {
   children: ReactNode;
   interactive?: boolean;
   selected?: boolean;
+  "data-kiosk-ui"?: string;
+  "data-kiosk-selected"?: boolean;
 }
 
 export function BrutalistCard({
@@ -59,11 +61,20 @@ export function BrutalistCard({
       : "var(--kiosk-text, #171717)",
     boxShadow: "var(--kiosk-shadow, none)",
     fontFamily: "var(--kiosk-font, inherit)",
+    ...(theme.assetPack === "woset-play" && props["data-kiosk-ui"] === "surface" ? {
+      borderRadius: "28px",
+      borderWidth: "1px",
+      borderColor: selected || props["data-kiosk-selected"] ? "var(--kiosk-primary)" : "#25282059",
+      backgroundColor: selected || props["data-kiosk-selected"] ? "#d6c57440" : "#6278a41a",
+      color: "var(--kiosk-text)",
+      boxShadow: "none",
+    } : {}),
     ...style,
   };
 
   return (
     <div
+      data-kiosk-selected={selected || undefined}
       className={`kiosk-card relative border transition-all ${interactiveClasses} ${className}`}
       style={dynamicStyle}
       {...props}

@@ -26,13 +26,13 @@ const tips = [
 export function PhotoArrangementTutorial({ onDone }: { onDone: () => void }) {
   return (
     <div className="fixed inset-0 bg-black/70 z-[999] flex items-center justify-center">
-      <div className="bg-white border-4 border-black rounded-2xl p-10 max-w-2xl w-full mx-4 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+      <div data-kiosk-ui="dialog" className="bg-white border-4 border-black rounded-2xl p-10 max-w-2xl w-full mx-4 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
         <div className="text-center mb-8">
           <h2 className="text-4xl font-bold mb-2">Cara Menyusun Foto</h2>
         </div>
         <div className="grid grid-cols-2 gap-5 mb-8">
           {tips.map((tip, i) => (
-            <div
+            <div data-kiosk-ui="surface"
               key={i}
               className="flex items-start gap-4 bg-gray-50 border-2 border-black rounded-xl p-5"
             >

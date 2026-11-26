@@ -570,7 +570,7 @@ export function PhotoArrangement() {
             }
             filter={FILTERS.find((f) => f.id === activeFilter)?.style || ""}
           />
-          <button
+          <button data-kiosk-ui="control" data-kiosk-tone="danger"
             className="absolute top-1 right-1 z-50 bg-red-500 hover:bg-red-600 text-white rounded-full w-7 h-7 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity border-2 border-white shadow-lg cursor-pointer"
             onClick={(e) => {
               e.stopPropagation();
@@ -633,13 +633,13 @@ export function PhotoArrangement() {
           <div className="grid grid-cols-12 gap-8 flex-1 overflow-hidden mb-5">
             {/* LEFT SIDE - Photo Gallery */}
             <div className="col-span-8 h-full">
-              <BrutalistCard className="p-6">
+              <BrutalistCard data-kiosk-ui="surface" className="p-6">
                 <div className="flex justify-between items-center mb-6">
                   <h2 className="text-3xl font-bold">
                     {t("photoArrange.gallery")}
                   </h2>
                   {!preloadStatus.isDone && preloadStatus.total > 0 && (
-                    <span className="bg-yellow-300 border-4 border-black px-4 py-2 font-bold text-lg shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] animate-pulse">
+                    <span data-kiosk-ui="badge" className="bg-yellow-300 border-4 border-black px-4 py-2 font-bold text-lg shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] animate-pulse">
                       ⏳ Memuat foto ({preloadStatus.loaded}/{preloadStatus.total})...
                     </span>
                   )}
@@ -647,7 +647,7 @@ export function PhotoArrangement() {
                 <div className="grid grid-cols-5 gap-4 max-h-[995px] overflow-y-auto pr-2">
                   {displayPhotos.length === 0 ? (
                     Array.from({ length: 10 }).map((_, idx) => (
-                      <div
+                      <div data-kiosk-ui="surface"
                         key={idx}
                         className="relative aspect-square bg-gray-200 animate-pulse border-4 border-black rounded-xl overflow-hidden flex items-center justify-center min-h-[150px]"
                       >
@@ -656,7 +656,7 @@ export function PhotoArrangement() {
                     ))
                   ) : (
                     displayPhotos.map((photo, index) => (
-                      <BrutalistCard
+                      <BrutalistCard data-kiosk-ui="surface"
                         key={index}
                         draggable
                         onDragStart={(e) => handleDragStart(e, photo.full)}
@@ -670,7 +670,7 @@ export function PhotoArrangement() {
                           className="w-full h-full object-cover"
                           style={{ imageRendering: "auto" }}
                         />
-                        <button
+                        <button data-kiosk-ui="control"
                           className="absolute top-2 right-2 z-50 bg-white text-black text-base font-bold px-5 py-2 rounded-lg border-2 border-black opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black hover:text-white cursor-pointer"
                           onClick={(e) => {
                             e.stopPropagation();
@@ -691,7 +691,7 @@ export function PhotoArrangement() {
             </div>
 
             {/* RIGHT SIDE - Template Preview with Slots */}
-            <BrutalistCard className="col-span-3 pb-5 flex flex-col overflow-hidden h-[77dvh]">
+            <BrutalistCard data-kiosk-ui="surface" className="col-span-3 pb-5 flex flex-col overflow-hidden h-[77dvh]">
               <div className="px-6">
                 <h2 className="text-3xl font-bold my-2">
                   {t("photoArrange.templateLayout")}
@@ -711,7 +711,7 @@ export function PhotoArrangement() {
                         ? `Cetak ${index + 1} (${copies}x Print)`
                         : `Cetak ${index + 1}`;
                     return (
-                      <ButtonTemplate
+                      <ButtonTemplate data-kiosk-selected={isActive} data-kiosk-ui="control"
                         key={index}
                         onClick={() => setActiveTemplate(index)}
                         className={`text-lg px-4 py-2 whitespace-nowrap border-4 border-black transition-all cursor-pointer
@@ -1147,13 +1147,13 @@ export function PhotoArrangement() {
               </div>
             </BrutalistCard>
             <div className="col-span-1 h-[77dvh] overflow-hidden">
-              <BrutalistCard className="p-4 h-full overflow-y-auto">
+              <BrutalistCard data-kiosk-ui="surface" className="p-4 h-full overflow-y-auto">
                 <h2 className="text-xl font-bold mb-4">
                   {t("photoArrange.filter")}
                 </h2>
                 <div className="flex flex-col gap-3">
                   {FILTERS.map((filter) => (
-                    <button
+                    <button data-kiosk-selected={activeFilter === filter.id} data-kiosk-ui="control"
                       key={filter.id}
                       onClick={() => setActiveFilter(filter.id)}
                       className={`w-full border-4 border-black rounded-xl overflow-hidden transition-all cursor-pointer ${
@@ -1196,7 +1196,7 @@ export function PhotoArrangement() {
             setIsFlippedY(false);
           }}
         >
-          <div
+          <div data-kiosk-ui="dialog"
             className="bg-white p-6 rounded-xl border-4 border-black max-w-3xl w-full mx-4"
             onClick={(e) => e.stopPropagation()}
           >
@@ -1206,7 +1206,7 @@ export function PhotoArrangement() {
 
             <div className="relative flex items-center justify-center gap-4 my-2">
               {/* Previous Arrow Button */}
-              <button
+              <button data-kiosk-ui="control"
                 disabled={previewPhotoIndex === 0}
                 onClick={() => {
                   const newIndex = previewPhotoIndex - 1;
@@ -1221,7 +1221,7 @@ export function PhotoArrangement() {
               </button>
 
               {/* Preview Image */}
-              <div className="overflow-hidden rounded-lg border-4 border-black aspect-[4/6] bg-black flex items-center justify-center max-h-[80vh] flex-1">
+              <div data-kiosk-ui="surface" className="overflow-hidden rounded-lg border-4 border-black aspect-[4/6] bg-black flex items-center justify-center max-h-[80vh] flex-1">
                 <img
                   src={previewPhotoUrl}
                   className="w-full h-full object-contain transition-transform duration-300"
@@ -1232,7 +1232,7 @@ export function PhotoArrangement() {
               </div>
 
               {/* Next Arrow Button */}
-              <button
+              <button data-kiosk-ui="control"
                 disabled={previewPhotoIndex === photoGallery.length - 1}
                 onClick={() => {
                   const newIndex = previewPhotoIndex + 1;
@@ -1325,11 +1325,11 @@ export function PhotoArrangement() {
 
       {previewOpen && previewUrl && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-xl border-4 border-black max-w-2xl w-full">
+          <div data-kiosk-ui="dialog" className="bg-white p-6 rounded-xl border-4 border-black max-w-2xl w-full">
             <h2 className="text-3xl font-bold mb-4 text-center">
               {t("photoArrange.printPreview.title")}
             </h2>
-            <img
+            <img data-kiosk-ui="media"
               src={previewUrl}
               className="w-full rounded-lg border-4 border-black"
             />
@@ -1347,7 +1347,7 @@ export function PhotoArrangement() {
 
       {successOpen && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-xl border-4 border-black max-w-md w-full text-center">
+          <div data-kiosk-ui="dialog" className="bg-white p-6 rounded-xl border-4 border-black max-w-md w-full text-center">
             <div className="text-6xl mb-4">🎉</div>
             <h2 className="text-3xl font-bold mb-2">
               {t("photoArrange.success.title")}
@@ -1409,7 +1409,7 @@ export function PhotoArrangement() {
 
       {confirmOpen && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-xl border-4 border-black max-w-3xl w-full">
+          <div data-kiosk-ui="dialog" className="bg-white p-6 rounded-xl border-4 border-black max-w-3xl w-full">
             <h2 className="text-3xl font-bold mb-2 text-center">
               {t("photoArrange.confirm.title")}
             </h2>

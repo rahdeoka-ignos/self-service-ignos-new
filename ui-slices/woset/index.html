@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="A Tailwind recreation of the Woset Nessa drawing page." />
+    <title>Woset — Nessa</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  </head>
+  <body class="m-0 min-h-dvh bg-[#eae9e5] font-['Inter',sans-serif] text-[#11120f] antialiased">
+    <main aria-label="Woset drawing page reference recreation" class="min-h-dvh w-full">
+      <section aria-label="Nessa's house for the animals" class="block min-h-dvh w-full bg-[#eae9e5]">
+        <div class="flex min-h-dvh flex-col">
+          <header class="relative flex h-[72px] shrink-0 items-center justify-between px-5 sm:px-8">
+            <nav aria-label="Main navigation" class="flex items-center gap-4 text-[12px] font-medium leading-[18px]">
+              <a href="#shop">Shop</a>
+              <a href="#play" aria-current="page" class="underline decoration-[0.6px] underline-offset-[2px]">Play</a>
+            </nav>
+            <a href="#home" aria-label="Woset home" class="absolute left-1/2 top-[17px] -translate-x-1/2 -rotate-[3deg] font-['Gaegu',cursive] text-[36px] font-normal leading-[38px] tracking-[-2px]">woset</a>
+            <nav aria-label="Shop information" class="flex items-center gap-3 text-[12px] font-medium leading-[18px]">
+              <a href="#cart">Cart (0)</a>
+              <a href="#information">Information</a>
+            </nav>
+          </header>
+
+          <div class="flex flex-1 items-center justify-center px-6 py-8">
+          <figure class="m-0 h-[min(60vh,580px)] min-h-[300px] w-[min(80vw,720px)]">
+            <svg viewBox="0 0 460 390" role="img" aria-labelledby="art-title art-description" class="h-full w-full overflow-visible fill-none stroke-[#11120f] [stroke-linecap:round] [stroke-linejoin:round]">
+              <title id="art-title">Nessa has built a house for the animals</title>
+              <desc id="art-description">A blue long-eared character sits beside a little dog, a spotted cat, and a mouse on a house of blocks. Hand-drawn outlines and muted primary colors follow the reference illustration.</desc>
+
+              <!-- The illustration is recreated as editable SVG, rather than a screenshot. -->
+              <g class="stroke-none font-['Gaegu',cursive] text-[34px] font-bold leading-[36px] tracking-[2px] fill-[#11120f]">
+                <text x="0" y="37" transform="rotate(-2 0 37)">NESSA</text>
+                <text x="131" y="37" transform="rotate(2 131 37)">HAS</text>
+                <text x="220" y="37" transform="rotate(-1 220 37)">BUILT A</text>
+                <text x="240" y="80" transform="rotate(-2 240 80)">HOUSE FOR</text>
+                <text x="277" y="113" transform="rotate(-1 277 113)">THE ANIMALS</text>
+              </g>
+
+              <!-- Seated figure: legs, shirt, and the blue animal mask. -->
+              <g stroke-width="2.8">
+                <path d="M76 292 70 329 112 348 143 338 159 349 177 334 156 316 116 300Z" class="fill-[#eae9e5]" />
+                <path d="m108 317 45 17 9 24-28 10-41-22" />
+                <path d="m72 326-12 24-15 11-5 10 5 2 10-8-5 11 6 1 10-11-5 12 7 1 8-12-3 11 6-1 8-16 13-15" class="fill-[#eae9e5]" />
+                <path d="m144 340 9-21q8-12 15-8 7 4 1 14l-10 22 9-7 11-24q7-10 14-5 6 5 1 14l-10 25 4 10-11 10-14-5-4-10-11 3-11-8Z" class="fill-[#34554a]" />
+                <path d="m75 282 53 21 26-18 24-18 9 12-18 27-37 16-43-13" class="fill-[#eae9e5]" />
+                <path d="m176 269 5-10 7-5 4 4-4 6 7-2 4 5-12 14" class="fill-[#eae9e5]" />
+
+                <path d="M49 309q15-45 16-93l-6-64q-7-24 3-30 11-6 20 11l15 25-7-47q-1-18 11-19 15-1 18 16l-1 51 79-12q30-5 41 13 8 13 3 27-6 18-31 19l-66-4q-4 39-5 77l-5 35q-40 8-85-4Z" class="fill-[#5f73a8]" />
+                <path d="m65 151 25 35-17 54M98 96q-8 9-6 23l4 41M119 159l-28 10M146 201q46 7 65 6 17-1 27-10" />
+                <path d="M130 171h1m10-3h1" class="stroke-[3px]" />
+                <ellipse cx="211" cy="158" rx="3.5" ry="2.5" class="stroke-[1.5px]" />
+                <ellipse cx="226" cy="159" rx="3.5" ry="2.5" class="stroke-[1.5px]" />
+              </g>
+
+              <!-- Little dog. -->
+              <g stroke-width="2.7" class="fill-[#eae9e5]">
+                <path d="m190 260-16 3q-16 0-17-7-1-6 14-8l24-3 34-17q7-3 7-12-2-8-7-10 13-3 18 8l2 11 17 9 9 2-4 9-7 3-8-5-8 10 2 34-7 1-5-27-9 2-1 25h-7l-4-27-13-1-3 27h-7l-2-28Z" />
+                <path d="m242 224 6 13 7-9m10 13 7 3" />
+                <circle cx="258" cy="235" r="1.5" class="fill-[#11120f] stroke-none" />
+              </g>
+
+              <!-- Colored building blocks and arched doorways. -->
+              <g stroke-width="2.8">
+                <path d="m315 260 93-2 2 42-96 2Z" class="fill-[#eae9e5]" />
+                <path d="m320 286 12-1 2 17-14 1Z" class="fill-[#e8ce6c] stroke-none" />
+                <path d="m314 294 98 1 1 12-98 1Z" class="fill-[#eae9e5]" />
+                <path d="m318 307 1 44 24-1-1-23q1-14 13-15 14 0 15 16l-1 23 17-1-1-43Z" class="fill-[#eae9e5]" />
+                <path d="m320 309 11-1 1 43-13 1Z" class="fill-[#e8ce6c] stroke-none" />
+                <path d="m380 350 1-47 42-2 23 44Z" class="fill-[#eae9e5]" />
+                <path d="m383 303 16-30 14 30Z" class="fill-[#34554a]" />
+                <path d="m392 252 56 1 2 21-59 1Z" class="fill-[#5f73a8]" />
+                <ellipse cx="438" cy="244" rx="8" ry="10" class="fill-[#e8ce6c]" />
+                <path d="m392 275 54 1 7 30-61-2Z" class="fill-[#eae9e5]" />
+                <path d="m391 303 61 1 12 11-74-1Z" class="fill-[#eae9e5]" />
+                <path d="m390 315 1 59 19-1-1-31q0-14 13-15 14 0 16 15l-1 31 24-1-1-57Z" class="fill-[#eae9e5]" />
+                <path d="m391 317 12 1 1 55-13 1Z" class="fill-[#e8ce6c] stroke-none" />
+                <path d="m438 346 22-1 1 28-24 1Z" class="fill-[#e8ce6c]" />
+                <path d="m306 352 88-2 1 24-89 1Z" class="fill-[#eae9e5]" />
+                <path d="m322 352 1 22m52-24 1 25" />
+              </g>
+
+              <!-- Mouse on the roof. -->
+              <g stroke-width="2.6" class="fill-[#eae9e5]">
+                <path d="M396 170q-7-16 1-27 8-13 13-10 7 4 2 25m-25 15q-21-16-26-5-7 14 18 18" />
+                <path d="M389 161q12-12 25-3l16 17q9 12 3 22-5 8-17 5l-8 19-13 12-1 21-8-1-1-18-10 9-1 17-10-1 2-28-15 20-9-2 3-28 28-30q-7-17 8-27Z" />
+                <path d="m410 175 16 7-11 11-5-18Zm5 18 1 10 10-5m-51 15 26 11 11 17 9 8-9 4-17-18-17-6m-25-1 8 20m8-28 8 18" />
+                <circle cx="402" cy="171" r="1.8" class="fill-[#11120f] stroke-none" />
+              </g>
+
+              <!-- Spotted cat in the foreground. -->
+              <g stroke-width="2.8" class="fill-[#eae9e5]">
+                <path d="m271 307-10-12-10 24 10 16 11 16 4 27 8-1 2-18 39 1 3 18 8-1 4-36q9-1 9-10-1-9-8-9-9 0-10 11l-40-1 11-16-8-21-12 12Z" />
+                <path d="m252 319 49-2m-35 9 1 2m18-3 1 2m-12 11 3 1-1 4m4 11 3 4m4-10 2 3m-15-2 2 3m8-13 2 3m-11-4-2 2" />
+                <path d="m326 340 6 4 4 2" />
+              </g>
+            </svg>
+            <figcaption class="sr-only">Nessa has built a house for the animals.</figcaption>
+          </figure>
+          </div>
+
+          <footer class="flex shrink-0 flex-wrap items-end justify-between gap-8 px-5 pb-6 sm:px-8 sm:pb-8">
+          <aside aria-labelledby="nessa-heading" class="w-[215px] shrink-0">
+            <h1 id="nessa-heading" class="m-0 text-[28px] font-medium leading-[34px] tracking-[-0.9px]">Nessa</h1>
+            <p class="mb-0 mt-[4px] text-[12px] font-medium leading-[16px] tracking-[-0.15px]">Nessa is very shy and always hides herself<br />behind her mask. Behind the mask is<br />someone very helpful and kind.</p>
+            <a href="#play" class="mt-[12px] inline-block text-[12px] font-medium leading-[16px] underline decoration-[0.6px] underline-offset-[2px]">Back to Play</a>
+          </aside>
+
+          <div aria-label="Drawing tools, visual reference" class="flex flex-wrap items-center gap-y-4">
+            <div class="flex flex-wrap items-center gap-[5px]">
+              <button type="button" class="flex h-7 w-[90px] items-center justify-center rounded-full border border-[#82847b] bg-transparent text-[10px] font-medium leading-[14px]">START OVER</button>
+              <button type="button" class="flex h-7 w-[90px] items-center justify-center rounded-full border border-[#82847b] bg-transparent text-[10px] font-medium leading-[14px]">ERASER</button>
+              <button type="button" class="flex h-7 w-[90px] items-center justify-center rounded-full border border-[#82847b] bg-transparent text-[10px] font-medium leading-[14px]">SAVE</button>
+              <button type="button" class="flex h-7 w-[90px] items-center justify-center rounded-full border border-[#82847b] bg-transparent text-[10px] font-medium leading-[14px]">SHARE</button>
+            </div>
+            <div aria-label="Color palette" class="ml-0 flex items-center sm:ml-8 gap-[4px]">
+              <button type="button" aria-label="Red" class="size-[18px] rounded-full border border-black/10 bg-[#913c50]"></button>
+              <button type="button" aria-label="Blue" class="size-[18px] rounded-full border border-black/10 bg-[#596b96]"></button>
+              <button type="button" aria-label="Purple" class="size-[18px] rounded-full border border-black/10 bg-[#5c4257]"></button>
+              <button type="button" aria-label="Green" class="size-[18px] rounded-full border border-black/10 bg-[#35564a]"></button>
+              <button type="button" aria-label="Yellow" class="size-[18px] rounded-full border border-black/10 bg-[#cdbd77]"></button>
+            </div>
+            <div role="img" aria-label="Brush size slider" class="relative ml-6 h-[18px] w-[63px] sm:ml-10">
+              <span class="absolute left-0 top-[9px] h-px w-full bg-[#222822]"></span>
+              <span class="absolute left-[19px] top-[4px] size-[10px] rounded-full bg-[#35564a]"></span>
+            </div>
+          </div>
+          </footer>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

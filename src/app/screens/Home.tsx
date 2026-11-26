@@ -10,6 +10,8 @@ import { useSecurity } from "../../context/SecurityContext";
 import { CameraImportModal } from "../components/CameraImportModal";
 import { AdminPinModal } from "../components/AdminPinModal";
 
+import { WosetHomeContent } from "../components/WosetHomeContent";
+
 export function Home() {
   const navigate = useNavigate();
   const { theme } = useKioskTheme();
@@ -41,7 +43,8 @@ export function Home() {
   ];
 
   return (
-    <div className="kiosk-screen min-h-screen bg-gray-100 flex items-center justify-center p-8">
+    <div className="kiosk-screen min-h-screen bg-gray-100 flex items-center justify-center p-6 md:p-8">
+      {theme.assetPack === "woset-play" ? <WosetHomeContent theme={theme} onStaffImport={() => setCameraImportOpen(true)} onSelectService={serviceId => navigate("/people-count", { state: { serviceId } })} /> : (
       <div className="max-w-7xl w-full">
         {/* Secret Double Click Trigger for Staff */}
         <div
@@ -71,7 +74,7 @@ export function Home() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-5xl mx-auto">
           {services.map((service) => (
-            <BrutalistCard
+            <BrutalistCard data-kiosk-ui="surface"
               key={service.id}
               interactive
               onClick={() =>
@@ -79,7 +82,7 @@ export function Home() {
               }
               className="cursor-pointer flex flex-col items-center justify-center text-center p-12 min-h-[400px] hover:scale-105"
             >
-              <div className="w-32 h-32 kiosk-icon bg-black rounded-full flex items-center justify-center mb-8 border-4 border-black">
+              <div data-kiosk-ui="icon" className="w-32 h-32 kiosk-icon bg-black rounded-full flex items-center justify-center mb-8 border-4 border-black">
                 <service.icon
                   size={64}
                   className="text-white"
@@ -92,6 +95,8 @@ export function Home() {
           ))}
         </div>
       </div>
+
+      )}
 
       {/* Secret Camera Import Modal */}
       <CameraImportModal

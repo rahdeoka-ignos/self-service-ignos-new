@@ -29,7 +29,7 @@ import { AdminPricingPage } from "./screens/AdminPricingPage";
 import { AdminBrandingPage } from "./screens/AdminBrandingPage";
 import { AdminLicensePage } from "./screens/AdminLicensePage";
 import { PasFotoPage } from "./screens/AddOns/PasFoto";
-import { KioskThemeProvider } from "../context/KioskThemeContext";
+import { KioskThemeProvider, useKioskTheme } from "../context/KioskThemeContext";
 import { PricingProvider } from "../context/PricingContext";
 import { BrandingProvider } from "../context/BrandingContext";
 import { LicenseProvider } from "../context/LicenseContext";
@@ -37,6 +37,11 @@ import { SecurityProvider } from "../context/SecurityContext";
 import { KioskLockoutGuard } from "./components/KioskLockoutGuard";
 import { AdminRouteGuard } from "./components/AdminRouteGuard";
 import { CameraPlugWatcher } from "./components/CameraPlugWatcher";
+
+function ThemedOutlet({ isAdmin }: { isAdmin: boolean }) {
+  const { theme } = useKioskTheme();
+  return <div data-kiosk-theme={!isAdmin ? "active" : undefined} data-kiosk-assets={!isAdmin ? theme.assetPack : undefined} className="contents"><Outlet /></div>;
+}
 
 function RootLayout() {
   const location = useLocation();
@@ -47,7 +52,7 @@ function RootLayout() {
         <PricingProvider>
           <BrandingProvider>
             <LicenseProvider>
-              <div data-kiosk-theme={!isAdmin ? "active" : undefined} style={{ display: "contents" }}><Outlet /></div>
+              <ThemedOutlet isAdmin={isAdmin} />
               {!isAdmin && <KioskPrinterAlertModal />}
               {!isAdmin && <KioskLockoutGuard />}
               <CameraPlugWatcher />

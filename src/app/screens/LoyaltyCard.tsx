@@ -341,14 +341,14 @@ export function LoyaltyCard() {
         <div className="grid grid-cols-5 gap-8">
           {/* LEFT PANEL */}
           <div className="col-span-2 space-y-5">
-            <div className="bg-white border-4 border-black rounded-2xl p-7 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+            <div data-kiosk-ui="surface" className="bg-white border-4 border-black rounded-2xl p-7 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
               <h2 className="text-2xl font-bold mb-5">Detail Member</h2>
 
               <div className="mb-5">
                 <label className="block text-base font-bold mb-2 text-gray-700">
                   ID Member
                 </label>
-                <div className="w-full border-4 border-black rounded-xl px-4 py-3 text-center bg-gray-50">
+                <div data-kiosk-ui="surface" className="w-full border-4 border-black rounded-xl px-4 py-3 text-center bg-gray-50">
                   <span className="text-2xl font-bold tracking-widest font-mono">
                     {formatId(counter)}
                   </span>
@@ -370,7 +370,7 @@ export function LoyaltyCard() {
                     const isLocked = r.id === 1;
                     return (
                       <div key={r.id} className="flex flex-col gap-1">
-                        <button
+                        <button data-kiosk-ui="control"
                           onClick={() => toggleReward(r.id)}
                           disabled={isLocked}
                           className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border-2 transition-all text-left ${
@@ -379,7 +379,7 @@ export function LoyaltyCard() {
                               : "border-gray-300 bg-white text-gray-700 hover:border-black"
                           } ${isLocked ? "opacity-60 cursor-default" : "cursor-pointer"}`}
                         >
-                          <div
+                          <div data-kiosk-ui="surface"
                             className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
                               isChecked ? "border-white" : "border-gray-400"
                             }`}
@@ -396,7 +396,7 @@ export function LoyaltyCard() {
                             <span className="text-xs text-gray-400 whitespace-nowrap">
                               Tgl kunjungan:
                             </span>
-                            <input
+                            <input data-kiosk-ui="field"
                               type="text"
                               placeholder="cth: 10/05/25"
                               value={rewardDates[r.id] || ""}
@@ -412,7 +412,7 @@ export function LoyaltyCard() {
                 </div>
               </div>
 
-              <button
+              <button data-kiosk-ui="control"
                 onClick={handleDownload}
                 disabled={downloading || !storageReady}
                 className="w-full text-lg font-bold border-4 border-black px-6 py-4 bg-black text-white hover:bg-white hover:text-black transition-colors rounded-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
@@ -429,7 +429,7 @@ export function LoyaltyCard() {
 
           {/* RIGHT PANEL - Preview */}
           <div className="col-span-3">
-            <div className="bg-white border-4 border-black rounded-2xl p-5 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+            <div data-kiosk-ui="surface" className="bg-white border-4 border-black rounded-2xl p-5 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
               <h2 className="text-xl font-bold mb-4">Preview Kartu</h2>
               <div
                 className="relative w-full bg-white overflow-hidden"

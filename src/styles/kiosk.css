@@ -42,3 +42,325 @@
   outline: 3px solid var(--kiosk-accent, #fde047);
   outline-offset: 3px;
 }
+
+/* Woset Play is an asset-led world, scoped away from admin and print artwork. */
+[data-kiosk-assets="woset-play"] .woset-display,
+[data-kiosk-assets="woset-play"] .kiosk-screen h1 {
+  font-family: 'Gaegu', cursive;
+  letter-spacing: -.035em;
+}
+[data-kiosk-assets="woset-play"] .kiosk-navigation {
+  border-bottom-width: 0;
+  background-color: var(--kiosk-bg);
+}
+[data-kiosk-assets="woset-play"] .kiosk-button {
+  font-weight: 500;
+  box-shadow: none;
+}
+[data-kiosk-assets="woset-play"] .woset-people-card {
+  padding: clamp(24px, 3vw, 48px);
+}
+@media (max-width: 900px) {
+  [data-kiosk-assets="woset-play"] .kiosk-navigation > div {
+    gap: 12px;
+    padding: 16px;
+  }
+  [data-kiosk-assets="woset-play"] .kiosk-navigation .kiosk-button {
+    padding: 10px 14px;
+    font-size: 14px;
+  }
+}
+
+[data-kiosk-assets="woset-play"] .woset-stage-heading {
+  margin-top: 16px;
+  margin-bottom: 16px;
+}
+
+/* Explicit surfaces keep legacy brutalist styles out of the illustrated flow. */
+[data-kiosk-assets="woset-play"] .woset-panel {
+  max-height: 90dvh;
+  overflow-y: auto;
+  border: 1px solid color-mix(in srgb, var(--kiosk-border) 45%, transparent);
+  border-radius: 28px;
+  background: var(--kiosk-bg);
+  color: var(--kiosk-text);
+  box-shadow: none;
+  font-family: var(--kiosk-font);
+}
+[data-kiosk-assets="woset-play"] .woset-panel-title {
+  font-family: 'Gaegu', cursive;
+  font-size: 36px;
+}
+[data-kiosk-assets="woset-play"] .woset-timer-display {
+  border-width: 1px;
+  border-color: color-mix(in srgb, var(--kiosk-border) 35%, transparent);
+  border-radius: 24px;
+  background: #d6c57426;
+}
+[data-kiosk-assets="woset-play"] :is(.woset-plain-button, .woset-duration-button) {
+  min-height: 44px;
+  border-width: 1px;
+  border-color: color-mix(in srgb, var(--kiosk-border) 45%, transparent);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--kiosk-text);
+  box-shadow: none;
+  transform: none;
+  font-size: 16px;
+  font-weight: 500;
+}
+[data-kiosk-assets="woset-play"] .woset-plain-button:hover {
+  background: #46685615;
+}
+[data-kiosk-assets="woset-play"] .woset-duration-button[aria-pressed="true"] {
+  background: var(--kiosk-primary);
+  color: var(--kiosk-primary-text);
+}
+[data-kiosk-assets="woset-play"] .woset-field {
+  border-width: 1px;
+  border-radius: 16px;
+}
+[data-kiosk-assets="woset-play"] .woset-field-prefix {
+  border-right-width: 1px;
+  background: transparent;
+}
+[data-kiosk-assets="woset-play"] .woset-product-card h2 {
+  font-family: 'Gaegu', cursive;
+  font-size: 26px;
+  line-height: 1.15;
+}
+[data-kiosk-assets="woset-play"] .woset-product-card p {
+  font-size: 14px;
+  font-weight: 500;
+}
+[data-kiosk-assets="woset-play"] button:focus-visible {
+  outline-color: var(--kiosk-primary);
+}
+
+/* Shared Woset UI contract. Hooks are attached to interface elements only;
+   captured photo slots, print canvases and receipt trees are excluded. */
+[data-kiosk-assets="woset-play"] {
+  --woset-line: #25282059;
+  --woset-fill: #6278a41a;
+  --woset-selected: #d6c57440;
+}
+[data-kiosk-assets="woset-play"] [data-kiosk-ui="surface"] {
+  border-width: 1px;
+  border-color: var(--woset-line);
+  border-radius: 28px;
+  background-color: var(--woset-fill);
+  color: var(--kiosk-text);
+  box-shadow: none;
+  transform: none;
+  translate: none;
+  scale: 1;
+}
+[data-kiosk-assets="woset-play"] [data-kiosk-ui="surface"][data-kiosk-selected="true"] {
+  border-color: var(--kiosk-primary);
+  background-color: var(--woset-selected);
+  box-shadow: 0 0 0 1px var(--kiosk-primary);
+}
+[data-kiosk-assets="woset-play"] [data-kiosk-ui="surface"] > :is(h2, h3) {
+  font-family: 'Gaegu', cursive;
+  font-weight: 700;
+}
+[data-kiosk-assets="woset-play"] [data-kiosk-ui="control"] {
+  min-height: 44px;
+  border-width: 1px;
+  border-color: var(--woset-line);
+  border-radius: 999px;
+  background-color: transparent;
+  color: var(--kiosk-text);
+  box-shadow: none;
+  transform: none;
+  translate: none;
+  scale: 1;
+  font-weight: 500;
+}
+[data-kiosk-assets="woset-play"] [data-kiosk-ui="surface"] {
+  translate: none;
+  scale: 1;
+}
+[data-kiosk-assets="woset-play"] [data-kiosk-ui="dialog"] {
+  max-height: 90dvh;
+  overflow-y: auto;
+  border: 1px solid var(--woset-line);
+  border-radius: 28px;
+  background: var(--kiosk-bg);
+  color: var(--kiosk-text);
+  box-shadow: none;
+  scrollbar-width: thin;
+  scrollbar-color: var(--woset-line) transparent;
+}
+[data-kiosk-assets="woset-play"] [data-kiosk-ui="dialog"] > h2 {
+  font-family: 'Gaegu', cursive;
+  font-size: 36px;
+}
+[data-kiosk-assets="woset-play"] [data-kiosk-ui="dialog"] > p {
+  font-size: 16px;
+  line-height: 24px;
+  margin-bottom: 20px;
+}
+[data-kiosk-assets="woset-play"] [data-kiosk-ui="dialog"] > [data-kiosk-ui="icon"] {
+  width: 72px;
+  height: 72px;
+  margin-bottom: 16px;
+}
+[data-kiosk-assets="woset-play"] .woset-timer-display {
+  padding: 20px;
+  margin-bottom: 20px;
+}
+[data-kiosk-assets="woset-play"] .woset-timer-display > p:first-child {
+  font-size: 56px;
+  line-height: 1.1;
+  font-weight: 500;
+}
+[data-kiosk-assets="woset-play"] .woset-timer-display > p:nth-child(2) {
+  font-size: 14px;
+  font-weight: 500;
+}
+[data-kiosk-assets="woset-play"] [data-kiosk-ui="dialog"] .kiosk-button {
+  padding: 12px 18px;
+  font-size: 16px;
+}
+[data-kiosk-assets="woset-play"] .woset-template-layout {
+  grid-template-columns: 132px minmax(0, 1fr) 260px;
+}
+[data-kiosk-assets="woset-play"] .woset-template-layout > div {
+  grid-column: auto;
+  min-width: 0;
+  overflow-x: hidden;
+}
+[data-kiosk-assets="woset-play"] .woset-template-layout > div > h2 {
+  font-size: 20px;
+  line-height: 24px;
+}
+[data-kiosk-assets="woset-play"] .woset-template-layout > div:first-child [data-kiosk-ui="surface"] p {
+  color: var(--kiosk-text);
+  font-size: 14px;
+}
+[data-kiosk-assets="woset-play"] [data-kiosk-ui="control"]:hover:not(:disabled) {
+  background-color: #4668561a;
+  color: var(--kiosk-text);
+}
+[data-kiosk-assets="woset-play"] [data-kiosk-ui="control"]:is([data-kiosk-selected="true"], [aria-pressed="true"]) {
+  background-color: var(--woset-selected);
+  border-color: var(--kiosk-primary);
+  color: var(--kiosk-text);
+}
+[data-kiosk-assets="woset-play"] [data-kiosk-ui="control"][data-kiosk-tone="danger"] {
+  background-color: #a25b651a;
+  color: #8d3949;
+}
+[data-kiosk-assets="woset-play"] [data-kiosk-ui="control"] .text-white {
+  color: inherit;
+}
+[data-kiosk-assets="woset-play"] [data-kiosk-ui="quantity"] {
+  min-height: 44px;
+  border: 1px solid var(--woset-line);
+  border-radius: 999px;
+  background-color: transparent;
+  color: var(--kiosk-text);
+  font-size: 20px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+[data-kiosk-assets="woset-play"] [data-kiosk-ui="divider"] {
+  border-color: var(--woset-line);
+}
+[data-kiosk-assets="woset-play"] [data-kiosk-ui="divider"][class*="border-t-"] { border-top-width: 1px; }
+[data-kiosk-assets="woset-play"] [data-kiosk-ui="divider"][class*="border-b-"] { border-bottom-width: 1px; }
+[data-kiosk-assets="woset-play"] [data-kiosk-ui="divider"][class*="border-l-"] { border-left-width: 1px; }
+[data-kiosk-assets="woset-play"] [data-kiosk-ui="divider"][class*="border-r-"] { border-right-width: 1px; }
+[data-kiosk-assets="woset-play"] [data-kiosk-ui="media"] {
+  border-width: 1px;
+  border-color: var(--woset-line);
+  border-radius: 16px;
+  box-shadow: none;
+}
+[data-kiosk-assets="woset-play"] [data-kiosk-ui="swatch"] {
+  border-width: 1px;
+  border-color: var(--woset-line);
+  border-radius: 8px;
+}
+[data-kiosk-assets="woset-play"] [data-kiosk-ui="field"] {
+  border-width: 1px;
+  border-radius: 16px;
+  box-shadow: none;
+}
+[data-kiosk-assets="woset-play"] [data-kiosk-ui="badge"] {
+  border-width: 1px;
+  border-color: var(--woset-line);
+  border-radius: 999px;
+  background-color: #d6c57433;
+  color: var(--kiosk-text);
+  box-shadow: none;
+}
+[data-kiosk-assets="woset-play"] [data-kiosk-ui="icon"] {
+  border-width: 1px;
+  border-color: var(--woset-line);
+  background-color: #d6c57433;
+  color: var(--kiosk-text);
+}
+[data-kiosk-assets="woset-play"] [data-kiosk-ui="icon"] svg {
+  color: inherit;
+  stroke-width: 1.8px;
+}
+[data-kiosk-assets="woset-play"] [data-kiosk-ui="icon"][data-kiosk-tone="danger"] {
+  background-color: #a25b6526;
+  color: #8d3949;
+}
+[data-kiosk-assets="woset-play"] .woset-product-card img {
+  object-fit: contain;
+  padding: 16px;
+}
+[data-kiosk-assets="woset-play"] .woset-product-card [data-kiosk-ui="divider"] {
+  border-width: 0;
+}
+[data-kiosk-assets="woset-play"] .kiosk-screen .overflow-y-auto {
+  scrollbar-width: thin;
+  scrollbar-color: var(--woset-line) transparent;
+}
+[data-kiosk-assets="woset-play"] [data-kiosk-ui="timer"] {
+  top: 124px;
+  right: 24px;
+  gap: 10px;
+  padding: 10px 18px;
+  border: 1px solid var(--woset-line);
+  border-radius: 999px;
+  background-color: var(--kiosk-bg);
+  color: var(--kiosk-text);
+  box-shadow: none;
+  animation: none;
+  font-family: var(--kiosk-font);
+  font-weight: 500;
+}
+[data-kiosk-assets="woset-play"] [data-kiosk-ui="timer"] > span:last-child {
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: .02em;
+}
+[data-kiosk-assets="woset-play"] [data-kiosk-ui="timer"] > svg {
+  width: 18px;
+  height: 18px;
+  stroke-width: 1.8px;
+}
+[data-kiosk-assets="woset-play"] .woset-timer-label {
+  display: inline;
+  font-size: 12px;
+  font-weight: 500;
+}
+[data-kiosk-assets="woset-play"] [data-kiosk-ui="timer"][data-timer-state="urgent"] {
+  border-color: #a18b3d;
+  background-color: #e6dba6;
+}
+[data-kiosk-assets="woset-play"] [data-kiosk-ui="timer"][data-timer-state="critical"] {
+  border-color: #a25b65;
+  background-color: #f1d5d0;
+  color: #8d3949;
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-kiosk-assets="woset-play"] [data-kiosk-ui] {
+    transition: none;
+  }
+}

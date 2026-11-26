@@ -3,6 +3,7 @@ export type ThemePresetId =
   | "clean-minimal"
   | "luxury-wedding"
   | "dark-studio"
+  | "woset-play"
   | "custom";
 
 export type BorderRadiusType = "none" | "sm" | "md" | "lg" | "full";
@@ -13,6 +14,7 @@ export type FontFamilyType = "manrope" | "space-grotesk" | "poppins";
 export interface KioskThemeConfig {
   presetId: ThemePresetId;
   name: string;
+  assetPack: "none" | "woset-play";
   // Colors
   backgroundColor: string;
   cardBackgroundColor: string;
@@ -41,6 +43,7 @@ export interface KioskThemeConfig {
 export const THEME_PRESETS: Record<ThemePresetId, KioskThemeConfig> = {
   "neo-brutalism": {
     presetId: "neo-brutalism",
+    assetPack: "none",
     name: "Neo-Brutalism (Pop Studio)",
     backgroundColor: "#f3f4f6",
     cardBackgroundColor: "#ffffff",
@@ -64,6 +67,7 @@ export const THEME_PRESETS: Record<ThemePresetId, KioskThemeConfig> = {
   },
   "clean-minimal": {
     presetId: "clean-minimal",
+    assetPack: "none",
     name: "Clean Minimal (Amara Editorial)",
     backgroundColor: "#fafafa",
     cardBackgroundColor: "#ffffff",
@@ -87,6 +91,7 @@ export const THEME_PRESETS: Record<ThemePresetId, KioskThemeConfig> = {
   },
   "luxury-wedding": {
     presetId: "luxury-wedding",
+    assetPack: "none",
     name: "Romantic Luxury (Wedding & Event)",
     backgroundColor: "#fdfbf7",
     cardBackgroundColor: "#ffffff",
@@ -110,6 +115,7 @@ export const THEME_PRESETS: Record<ThemePresetId, KioskThemeConfig> = {
   },
   "dark-studio": {
     presetId: "dark-studio",
+    assetPack: "none",
     name: "Dark Studio (Cyber Noir)",
     backgroundColor: "#09090b",
     cardBackgroundColor: "#18181b",
@@ -131,8 +137,33 @@ export const THEME_PRESETS: Record<ThemePresetId, KioskThemeConfig> = {
     enableStoryQuestion: true,
     freeEventMode: false,
   },
+  "woset-play": {
+    presetId: "woset-play",
+    name: "Woset Play (Illustrated Studio)",
+    assetPack: "woset-play",
+    backgroundColor: "#eae9e5",
+    cardBackgroundColor: "#eae9e5",
+    primaryColor: "#35564a",
+    primaryTextColor: "#ffffff",
+    textColor: "#20231f",
+    accentColor: "#cdbd77",
+    borderColor: "#34382f",
+    borderRadius: "full",
+    borderWidth: "thin",
+    shadowStyle: "none",
+    fontFamily: "manrope",
+    studioName: "IGNOS STUDIO",
+    homeHeadline: "Cerita kecil, kenangan besar.",
+    homeSubheadline: "Pilih tempat bermainmu. Kita buat foto yang jadi cerita.",
+    logoUrl: "",
+    enableBonusTutorial: true,
+    enableAddonsStep: true,
+    enableStoryQuestion: true,
+    freeEventMode: false,
+  },
   custom: {
     presetId: "custom",
+    assetPack: "none",
     name: "Custom Theme",
     backgroundColor: "#f3f4f6",
     cardBackgroundColor: "#ffffff",

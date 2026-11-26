@@ -12,7 +12,11 @@ import { TimerExpiredModal } from "../components/TimerExpiredModal";
 import type { TemplateCategory, TemplateEntry, TemplatesData } from "../../types/template";
 import { preloadGallery } from "../../utils/photoPreloader";
 
+import { useKioskTheme } from "../../context/KioskThemeContext";
+import { WosetArtwork } from "../components/WosetArtwork";
+
 export function TemplateSelection() {
+  const { theme } = useKioskTheme();
   const navigate = useNavigate();
   const location = useLocation();
   const peopleCount =
@@ -133,7 +137,8 @@ export function TemplateSelection() {
 
         <div className="pt-32 pb-8 px-8 flex-1 overflow-hidden">
           <div className="max-w-[1800px] mx-auto h-full flex flex-col">
-            <h1 className="text-6xl font-bold mb-8 mt-10 text-center">
+            <h1 className="woset-stage-heading text-6xl font-bold mb-8 mt-10 text-center">
+              {theme.assetPack === "woset-play" && <WosetArtwork scene="frames" className="mr-5 inline-block h-24 w-28 align-middle" />}
               {t("templateSelection.title")}
             </h1>
             <p className="text-2xl text-center mb-8 text-gray-700">
@@ -142,28 +147,28 @@ export function TemplateSelection() {
               {totalSelections}
             </p>
 
-            <div className="grid grid-cols-12 gap-6 flex-1 overflow-hidden">
+            <div className="woset-template-layout grid grid-cols-12 gap-6 flex-1 overflow-hidden">
               {/* LEFT PANEL - Categories */}
               <div className="col-span-1 space-y-4 overflow-y-auto pr-2">
                 <h2 className="text-2xl font-bold mb-4">
                   {t("templateSelection.categories")}
                 </h2>
                 {categories.map((category) => (
-                  <BrutalistCard
+                  <BrutalistCard data-kiosk-ui="surface"
                     key={category.id}
                     interactive
                     selected={selectedCategory === category.id}
                     onClick={() => setSelectedCategory(category.id)}
                     className="p-4 cursor-pointer relative"
                   >
-                    <ImageWithFallback
+                    <ImageWithFallback data-kiosk-ui="media"
                       src={category.image}
                       alt={category.name}
                       className="w-full h-24 object-cover rounded-lg mb-2 border-2 border-black"
                     />
                     <p
                       className={`text-lg font-bold text-center ${
-                        selectedCategory === category.id
+                        selectedCategory === category.id && theme.assetPack !== "woset-play"
                           ? "text-white"
                           : "text-black"
                       }`}
@@ -185,7 +190,7 @@ export function TemplateSelection() {
                     <p className="text-2xl font-bold text-gray-400">Loading templates...</p>
                   </div>
                 ) : isComingSoon ? (
-                  <div className="flex items-center justify-center h-[400px] w-full border-4 border-dashed border-black rounded-2xl">
+                  <div data-kiosk-ui="surface" className="flex items-center justify-center h-[400px] w-full border-4 border-dashed border-black rounded-2xl">
                     <div className="text-center">
                       <p className="text-3xl font-bold mb-2">
                         🚧 {t("templateSelection.comingSoon")}
@@ -204,7 +209,7 @@ export function TemplateSelection() {
                         );
 
                         return (
-                          <BrutalistCard
+                          <BrutalistCard data-kiosk-ui="surface"
                             key={template.id}
                             interactive
                             selected={isSelected}
@@ -214,11 +219,11 @@ export function TemplateSelection() {
                             } transition-none! hover:!translate-x-0 hover:!translate-y-0 active:!translate-x-0 active:!translate-y-0 hover:!scale-100`}
                           >
                             {isSelected && (
-                              <div className="absolute top-3 right-3 w-8 h-8 bg-yellow-300 text-black border-2 border-black rounded-full flex items-center justify-center font-black text-sm shadow-[2px_2px_0px_0px_#000] z-10">
+                              <div data-kiosk-ui="icon" className="absolute top-3 right-3 w-8 h-8 bg-yellow-300 text-black border-2 border-black rounded-full flex items-center justify-center font-black text-sm shadow-[2px_2px_0px_0px_#000] z-10">
                                 ✓
                               </div>
                             )}
-                            <div className="aspect-4/6 bg-gray-200 rounded-lg mb-4 border-4 border-black flex items-center justify-center">
+                            <div data-kiosk-ui="surface" className="aspect-4/6 bg-gray-200 rounded-lg mb-4 border-4 border-black flex items-center justify-center">
                               <ImageWithFallback
                                 src={template.previewTemplate}
                                 alt={template.name}
@@ -227,7 +232,7 @@ export function TemplateSelection() {
                             </div>
                             <p
                               className={`text-xl font-bold text-center ${
-                                isSelected ? "text-white" : "text-black"
+                                isSelected && theme.assetPack !== "woset-play" ? "text-white" : "text-black"
                               }`}
                             >
                               {template.name}
@@ -255,24 +260,24 @@ export function TemplateSelection() {
                     { length: coupleMode ? 1 : peopleCount },
                     (_, i) => i + 1,
                   ).map((userNum) => (
-                    <BrutalistCard
+                    <BrutalistCard data-kiosk-ui="surface"
                       key={userNum}
                       className={`p-4 ${userNum === currentUser ? "border-8" : ""}`}
                     >
                       <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-black text-white rounded-full flex items-center justify-center text-xl font-bold flex-shrink-0">
+                        <div data-kiosk-ui="icon" className="w-12 h-12 bg-black text-white rounded-full flex items-center justify-center text-xl font-bold flex-shrink-0">
                           {userNum}
                         </div>
                         <div className="flex-1">
                           {userTemplates[userNum] ? (
                             <div className="flex items-center gap-3 relative">
-                              <button
+                              <button data-kiosk-ui="control" data-kiosk-tone="danger"
                                 onClick={() => handleRemoveTemplate(userNum)}
                                 className="absolute -top-2 -right-2 w-8 h-8 bg-red-500 text-white font-bold rounded-full border-2 border-black hover:scale-110"
                               >
                                 ✕
                               </button>
-                              <div className="w-16 h-16 border-4 border-black rounded-lg overflow-hidden">
+                              <div data-kiosk-ui="surface" className="w-16 h-16 border-4 border-black rounded-lg overflow-hidden">
                                 <ImageWithFallback
                                   src={userTemplates[userNum].previewTemplate}
                                   alt={userTemplates[userNum].name}
@@ -317,7 +322,7 @@ export function TemplateSelection() {
                       },
                       (_, i) => (coupleMode ? 1 : peopleCount) + i + 1,
                     ).map((slotNum) => (
-                      <BrutalistCard
+                      <BrutalistCard data-kiosk-ui="surface"
                         key={slotNum}
                         className={`p-4 ${slotNum === currentUser ? "border-8" : ""}`}
                       >
@@ -328,13 +333,13 @@ export function TemplateSelection() {
                           <div className="flex-1">
                             {userTemplates[slotNum] ? (
                               <div className="flex items-center gap-3 relative">
-                                <button
+                                <button data-kiosk-ui="control" data-kiosk-tone="danger"
                                   onClick={() => handleRemoveTemplate(slotNum)}
                                   className="absolute -top-2 -right-2 w-8 h-8 bg-red-500 text-white font-bold rounded-full border-2 border-black hover:scale-110"
                                 >
                                   ✕
                                 </button>
-                                <div className="w-16 h-16 border-4 border-black rounded-lg overflow-hidden">
+                                <div data-kiosk-ui="surface" className="w-16 h-16 border-4 border-black rounded-lg overflow-hidden">
                                   <ImageWithFallback
                                     src={userTemplates[slotNum].previewTemplate}
                                     alt={userTemplates[slotNum].name}
