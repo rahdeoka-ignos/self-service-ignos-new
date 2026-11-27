@@ -1,3 +1,4 @@
+import { isIllustratedPack } from "../../utils/illustratedTheme";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { ArrowLeft } from "lucide-react";
@@ -28,7 +29,7 @@ export function Navigation({
   let logoUrl = "";
   try {
     const { theme } = useKioskTheme();
-    illustrated = theme.assetPack === "woset-play";
+    illustrated = isIllustratedPack(theme.assetPack);
     if (theme.studioName) studioName = theme.studioName;
     if (theme.logoUrl) logoUrl = theme.logoUrl;
   } catch {}

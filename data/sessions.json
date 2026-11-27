@@ -1,5 +1,39 @@
 [
   {
+    "id": "KIOSK-f9631466-df01-4f55-9b17-9a081c589ed7",
+    "timestamp": "2026-11-26T11:52:07.270Z",
+    "date": "2026-11-26",
+    "time": "19.52",
+    "customerName": "55",
+    "peopleCount": 1,
+    "coupleMode": false,
+    "joinedBonus": false,
+    "makeStory": true,
+    "softcopyType": "story_free",
+    "softcopyCharge": 0,
+    "prints": {
+      "regular": 1,
+      "bonus": 0,
+      "total": 1
+    },
+    "a4Count": 0,
+    "miscAddons": [],
+    "source": "kiosk",
+    "basePrice": 100000,
+    "totalAddonsPrice": 0,
+    "totalPrice": 100000,
+    "totalFiles": 1,
+    "files": [
+      "struk-tambahan-55.pdf"
+    ],
+    "stagingDir": "KIOSK-f9631466-df01-4f55-9b17-9a081c589ed7",
+    "status": "queued",
+    "driveStatus": "uploaded",
+    "driveWebViewLink": "https://drive.google.com/drive/folders/1QS-Wm4PnAqLO-3OeNhtZ_GBOc2KEJQGm",
+    "driveFolderName": "IGNOS STUDIO - 19.52 (55)",
+    "driveError": null
+  },
+  {
     "id": "SES-1793762588194",
     "timestamp": "2026-11-04T03:23:08.194Z",
     "date": "2026-11-04",

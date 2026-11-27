@@ -204,3 +204,62 @@ test('editing a preset stays in draft, survives refresh, and only applies after 
   assert.equal(h.render().theme.freeEventMode, true);
   h.runEffects().forEach(cleanup => cleanup?.());
 });
+
+test('Riso Zine can be applied from draft and its assets survive customization and reload', async () => {
+  const h = harness();
+  h.fetch(async (_url, init) => init ? response(JSON.parse(init.body)) : { ok: true, json: async () => h.presets['neo-brutalism'] });
+  h.render(); h.runEffects(); await flush(); h.render();
+  h.renderEditor(); h.runEffects();
+  const preset = nodes(h.renderEditor()).find(node => node.type === 'button' && node.props?.onClick?.toString().includes('handleApplyPreset("riso-zine")'));
+  assert.ok(preset);
+  preset.props.onClick();
+  assert.equal(h.render().theme.assetPack, 'none');
+  const save = nodes(h.renderEditor()).find(node => node.type === 'button' && label(node).includes('Terapkan ke Kiosk'));
+  await save.props.onClick();
+  assert.equal(h.render().theme.presetId, 'riso-zine');
+  assert.equal(h.render().theme.assetPack, 'riso-zine');
+  await h.render().saveTheme({ ...h.render().theme, presetId: 'custom', homeHeadline: 'Edisi spesial' });
+  const reloaded = h.utils.normalizeTheme(h.writes.at(-1));
+  assert.equal(reloaded.assetPack, 'riso-zine');
+  assert.equal(reloaded.homeHeadline, 'Edisi spesial');
+  const legacy = { ...h.presets['riso-zine'] }; delete legacy.assetPack;
+  assert.equal(h.utils.normalizeTheme(legacy).assetPack, 'riso-zine');
+});
+
+test('Analog Archive can be saved from draft and retains its home layout after customization', async () => {
+  const h = harness();
+  h.fetch(async (_url, init) => init ? response(JSON.parse(init.body)) : { ok: true, json: async () => h.presets['neo-brutalism'] });
+  h.render(); h.runEffects(); await flush(); h.render();
+  h.renderEditor(); h.runEffects();
+  const preset = nodes(h.renderEditor()).find(node => node.type === 'button' && node.props?.onClick?.toString().includes('handleApplyPreset("analog-archive")'));
+  assert.ok(preset);
+  preset.props.onClick();
+  assert.equal(h.render().theme.assetPack, 'none');
+  const save = nodes(h.renderEditor()).find(node => node.type === 'button' && label(node).includes('Terapkan ke Kiosk'));
+  await save.props.onClick();
+  assert.equal(h.render().theme.presetId, 'analog-archive');
+  assert.equal(h.render().theme.assetPack, 'analog-archive');
+  await h.render().saveTheme({ ...h.render().theme, presetId: 'custom', homeHeadline: 'Arsip kita' });
+  assert.equal(h.utils.normalizeTheme(h.writes.at(-1)).assetPack, 'analog-archive');
+  const legacy = { ...h.presets['analog-archive'] }; delete legacy.assetPack;
+  assert.equal(h.utils.normalizeTheme(legacy).assetPack, 'analog-archive');
+});
+
+test('Studio Cats applies from draft and retains its illustration pack after customization', async () => {
+  const h = harness();
+  h.fetch(async (_url, init) => init ? response(JSON.parse(init.body)) : { ok: true, json: async () => h.presets['neo-brutalism'] });
+  h.render(); h.runEffects(); await flush(); h.render();
+  h.renderEditor(); h.runEffects();
+  const preset = nodes(h.renderEditor()).find(node => node.type === 'button' && node.props?.onClick?.toString().includes('handleApplyPreset("studio-cats")'));
+  assert.ok(preset);
+  preset.props.onClick();
+  assert.equal(h.render().theme.assetPack, 'none');
+  const save = nodes(h.renderEditor()).find(node => node.type === 'button' && label(node).includes('Terapkan ke Kiosk'));
+  await save.props.onClick();
+  assert.equal(h.render().theme.presetId, 'studio-cats');
+  assert.equal(h.render().theme.assetPack, 'studio-cats');
+  await h.render().saveTheme({ ...h.render().theme, presetId: 'custom', homeHeadline: 'Foto bareng!' });
+  assert.equal(h.utils.normalizeTheme(h.writes.at(-1)).assetPack, 'studio-cats');
+  const legacy = { ...h.presets['studio-cats'] }; delete legacy.assetPack;
+  assert.equal(h.utils.normalizeTheme(legacy).assetPack, 'studio-cats');
+});

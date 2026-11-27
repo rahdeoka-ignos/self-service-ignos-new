@@ -1,3 +1,4 @@
+import { isIllustratedPack } from "../../utils/illustratedTheme";
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router";
 import { Minus, Plus, Users, X, Layout, LayoutGrid } from "lucide-react";
@@ -27,7 +28,7 @@ function TemplateModeModal({
   const { t } = useTranslation();
   const { theme } = useKioskTheme();
 
-  if (theme.assetPack === "woset-play") {
+  if (isIllustratedPack(theme.assetPack)) {
     return <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[#252820]/45 p-6" onClick={onClose}>
       <div role="dialog" aria-modal="true" aria-labelledby="woset-print-mode-title" className="woset-panel relative max-h-[90dvh] w-full max-w-[1040px] overflow-y-auto p-6 pt-16 sm:p-10 sm:pt-16" onClick={event => event.stopPropagation()}>
         <button type="button" onClick={onClose} aria-label="Tutup" className="absolute right-5 top-5 flex size-10 items-center justify-center rounded-full border border-[#252820]/35"><X size={20} strokeWidth={1.5} /></button>
@@ -121,7 +122,7 @@ function TemplateModeModal({
 
 export function PeopleCount() {
   const { theme } = useKioskTheme();
-  const illustrated = theme.assetPack === "woset-play";
+  const illustrated = isIllustratedPack(theme.assetPack);
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation();

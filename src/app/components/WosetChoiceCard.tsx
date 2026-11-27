@@ -1,8 +1,9 @@
 import type { ReactNode } from "react";
 import { WosetArtwork, type WosetScene } from "./WosetArtwork";
+import type { IllustratedPack } from "../../utils/illustratedTheme";
 
 /** One choice-card language for services, print modes, bonuses and softcopy. */
-export function WosetChoiceCard({ scene, title, description, badge, eyebrow, selected, tone = "blue", onClick }: {
+export function WosetChoiceCard({ scene, title, description, badge, eyebrow, selected, tone = "blue", onClick, pack }: {
   scene: WosetScene;
   title: ReactNode;
   description: ReactNode;
@@ -11,10 +12,11 @@ export function WosetChoiceCard({ scene, title, description, badge, eyebrow, sel
   selected?: boolean;
   tone?: "blue" | "green";
   onClick: () => void;
+  pack?: IllustratedPack;
 }) {
   return (
-    <button type="button" onClick={onClick} aria-pressed={selected} className={`group flex min-h-[210px] w-full flex-col items-start gap-4 rounded-[28px] border p-6 text-left text-[#252820] shadow-none transition-colors sm:flex-row sm:items-center motion-reduce:transition-none ${selected ? "border-[#35564a] bg-[#d6c574]/25 ring-1 ring-[#35564a]" : `border-[#252820]/35 hover:border-[#252820] hover:bg-[#d6c574]/15 ${tone === "blue" ? "bg-[#6278a4]/10" : "bg-[#466856]/10"}`}`}>
-      <WosetArtwork scene={scene} className="h-[128px] w-[130px] shrink-0 self-center" />
+    <button data-illustrated-choice data-choice-tone={tone} data-choice-selected={selected} type="button" onClick={onClick} aria-pressed={selected} className={`group flex min-h-[210px] w-full flex-col items-start gap-4 rounded-[28px] border p-6 text-left text-[#252820] shadow-none transition-colors sm:flex-row sm:items-center motion-reduce:transition-none ${selected ? "border-[#35564a] bg-[#d6c574]/25 ring-1 ring-[#35564a]" : `border-[#252820]/35 hover:border-[#252820] hover:bg-[#d6c574]/15 ${tone === "blue" ? "bg-[#6278a4]/10" : "bg-[#466856]/10"}`}`}>
+      <WosetArtwork scene={scene} pack={pack} className="h-[128px] w-[130px] shrink-0 self-center" />
       <span className="flex min-w-0 flex-1 flex-col items-start">
         {eyebrow && <span className="mb-1 text-[11px] uppercase tracking-[0.12em] opacity-65">{eyebrow}</span>}
         <span className="woset-display block text-[32px] font-bold leading-[1.05]">{title}</span>

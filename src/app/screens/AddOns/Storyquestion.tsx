@@ -1,3 +1,4 @@
+import { isIllustratedPack } from "../../../utils/illustratedTheme";
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router";
 import { Navigation } from "../../components/Navigation";
@@ -19,7 +20,7 @@ import { WosetArtwork } from "../../components/WosetArtwork";
 
 export function StoryQuestion() {
   const { theme } = useKioskTheme();
-  const illustrated = theme.assetPack === "woset-play";
+  const illustrated = isIllustratedPack(theme.assetPack);
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation();
@@ -122,7 +123,7 @@ export function StoryQuestion() {
               <Instagram size={56} className="text-white" strokeWidth={2} />
             </div>)}
             <h1 className="text-7xl font-bold mb-5">{t("story.title")}</h1>
-            <p className="text-3xl text-gray-600 leading-relaxed">
+            <p data-kiosk-ui="text" className="text-3xl text-gray-600 leading-relaxed">
               <Trans
                 i18nKey="story.subtitle"
                 components={{

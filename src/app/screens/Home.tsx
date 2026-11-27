@@ -1,3 +1,6 @@
+import { StudioCatsHome } from "../components/StudioCatsHome";
+import { AnalogArchiveHome } from "../components/AnalogArchiveHome";
+import { isIllustratedPack } from "../../utils/illustratedTheme";
 import { clearSessionData } from "../../utils/sessionTracker";
 import { useNavigate } from "react-router";
 import { Camera, Users, Lock } from "lucide-react";
@@ -43,8 +46,8 @@ export function Home() {
   ];
 
   return (
-    <div className="kiosk-screen min-h-screen bg-gray-100 flex items-center justify-center p-6 md:p-8">
-      {theme.assetPack === "woset-play" ? <WosetHomeContent theme={theme} onStaffImport={() => setCameraImportOpen(true)} onSelectService={serviceId => navigate("/people-count", { state: { serviceId } })} /> : (
+    <div className={`kiosk-screen min-h-screen bg-gray-100 flex items-center justify-center ${theme.assetPack === "studio-cats" ? "p-0" : "p-6 md:p-8"}`}>
+      {theme.assetPack === "studio-cats" ? <StudioCatsHome theme={theme} onStaffImport={() => setCameraImportOpen(true)} onSelectService={serviceId => navigate("/people-count", { state: { serviceId } })} /> : theme.assetPack === "analog-archive" ? <AnalogArchiveHome theme={theme} onStaffImport={() => setCameraImportOpen(true)} onSelectService={serviceId => navigate("/people-count", { state: { serviceId } })} /> : isIllustratedPack(theme.assetPack) ? <WosetHomeContent theme={theme} onStaffImport={() => setCameraImportOpen(true)} onSelectService={serviceId => navigate("/people-count", { state: { serviceId } })} /> : (
       <div className="max-w-7xl w-full">
         {/* Secret Double Click Trigger for Staff */}
         <div

@@ -9,7 +9,7 @@ export function getShadowMap(borderColor: string) {
 const colorKeys = ['backgroundColor', 'cardBackgroundColor', 'primaryColor', 'primaryTextColor', 'textColor', 'accentColor', 'borderColor'] as const;
 export function isValidTheme(theme: KioskThemeConfig) {
   return colorKeys.every(key => /^#[\da-f]{6}$/i.test(theme[key]))
-    && (theme.assetPack === 'none' || theme.assetPack === 'woset-play')
+    && (theme.assetPack === 'none' || theme.assetPack === 'woset-play' || theme.assetPack === 'riso-zine' || theme.assetPack === 'analog-archive' || theme.assetPack === 'studio-cats')
     && Object.hasOwn(THEME_PRESETS, theme.presetId)
     && Object.hasOwn(radiusMap, theme.borderRadius)
     && Object.hasOwn(borderWMap, theme.borderWidth)
@@ -31,7 +31,7 @@ export function normalizeTheme(value: unknown): KioskThemeConfig {
   if (!Object.hasOwn(borderWMap, result.borderWidth)) result.borderWidth = base.borderWidth;
   if (!Object.hasOwn(fontMap, result.fontFamily)) result.fontFamily = base.fontFamily;
   if (!Object.hasOwn(getShadowMap('#000000'), result.shadowStyle)) result.shadowStyle = base.shadowStyle;
-  if (result.assetPack !== 'none' && result.assetPack !== 'woset-play') result.assetPack = 'none';
+  if (result.assetPack !== 'none' && result.assetPack !== 'woset-play' && result.assetPack !== 'riso-zine' && result.assetPack !== 'analog-archive' && result.assetPack !== 'studio-cats') result.assetPack = 'none';
   return result;
 }
 export function themeVariables(theme: KioskThemeConfig) {

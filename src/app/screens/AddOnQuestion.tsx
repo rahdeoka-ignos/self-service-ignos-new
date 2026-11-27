@@ -1,3 +1,4 @@
+import { isIllustratedPack } from "../../utils/illustratedTheme";
 import { useLocation, useNavigate } from "react-router";
 import { ArrowRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -20,7 +21,7 @@ export function AddOnQuestion() {
     themeConfig = useKioskTheme().theme;
   } catch {}
 
-  const illustrated = themeConfig?.assetPack === "woset-play";
+  const illustrated = isIllustratedPack(themeConfig?.assetPack);
 
   const handleSkipOrFinish = () => {
     const nextState = {
@@ -105,7 +106,7 @@ export function AddOnQuestion() {
       <div className={illustrated ? "mx-auto max-w-[1440px]" : "w-screen-3xl mx-auto"}>
         {/* Title */}
         <div className="text-center mb-7">
-          {themeConfig?.assetPack === "woset-play" && <WosetArtwork scene="keepsake" className="mx-auto mb-2 h-[140px] w-[220px]" />}
+          {isIllustratedPack(themeConfig?.assetPack) && <WosetArtwork scene="keepsake" className="mx-auto mb-2 h-[140px] w-[220px]" />}
           <h1 className="text-6xl font-bold mb-5">{t("addons.title")}</h1>
           {/* <p className="text-3xl text-gray-600">{t("addons.subtitle")}</p> */}
         </div>

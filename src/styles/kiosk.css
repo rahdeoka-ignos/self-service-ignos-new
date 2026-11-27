@@ -44,40 +44,40 @@
 }
 
 /* Woset Play is an asset-led world, scoped away from admin and print artwork. */
-[data-kiosk-assets="woset-play"] .woset-display,
-[data-kiosk-assets="woset-play"] .kiosk-screen h1 {
+:is([data-kiosk-assets="woset-play"], [data-kiosk-assets="riso-zine"], [data-kiosk-assets="analog-archive"], [data-kiosk-assets="studio-cats"]) .woset-display,
+:is([data-kiosk-assets="woset-play"], [data-kiosk-assets="riso-zine"], [data-kiosk-assets="analog-archive"], [data-kiosk-assets="studio-cats"]) .kiosk-screen h1 {
   font-family: 'Gaegu', cursive;
   letter-spacing: -.035em;
 }
-[data-kiosk-assets="woset-play"] .kiosk-navigation {
+:is([data-kiosk-assets="woset-play"], [data-kiosk-assets="riso-zine"], [data-kiosk-assets="analog-archive"], [data-kiosk-assets="studio-cats"]) .kiosk-navigation {
   border-bottom-width: 0;
   background-color: var(--kiosk-bg);
 }
-[data-kiosk-assets="woset-play"] .kiosk-button {
+:is([data-kiosk-assets="woset-play"], [data-kiosk-assets="riso-zine"], [data-kiosk-assets="analog-archive"], [data-kiosk-assets="studio-cats"]) .kiosk-button {
   font-weight: 500;
   box-shadow: none;
 }
-[data-kiosk-assets="woset-play"] .woset-people-card {
+:is([data-kiosk-assets="woset-play"], [data-kiosk-assets="riso-zine"], [data-kiosk-assets="analog-archive"], [data-kiosk-assets="studio-cats"]) .woset-people-card {
   padding: clamp(24px, 3vw, 48px);
 }
 @media (max-width: 900px) {
-  [data-kiosk-assets="woset-play"] .kiosk-navigation > div {
+  :is([data-kiosk-assets="woset-play"], [data-kiosk-assets="riso-zine"], [data-kiosk-assets="analog-archive"], [data-kiosk-assets="studio-cats"]) .kiosk-navigation > div {
     gap: 12px;
     padding: 16px;
   }
-  [data-kiosk-assets="woset-play"] .kiosk-navigation .kiosk-button {
+  :is([data-kiosk-assets="woset-play"], [data-kiosk-assets="riso-zine"], [data-kiosk-assets="analog-archive"], [data-kiosk-assets="studio-cats"]) .kiosk-navigation .kiosk-button {
     padding: 10px 14px;
     font-size: 14px;
   }
 }
 
-[data-kiosk-assets="woset-play"] .woset-stage-heading {
+:is([data-kiosk-assets="woset-play"], [data-kiosk-assets="riso-zine"], [data-kiosk-assets="analog-archive"], [data-kiosk-assets="studio-cats"]) .woset-stage-heading {
   margin-top: 16px;
   margin-bottom: 16px;
 }
 
 /* Explicit surfaces keep legacy brutalist styles out of the illustrated flow. */
-[data-kiosk-assets="woset-play"] .woset-panel {
+:is([data-kiosk-assets="woset-play"], [data-kiosk-assets="riso-zine"], [data-kiosk-assets="analog-archive"], [data-kiosk-assets="studio-cats"]) .woset-panel {
   max-height: 90dvh;
   overflow-y: auto;
   border: 1px solid color-mix(in srgb, var(--kiosk-border) 45%, transparent);
@@ -87,17 +87,17 @@
   box-shadow: none;
   font-family: var(--kiosk-font);
 }
-[data-kiosk-assets="woset-play"] .woset-panel-title {
+:is([data-kiosk-assets="woset-play"], [data-kiosk-assets="riso-zine"], [data-kiosk-assets="analog-archive"], [data-kiosk-assets="studio-cats"]) .woset-panel-title {
   font-family: 'Gaegu', cursive;
   font-size: 36px;
 }
-[data-kiosk-assets="woset-play"] .woset-timer-display {
+:is([data-kiosk-assets="woset-play"], [data-kiosk-assets="riso-zine"], [data-kiosk-assets="analog-archive"], [data-kiosk-assets="studio-cats"]) .woset-timer-display {
   border-width: 1px;
   border-color: color-mix(in srgb, var(--kiosk-border) 35%, transparent);
   border-radius: 24px;
   background: #d6c57426;
 }
-[data-kiosk-assets="woset-play"] :is(.woset-plain-button, .woset-duration-button) {
+:is([data-kiosk-assets="woset-play"], [data-kiosk-assets="riso-zine"], [data-kiosk-assets="analog-archive"], [data-kiosk-assets="studio-cats"]) :is(.woset-plain-button, .woset-duration-button) {
   min-height: 44px;
   border-width: 1px;
   border-color: color-mix(in srgb, var(--kiosk-border) 45%, transparent);
@@ -109,42 +109,42 @@
   font-size: 16px;
   font-weight: 500;
 }
-[data-kiosk-assets="woset-play"] .woset-plain-button:hover {
+:is([data-kiosk-assets="woset-play"], [data-kiosk-assets="riso-zine"], [data-kiosk-assets="analog-archive"], [data-kiosk-assets="studio-cats"]) .woset-plain-button:hover {
   background: #46685615;
 }
-[data-kiosk-assets="woset-play"] .woset-duration-button[aria-pressed="true"] {
+:is([data-kiosk-assets="woset-play"], [data-kiosk-assets="riso-zine"], [data-kiosk-assets="analog-archive"], [data-kiosk-assets="studio-cats"]) .woset-duration-button[aria-pressed="true"] {
   background: var(--kiosk-primary);
   color: var(--kiosk-primary-text);
 }
-[data-kiosk-assets="woset-play"] .woset-field {
+:is([data-kiosk-assets="woset-play"], [data-kiosk-assets="riso-zine"], [data-kiosk-assets="analog-archive"], [data-kiosk-assets="studio-cats"]) .woset-field {
   border-width: 1px;
   border-radius: 16px;
 }
-[data-kiosk-assets="woset-play"] .woset-field-prefix {
+:is([data-kiosk-assets="woset-play"], [data-kiosk-assets="riso-zine"], [data-kiosk-assets="analog-archive"], [data-kiosk-assets="studio-cats"]) .woset-field-prefix {
   border-right-width: 1px;
   background: transparent;
 }
-[data-kiosk-assets="woset-play"] .woset-product-card h2 {
+:is([data-kiosk-assets="woset-play"], [data-kiosk-assets="riso-zine"], [data-kiosk-assets="analog-archive"], [data-kiosk-assets="studio-cats"]) .woset-product-card h2 {
   font-family: 'Gaegu', cursive;
   font-size: 26px;
   line-height: 1.15;
 }
-[data-kiosk-assets="woset-play"] .woset-product-card p {
+:is([data-kiosk-assets="woset-play"], [data-kiosk-assets="riso-zine"], [data-kiosk-assets="analog-archive"], [data-kiosk-assets="studio-cats"]) .woset-product-card p {
   font-size: 14px;
   font-weight: 500;
 }
-[data-kiosk-assets="woset-play"] button:focus-visible {
+:is([data-kiosk-assets="woset-play"], [data-kiosk-assets="riso-zine"], [data-kiosk-assets="analog-archive"], [data-kiosk-assets="studio-cats"]) button:focus-visible {
   outline-color: var(--kiosk-primary);
 }
 
 /* Shared Woset UI contract. Hooks are attached to interface elements only;
    captured photo slots, print canvases and receipt trees are excluded. */
-[data-kiosk-assets="woset-play"] {
+:is([data-kiosk-assets="woset-play"], [data-kiosk-assets="riso-zine"], [data-kiosk-assets="analog-archive"], [data-kiosk-assets="studio-cats"]) {
   --woset-line: #25282059;
   --woset-fill: #6278a41a;
   --woset-selected: #d6c57440;
 }
-[data-kiosk-assets="woset-play"] [data-kiosk-ui="surface"] {
+:is([data-kiosk-assets="woset-play"], [data-kiosk-assets="riso-zine"], [data-kiosk-assets="analog-archive"], [data-kiosk-assets="studio-cats"]) [data-kiosk-ui="surface"] {
   border-width: 1px;
   border-color: var(--woset-line);
   border-radius: 28px;
@@ -155,16 +155,16 @@
   translate: none;
   scale: 1;
 }
-[data-kiosk-assets="woset-play"] [data-kiosk-ui="surface"][data-kiosk-selected="true"] {
+:is([data-kiosk-assets="woset-play"], [data-kiosk-assets="riso-zine"], [data-kiosk-assets="analog-archive"], [data-kiosk-assets="studio-cats"]) [data-kiosk-ui="surface"][data-kiosk-selected="true"] {
   border-color: var(--kiosk-primary);
   background-color: var(--woset-selected);
   box-shadow: 0 0 0 1px var(--kiosk-primary);
 }
-[data-kiosk-assets="woset-play"] [data-kiosk-ui="surface"] > :is(h2, h3) {
+:is([data-kiosk-assets="woset-play"], [data-kiosk-assets="riso-zine"], [data-kiosk-assets="analog-archive"], [data-kiosk-assets="studio-cats"]) [data-kiosk-ui="surface"] > :is(h2, h3) {
   font-family: 'Gaegu', cursive;
   font-weight: 700;
 }
-[data-kiosk-assets="woset-play"] [data-kiosk-ui="control"] {
+:is([data-kiosk-assets="woset-play"], [data-kiosk-assets="riso-zine"], [data-kiosk-assets="analog-archive"], [data-kiosk-assets="studio-cats"]) [data-kiosk-ui="control"] {
   min-height: 44px;
   border-width: 1px;
   border-color: var(--woset-line);
@@ -177,11 +177,11 @@
   scale: 1;
   font-weight: 500;
 }
-[data-kiosk-assets="woset-play"] [data-kiosk-ui="surface"] {
+:is([data-kiosk-assets="woset-play"], [data-kiosk-assets="riso-zine"], [data-kiosk-assets="analog-archive"], [data-kiosk-assets="studio-cats"]) [data-kiosk-ui="surface"] {
   translate: none;
   scale: 1;
 }
-[data-kiosk-assets="woset-play"] [data-kiosk-ui="dialog"] {
+:is([data-kiosk-assets="woset-play"], [data-kiosk-assets="riso-zine"], [data-kiosk-assets="analog-archive"], [data-kiosk-assets="studio-cats"]) [data-kiosk-ui="dialog"] {
   max-height: 90dvh;
   overflow-y: auto;
   border: 1px solid var(--woset-line);
@@ -192,70 +192,70 @@
   scrollbar-width: thin;
   scrollbar-color: var(--woset-line) transparent;
 }
-[data-kiosk-assets="woset-play"] [data-kiosk-ui="dialog"] > h2 {
+:is([data-kiosk-assets="woset-play"], [data-kiosk-assets="riso-zine"], [data-kiosk-assets="analog-archive"], [data-kiosk-assets="studio-cats"]) [data-kiosk-ui="dialog"] > h2 {
   font-family: 'Gaegu', cursive;
   font-size: 36px;
 }
-[data-kiosk-assets="woset-play"] [data-kiosk-ui="dialog"] > p {
+:is([data-kiosk-assets="woset-play"], [data-kiosk-assets="riso-zine"], [data-kiosk-assets="analog-archive"], [data-kiosk-assets="studio-cats"]) [data-kiosk-ui="dialog"] > p {
   font-size: 16px;
   line-height: 24px;
   margin-bottom: 20px;
 }
-[data-kiosk-assets="woset-play"] [data-kiosk-ui="dialog"] > [data-kiosk-ui="icon"] {
+:is([data-kiosk-assets="woset-play"], [data-kiosk-assets="riso-zine"], [data-kiosk-assets="analog-archive"], [data-kiosk-assets="studio-cats"]) [data-kiosk-ui="dialog"] > [data-kiosk-ui="icon"] {
   width: 72px;
   height: 72px;
   margin-bottom: 16px;
 }
-[data-kiosk-assets="woset-play"] .woset-timer-display {
+:is([data-kiosk-assets="woset-play"], [data-kiosk-assets="riso-zine"], [data-kiosk-assets="analog-archive"], [data-kiosk-assets="studio-cats"]) .woset-timer-display {
   padding: 20px;
   margin-bottom: 20px;
 }
-[data-kiosk-assets="woset-play"] .woset-timer-display > p:first-child {
+:is([data-kiosk-assets="woset-play"], [data-kiosk-assets="riso-zine"], [data-kiosk-assets="analog-archive"], [data-kiosk-assets="studio-cats"]) .woset-timer-display > p:first-child {
   font-size: 56px;
   line-height: 1.1;
   font-weight: 500;
 }
-[data-kiosk-assets="woset-play"] .woset-timer-display > p:nth-child(2) {
+:is([data-kiosk-assets="woset-play"], [data-kiosk-assets="riso-zine"], [data-kiosk-assets="analog-archive"], [data-kiosk-assets="studio-cats"]) .woset-timer-display > p:nth-child(2) {
   font-size: 14px;
   font-weight: 500;
 }
-[data-kiosk-assets="woset-play"] [data-kiosk-ui="dialog"] .kiosk-button {
+:is([data-kiosk-assets="woset-play"], [data-kiosk-assets="riso-zine"], [data-kiosk-assets="analog-archive"], [data-kiosk-assets="studio-cats"]) [data-kiosk-ui="dialog"] .kiosk-button {
   padding: 12px 18px;
   font-size: 16px;
 }
-[data-kiosk-assets="woset-play"] .woset-template-layout {
+:is([data-kiosk-assets="woset-play"], [data-kiosk-assets="riso-zine"], [data-kiosk-assets="analog-archive"], [data-kiosk-assets="studio-cats"]) .woset-template-layout {
   grid-template-columns: 132px minmax(0, 1fr) 260px;
 }
-[data-kiosk-assets="woset-play"] .woset-template-layout > div {
+:is([data-kiosk-assets="woset-play"], [data-kiosk-assets="riso-zine"], [data-kiosk-assets="analog-archive"], [data-kiosk-assets="studio-cats"]) .woset-template-layout > div {
   grid-column: auto;
   min-width: 0;
   overflow-x: hidden;
 }
-[data-kiosk-assets="woset-play"] .woset-template-layout > div > h2 {
+:is([data-kiosk-assets="woset-play"], [data-kiosk-assets="riso-zine"], [data-kiosk-assets="analog-archive"], [data-kiosk-assets="studio-cats"]) .woset-template-layout > div > h2 {
   font-size: 20px;
   line-height: 24px;
 }
-[data-kiosk-assets="woset-play"] .woset-template-layout > div:first-child [data-kiosk-ui="surface"] p {
+:is([data-kiosk-assets="woset-play"], [data-kiosk-assets="riso-zine"], [data-kiosk-assets="analog-archive"], [data-kiosk-assets="studio-cats"]) .woset-template-layout > div:first-child [data-kiosk-ui="surface"] p {
   color: var(--kiosk-text);
   font-size: 14px;
 }
-[data-kiosk-assets="woset-play"] [data-kiosk-ui="control"]:hover:not(:disabled) {
+:is([data-kiosk-assets="woset-play"], [data-kiosk-assets="riso-zine"], [data-kiosk-assets="analog-archive"], [data-kiosk-assets="studio-cats"]) [data-kiosk-ui="control"]:hover:not(:disabled) {
   background-color: #4668561a;
   color: var(--kiosk-text);
 }
-[data-kiosk-assets="woset-play"] [data-kiosk-ui="control"]:is([data-kiosk-selected="true"], [aria-pressed="true"]) {
+:is([data-kiosk-assets="woset-play"], [data-kiosk-assets="riso-zine"], [data-kiosk-assets="analog-archive"], [data-kiosk-assets="studio-cats"]) [data-kiosk-ui="control"]:is([data-kiosk-selected="true"], [aria-pressed="true"]) {
   background-color: var(--woset-selected);
   border-color: var(--kiosk-primary);
   color: var(--kiosk-text);
 }
-[data-kiosk-assets="woset-play"] [data-kiosk-ui="control"][data-kiosk-tone="danger"] {
+:is([data-kiosk-assets="woset-play"], [data-kiosk-assets="riso-zine"], [data-kiosk-assets="analog-archive"], [data-kiosk-assets="studio-cats"]) [data-kiosk-ui="control"][data-kiosk-tone="danger"] {
   background-color: #a25b651a;
   color: #8d3949;
 }
-[data-kiosk-assets="woset-play"] [data-kiosk-ui="control"] .text-white {
+:is([data-kiosk-assets="woset-play"], [data-kiosk-assets="riso-zine"], [data-kiosk-assets="analog-archive"], [data-kiosk-assets="studio-cats"]) [data-kiosk-ui="control"] .text-white {
   color: inherit;
 }
-[data-kiosk-assets="woset-play"] [data-kiosk-ui="quantity"] {
+:is([data-kiosk-assets="woset-play"], [data-kiosk-assets="riso-zine"], [data-kiosk-assets="analog-archive"], [data-kiosk-assets="studio-cats"]) [data-kiosk-ui="quantity"] {
   min-height: 44px;
   border: 1px solid var(--woset-line);
   border-radius: 999px;
@@ -265,30 +265,30 @@
   font-weight: 500;
   font-variant-numeric: tabular-nums;
 }
-[data-kiosk-assets="woset-play"] [data-kiosk-ui="divider"] {
+:is([data-kiosk-assets="woset-play"], [data-kiosk-assets="riso-zine"], [data-kiosk-assets="analog-archive"], [data-kiosk-assets="studio-cats"]) [data-kiosk-ui="divider"] {
   border-color: var(--woset-line);
 }
-[data-kiosk-assets="woset-play"] [data-kiosk-ui="divider"][class*="border-t-"] { border-top-width: 1px; }
-[data-kiosk-assets="woset-play"] [data-kiosk-ui="divider"][class*="border-b-"] { border-bottom-width: 1px; }
-[data-kiosk-assets="woset-play"] [data-kiosk-ui="divider"][class*="border-l-"] { border-left-width: 1px; }
-[data-kiosk-assets="woset-play"] [data-kiosk-ui="divider"][class*="border-r-"] { border-right-width: 1px; }
-[data-kiosk-assets="woset-play"] [data-kiosk-ui="media"] {
+:is([data-kiosk-assets="woset-play"], [data-kiosk-assets="riso-zine"], [data-kiosk-assets="analog-archive"], [data-kiosk-assets="studio-cats"]) [data-kiosk-ui="divider"][class*="border-t-"] { border-top-width: 1px; }
+:is([data-kiosk-assets="woset-play"], [data-kiosk-assets="riso-zine"], [data-kiosk-assets="analog-archive"], [data-kiosk-assets="studio-cats"]) [data-kiosk-ui="divider"][class*="border-b-"] { border-bottom-width: 1px; }
+:is([data-kiosk-assets="woset-play"], [data-kiosk-assets="riso-zine"], [data-kiosk-assets="analog-archive"], [data-kiosk-assets="studio-cats"]) [data-kiosk-ui="divider"][class*="border-l-"] { border-left-width: 1px; }
+:is([data-kiosk-assets="woset-play"], [data-kiosk-assets="riso-zine"], [data-kiosk-assets="analog-archive"], [data-kiosk-assets="studio-cats"]) [data-kiosk-ui="divider"][class*="border-r-"] { border-right-width: 1px; }
+:is([data-kiosk-assets="woset-play"], [data-kiosk-assets="riso-zine"], [data-kiosk-assets="analog-archive"], [data-kiosk-assets="studio-cats"]) [data-kiosk-ui="media"] {
   border-width: 1px;
   border-color: var(--woset-line);
   border-radius: 16px;
   box-shadow: none;
 }
-[data-kiosk-assets="woset-play"] [data-kiosk-ui="swatch"] {
+:is([data-kiosk-assets="woset-play"], [data-kiosk-assets="riso-zine"], [data-kiosk-assets="analog-archive"], [data-kiosk-assets="studio-cats"]) [data-kiosk-ui="swatch"] {
   border-width: 1px;
   border-color: var(--woset-line);
   border-radius: 8px;
 }
-[data-kiosk-assets="woset-play"] [data-kiosk-ui="field"] {
+:is([data-kiosk-assets="woset-play"], [data-kiosk-assets="riso-zine"], [data-kiosk-assets="analog-archive"], [data-kiosk-assets="studio-cats"]) [data-kiosk-ui="field"] {
   border-width: 1px;
   border-radius: 16px;
   box-shadow: none;
 }
-[data-kiosk-assets="woset-play"] [data-kiosk-ui="badge"] {
+:is([data-kiosk-assets="woset-play"], [data-kiosk-assets="riso-zine"], [data-kiosk-assets="analog-archive"], [data-kiosk-assets="studio-cats"]) [data-kiosk-ui="badge"] {
   border-width: 1px;
   border-color: var(--woset-line);
   border-radius: 999px;
@@ -296,32 +296,32 @@
   color: var(--kiosk-text);
   box-shadow: none;
 }
-[data-kiosk-assets="woset-play"] [data-kiosk-ui="icon"] {
+:is([data-kiosk-assets="woset-play"], [data-kiosk-assets="riso-zine"], [data-kiosk-assets="analog-archive"], [data-kiosk-assets="studio-cats"]) [data-kiosk-ui="icon"] {
   border-width: 1px;
   border-color: var(--woset-line);
   background-color: #d6c57433;
   color: var(--kiosk-text);
 }
-[data-kiosk-assets="woset-play"] [data-kiosk-ui="icon"] svg {
+:is([data-kiosk-assets="woset-play"], [data-kiosk-assets="riso-zine"], [data-kiosk-assets="analog-archive"], [data-kiosk-assets="studio-cats"]) [data-kiosk-ui="icon"] svg {
   color: inherit;
   stroke-width: 1.8px;
 }
-[data-kiosk-assets="woset-play"] [data-kiosk-ui="icon"][data-kiosk-tone="danger"] {
+:is([data-kiosk-assets="woset-play"], [data-kiosk-assets="riso-zine"], [data-kiosk-assets="analog-archive"], [data-kiosk-assets="studio-cats"]) [data-kiosk-ui="icon"][data-kiosk-tone="danger"] {
   background-color: #a25b6526;
   color: #8d3949;
 }
-[data-kiosk-assets="woset-play"] .woset-product-card img {
+:is([data-kiosk-assets="woset-play"], [data-kiosk-assets="riso-zine"], [data-kiosk-assets="analog-archive"], [data-kiosk-assets="studio-cats"]) .woset-product-card img {
   object-fit: contain;
   padding: 16px;
 }
-[data-kiosk-assets="woset-play"] .woset-product-card [data-kiosk-ui="divider"] {
+:is([data-kiosk-assets="woset-play"], [data-kiosk-assets="riso-zine"], [data-kiosk-assets="analog-archive"], [data-kiosk-assets="studio-cats"]) .woset-product-card [data-kiosk-ui="divider"] {
   border-width: 0;
 }
-[data-kiosk-assets="woset-play"] .kiosk-screen .overflow-y-auto {
+:is([data-kiosk-assets="woset-play"], [data-kiosk-assets="riso-zine"], [data-kiosk-assets="analog-archive"], [data-kiosk-assets="studio-cats"]) .kiosk-screen .overflow-y-auto {
   scrollbar-width: thin;
   scrollbar-color: var(--woset-line) transparent;
 }
-[data-kiosk-assets="woset-play"] [data-kiosk-ui="timer"] {
+:is([data-kiosk-assets="woset-play"], [data-kiosk-assets="riso-zine"], [data-kiosk-assets="analog-archive"], [data-kiosk-assets="studio-cats"]) [data-kiosk-ui="timer"] {
   top: 124px;
   right: 24px;
   gap: 10px;
@@ -335,32 +335,271 @@
   font-family: var(--kiosk-font);
   font-weight: 500;
 }
-[data-kiosk-assets="woset-play"] [data-kiosk-ui="timer"] > span:last-child {
+:is([data-kiosk-assets="woset-play"], [data-kiosk-assets="riso-zine"], [data-kiosk-assets="analog-archive"], [data-kiosk-assets="studio-cats"]) [data-kiosk-ui="timer"] > span:last-child {
   font-size: 22px;
   font-weight: 500;
   letter-spacing: .02em;
 }
-[data-kiosk-assets="woset-play"] [data-kiosk-ui="timer"] > svg {
+:is([data-kiosk-assets="woset-play"], [data-kiosk-assets="riso-zine"], [data-kiosk-assets="analog-archive"], [data-kiosk-assets="studio-cats"]) [data-kiosk-ui="timer"] > svg {
   width: 18px;
   height: 18px;
   stroke-width: 1.8px;
 }
-[data-kiosk-assets="woset-play"] .woset-timer-label {
+:is([data-kiosk-assets="woset-play"], [data-kiosk-assets="riso-zine"], [data-kiosk-assets="analog-archive"], [data-kiosk-assets="studio-cats"]) .woset-timer-label {
   display: inline;
   font-size: 12px;
   font-weight: 500;
 }
-[data-kiosk-assets="woset-play"] [data-kiosk-ui="timer"][data-timer-state="urgent"] {
+:is([data-kiosk-assets="woset-play"], [data-kiosk-assets="riso-zine"], [data-kiosk-assets="analog-archive"], [data-kiosk-assets="studio-cats"]) [data-kiosk-ui="timer"][data-timer-state="urgent"] {
   border-color: #a18b3d;
   background-color: #e6dba6;
 }
-[data-kiosk-assets="woset-play"] [data-kiosk-ui="timer"][data-timer-state="critical"] {
+:is([data-kiosk-assets="woset-play"], [data-kiosk-assets="riso-zine"], [data-kiosk-assets="analog-archive"], [data-kiosk-assets="studio-cats"]) [data-kiosk-ui="timer"][data-timer-state="critical"] {
   border-color: #a25b65;
   background-color: #f1d5d0;
   color: #8d3949;
 }
 @media (prefers-reduced-motion: reduce) {
-  [data-kiosk-assets="woset-play"] [data-kiosk-ui] {
+  :is([data-kiosk-assets="woset-play"], [data-kiosk-assets="riso-zine"], [data-kiosk-assets="analog-archive"], [data-kiosk-assets="studio-cats"]) [data-kiosk-ui] {
     transition: none;
   }
+}
+
+/* Riso Zine: original two-ink collage art with a complete editorial UI skin. */
+[data-kiosk-assets="riso-zine"] {
+  --woset-line: #294c9b66;
+  --woset-fill: #294c9b0d;
+  --woset-selected: #df644f1f;
+}
+[data-kiosk-assets="riso-zine"] :is(.woset-display, .kiosk-screen h1, .woset-panel-title),
+[data-kiosk-assets="riso-zine"] [data-kiosk-ui="dialog"] > h2,
+[data-kiosk-assets="riso-zine"] [data-kiosk-ui="surface"] > :is(h2, h3),
+[data-kiosk-assets="riso-zine"] .woset-product-card h2,
+[data-kiosk-assets="riso-zine"] .illustrated-home header p {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  letter-spacing: -.045em;
+}
+[data-kiosk-assets="riso-zine"] .kiosk-screen h1 {
+  font-size: clamp(32px, 4vw, 56px);
+  line-height: 1.05;
+}
+[data-kiosk-assets="riso-zine"] .illustrated-home header {
+  padding-bottom: 20px;
+  border-bottom: 1px dashed var(--woset-line);
+}
+[data-kiosk-assets="riso-zine"] .illustrated-home header > span:first-child,
+[data-kiosk-assets="riso-zine"] .illustrated-home footer {
+  font-family: monospace;
+  font-size: 12px;
+}
+[data-kiosk-assets="riso-zine"] [data-illustrated-choice] {
+  position: relative;
+  border-color: var(--woset-line);
+  border-radius: 10px;
+  background: var(--woset-fill);
+  color: var(--kiosk-text);
+  box-shadow: 3px 3px 0 #df644f33;
+}
+[data-kiosk-assets="riso-zine"] [data-illustrated-choice][data-choice-tone="green"] {
+  background: #df644f0d;
+}
+[data-kiosk-assets="riso-zine"] [data-illustrated-choice]:hover {
+  background: #df644f1a;
+  border-color: var(--kiosk-primary);
+}
+[data-kiosk-assets="riso-zine"] [data-illustrated-choice][data-choice-selected="true"] {
+  border-color: var(--kiosk-primary);
+  background: var(--woset-selected);
+}
+[data-kiosk-assets="riso-zine"] [data-illustrated-choice]::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: -7px;
+  width: 14px;
+  height: 14px;
+  border: 1px solid var(--woset-line);
+  border-radius: 50%;
+  background: var(--kiosk-bg);
+}
+[data-kiosk-assets="riso-zine"] [data-illustrated-choice] .woset-display {
+  font-size: 28px;
+}
+[data-kiosk-assets="riso-zine"] [data-illustrated-choice] > span:last-child {
+  border-radius: 4px;
+  border-color: var(--woset-line);
+  background: transparent;
+  color: var(--kiosk-primary);
+}
+[data-kiosk-assets="riso-zine"] [data-illustrated-choice][data-choice-selected="true"] > span:last-child {
+  background: var(--kiosk-primary);
+  color: white;
+}
+[data-kiosk-assets="riso-zine"] :is([data-kiosk-ui="surface"], .woset-panel, .woset-product-card) {
+  border-radius: 10px;
+  border-color: var(--woset-line);
+  background-color: var(--woset-fill);
+  color: var(--kiosk-text);
+  box-shadow: 2px 2px 0 #df644f26;
+}
+[data-kiosk-assets="riso-zine"] :is([data-kiosk-ui="dialog"], .woset-panel) {
+  border-radius: 10px;
+  background-color: var(--kiosk-bg);
+  box-shadow: 5px 5px 0 #df644f33;
+}
+[data-kiosk-assets="riso-zine"] :is([data-kiosk-ui="control"], [data-kiosk-ui="quantity"], .woset-plain-button, .woset-duration-button) {
+  border-radius: 6px;
+  border-color: var(--woset-line);
+}
+[data-kiosk-assets="riso-zine"] [data-kiosk-ui="control"]:hover:not(:disabled),
+[data-kiosk-assets="riso-zine"] .woset-plain-button:hover {
+  background-color: #df644f1a;
+}
+[data-kiosk-assets="riso-zine"] .kiosk-button {
+  font-weight: 600;
+}
+[data-kiosk-assets="riso-zine"] :is([data-kiosk-ui="field"], [data-kiosk-ui="media"], .woset-field, .woset-timer-display) {
+  border-radius: 8px;
+}
+[data-kiosk-assets="riso-zine"] :is([data-kiosk-ui="badge"], [data-kiosk-ui="icon"]) {
+  background-color: #df644f1a;
+  border-color: var(--woset-line);
+}
+[data-kiosk-assets="riso-zine"] [data-kiosk-ui="timer"] {
+  border-radius: 6px;
+  border-style: dashed;
+  box-shadow: 2px 2px 0 #df644f33;
+}
+[data-kiosk-assets="riso-zine"] [data-kiosk-ui="timer"][data-timer-state="urgent"] {
+  background-color: #e4bd5c40;
+}
+[data-kiosk-assets="riso-zine"] [data-kiosk-ui="timer"][data-timer-state="critical"] {
+  background-color: #df644f33;
+  border-color: #b53f33;
+  color: #96352d;
+}
+[data-kiosk-assets="riso-zine"] .kiosk-navigation [aria-current="step"] > span {
+  background: #df644f33;
+}
+
+/* Analog Archive: darkroom surfaces and archival amber, interface only. */
+[data-kiosk-assets="analog-archive"] {
+  --woset-line: #6e746c80;
+  --woset-fill: var(--kiosk-card-bg);
+  --woset-selected: #d2b47724;
+}
+[data-kiosk-assets="analog-archive"] :is(.woset-display, .kiosk-screen h1, .woset-panel-title),
+[data-kiosk-assets="analog-archive"] [data-kiosk-ui="dialog"] > h2,
+[data-kiosk-assets="analog-archive"] [data-kiosk-ui="surface"] > :is(h2, h3),
+[data-kiosk-assets="analog-archive"] .woset-product-card h2 {
+  font-family: var(--kiosk-font);
+  font-weight: 500;
+  letter-spacing: -.035em;
+}
+[data-kiosk-assets="analog-archive"] .kiosk-screen h1 { font-size: clamp(30px, 3.5vw, 48px); line-height: 1.12; }
+[data-kiosk-assets="analog-archive"] .kiosk-screen .analog-home-title {
+  font-family: var(--kiosk-font);
+  max-width: 12ch;
+  font-size: clamp(32px, 3vw, 44px);
+  font-weight: 500;
+  line-height: 1.12;
+  letter-spacing: -.045em;
+}
+[data-kiosk-assets="analog-archive"] [data-illustrated-choice] {
+  border: 1px solid var(--woset-line);
+  border-radius: 8px;
+  background: var(--kiosk-card-bg);
+  color: var(--kiosk-text);
+  box-shadow: none;
+}
+[data-kiosk-assets="analog-archive"] [data-illustrated-choice]:hover { background: #30362f; border-color: var(--kiosk-primary); }
+[data-kiosk-assets="analog-archive"] [data-illustrated-choice][data-choice-selected="true"] { background: var(--woset-selected); border-color: var(--kiosk-primary); --tw-ring-color: var(--kiosk-primary); }
+[data-kiosk-assets="analog-archive"] [data-illustrated-choice] .woset-display { font-size: 26px; }
+[data-kiosk-assets="analog-archive"] [data-illustrated-choice] > span:last-child { border-color: var(--woset-line); border-radius: 4px; color: var(--kiosk-primary); background: transparent; }
+[data-kiosk-assets="analog-archive"] [data-illustrated-choice][data-choice-selected="true"] > span:last-child { background: var(--kiosk-primary); color: var(--kiosk-primary-text); }
+[data-kiosk-assets="analog-archive"] [data-illustrated-choice] span.rounded-full { border-color: var(--woset-line); border-radius: 4px; }
+[data-kiosk-assets="analog-archive"] :is([data-kiosk-ui="surface"], [data-kiosk-ui="dialog"], .woset-panel, .woset-product-card) {
+  border-radius: 8px;
+  border-color: var(--woset-line);
+  background-color: var(--kiosk-card-bg);
+  color: var(--kiosk-text);
+  box-shadow: none;
+}
+[data-kiosk-assets="analog-archive"] :is([data-kiosk-ui="control"], [data-kiosk-ui="quantity"], [data-kiosk-ui="field"], [data-kiosk-ui="media"], .woset-field, .woset-plain-button, .woset-duration-button, .woset-timer-display) { border-radius: 6px; border-color: var(--woset-line); }
+[data-kiosk-assets="analog-archive"] :is([data-kiosk-ui="field"], .woset-field) { background: var(--kiosk-bg); color: var(--kiosk-text); }
+[data-kiosk-assets="analog-archive"] :is([data-kiosk-ui="field"], .woset-field)::placeholder { color: #aeb4a7; }
+[data-kiosk-assets="analog-archive"] [data-kiosk-ui="control"]:hover:not(:disabled),
+[data-kiosk-assets="analog-archive"] .woset-plain-button:hover { background-color: #d2b47720; }
+[data-kiosk-assets="analog-archive"] :is([data-kiosk-ui="badge"], [data-kiosk-ui="icon"]) { background-color: #d2b47720; color: var(--kiosk-primary); border-color: var(--woset-line); }
+[data-kiosk-assets="analog-archive"] [data-kiosk-ui="badge"] { border-radius: 4px; font-family: monospace; }
+[data-kiosk-assets="analog-archive"] :is([data-kiosk-ui="control"], [data-kiosk-ui="icon"])[data-kiosk-tone="danger"] { color: #f0a8aa; background: #853e492b; }
+[data-kiosk-assets="analog-archive"] .woset-product-card p { color: var(--kiosk-text); }
+[data-kiosk-assets="analog-archive"] [data-kiosk-ui="timer"] { border-radius: 6px; background: var(--kiosk-card-bg); color: var(--kiosk-text); font-family: monospace; }
+[data-kiosk-assets="analog-archive"] [data-kiosk-ui="timer"][data-timer-state="urgent"] { border-color: #d2b477; background: #3e3525; color: #f2d394; }
+[data-kiosk-assets="analog-archive"] [data-kiosk-ui="timer"][data-timer-state="critical"] { border-color: #b66f79; background: #41272d; color: #ffd2d6; }
+[data-kiosk-assets="analog-archive"] .kiosk-navigation [aria-current="step"] > span { background: var(--kiosk-primary); color: var(--kiosk-primary-text); }
+[data-kiosk-assets="analog-archive"] .kiosk-screen h1 { color: var(--kiosk-text); }
+[data-kiosk-assets="analog-archive"] .woset-panel .text-black,
+[data-kiosk-assets="analog-archive"] [data-kiosk-ui="text"] .text-black { color: inherit; }
+[data-kiosk-assets="analog-archive"] .woset-field input { background: var(--kiosk-bg); color: var(--kiosk-text); }
+
+/* Studio Cats: cobalt ink, warm paper and original feline line art. */
+[data-kiosk-assets="studio-cats"] {
+  --woset-line: #12388b45;
+  --woset-fill: var(--kiosk-card-bg);
+  --woset-selected: #12388b10;
+}
+[data-kiosk-assets="studio-cats"] :is(.woset-display, .kiosk-screen h1, .woset-panel-title),
+[data-kiosk-assets="studio-cats"] [data-kiosk-ui="dialog"] > h2,
+[data-kiosk-assets="studio-cats"] [data-kiosk-ui="surface"] > :is(h2, h3),
+[data-kiosk-assets="studio-cats"] .woset-product-card h2 {
+  font-family: var(--kiosk-font);
+  font-weight: 600;
+  letter-spacing: -.04em;
+}
+[data-kiosk-assets="studio-cats"] .kiosk-screen h1 { font-size: clamp(30px, 3.5vw, 48px); line-height: 1.1; }
+[data-kiosk-assets="studio-cats"] .kiosk-screen .cats-home-title {
+  max-width: none;
+  font-size: clamp(28px, 3.2vw, 48px);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -.045em;
+  overflow-wrap: anywhere;
+}
+[data-kiosk-assets="studio-cats"] .cats-handnote { font-family: 'Gaegu', cursive; }
+[data-kiosk-assets="studio-cats"] [data-illustrated-choice] {
+  border: 1px solid var(--woset-line);
+  border-radius: 12px;
+  background: var(--kiosk-card-bg);
+  color: var(--kiosk-text);
+  box-shadow: none;
+}
+[data-kiosk-assets="studio-cats"] [data-illustrated-choice]:hover { background: #12388b08; border-color: var(--kiosk-primary); }
+[data-kiosk-assets="studio-cats"] [data-illustrated-choice][data-choice-selected="true"] { background: var(--woset-selected); border-color: var(--kiosk-primary); --tw-ring-color: var(--kiosk-primary); }
+[data-kiosk-assets="studio-cats"] [data-illustrated-choice] .woset-display { font-size: 27px; }
+[data-kiosk-assets="studio-cats"] [data-illustrated-choice] > span:last-child { border-color: var(--woset-line); color: var(--kiosk-primary); background: transparent; }
+[data-kiosk-assets="studio-cats"] [data-illustrated-choice][data-choice-selected="true"] > span:last-child { background: var(--kiosk-primary); color: var(--kiosk-primary-text); }
+[data-kiosk-assets="studio-cats"] [data-illustrated-choice] span.rounded-full { border-color: var(--woset-line); }
+[data-kiosk-assets="studio-cats"] :is([data-kiosk-ui="surface"], [data-kiosk-ui="dialog"], .woset-panel, .woset-product-card) { border-radius: 12px; border-color: var(--woset-line); background-color: var(--kiosk-card-bg); color: var(--kiosk-text); box-shadow: none; }
+[data-kiosk-assets="studio-cats"] :is([data-kiosk-ui="control"], [data-kiosk-ui="quantity"], .woset-plain-button, .woset-duration-button) { border-radius: 999px; border-color: var(--woset-line); }
+[data-kiosk-assets="studio-cats"] :is([data-kiosk-ui="field"], [data-kiosk-ui="media"], .woset-field, .woset-timer-display) { border-radius: 10px; border-color: var(--woset-line); }
+[data-kiosk-assets="studio-cats"] [data-kiosk-ui="control"]:hover:not(:disabled),
+[data-kiosk-assets="studio-cats"] .woset-plain-button:hover { background-color: #12388b10; }
+[data-kiosk-assets="studio-cats"] :is([data-kiosk-ui="badge"], [data-kiosk-ui="icon"]) { background-color: #12388b0d; border-color: var(--woset-line); color: var(--kiosk-primary); }
+[data-kiosk-assets="studio-cats"] .kiosk-navigation [aria-current="step"] > span { background: var(--kiosk-primary); color: var(--kiosk-primary-text); }
+[data-kiosk-assets="studio-cats"] [data-kiosk-ui="timer"] { background: var(--kiosk-card-bg); border-color: var(--woset-line); color: var(--kiosk-primary); }
+[data-kiosk-assets="studio-cats"] [data-kiosk-ui="timer"][data-timer-state="urgent"] { background: #f3dfbd; border-color: #ac712e; color: #704515; }
+[data-kiosk-assets="studio-cats"] [data-kiosk-ui="timer"][data-timer-state="critical"] { background: #f4d9d2; border-color: #b45349; color: #8c352e; }
+@media (max-width: 767px) {
+  [data-kiosk-assets="studio-cats"] .cats-poster figure img { max-height: 245px; }
+  [data-kiosk-assets="studio-cats"] .cats-home-title { max-width: none; }
+}
+[data-kiosk-assets="studio-cats"] [data-kiosk-ui="timer"]::before { content: ''; width: 25px; height: 25px; flex-shrink: 0; background: currentColor; mask: url('/themes/studio-cats/timer.svg') center / contain no-repeat; -webkit-mask: url('/themes/studio-cats/timer.svg') center / contain no-repeat; }
+[data-kiosk-assets="studio-cats"] [data-kiosk-ui="timer"] > svg { display: none; }
+
+/* Keep service-card ink readable against the solid cobalt home. */
+[data-kiosk-assets="studio-cats"] .cats-home-service:is(:hover, :focus-visible) {
+  background-color: color-mix(in srgb, var(--kiosk-card-bg) 94%, var(--kiosk-primary));
+  color: var(--kiosk-primary);
 }

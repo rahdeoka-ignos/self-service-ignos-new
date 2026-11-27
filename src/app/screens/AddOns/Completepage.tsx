@@ -1,3 +1,4 @@
+import { isIllustratedPack } from "../../../utils/illustratedTheme";
 import { WosetArtwork } from "../../components/WosetArtwork";
 import { apiFetch as fetch } from "../../../utils/api";
 import { useState, useRef, useEffect } from "react";
@@ -519,7 +520,7 @@ export function CompletePage() {
         <div className="max-w-6xl w-full">
           {/* ── JUDUL & SUBJUDUL HALAMAN ── */}
           <div className="text-center mb-8">
-            {theme?.assetPack === "woset-play" && <WosetArtwork scene="ready" className="mx-auto mb-3 h-[140px] w-[220px]" />}
+            {isIllustratedPack(theme?.assetPack) && <WosetArtwork scene="ready" className="mx-auto mb-3 h-[140px] w-[220px]" />}
             <h1 className="text-4xl sm:text-5xl font-black mb-2 text-black tracking-tight">
               Sesi Selesai! 🎉
             </h1>

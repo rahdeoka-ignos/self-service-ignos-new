@@ -4,6 +4,9 @@ export type ThemePresetId =
   | "luxury-wedding"
   | "dark-studio"
   | "woset-play"
+  | "riso-zine"
+  | "analog-archive"
+  | "studio-cats"
   | "custom";
 
 export type BorderRadiusType = "none" | "sm" | "md" | "lg" | "full";
@@ -14,7 +17,7 @@ export type FontFamilyType = "manrope" | "space-grotesk" | "poppins";
 export interface KioskThemeConfig {
   presetId: ThemePresetId;
   name: string;
-  assetPack: "none" | "woset-play";
+  assetPack: "none" | "woset-play" | "riso-zine" | "analog-archive" | "studio-cats";
   // Colors
   backgroundColor: string;
   cardBackgroundColor: string;
@@ -155,6 +158,78 @@ export const THEME_PRESETS: Record<ThemePresetId, KioskThemeConfig> = {
     studioName: "IGNOS STUDIO",
     homeHeadline: "Cerita kecil, kenangan besar.",
     homeSubheadline: "Pilih tempat bermainmu. Kita buat foto yang jadi cerita.",
+    logoUrl: "",
+    enableBonusTutorial: true,
+    enableAddonsStep: true,
+    enableStoryQuestion: true,
+    freeEventMode: false,
+  },
+  "riso-zine": {
+    presetId: "riso-zine",
+    name: "Riso Zine (Photo Club)",
+    assetPack: "riso-zine",
+    backgroundColor: "#f3eedf",
+    cardBackgroundColor: "#f3eedf",
+    primaryColor: "#294c9b",
+    primaryTextColor: "#ffffff",
+    textColor: "#243449",
+    accentColor: "#df644f",
+    borderColor: "#243449",
+    borderRadius: "sm",
+    borderWidth: "thin",
+    shadowStyle: "none",
+    fontFamily: "space-grotesk",
+    studioName: "IGNOS STUDIO",
+    homeHeadline: "Cetak cerita. Simpan harinya.",
+    homeSubheadline: "Pilih sesi, susun foto favoritmu, dan bawa pulang satu edisi kenangan.",
+    logoUrl: "",
+    enableBonusTutorial: true,
+    enableAddonsStep: true,
+    enableStoryQuestion: true,
+    freeEventMode: false,
+  },
+  "analog-archive": {
+    presetId: "analog-archive",
+    name: "Analog Archive (Contact Sheet)",
+    assetPack: "analog-archive",
+    backgroundColor: "#171a18",
+    cardBackgroundColor: "#232723",
+    primaryColor: "#d2b477",
+    primaryTextColor: "#171a18",
+    textColor: "#eee9dd",
+    accentColor: "#d2b477",
+    borderColor: "#6e746c",
+    borderRadius: "sm",
+    borderWidth: "thin",
+    shadowStyle: "none",
+    fontFamily: "manrope",
+    studioName: "IGNOS STUDIO",
+    homeHeadline: "Hari ini, jadi kenangan.",
+    homeSubheadline: "Masuk ke ruang arsipmu. Pilih layanan, susun foto favorit, dan simpan satu cerita untuk dibawa pulang.",
+    logoUrl: "",
+    enableBonusTutorial: true,
+    enableAddonsStep: true,
+    enableStoryQuestion: true,
+    freeEventMode: false,
+  },
+  "studio-cats": {
+    presetId: "studio-cats",
+    name: "Studio Cats (Photo Club)",
+    assetPack: "studio-cats",
+    backgroundColor: "#f8efdf",
+    cardBackgroundColor: "#fff9ef",
+    primaryColor: "#12388b",
+    primaryTextColor: "#f8efdf",
+    textColor: "#202b3b",
+    accentColor: "#d68b51",
+    borderColor: "#12388b",
+    borderRadius: "md",
+    borderWidth: "thin",
+    shadowStyle: "none",
+    fontFamily: "space-grotesk",
+    studioName: "IGNOS STUDIO",
+    homeHeadline: "POSE. SNAP. MEOW.",
+    homeSubheadline: "Pilih layananmu. Si kucing siap menemani sesi fotomu.",
     logoUrl: "",
     enableBonusTutorial: true,
     enableAddonsStep: true,

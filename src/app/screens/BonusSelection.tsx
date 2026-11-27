@@ -1,3 +1,4 @@
+import { isIllustratedPack } from "../../utils/illustratedTheme";
 import { useNavigate, useLocation } from "react-router";
 import { Gift, Timer, X } from "lucide-react";
 import { useTranslation, Trans } from "react-i18next";
@@ -23,7 +24,7 @@ export function BonusSelection() {
   let enableBonusTutorial = true;
   try {
     const { theme } = useKioskTheme();
-    illustrated = theme.assetPack === "woset-play";
+    illustrated = isIllustratedPack(theme.assetPack);
     if (typeof theme.enableBonusTutorial === "boolean") {
       enableBonusTutorial = theme.enableBonusTutorial;
     }

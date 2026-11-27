@@ -1,3 +1,4 @@
+import { isIllustratedPack } from "../../utils/illustratedTheme";
 import { ButtonHTMLAttributes } from "react";
 
 import { useKioskTheme } from "../../context/KioskThemeContext";
@@ -15,7 +16,7 @@ export function ButtonTemplate({
   ...props
 }: ButtonTemplateProps) {
   let illustrated = false;
-  try { illustrated = useKioskTheme().theme.assetPack === "woset-play"; } catch {}
+  try { illustrated = isIllustratedPack(useKioskTheme().theme.assetPack); } catch {}
   const resolvedClassName = illustrated ? className.replace(/(?:hover:)?!text-(?:black|white)\b/g, "") : className;
 
   const baseClasses =

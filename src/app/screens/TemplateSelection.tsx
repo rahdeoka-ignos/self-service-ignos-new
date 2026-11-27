@@ -1,3 +1,4 @@
+import { isIllustratedPack } from "../../utils/illustratedTheme";
 import { apiFetch as fetch } from "../../utils/api";
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router";
@@ -138,7 +139,7 @@ export function TemplateSelection() {
         <div className="pt-32 pb-8 px-8 flex-1 overflow-hidden">
           <div className="max-w-[1800px] mx-auto h-full flex flex-col">
             <h1 className="woset-stage-heading text-6xl font-bold mb-8 mt-10 text-center">
-              {theme.assetPack === "woset-play" && <WosetArtwork scene="frames" className="mr-5 inline-block h-24 w-28 align-middle" />}
+              {isIllustratedPack(theme.assetPack) && <WosetArtwork scene="frames" className="mr-5 inline-block h-24 w-28 align-middle" />}
               {t("templateSelection.title")}
             </h1>
             <p className="text-2xl text-center mb-8 text-gray-700">
@@ -168,7 +169,7 @@ export function TemplateSelection() {
                     />
                     <p
                       className={`text-lg font-bold text-center ${
-                        selectedCategory === category.id && theme.assetPack !== "woset-play"
+                        selectedCategory === category.id && !isIllustratedPack(theme.assetPack)
                           ? "text-white"
                           : "text-black"
                       }`}
@@ -232,7 +233,7 @@ export function TemplateSelection() {
                             </div>
                             <p
                               className={`text-xl font-bold text-center ${
-                                isSelected && theme.assetPack !== "woset-play" ? "text-white" : "text-black"
+                                isSelected && !isIllustratedPack(theme.assetPack) ? "text-white" : "text-black"
                               }`}
                             >
                               {template.name}

@@ -1,3 +1,4 @@
+import { isIllustratedPack } from "../../utils/illustratedTheme";
 import { useEffect, useRef, useState } from "react";
 import {
   Check,
@@ -205,7 +206,7 @@ export function AdminKioskThemePage() {
                       ? "Romantic Champagne"
                       : theme.presetId === "dark-studio"
                         ? "Cyber Noir"
-                        : theme.presetId === "woset-play" ? "Woset Play" : "Custom Style"}
+                        : theme.presetId === "woset-play" ? "Woset Play" : theme.presetId === "riso-zine" ? "Riso Zine" : theme.presetId === "analog-archive" ? "Analog Archive" : theme.presetId === "studio-cats" ? "Studio Cats" : "Custom Style"}
               </div>
               <p className="text-[12px] text-[var(--admin-muted,#92989d)] mt-0.5">
                 {theme.presetId === "custom" ? "Penyesuaian manual" : "Preset siap pakai"}
@@ -336,165 +337,45 @@ export function AdminKioskThemePage() {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {/* Preset 1: Neo-Brutalisme */}
-                  <div
-                    onClick={() => handleApplyPreset("neo-brutalism")}
-                    className={`p-5 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between ${
-                      theme.presetId === "neo-brutalism"
-                        ? "border-[var(--admin-focus,#c0d0e7)] bg-[var(--admin-card,#1c1f20)] "
-                        : "border-[var(--admin-border,#2a2d2f)] bg-[var(--admin-card,#1c1f20)] hover:border-[var(--admin-border-strong,#41474e)]"
-                    }`}
-                  >
-                    <div>
-                      <div className="flex items-center justify-between mb-3">
-                        <span className="text-[12px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-[4px] bg-[var(--admin-raised,#292b2f)] text-[var(--admin-text,#f4f4f5)]">
-                          Brutalist
-                        </span>
-                        {theme.presetId === "neo-brutalism" && (
-                          <div className="flex items-center gap-1.5 text-[12px] font-medium text-[var(--admin-text,#f4f4f5)]">
-                            <span className="w-1.5 h-1.5 rounded-full bg-[#c9d2e1]" />
-                            <span>Aktif</span>
+                  {[
+                    { id: "neo-brutalism", title: "Pop Studio (Default)", tag: "Brutalist", description: "Border tebal, warna pop berani, dan font Space Grotesk.", onClick: () => handleApplyPreset("neo-brutalism") },
+                    { id: "clean-minimal", title: "Amara / Clean Minimal", tag: "Editorial", description: "Latar off-white, garis tipis, dan tipografi Manrope yang tenang.", onClick: () => handleApplyPreset("clean-minimal") },
+                    { id: "luxury-wedding", title: "Romantic Champagne", tag: "Wedding", description: "Linen krem, aksen emas, sudut halus, dan mode sewa gratis.", onClick: () => handleApplyPreset("luxury-wedding") },
+                    { id: "dark-studio", title: "Cyber Noir (Dark Studio)", tag: "Dark mode", description: "Latar gelap sinematik dengan panel kontras dan aksen cyan.", onClick: () => handleApplyPreset("dark-studio") },
+                    { id: "woset-play", title: "Woset Play", tag: "Illustrated", description: "Karakter kamera dan dunia studio bergambar dalam tujuh ilustrasi.", thumbnail: "/themes/woset-play/welcome.svg", onClick: () => handleApplyPreset("woset-play") },
+                    { id: "riso-zine", title: "Riso Zine", tag: "Photo club", description: "Kolase coral-cobalt, tekstur halftone, dan ilustrasi bergaya cetak.", thumbnail: "/themes/riso-zine/welcome.svg", onClick: () => handleApplyPreset("riso-zine") },
+                    { id: "analog-archive", title: "Analog Archive", tag: "Contact sheet", description: "Contact sheet hitam putih, aset film, dan panel layanan beraksen amber.", thumbnail: "/themes/analog-archive/contact-sheet.png", onClick: () => handleApplyPreset("analog-archive") },
+                    { id: "studio-cats", title: "Studio Cats", tag: "Cat photo club", description: "Poster cobalt-krem, kucing fotografer, dan ilustrasi garis di setiap langkah.", thumbnail: "/themes/studio-cats/welcome.svg", onClick: () => handleApplyPreset("studio-cats") },
+                  ].map(preset => {
+                    const selected = theme.presetId === preset.id;
+                    const palette = THEME_PRESETS[preset.id as ThemePresetId];
+                    return (
+                      <button key={preset.id} type="button" onClick={preset.onClick} aria-pressed={selected} className={`relative isolate flex min-h-[220px] flex-col justify-between overflow-hidden rounded-2xl border bg-[var(--admin-card,#1c1f20)] p-5 text-left transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--admin-focus,#c0d0e7)] ${selected ? "border-[var(--admin-focus,#c0d0e7)]" : "border-[var(--admin-border,#2a2d2f)] hover:border-[var(--admin-border-strong,#41474e)]"}`}>
+                        {preset.thumbnail && <>
+                          <img src={preset.thumbnail} alt="" aria-hidden="true" className="pointer-events-none absolute inset-0 h-full w-full select-none object-cover object-center opacity-50" />
+                          <span aria-hidden="true" className="pointer-events-none absolute inset-0" style={{ background: "linear-gradient(110deg, var(--admin-card,#1c1f20) 10%, color-mix(in srgb, var(--admin-card,#1c1f20) 88%, transparent) 50%, color-mix(in srgb, var(--admin-card,#1c1f20) 30%, transparent) 100%)" }} />
+                        </>}
+                        <div className="relative z-10 w-full">
+                          <div className="mb-3 flex min-h-6 items-center justify-between gap-2">
+                            <span className="rounded-[4px] bg-[var(--admin-raised,#292b2f)] px-2 py-0.5 font-mono text-[12px] uppercase tracking-wider text-[var(--admin-text,#f4f4f5)]">{preset.tag}</span>
+                            {selected && <span className="flex items-center gap-1.5 text-[12px] font-medium text-[var(--admin-text,#f4f4f5)]"><Check size={13} />Dipilih</span>}
                           </div>
-                        )}
-                      </div>
-                      <h3 className="font-semibold text-[16px] text-[var(--admin-text,#f4f4f5)]">
-                        Pop Studio (Default)
-                      </h3>
-                      <p className="text-[12px] text-[var(--admin-muted,#92989d)] mt-1.5 leading-[1.6]">
-                        Border tebal 4px, bayangan offset hitam pekat, warna pop berani, dan font Space Grotesk.
-                      </p>
-                    </div>
-
-                    <div className="flex items-center gap-1.5 mt-5 pt-3  border-[var(--admin-border,#2a2d2f)]">
-                      <span className="w-3.5 h-3.5 rounded-full bg-[#fde047] border border-[var(--admin-border,#2a2d2f)]" />
-                      <span className="w-3.5 h-3.5 rounded-full bg-[#000000] border border-[var(--admin-border,#2a2d2f)]" />
-                      <span className="w-3.5 h-3.5 rounded-full bg-[var(--admin-card,#1c1f20)] border border-[var(--admin-border,#2a2d2f)]" />
-                      <span className="text-[12px] text-[var(--admin-muted,#92989d)] ml-auto font-mono">Original</span>
-                    </div>
-                  </div>
-
-                  {/* Preset 2: Clean Minimal */}
-                  <div
-                    onClick={() => handleApplyPreset("clean-minimal")}
-                    className={`p-5 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between ${
-                      theme.presetId === "clean-minimal"
-                        ? "border-[var(--admin-focus,#c0d0e7)] bg-[var(--admin-card,#1c1f20)] "
-                        : "border-[var(--admin-border,#2a2d2f)] bg-[var(--admin-card,#1c1f20)] hover:border-[var(--admin-border-strong,#41474e)]"
-                    }`}
-                  >
-                    <div>
-                      <div className="flex items-center justify-between mb-3">
-                        <span className="text-[12px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-[4px] bg-[var(--admin-raised,#292b2f)] text-[var(--admin-text,#f4f4f5)]">
-                          Editorial
-                        </span>
-                        {theme.presetId === "clean-minimal" && (
-                          <div className="flex items-center gap-1.5 text-[12px] font-medium text-[var(--admin-text,#f4f4f5)]">
-                            <span className="w-1.5 h-1.5 rounded-full bg-[#c9d2e1]" />
-                            <span>Aktif</span>
-                          </div>
-                        )}
-                      </div>
-                      <h3 className="font-semibold text-[16px] text-[var(--admin-text,#f4f4f5)]">
-                        Amara / Clean Minimal
-                      </h3>
-                      <p className="text-[12px] text-[var(--admin-muted,#92989d)] mt-1.5 leading-[1.6]">
-                        Border tipis 1px, latar belakang off-white tenang, bayangan mikro halus, dan font Manrope.
-                      </p>
-                    </div>
-
-                    <div className="flex items-center gap-1.5 mt-5 pt-3  border-[var(--admin-border,#2a2d2f)]">
-                      <span className="w-3.5 h-3.5 rounded-full bg-[var(--admin-card,#1c1f20)] border border-[var(--admin-border,#2a2d2f)]" />
-                      <span className="w-3.5 h-3.5 rounded-full bg-[#c0d0e7] border border-[var(--admin-border,#2a2d2f)]" />
-                      <span className="w-3.5 h-3.5 rounded-full bg-[#c9d2e1] border border-[var(--admin-border,#2a2d2f)]" />
-                      <span className="text-[12px] text-[var(--admin-muted,#92989d)] ml-auto font-mono">Quiet Luxury</span>
-                    </div>
-                  </div>
-
-                  {/* Preset 3: Luxury Wedding */}
-                  <div
-                    onClick={() => handleApplyPreset("luxury-wedding")}
-                    className={`p-5 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between ${
-                      theme.presetId === "luxury-wedding"
-                        ? "border-[var(--admin-focus,#c0d0e7)] bg-[var(--admin-card,#1c1f20)] "
-                        : "border-[var(--admin-border,#2a2d2f)] bg-[var(--admin-card,#1c1f20)] hover:border-[var(--admin-border-strong,#41474e)]"
-                    }`}
-                  >
-                    <div>
-                      <div className="flex items-center justify-between mb-3">
-                        <span className="text-[12px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-[4px] bg-[var(--admin-raised,#292b2f)] text-[var(--admin-text,#f4f4f5)]">
-                          Wedding
-                        </span>
-                        {theme.presetId === "luxury-wedding" && (
-                          <div className="flex items-center gap-1.5 text-[12px] font-medium text-[var(--admin-text,#f4f4f5)]">
-                            <span className="w-1.5 h-1.5 rounded-full bg-[#c9d2e1]" />
-                            <span>Aktif</span>
-                          </div>
-                        )}
-                      </div>
-                      <h3 className="font-semibold text-[16px] text-[var(--admin-text,#f4f4f5)]">
-                        Romantic Champagne
-                      </h3>
-                      <p className="text-[12px] text-[var(--admin-muted,#92989d)] mt-1.5 leading-[1.6]">
-                        Nuansa linen krem hangat, aksen emas elegan, sudut melengkung halus, mode sewa gratis.
-                      </p>
-                    </div>
-
-                    <div className="flex items-center gap-1.5 mt-5 pt-3  border-[var(--admin-border,#2a2d2f)]">
-                      <span className="w-3.5 h-3.5 rounded-full bg-[#fdfbf7] border border-[var(--admin-border,#2a2d2f)]" />
-                      <span className="w-3.5 h-3.5 rounded-full bg-[#78350f] border border-[var(--admin-border,#2a2d2f)]" />
-                      <span className="w-3.5 h-3.5 rounded-full bg-[#d97706] border border-[var(--admin-border,#2a2d2f)]" />
-                      <span className="text-[12px] text-[var(--admin-muted,#92989d)] ml-auto font-mono">Rental Event</span>
-                    </div>
-                  </div>
-
-                  {/* Preset 4: Dark Studio */}
-                  <div
-                    onClick={() => handleApplyPreset("dark-studio")}
-                    className={`p-5 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between ${
-                      theme.presetId === "dark-studio"
-                        ? "border-[var(--admin-focus,#c0d0e7)] bg-[var(--admin-card,#1c1f20)] "
-                        : "border-[var(--admin-border,#2a2d2f)] bg-[var(--admin-card,#1c1f20)] hover:border-[var(--admin-border-strong,#41474e)]"
-                    }`}
-                  >
-                    <div>
-                      <div className="flex items-center justify-between mb-3">
-                        <span className="text-[12px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-[4px] bg-[var(--admin-raised,#292b2f)] text-[var(--admin-text,#f4f4f5)]">
-                          Dark Mode
-                        </span>
-                        {theme.presetId === "dark-studio" && (
-                          <div className="flex items-center gap-1.5 text-[12px] font-medium text-[var(--admin-text,#f4f4f5)]">
-                            <span className="w-1.5 h-1.5 rounded-full bg-[#c9d2e1]" />
-                            <span>Aktif</span>
-                          </div>
-                        )}
-                      </div>
-                      <h3 className="font-semibold text-[16px] text-[var(--admin-text,#f4f4f5)]">
-                        Cyber Noir (Dark Studio)
-                      </h3>
-                      <p className="text-[12px] text-[var(--admin-muted,#92989d)] mt-1.5 leading-[1.6]">
-                        Latar gelap pekat sinematik dengan panel kontras tinggi dan aksen neon cyan modern.
-                      </p>
-                    </div>
-
-                    <div className="flex items-center gap-1.5 mt-5 pt-3  border-[var(--admin-border,#2a2d2f)]">
-                      <span className="w-3.5 h-3.5 rounded-full bg-[#09090b] border border-[var(--admin-border,#2a2d2f)]" />
-                      <span className="w-3.5 h-3.5 rounded-full bg-[var(--admin-card,#1c1f20)] border border-[var(--admin-border,#2a2d2f)]" />
-                      <span className="w-3.5 h-3.5 rounded-full bg-[#06b6d4] border border-[var(--admin-border,#2a2d2f)]" />
-                      <span className="text-[12px] text-[var(--admin-muted,#92989d)] ml-auto font-mono">Noir</span>
-                    </div>
-                  </div>
-                  <button type="button" onClick={() => handleApplyPreset("woset-play")} aria-pressed={theme.presetId === "woset-play"} className={`overflow-hidden rounded-2xl border text-left transition-colors sm:col-span-2 ${theme.presetId === "woset-play" ? "border-[var(--admin-focus,#c0d0e7)]" : "border-[var(--admin-border,#2a2d2f)] hover:border-[var(--admin-border-strong,#41474e)]"}`}>
-                    <div className="flex flex-col items-center gap-5 bg-[#eae9e5] p-5 text-[#252820] sm:flex-row">
-                      <WosetArtwork scene="welcome" className="h-[150px] w-full max-w-[310px]" />
-                      <div className="flex-1"><span className="mb-2 inline-block rounded-full border border-[#252820]/30 px-2.5 py-1 text-[11px]">7 aset ilustrasi SVG</span><h3 className="text-[18px] font-semibold">Woset Play</h3><p className="mt-2 text-[13px] leading-6">Dunia studio bergambar: karakter kamera, booth, teman foto, susunan frame, suvenir, dan printer. Ilustrasi mengikuti perjalanan pelanggan.</p><p className="mt-3 text-[12px] font-semibold">{theme.presetId === "woset-play" ? "Preset dipilih" : "Pilih Woset Play"} ↗</p></div>
-                    </div>
-                  </button>
+                          <h3 className="text-[16px] font-semibold text-[var(--admin-text,#f4f4f5)]">{preset.title}</h3>
+                          <p className="mt-1.5 text-[12px] leading-[1.6] text-[var(--admin-muted,#92989d)]">{preset.description}</p>
+                        </div>
+                        <div className="relative z-10 mt-5 flex w-full items-center justify-between gap-3">
+                          <span aria-hidden="true" className="flex items-center gap-1.5">{[palette.backgroundColor, palette.primaryColor, palette.accentColor].map((color, index) => <span key={index} className="size-3.5 rounded-full border border-[var(--admin-border,#2a2d2f)]" style={{ backgroundColor: color }} />)}</span>
+                          {!preset.thumbnail && <span className="font-mono text-[11px] text-[var(--admin-muted,#92989d)]">{preset.tag}</span>}
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
                 <div className="rounded-xl border border-[var(--admin-border,#2a2d2f)] p-4">
                   <label htmlFor="kiosk-asset-pack" className="block text-[13px] font-medium">Paket ilustrasi</label>
                   <p className="mt-1 text-[12px] leading-5 text-[var(--admin-muted,#92989d)]">Paket aset tetap mengikuti tema saat warna dan teks dikustomisasi. Pilih Tanpa ilustrasi untuk kembali ke tampilan biasa.</p>
                   <select id="kiosk-asset-pack" value={theme.assetPack} onChange={event => updateThemeField("assetPack", event.target.value as KioskThemeConfig["assetPack"])} className="mt-3 w-full rounded-lg border border-[var(--admin-border-strong,#41474e)] bg-[var(--admin-canvas,#111114)] px-3 py-2 text-[13px]">
-                    <option value="none">Tanpa ilustrasi</option><option value="woset-play">Woset Play — illustrated studio</option>
+                    <option value="none">Tanpa ilustrasi</option><option value="woset-play">Woset Play — illustrated studio</option><option value="riso-zine">Riso Zine — photo club</option><option value="analog-archive">Analog Archive — contact sheet</option><option value="studio-cats">Studio Cats — cat photo club</option>
                   </select>
                 </div>
               </div>
@@ -961,11 +842,25 @@ export function AdminKioskThemePage() {
                     fontFamily: fontMap[theme.fontFamily] || "sans-serif",
                   }}
                 >
-                  {theme.assetPack === "woset-play" ? (
+                  {theme.assetPack === "studio-cats" ? (
+                    <div className="flex h-full flex-col overflow-hidden rounded-xl px-5 py-4 text-center" style={{ backgroundColor: theme.primaryColor, color: theme.primaryTextColor }}>
+                      <span className="text-left text-[9px] font-medium">{theme.studioName} / STUDIO CATS</span>
+                      <div className="flex flex-1 flex-col justify-center gap-4">
+                        <p className="text-[21px] font-bold leading-tight tracking-tight">{theme.homeHeadline}</p>
+                        <div className="grid grid-cols-2 gap-2 text-[10px]">{(["studio", "booth"] as const).map((scene, index) => <div key={scene} className="flex flex-col items-center rounded-lg p-3" style={{ backgroundColor: theme.cardBackgroundColor, color: theme.primaryColor }}><img src={`/themes/studio-cats/${scene}.svg`} alt="" className="h-16 w-20 object-contain" /><span className="font-semibold">{index ? "Photo Box" : "Photo Studio"}</span><span className="mt-2 text-[8px]">Yuk lanjut →</span></div>)}</div>
+                        <span className="text-[9px]">Good company. Great photos.</span>
+                      </div>
+                    </div>
+                  ) : theme.assetPack === "analog-archive" ? (
+                    <div className="grid h-full grid-cols-[1.25fr_1fr] gap-3 text-[#eee9dd]">
+                      <div className="flex flex-col rounded border border-[#6e746c]/35 bg-[#101311] p-2"><span className="mb-2 text-left font-mono text-[8px] text-[#aeb4a7]">CONTACT SHEET / 001</span><img src="/themes/analog-archive/contact-sheet.png" alt="Contact sheet" className="min-h-0 w-full flex-1 object-contain" /></div>
+                      <div className="flex flex-col justify-center p-2.5"><span className="font-mono text-[8px] text-[#d2b477]">ARCHIVE / SELF SERVICE</span><p className="my-3 text-left text-[19px] font-medium leading-tight tracking-tight">{theme.homeHeadline}</p><div><div className="mb-3 grid grid-cols-1 gap-1 text-left text-[8px]"><span className="rounded border border-[#d2b477] p-1.5">Photo Studio</span><span className="rounded border border-[#6e746c]/45 p-1.5">Photo Box</span></div><span className="flex justify-between rounded bg-[#d2b477] px-2 py-1.5 text-[10px] font-medium text-[#171a18]">Mulai sesi <span>→</span></span></div></div>
+                    </div>
+                  ) : isIllustratedPack(theme.assetPack) ? (
                     <div className="flex h-full flex-col items-center justify-between gap-2 text-center">
                       <span className="text-[12px] font-semibold">{theme.studioName}</span>
-                      <div><p className="font-['Gaegu',cursive] text-[25px] font-bold leading-none">{theme.homeHeadline}</p><WosetArtwork scene="welcome" className="mx-auto h-[125px] w-full" /></div>
-                      <div className="grid w-full grid-cols-2 gap-2">{(["studio", "booth"] as const).map((scene, index) => <div key={scene} className="flex items-center gap-1 rounded-xl border border-current/25 p-1.5"><WosetArtwork scene={scene} className="h-12 w-14" /><span className="text-[10px] font-medium">{index ? "Photo Box" : "Photo Studio"} ↗</span></div>)}</div>
+                      <div><p className={`text-[25px] font-bold leading-none ${theme.assetPack === "riso-zine" ? "font-['Space_Grotesk',sans-serif] tracking-tight" : "font-['Gaegu',cursive]"}`}>{theme.homeHeadline}</p><WosetArtwork scene="welcome" pack={isIllustratedPack(theme.assetPack) ? theme.assetPack : undefined} className="mx-auto h-[125px] w-full" /></div>
+                      <div className="grid w-full grid-cols-2 gap-2">{(["studio", "booth"] as const).map((scene, index) => <div key={scene} className="flex items-center gap-1 rounded-xl border border-current/25 p-1.5"><WosetArtwork scene={scene} pack={isIllustratedPack(theme.assetPack) ? theme.assetPack : undefined} className="h-12 w-14" /><span className="text-[10px] font-medium">{index ? "Photo Box" : "Photo Studio"} ↗</span></div>)}</div>
                     </div>
                   ) : (<>
                   {/* Top Branding */}

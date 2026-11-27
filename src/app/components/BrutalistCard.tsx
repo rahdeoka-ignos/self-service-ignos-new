@@ -1,3 +1,4 @@
+import { isIllustratedPack } from "../../utils/illustratedTheme";
 import { HTMLAttributes, ReactNode } from "react";
 import { useKioskTheme } from "../../context/KioskThemeContext";
 
@@ -61,11 +62,17 @@ export function BrutalistCard({
       : "var(--kiosk-text, #171717)",
     boxShadow: "var(--kiosk-shadow, none)",
     fontFamily: "var(--kiosk-font, inherit)",
-    ...(theme.assetPack === "woset-play" && props["data-kiosk-ui"] === "surface" ? {
-      borderRadius: "28px",
+    ...(isIllustratedPack(theme.assetPack) && props["data-kiosk-ui"] === "surface" ? {
+      borderRadius: theme.assetPack === "studio-cats" ? "12px" : theme.assetPack === "analog-archive" ? "8px" : theme.assetPack === "riso-zine" ? "10px" : "28px",
       borderWidth: "1px",
-      borderColor: selected || props["data-kiosk-selected"] ? "var(--kiosk-primary)" : "#25282059",
-      backgroundColor: selected || props["data-kiosk-selected"] ? "#d6c57440" : "#6278a41a",
+      borderColor: selected || props["data-kiosk-selected"] ? "var(--kiosk-primary)" : theme.assetPack === "studio-cats" ? "var(--woset-line)" : "#25282059",
+      backgroundColor: theme.assetPack === "studio-cats"
+        ? (selected || props["data-kiosk-selected"] ? "#12388b10" : "var(--kiosk-card-bg)")
+        : theme.assetPack === "analog-archive"
+        ? (selected || props["data-kiosk-selected"] ? "#3e3b2e" : "#232723")
+        : theme.assetPack === "riso-zine"
+        ? (selected || props["data-kiosk-selected"] ? "#df644f1f" : "#294c9b0d")
+        : (selected || props["data-kiosk-selected"] ? "#d6c57440" : "#6278a41a"),
       color: "var(--kiosk-text)",
       boxShadow: "none",
     } : {}),
