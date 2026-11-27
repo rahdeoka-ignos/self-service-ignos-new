@@ -4,6 +4,7 @@ import { createImportHistory } from "./backend/importHistory.js";
 import { createDeviceWatcher } from "./backend/deviceWatcher.js";
 import { createMtpQueue } from "./backend/mtpQueue.js";
 import { listImportBackups, cleanImportBackups, IMPORT_BACKUP_KEEP_LATEST } from "./backend/importBackups.js";
+import { summarizeSessions, buildReport, transactionsCsv, dailyCsv } from "./backend/reports.js";
 import crypto from "crypto";
 import os from "os";
 import { exec, execSync, execFile, spawn } from "child_process";
@@ -1939,80 +1940,44 @@ app.get("/api/sessions", (req, res) => {
     ? allSessions 
     : allSessions.filter((s) => s.date === targetDate);
 
-  let totalSessions = filteredSessions.length;
-  let totalPeople = 0;
-  let totalOmset = 0;
-  let totalCash = 0;
-  let totalQris = 0;
-  let totalReg4R = 0;
-  let totalBonus4R = 0;
-  let totalA4 = 0;
-  let storyFreeCount = 0;
-  let paidSoftcopyCount = 0;
-  let paidSoftcopyRevenue = 0;
-  const addonsMap = {};
-
-  filteredSessions.forEach((s) => {
-    totalPeople += Number(s.peopleCount) || 1;
-    const price = Number(s.totalPrice) || 0;
-    totalOmset += price;
-    if (s.paymentMethod === "cash") {
-      totalCash += price;
-    } else if (s.paymentMethod === "qris" || s.paymentMethod === "transfer") {
-      totalQris += price;
-    }
-    const prints = reportPrints(s);
-    totalReg4R += prints.regular;
-    totalBonus4R += prints.bonus;
-    totalA4 += Number(s.a4Count) || 0;
-
-    const softcopy = reportSoftcopy(s);
-    if (softcopy.free) storyFreeCount++;
-    if (softcopy.paid) { paidSoftcopyCount++; paidSoftcopyRevenue += softcopy.revenue; }
-
-    if (Array.isArray(s.miscAddons)) {
-      s.miscAddons.forEach((item) => {
-        const name = item.name || "Addon";
-        const qty = Number(item.qty) || 1;
-        const price = nonNegative(item.price);
-        if (!addonsMap[name]) {
-          addonsMap[name] = { name, qty: 0, revenue: 0 };
-        }
-        addonsMap[name].qty += qty;
-        addonsMap[name].revenue += (qty * price);
-      });
-    }
-  });
-
   const allAvailableDates = Array.from(new Set(allSessions.map((s) => s.date))).sort().reverse();
 
   res.json({
     success: true,
     date: targetDate,
-    summary: {
-      totalSessions,
-      totalPeople,
-      totalOmset,
-      paymentSummary: {
-        cash: totalCash,
-        qris: totalQris,
-      },
-      totalPrints: {
-        regular: totalReg4R,
-        bonus: totalBonus4R,
-        total4R: totalReg4R + totalBonus4R,
-        a4: totalA4,
-      },
-      softcopy: {
-        storyFree: storyFreeCount,
-        paid: paidSoftcopyCount,
-        paidRevenue: paidSoftcopyRevenue,
-      },
-      addonsSummary: Object.values(addonsMap),
-    },
+    summary: summarizeSessions(filteredSessions),
     sessions: filteredSessions,
     allAvailableDates,
   });
+});
+
+// ── Period reports & Excel export (admin) ─────────────────────────────
+// Excel splits CSV columns on the PC's regional list separator (";" in Indonesian settings).
+let csvDelimiter = ";";
+execFile("powershell.exe", ["-NoProfile", "-Command", "(Get-Culture).TextInfo.ListSeparator"], { windowsHide: true, timeout: 15000 }, (error, stdout) => {
+  const separator = String(stdout || "").trim();
+  if (!error && (separator === "," || separator === ";")) csvDelimiter = separator;
+});
+
+app.get("/api/reports", (req, res) => {
+  try {
+    const { sessions, ...report } = buildReport(readSessions(), req.query.from, req.query.to);
+    res.json({ success: true, ...report, sessionCount: sessions.length });
+  } catch (err) {
+    res.status(400).json({ success: false, error: err.message });
+  }
+});
+
+app.get("/api/reports/export", (req, res) => {
+  try {
+    const report = buildReport(readSessions(), req.query.from, req.query.to);
+    const daily = req.query.kind === "daily";
+    const csv = daily ? dailyCsv(report, csvDelimiter) : transactionsCsv(report, csvDelimiter);
+    const name = `laporan-${daily ? "harian" : "transaksi"}-${report.from}_sd_${report.to}.csv`;
+    res.set({ "Content-Type": "text/csv; charset=utf-8", "Content-Disposition": `attachment; filename="${name}"` }).send(csv);
+  } catch (err) {
+    res.status(400).json({ success: false, error: err.message });
+  }
 });
 
 app.post("/api/sessions", (req, res) => {

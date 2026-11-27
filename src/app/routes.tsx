@@ -18,6 +18,7 @@ import { StoryQuestion } from "./screens/AddOns/Storyquestion";
 import { CompletePage } from "./screens/AddOns/Completepage";
 import { LoyaltyCard } from "./screens/LoyaltyCard";
 import { AdminDashboardPage } from "./screens/AdminDashboardPage";
+import { AdminReportsPage } from "./screens/AdminReportsPage";
 import { AdminCashierPage } from "./screens/AdminCashierPage";
 import { AdminMessagePage } from "./screens/AdminMessagePage";
 import { AdminTemplatePage } from "./screens/AdminTemplatePage";
@@ -174,6 +175,10 @@ export const router = createBrowserRouter([
           {
             path: "/admin/cashier",
             Component: AdminCashierPage,
+          },
+          {
+            path: "/admin/reports",
+            Component: AdminReportsPage,
           },
           {
             path: "/admin/message",

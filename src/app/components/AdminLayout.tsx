@@ -23,6 +23,7 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   Receipt,
+  FileSpreadsheet,
   ChevronRight,
   Sun,
   Moon,
@@ -47,6 +48,12 @@ const NAV_WORKSPACE = [
     label: "Kasir & E-Receipt",
     icon: Receipt,
     desc: "Transaksi & nota digital",
+  },
+  {
+    path: "/admin/reports",
+    label: "Laporan & Ekspor",
+    icon: FileSpreadsheet,
+    desc: "Rekap periode & unduh Excel",
   },
   {
     path: "/admin/pricing",
@@ -181,6 +188,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
   const getPageTitle = () => {
     if (location.pathname === "/admin") return "Dashboard";
     if (location.pathname.startsWith("/admin/cashier")) return "Kasir & E-Receipt";
+    if (location.pathname.startsWith("/admin/reports")) return "Laporan & Ekspor";
     if (location.pathname.startsWith("/admin/pricing")) return "Harga & Paket";
     if (location.pathname.startsWith("/admin/templates")) return "Templates";
     if (location.pathname.startsWith("/admin/branding")) return "Identitas Studio";
