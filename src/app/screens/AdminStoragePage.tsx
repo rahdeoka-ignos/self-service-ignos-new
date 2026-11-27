@@ -54,6 +54,14 @@ interface StorageStats {
       files: number;
       items: CameraCacheItem[];
     };
+    importBackups?: {
+      bytes: number;
+      formatted: string;
+      count: number;
+      failedCount: number;
+      keepLatest: number;
+      latestAt: string | null;
+    };
     queue: {
       bytes: number;
       formatted: string;
@@ -183,7 +191,7 @@ export function AdminStoragePage() {
     }
   };
 
-  const handleOpenFolder = async (target: "camera_cache" | "photos" | "archive" = "camera_cache") => {
+  const handleOpenFolder = async (target: "camera_cache" | "photos" | "archive" | "camera_imports" = "camera_cache") => {
     try {
       await fetch(`${API}/api/camera-import/open-folder`, {
         method: "POST",
@@ -500,6 +508,50 @@ export function AdminStoragePage() {
                       className="px-3.5 py-1.5 bg-[var(--admin-card,#1c1f20)] border border-[var(--admin-border,#2a2d2f)] text-[var(--admin-secondary,#c3c7ca)] hover:bg-[var(--admin-raised,#292b2f)] hover:text-[var(--admin-text,#f4f4f5)] rounded-full text-[12px] font-medium transition-colors cursor-pointer disabled:opacity-40"
                     >
                       Kosongkan
+                    </button>
+                  </div>
+                </div>
+
+                {/* 1b. Cadangan galeri dari impor kamera / unggah manual */}
+                <div className="py-4.5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div>
+                    <div className="text-[13px] font-medium text-[var(--admin-text,#f4f4f5)]">
+                      Cadangan Galeri Impor Kamera
+                    </div>
+                    <div className="text-[12px] text-[var(--admin-muted,#92989d)] mt-0.5 leading-[1.6]">
+                      Salinan galeri sebelumnya yang disimpan setiap kali foto diimpor, untuk memulihkan jika salah impor.
+                      Otomatis hanya {stats?.studioStorage.importBackups?.keepLatest ?? 3} impor terakhir yang disimpan.
+                      {(stats?.studioStorage.importBackups?.failedCount ?? 0) > 0 && ` Termasuk ${stats?.studioStorage.importBackups?.failedCount} sisa impor gagal.`}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4 shrink-0">
+                    <span className="text-[12px] font-mono text-[var(--admin-muted,#92989d)]">
+                      {stats?.studioStorage.importBackups?.formatted || "0 B"} ({stats?.studioStorage.importBackups?.count || 0} impor)
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => handleOpenFolder("camera_imports")}
+                      className="text-[12px] font-medium text-[var(--admin-muted,#92989d)] hover:text-[var(--admin-text,#f4f4f5)] underline underline-offset-2 cursor-pointer"
+                    >
+                      Buka
+                    </button>
+                    <button
+                      onClick={() => {
+                        setModalConfig({
+                          isOpen: true,
+                          title: "Bersihkan Cadangan Galeri Impor?",
+                          category: "Konfirmasi Pembersihan",
+                          description: "Cadangan galeri dari impor sebelumnya di storage/camera_imports akan dihapus permanen. Cadangan dari impor terakhir tetap disimpan. Foto di kamera dan galeri kiosk saat ini tidak terpengaruh.",
+                          confirmText: "Bersihkan Cadangan",
+                          cancelText: "Batal",
+                          variant: "warning",
+                          onConfirm: () => handleClean({ action: "camera_imports" }),
+                        });
+                      }}
+                      disabled={!!cleaningAction || (stats?.studioStorage.importBackups?.count ?? 0) <= 1}
+                      className="px-3.5 py-1.5 bg-[var(--admin-card,#1c1f20)] border border-[var(--admin-border,#2a2d2f)] text-[var(--admin-secondary,#c3c7ca)] hover:bg-[var(--admin-raised,#292b2f)] hover:text-[var(--admin-text,#f4f4f5)] rounded-full text-[12px] font-medium transition-colors cursor-pointer disabled:opacity-40"
+                    >
+                      Bersihkan
                     </button>
                   </div>
                 </div>

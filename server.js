@@ -3,6 +3,7 @@ import { createCameraImporter } from "./backend/cameraImport.js";
 import { createImportHistory } from "./backend/importHistory.js";
 import { createDeviceWatcher } from "./backend/deviceWatcher.js";
 import { createMtpQueue } from "./backend/mtpQueue.js";
+import { listImportBackups, cleanImportBackups, IMPORT_BACKUP_KEEP_LATEST } from "./backend/importBackups.js";
 import crypto from "crypto";
 import os from "os";
 import { exec, execSync, execFile, spawn } from "child_process";
@@ -827,13 +828,16 @@ function getFullStorageStats() {
   } catch {}
 
   const config = readStorageConfig();
+  const importBackups = listImportBackups(IMPORT_STORAGE_DIR);
+  const importBackupBytes = importBackups.reduce((sum, item) => sum + item.bytes, 0);
 
   const studioTotalBytes =
     cameraStats.bytes +
     thumbsStats.bytes +
     cameraCacheStats.bytes +
     queueStats.bytes +
-    totalArchiveBytes;
+    totalArchiveBytes +
+    importBackupBytes;
 
   return {
     disk,
@@ -859,6 +863,14 @@ function getFullStorageStats() {
         folders: queueFolders,
         isUploading: uploadProgress.isUploading,
         activeFolder: uploadProgress.folderName || null,
+      },
+      importBackups: {
+        bytes: importBackupBytes,
+        formatted: formatBytes(importBackupBytes),
+        count: importBackups.length,
+        failedCount: importBackups.filter((item) => item.status === "failed").length,
+        keepLatest: IMPORT_BACKUP_KEEP_LATEST,
+        latestAt: importBackups[0] ? new Date(importBackups[0].mtimeMs).toISOString() : null,
       },
       archive: {
         bytes: totalArchiveBytes,
@@ -959,6 +971,11 @@ app.post("/api/storage-clean", (req, res) => {
           }
         }
       }
+    } else if (action === "camera_imports") {
+      // Keep only the most recent import so the gallery it replaced can still be recovered.
+      const result = cleanImportBackups(IMPORT_STORAGE_DIR, { keepLatest: 1, isBusy: () => cameraImporter.busy || manualUploadBusy });
+      freedBytes += result.freedBytes;
+      deletedCount += result.deletedCount;
     } else if (action === "archive_date") {
       if (!date) return res.status(400).json({ error: "Parameter 'date' diperlukan" });
       if (typeof date !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return res.status(400).json({ error: "Tanggal arsip tidak valid." });
@@ -1410,8 +1427,16 @@ app.get("/api/camera-import/preview", async (req, res) => {
   }
 });
 
+// Each import leaves a backup of the gallery it replaced; keep only the newest few.
+function trimImportBackups() {
+  setImmediate(() => {
+    const result = cleanImportBackups(IMPORT_STORAGE_DIR, { isBusy: () => cameraImporter.busy || manualUploadBusy });
+    if (result.deletedCount) console.log(`[Storage] ${result.deletedCount} cadangan impor lama dihapus (${formatBytes(result.freedBytes)}).`);
+  });
+}
+
 app.post("/api/camera-import/import", async (req, res) => {
-  try { res.json(await cameraImporter.import(req.body)); }
+  try { res.json(await cameraImporter.import(req.body)); trimImportBackups(); }
   catch (err) { res.status(400).json({ success: false, error: err.message }); }
 });
 
@@ -1423,6 +1448,8 @@ app.post("/api/camera-import/open-folder", (req, res) => {
       target = CAMERA_CACHE_DIR;
     } else if (req.body?.target === "archive" || req.query?.target === "archive") {
       target = ARCHIVE_DIR;
+    } else if (req.body?.target === "camera_imports" || req.query?.target === "camera_imports") {
+      target = IMPORT_STORAGE_DIR;
     }
     if (!fs.existsSync(target)) {
       fs.mkdirSync(target, { recursive: true });
@@ -1458,6 +1485,7 @@ app.post("/api/upload-photos", (req, res) => {
       try { publishGallery({ photosDir: PHOTOS_DIR, thumbsDir: THUMBS_DIR, ...prepared, backupDir: path.join(workDir, "previous-gallery") }); }
       finally { startFileWatcher(); }
       res.json({ success: true, count: files.length, message: "Foto sudah diperiksa dan siap di galeri." });
+      trimImportBackups();
     } catch (err) { res.status(400).json({ success: false, error: err.message }); }
     finally {
       for (const file of req.files || []) { try { fs.unlinkSync(file.path); } catch {} }

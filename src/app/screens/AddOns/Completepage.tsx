@@ -77,6 +77,9 @@ export function CompletePage() {
       softcopyCharge = pricing.session.softcopyCharge;
     }
   } catch {}
+  // Shown to the customer and on the PDF receipt: the softcopy price set in admin (Harga & Paket),
+  // or the amount actually charged in the earlier step.
+  const softcopyPriceLabel = "+Rp " + Number(location.state?.extraCharge || softcopyCharge).toLocaleString("id-ID");
 
   const autoUploadReceipt = async () => {
     try {
@@ -260,7 +263,7 @@ export function CompletePage() {
 
       // ── ADD-ONS ──
       drawSectionHeader("Instagram Story");
-      drawRow("Instagram Story", makeStory ? "✓ Ya (Gratis)" : "✗ Bayar (+Rp 25.000)");
+      drawRow("Instagram Story", makeStory ? "✓ Ya (Gratis)" : `✗ Bayar (${softcopyPriceLabel})`);
       if (makeStory && instagramUsernames.length > 0) {
         instagramUsernames.forEach((username, i) => {
           addText(`  ${i + 1}. @${username}`, margin, y + 1, {
@@ -784,7 +787,7 @@ export function CompletePage() {
               />
               <Row
                 label="Instagram Story"
-                value={makeStory ? "✅ Ya (Gratis)" : "❌ Bayar (+Rp 25.000)"}
+                value={makeStory ? "✅ Ya (Gratis)" : `❌ Bayar (${softcopyPriceLabel})`}
               />
               {!makeStory && customerName && (
                 <Row
