@@ -118,7 +118,15 @@ export function AddOnQuestion() {
               type="button"
               key={addon.id}
               onClick={() => {
+                // Carry the whole session state (e.g. print4rCount), not only these fields, minus the
+                // keys that only steer one add-on round (they would pile up round after round).
+                const {
+                  returnState: _returnState, print4rPeopleCount: _print4r, a4PeopleCount: _a4,
+                  destination: _destination, disableModal: _disableModal, skipBonus: _skipBonus,
+                  previousKeychainOrders: _previousKeychains, ...sessionState
+                } = location.state ?? {};
                 const baseState = {
+                  ...sessionState,
                   peopleCount,
                   joinedBonus,
                   coupleMode,

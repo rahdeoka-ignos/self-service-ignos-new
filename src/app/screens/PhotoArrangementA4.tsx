@@ -15,7 +15,9 @@ export function PhotoArrangementA4() {
 
   const peopleCount = location.state?.a4PeopleCount || 1;
   const returnState = (() => {
-    const { a4PeopleCount, serviceId, ...rest } = location.state ?? {};
+    // The nested returnState is a stale copy of this same session state; dropping it keeps the
+    // state from growing with every add-on round.
+    const { a4PeopleCount, serviceId, returnState: _nested, ...rest } = location.state ?? {};
     return rest;
   })();
   const [photoGallery, setPhotoGallery] = useState<

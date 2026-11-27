@@ -21,6 +21,7 @@ const contentMap: {
   "/cermin-foto-3d": { title: "Cermin Foto 3D", question: "...", emoji: "🪞" },
   "/boneka-tabung": { title: "Boneka Tabung", question: "...", emoji: "🧸" },
   "/puzzle-foto": { title: "Puzzle Foto", question: "...", emoji: "🧩" },
+  "/photo-calender": { title: "Photo Calender", question: "...", emoji: "📅" },
 };
 
 export function FlowerHotwheelsPage() {

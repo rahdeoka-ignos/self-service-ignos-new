@@ -25,6 +25,12 @@ export function KeychainArrangement() {
   const navigate = useNavigate();
 
   const orders: KeychainOrder[] = location.state?.orders || [];
+  // Earlier keychain rounds (see Keychainoptions) plus this round, so nothing paid for is lost.
+  const withAllKeychainOrders = () => ({
+    ...location.state,
+    orders: [...(location.state?.previousKeychainOrders ?? []), ...orders],
+    previousKeychainOrders: undefined,
+  });
   console.log(orders);
 
   // Flatten semua slot
@@ -125,7 +131,7 @@ export function KeychainArrangement() {
         if (prev <= 1) {
           clearInterval(interval);
           setSuccessOpen(false);
-          navigate("/add-ons", { state: { ...location.state, orders } });
+          navigate("/add-ons", { state: withAllKeychainOrders() });
           return 0;
         }
         return prev - 1;
@@ -678,7 +684,7 @@ export function KeychainArrangement() {
               className="w-full"
               onClick={() => {
                 setSuccessOpen(false);
-                navigate("/add-ons", { state: { ...location.state, orders } });
+                navigate("/add-ons", { state: withAllKeychainOrders() });
               }}
             >
               Next →

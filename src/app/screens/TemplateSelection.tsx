@@ -28,6 +28,11 @@ export function TemplateSelection() {
   const timerDuration = location.state?.timerDuration ?? 20 * 60;
   const timer = useCountdownTimer(timerDuration);
   const returnState = location.state?.returnState;
+  // Extra 4R prints bought on the add-ons page come here with returnState (the main session).
+  // The 20-minute session timer belongs to the main session: it may already have run out, and an
+  // expiry here used to drop returnState, turning the add-on into a fake "main" session that lost
+  // peopleCount (one Instagram username instead of two) and the add-ons already paid for.
+  const isAddonFlow = !!returnState;
 
   useEffect(() => {
     timer.start();
@@ -114,24 +119,16 @@ export function TemplateSelection() {
 
   return (
     <>
-      <TimerBar
-        minutes={timer.minutes}
-        seconds={timer.seconds}
-        timeLeft={timer.timeLeft}
-      />
-      {timer.isExpired && (
-        <TimerExpiredModal
-          onContinue={() =>
-            navigate("/arrange-photos", {
-              state: {
-                peopleCount,
-                joinedBonus,
-                coupleMode,
-                // templates: selectedTemplates,
-              },
-            })
-          }
+      {!isAddonFlow && (
+        <TimerBar
+          minutes={timer.minutes}
+          seconds={timer.seconds}
+          timeLeft={timer.timeLeft}
         />
+      )}
+      {timer.isExpired && !isAddonFlow && (
+        // Continue with the templates chosen so far (previously none were passed on).
+        <TimerExpiredModal onContinue={handleContinue} />
       )}
       <div className="kiosk-screen h-[100dvh] bg-gray-100 flex flex-col overflow-hidden">
         <Navigation currentStep={3} totalSteps={5} />

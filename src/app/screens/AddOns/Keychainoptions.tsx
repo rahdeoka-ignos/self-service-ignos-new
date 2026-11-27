@@ -54,6 +54,9 @@ export function KeychainOptions() {
     navigate("/keychain-arrangement", {
       state: {
         ...location.state, // ← tambah ini: bawa semua state lama
+        // A second keychain round must not replace the first: keep the earlier orders aside and
+        // let the arrangement page work on the new ones only (merged back afterwards).
+        previousKeychainOrders: location.state?.orders ?? [],
         orders,
       },
     });

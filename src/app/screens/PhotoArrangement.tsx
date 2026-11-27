@@ -165,6 +165,9 @@ export function PhotoArrangement() {
   }>({});
   const timerDuration = location.state?.timerDuration ?? 20 * 60;
   const timer = useCountdownTimer(timerDuration);
+  // Extra prints from the add-ons page (see TemplateSelection): the main session's timer does not
+  // apply, otherwise an expired session pops "time's up" the moment the customer arrives here.
+  const isAddonFlow = !!location.state?.returnState;
   const navigatedRef = useRef(false);
   const [showTutorial, setShowTutorial] = useState(true);
   const [timerDismissed, setTimerDismissed] = useState(false);
@@ -255,7 +258,6 @@ export function PhotoArrangement() {
     if (navigatedRef.current) return;
     navigatedRef.current = true;
 
-    const isAddonFlow = !!location.state?.returnState; // ← cek apakah ini dari addon
     const base = location.state?.returnState ?? {};
 
     if (isAddonFlow) {
@@ -603,13 +605,15 @@ export function PhotoArrangement() {
 
   return (
     <div className="kiosk-screen h-[100dvh] overflow-hidden bg-gray-100 flex flex-col">
-      <TimerBar
-        minutes={timer.minutes}
-        seconds={timer.seconds}
-        timeLeft={timer.timeLeft}
-      />
+      {!isAddonFlow && (
+        <TimerBar
+          minutes={timer.minutes}
+          seconds={timer.seconds}
+          timeLeft={timer.timeLeft}
+        />
+      )}
 
-      {timer.isExpired && !timerDismissed && (
+      {timer.isExpired && !timerDismissed && !isAddonFlow && (
         <TimerExpiredModal
           onContinue={() => {
             setTimerDismissed(true);

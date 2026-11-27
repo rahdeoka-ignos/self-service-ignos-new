@@ -129,6 +129,10 @@ export const router = createBrowserRouter([
         Component: FlowerHotwheelsPage,
       },
       {
+        path: "/photo-calender",
+        Component: FlowerHotwheelsPage,
+      },
+      {
         path: "/keychain",
         Component: KeychainOptions,
       },
