@@ -46,7 +46,7 @@ export function Home() {
   ];
 
   return (
-    <div className={`kiosk-screen min-h-screen bg-gray-100 flex items-center justify-center ${theme.assetPack === "studio-cats" ? "p-0" : "p-6 md:p-8"}`}>
+    <div className={`kiosk-screen min-h-screen bg-gray-100 flex items-center justify-center ${(theme.assetPack === "studio-cats" || theme.assetPack === "analog-archive") ? "p-0" : "p-6 md:p-8"}`}>
       {theme.assetPack === "studio-cats" ? <StudioCatsHome theme={theme} onStaffImport={() => setCameraImportOpen(true)} onSelectService={serviceId => navigate("/people-count", { state: { serviceId } })} /> : theme.assetPack === "analog-archive" ? <AnalogArchiveHome theme={theme} onStaffImport={() => setCameraImportOpen(true)} onSelectService={serviceId => navigate("/people-count", { state: { serviceId } })} /> : isIllustratedPack(theme.assetPack) ? <WosetHomeContent theme={theme} onStaffImport={() => setCameraImportOpen(true)} onSelectService={serviceId => navigate("/people-count", { state: { serviceId } })} /> : (
       <div className="max-w-7xl w-full">
         {/* Secret Double Click Trigger for Staff */}

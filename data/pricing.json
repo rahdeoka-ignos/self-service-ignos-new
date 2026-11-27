@@ -4,7 +4,7 @@
   "session": {
     "basePrice": 100000,
     "includedPeople": 2,
-    "extraPersonPrice": 15000,
+    "extraPersonPrice": 35000,
     "softcopyCharge": 25000
   },
   "prints": {

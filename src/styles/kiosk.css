@@ -500,8 +500,8 @@
 [data-kiosk-assets="analog-archive"] .kiosk-screen h1 { font-size: clamp(30px, 3.5vw, 48px); line-height: 1.12; }
 [data-kiosk-assets="analog-archive"] .kiosk-screen .analog-home-title {
   font-family: var(--kiosk-font);
-  max-width: 12ch;
-  font-size: clamp(32px, 3vw, 44px);
+  max-width: none;
+  font-size: clamp(28px, 3.2vw, 48px);
   font-weight: 500;
   line-height: 1.12;
   letter-spacing: -.045em;
@@ -602,4 +602,19 @@
 [data-kiosk-assets="studio-cats"] .cats-home-service:is(:hover, :focus-visible) {
   background-color: color-mix(in srgb, var(--kiosk-card-bg) 94%, var(--kiosk-primary));
   color: var(--kiosk-primary);
+}
+
+[data-kiosk-assets="analog-archive"] .analog-home-service:is(:hover, :focus-visible) {
+  background-color: color-mix(in srgb, var(--kiosk-card-bg) 94%, var(--kiosk-primary));
+  border-color: var(--kiosk-primary);
+  color: var(--kiosk-text);
+}
+
+/* Match Studio Cats typography, including saved Analog configurations. */
+[data-kiosk-assets="analog-archive"] .analog-home {
+  --kiosk-font: 'Space Grotesk', sans-serif;
+  font-family: var(--kiosk-font);
+}
+[data-kiosk-assets="analog-archive"] .analog-home .analog-home-title {
+  font-weight: 700;
 }

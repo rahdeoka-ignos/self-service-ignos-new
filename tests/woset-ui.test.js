@@ -104,8 +104,8 @@ test('Studio Cats uses its own scene assets and leaves captured photo cards inde
   assert.equal(surface.props.style.backgroundColor, 'var(--kiosk-card-bg)');
 });
 
-test('Studio Cats large service cards open the selected service directly', () => {
-  const Home = component('StudioCatsHome');
+for (const home of ['StudioCatsHome', 'AnalogArchiveHome']) test(`${home} large service cards open the selected service directly`, () => {
+  const Home = component(home);
   const chosen = [];
   const tree = Home({ theme: { studioName: 'IGNOS STUDIO', homeHeadline: 'POSE. SNAP. MEOW.', homeSubheadline: 'Pilih layananmu.' }, onSelectService: id => chosen.push(id), onStaffImport: () => {} });
   const buttons = [];

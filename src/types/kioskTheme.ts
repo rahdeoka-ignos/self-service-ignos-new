@@ -202,7 +202,7 @@ export const THEME_PRESETS: Record<ThemePresetId, KioskThemeConfig> = {
     borderRadius: "sm",
     borderWidth: "thin",
     shadowStyle: "none",
-    fontFamily: "manrope",
+    fontFamily: "space-grotesk",
     studioName: "IGNOS STUDIO",
     homeHeadline: "Hari ini, jadi kenangan.",
     homeSubheadline: "Masuk ke ruang arsipmu. Pilih layanan, susun foto favorit, dan simpan satu cerita untuk dibawa pulang.",

@@ -344,7 +344,7 @@ export function AdminKioskThemePage() {
                     { id: "dark-studio", title: "Cyber Noir (Dark Studio)", tag: "Dark mode", description: "Latar gelap sinematik dengan panel kontras dan aksen cyan.", onClick: () => handleApplyPreset("dark-studio") },
                     { id: "woset-play", title: "Woset Play", tag: "Illustrated", description: "Karakter kamera dan dunia studio bergambar dalam tujuh ilustrasi.", thumbnail: "/themes/woset-play/welcome.svg", onClick: () => handleApplyPreset("woset-play") },
                     { id: "riso-zine", title: "Riso Zine", tag: "Photo club", description: "Kolase coral-cobalt, tekstur halftone, dan ilustrasi bergaya cetak.", thumbnail: "/themes/riso-zine/welcome.svg", onClick: () => handleApplyPreset("riso-zine") },
-                    { id: "analog-archive", title: "Analog Archive", tag: "Contact sheet", description: "Contact sheet hitam putih, aset film, dan panel layanan beraksen amber.", thumbnail: "/themes/analog-archive/contact-sheet.png", onClick: () => handleApplyPreset("analog-archive") },
+                    { id: "analog-archive", title: "Analog Archive", tag: "Contact sheet", description: "Dua card layanan di tengah layar, aset film, dan aksen amber.", thumbnail: "/themes/analog-archive/contact-sheet.png", onClick: () => handleApplyPreset("analog-archive") },
                     { id: "studio-cats", title: "Studio Cats", tag: "Cat photo club", description: "Poster cobalt-krem, kucing fotografer, dan ilustrasi garis di setiap langkah.", thumbnail: "/themes/studio-cats/welcome.svg", onClick: () => handleApplyPreset("studio-cats") },
                   ].map(preset => {
                     const selected = theme.presetId === preset.id;
@@ -852,9 +852,14 @@ export function AdminKioskThemePage() {
                       </div>
                     </div>
                   ) : theme.assetPack === "analog-archive" ? (
-                    <div className="grid h-full grid-cols-[1.25fr_1fr] gap-3 text-[#eee9dd]">
-                      <div className="flex flex-col rounded border border-[#6e746c]/35 bg-[#101311] p-2"><span className="mb-2 text-left font-mono text-[8px] text-[#aeb4a7]">CONTACT SHEET / 001</span><img src="/themes/analog-archive/contact-sheet.png" alt="Contact sheet" className="min-h-0 w-full flex-1 object-contain" /></div>
-                      <div className="flex flex-col justify-center p-2.5"><span className="font-mono text-[8px] text-[#d2b477]">ARCHIVE / SELF SERVICE</span><p className="my-3 text-left text-[19px] font-medium leading-tight tracking-tight">{theme.homeHeadline}</p><div><div className="mb-3 grid grid-cols-1 gap-1 text-left text-[8px]"><span className="rounded border border-[#d2b477] p-1.5">Photo Studio</span><span className="rounded border border-[#6e746c]/45 p-1.5">Photo Box</span></div><span className="flex justify-between rounded bg-[#d2b477] px-2 py-1.5 text-[10px] font-medium text-[#171a18]">Mulai sesi <span>→</span></span></div></div>
+                    <div className="relative isolate flex h-full flex-col overflow-hidden rounded-xl px-5 py-4 text-center" style={{ backgroundColor: theme.backgroundColor, color: theme.textColor, fontFamily: fontMap["space-grotesk"] }}>
+                      <img src="/themes/analog-archive/contact-sheet.png" alt="" aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 h-full w-full object-cover opacity-30" /><div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-b from-[#111412]/65 to-[#111412]/85" />
+                      <span className="text-left font-mono text-[9px]">{theme.studioName} / ANALOG ARCHIVE</span>
+                      <div className="flex flex-1 flex-col justify-center gap-4">
+                        <p className="text-[21px] font-bold leading-tight tracking-tight">{theme.homeHeadline}</p>
+                        <div className="grid grid-cols-2 gap-2 text-[10px]">{(["studio", "booth"] as const).map((scene, index) => <div key={scene} className="flex flex-col items-center rounded border p-3" style={{ backgroundColor: theme.cardBackgroundColor, borderColor: theme.borderColor }}><img src={`/themes/analog-archive/${scene}.svg`} alt="" className="h-16 w-20 object-contain" /><span className="font-semibold">{index ? "Photo Box" : "Photo Studio"}</span><span className="mt-2 text-[8px]" style={{ color: theme.primaryColor }}>Yuk lanjut →</span></div>)}</div>
+                        <span className="font-mono text-[8px] uppercase tracking-wide">Collected moments, carefully kept.</span>
+                      </div>
                     </div>
                   ) : isIllustratedPack(theme.assetPack) ? (
                     <div className="flex h-full flex-col items-center justify-between gap-2 text-center">
