@@ -16,12 +16,28 @@ export function childPath(root, name) {
   return target;
 }
 
+// On Windows, replacing a file fails with EPERM/EBUSY/EACCES for a moment while
+// another process (antivirus, search indexer) has it open. Retry briefly.
+const RETRYABLE_RENAME = new Set(["EPERM", "EBUSY", "EACCES"]);
+const sleepSync = (ms) => Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
+
+export function renameWithRetry(from, to, { attempts = 10, rename = fs.renameSync } = {}) {
+  for (let attempt = 1; ; attempt++) {
+    try {
+      return rename(from, to);
+    } catch (err) {
+      if (!RETRYABLE_RENAME.has(err.code) || attempt >= attempts) throw err;
+      sleepSync(15 * attempt); // ~0.7 s in total before giving up
+    }
+  }
+}
+
 export function writeJsonAtomic(filename, data) {
   fs.mkdirSync(path.dirname(filename), { recursive: true });
   const temporary = `${filename}.${process.pid}.tmp`;
   try {
     fs.writeFileSync(temporary, JSON.stringify(data, null, 2), "utf8");
-    fs.renameSync(temporary, filename);
+    renameWithRetry(temporary, filename);
   } finally {
     if (fs.existsSync(temporary)) fs.unlinkSync(temporary);
   }

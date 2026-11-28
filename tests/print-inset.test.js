@@ -5,6 +5,23 @@ import os from 'node:os';
 import path from 'node:path';
 import sharp from 'sharp';
 import { insetBox, hasInset, applyPrintInset, normalizePrintInset } from '../backend/printInset.js';
+import { renameWithRetry } from '../backend/safety.js';
+
+test('atomic JSON save retries a rename that Windows briefly refuses', () => {
+  const busy = (code, failures) => {
+    let calls = 0;
+    return { rename: () => { calls++; if (calls <= failures) throw Object.assign(new Error(code), { code }); }, calls: () => calls };
+  };
+  const eperm = busy('EPERM', 2);
+  renameWithRetry('a', 'b', { rename: eperm.rename });
+  assert.equal(eperm.calls(), 3); // succeeded on the third try
+  const stuck = busy('EBUSY', 99);
+  assert.throws(() => renameWithRetry('a', 'b', { rename: stuck.rename, attempts: 3 }), /EBUSY/);
+  assert.equal(stuck.calls(), 3);
+  const missing = busy('ENOENT', 1);
+  assert.throws(() => renameWithRetry('a', 'b', { rename: missing.rename }), /ENOENT/); // not retried
+  assert.equal(missing.calls(), 1);
+});
 
 test('admin form values are normalised and validated', () => {
   assert.deepEqual(normalizePrintInset({ top: '5.5', bottom: 5.5, left: 3, right: 2.555 }), { top: 5.5, bottom: 5.5, left: 3, right: 2.56 });
@@ -32,22 +49,35 @@ test('inset box converts mm to pixels on a 600 dpi 4R canvas', () => {
   assert.equal(hasInset({ bottom: 1.5 }), true);
 });
 
-test('padded print keeps canvas size and puts white only where the printer cuts', async (t) => {
+test('padded print keeps canvas size, shrinks design into the inset box, and fills the margin with the edge colour', async (t) => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'inset-'));
   t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  // Full-bleed design like the "Special Day" frame: maroon left half, blue right half, no white anywhere.
   const src = path.join(dir, 'design.png');
-  await sharp({ create: { width: 2400, height: 3600, channels: 3, background: '#000000' } }).png().toFile(src);
+  // 4R at 150 dpi keeps the test light; the mm → px maths is the same at any size.
+  const W = 600, H = 900;
+  const half = await sharp({ create: { width: W / 2, height: H, channels: 3, background: { r: 120, g: 20, b: 30 } } }).png().toBuffer();
+  await sharp({ create: { width: W, height: H, channels: 3, background: { r: 20, g: 40, b: 200 } } })
+    .composite([{ input: half, left: 0, top: 0 }]).png().toFile(src);
 
-  const out = await applyPrintInset(src, { top: 4, bottom: 6, left: 2, right: 2 });
+  const inset = { top: 4, bottom: 6, left: 2, right: 3 };
+  const out = await applyPrintInset(src, inset);
   const { data, info } = await sharp(out).raw().toBuffer({ resolveWithObject: true });
-  assert.equal(info.width, 2400);
-  assert.equal(info.height, 3600);
-  const px = (x, y) => data[(y * info.width + x) * info.channels];
-  const box = insetBox(2400, 3600, { top: 4, bottom: 6, left: 2, right: 2 });
-  assert.equal(px(1200, box.top - 2), 255); // white band at the top
-  assert.equal(px(1200, box.top + 2), 0); // design starts right after it
-  assert.equal(px(1200, 3600 - box.bottom + 2), 255);
-  assert.equal(px(1200, 3600 - box.bottom - 2), 0);
-  assert.equal(px(box.left - 2, 1800), 255);
-  assert.equal(px(box.left + 2, 1800), 0);
+  assert.equal(info.width, W);
+  assert.equal(info.height, H);
+  const px = (x, y) => Array.from(data.subarray((y * info.width + x) * info.channels, (y * info.width + x) * info.channels + 3));
+  const MAROON = [120, 20, 30];
+  const BLUE = [20, 40, 200];
+  const box = insetBox(W, H, inset);
+
+  // margins are the design's edge colour, never white
+  assert.deepEqual(px(0, H / 2), MAROON);
+  assert.deepEqual(px(W - 1, H / 2), BLUE);
+  assert.deepEqual(px(W / 8, 0), MAROON);
+  assert.deepEqual(px(W - W / 8, H - 1), BLUE);
+  // the design was shrunk into the box: the maroon/blue split sits at the box centre, not the canvas centre
+  const split = box.left + box.innerWidth / 2;
+  assert.deepEqual(px(Math.floor(split) - 3, H / 2), MAROON);
+  assert.deepEqual(px(Math.ceil(split) + 3, H / 2), BLUE);
+  assert.notEqual(Math.round(split), W / 2);
 });

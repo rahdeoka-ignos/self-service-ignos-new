@@ -3,8 +3,10 @@
 // side and per OS driver. A profile can declare the measured cut-off as
 // `printInset: { top, right, bottom, left }` (mm, read from the calibration print
 // made by tools/make-print-calibration.js). Before printing, the design is shrunk
-// into that inner box and padded with white, so what the printer cuts away is
-// only the added white and the design lands on paper exactly as on screen.
+// into that inner box and the margin is filled by stretching the design's own edge
+// pixels outward, so what the printer cuts away is only that filler. If the printer
+// cuts a little less than measured (paper feed varies ±0.5 mm), the leftover shows
+// the design's edge colour (e.g. a maroon frame) instead of a white line.
 import fs from "fs";
 import path from "path";
 import sharp from "sharp";
@@ -50,7 +52,7 @@ export function normalizePrintInset(raw) {
 
 export const hasInset = (inset) => !!inset && SIDES.some((s) => Number(inset[s] ?? 0) > 0);
 
-/** Writes a padded copy next to the source and returns its path (caller deletes it). */
+/** Writes a padded copy (edge colour extended outward) next to the source and returns its path (caller deletes it). */
 export async function applyPrintInset(srcPath, inset, paperShortMm) {
   const { width, height } = await sharp(srcPath).metadata();
   const box = insetBox(width, height, inset, paperShortMm);
@@ -60,7 +62,7 @@ export async function applyPrintInset(srcPath, inset, paperShortMm) {
     .resize(box.innerWidth, box.innerHeight, { fit: "fill" })
     .toBuffer();
   await sharp(inner)
-    .extend({ top: box.top, bottom: box.bottom, left: box.left, right: box.right, background: "#ffffff" })
+    .extend({ top: box.top, bottom: box.bottom, left: box.left, right: box.right, extendWith: "copy" })
     .png()
     .toFile(out);
   return out;
