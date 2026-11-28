@@ -18,6 +18,7 @@ import pdfToPrinter from "pdf-to-printer";
 const { print, getPrinters } = pdfToPrinter;
 import { cupsPrint, cupsListPrinters, cupsPrinterStatus, cupsCancelAllJobs, resolveQueueName } from "./backend/cupsPrinter.js";
 import { applyPrintInset, hasInset, removeQuietly } from "./backend/printInset.js";
+import { readHubConfig, tokenMatches, forwardPrintJob, fetchHubStatus, hubUnreachableStatus, HUB_TOKEN_HEADER } from "./backend/printHub.js";
 // Windows: pdf-to-printer (SumatraPDF) + PowerShell spooler. macOS/Linux: CUPS (lp/lpstat).
 const IS_WINDOWS = process.platform === "win32";
 
@@ -73,6 +74,9 @@ if (!fs.existsSync(CAMERA_CACHE_DIR)) fs.mkdirSync(CAMERA_CACHE_DIR, { recursive
 const TEMPLATES_DIR = path.join(__dirname, "public/templates");
 const TEMPLATES_JSON = path.join(TEMPLATES_DIR, "templates.json");
 const PRINTERS_JSON = path.join(__dirname, "public/printers.json");
+// Kept out of public/ because it holds the shared hub token.
+const PRINT_HUB_JSON = path.join(__dirname, "data/print-hub.json");
+const PRINT_HUB_JOBS_DIR = path.join(__dirname, "storage/print-hub");
 const SESSIONS_DIR = path.join(__dirname, "data");
 const SESSIONS_JSON = path.join(SESSIONS_DIR, "sessions.json");
 
@@ -159,7 +163,11 @@ function findPrinterProfile(productType) {
   return data.profiles.find((p) => p.appliesTo.includes(productType)) || null;
 }
 
-async function autoPrintFile(filePath, productType, copiesOverride) {
+async function autoPrintFile(filePath, productType, copiesOverride, { title } = {}) {
+  // Kiosk mode: the printers live on the print hub (MacBook); send the file there.
+  const hub = readHubConfig(PRINT_HUB_JSON);
+  if (hub.role === "kiosk") return forwardPrintJob({ hub, filePath, productType, copies: copiesOverride });
+
   const profile = findPrinterProfile(productType);
   if (!profile) throw new Error(`Profil printer untuk ${productType} belum dikonfigurasi. File tetap tersimpan.`);
   const copies = copiesOverride ?? profile.copies ?? 1;
@@ -172,7 +180,7 @@ async function autoPrintFile(filePath, productType, copiesOverride) {
     try {
       await cupsPrint(padded || filePath, {
         printer: profile.printerName, copies, scale: "fit",
-        paperSize: profile.paperSize, cupsOptions: profile.cupsOptions,
+        paperSize: profile.paperSize, cupsOptions: profile.cupsOptions, title,
       });
     } finally {
       // lp has copied the file into the CUPS spool once it returns.
@@ -1897,10 +1905,83 @@ async function getDetailedPrinterStatus() {
   return result;
 }
 
+let hubStatusCache = null;
+let hubStatusCacheTime = 0;
+
 app.get("/api/printer-status", async (req, res) => {
   try {
+    const hub = readHubConfig(PRINT_HUB_JSON);
+    if (hub.role === "kiosk") {
+      // Show the hub's printer alerts (paper out, tray, offline) on this booth too.
+      if (!hubStatusCache || Date.now() - hubStatusCacheTime > 2500) {
+        try {
+          hubStatusCache = { ...(await fetchHubStatus({ hub })), source: "hub" };
+        } catch (err) {
+          hubStatusCache = hubUnreachableStatus(hub, err.message);
+        }
+        hubStatusCacheTime = Date.now();
+      }
+      return res.json(hubStatusCache);
+    }
     const status = await getDetailedPrinterStatus();
     res.json(status);
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message, printers: [] });
+  }
+});
+
+// ── Print hub (this machine prints for the other kiosks on the LAN) ─────────
+function requireHubToken(req, res, next) {
+  let hub;
+  try {
+    hub = readHubConfig(PRINT_HUB_JSON);
+  } catch (err) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+  if (hub.role !== "hub") return res.status(404).json({ success: false, error: "Komputer ini bukan pusat print." });
+  if (!tokenMatches(req.headers[HUB_TOKEN_HEADER], hub.token)) {
+    return res.status(401).json({ success: false, error: "Token pusat print salah. Samakan token di data/print-hub.json." });
+  }
+  next();
+}
+
+const hubUpload = multer({
+  storage: multer.diskStorage({
+    destination: (req, file, cb) => {
+      fs.mkdirSync(PRINT_HUB_JOBS_DIR, { recursive: true });
+      cb(null, PRINT_HUB_JOBS_DIR);
+    },
+    filename: (req, file, cb) => {
+      const ext = (path.extname(file.originalname).toLowerCase().match(/^\.(png|jpe?g|webp|pdf)$/) || [".png"])[0];
+      cb(null, `hub-${Date.now()}-${crypto.randomBytes(4).toString("hex")}${ext}`);
+    },
+  }),
+  limits: { fileSize: 60 * 1024 * 1024, files: 1 },
+});
+
+app.post("/api/print-hub/jobs", requireHubToken, hubUpload.single("file"), async (req, res) => {
+  if (!req.file) return res.status(400).json({ success: false, error: "File cetak wajib dikirim." });
+  const productType = req.query.printProfile?.toString();
+  const copies = req.query.copies === undefined ? undefined : Number(req.query.copies);
+  const kiosk = (req.query.kiosk?.toString() || "Kiosk").slice(0, 40);
+  try {
+    if (!productType) throw new Error("printProfile wajib diisi.");
+    const printStatus = await autoPrintFile(req.file.path, productType, copies, { title: `${kiosk} - ${productType}` });
+    printerStatusCacheTime = 0;
+    console.log(`[print-hub] ${kiosk}: ${productType} x${copies ?? "default"} dikirim ke printer`);
+    res.json({ success: true, printStatus });
+  } catch (err) {
+    console.error(`[print-hub] ${kiosk}: gagal cetak ${productType}:`, err.message);
+    res.status(502).json({ success: false, printStatus: "failed", error: err.message });
+  } finally {
+    // The kiosk keeps its own copy; the spooler has ours once lp returns.
+    removeQuietly(req.file.path);
+  }
+});
+
+app.get("/api/print-hub/status", requireHubToken, async (req, res) => {
+  try {
+    res.json(await getDetailedPrinterStatus());
   } catch (err) {
     res.status(500).json({ success: false, error: err.message, printers: [] });
   }

@@ -28,10 +28,12 @@ function run(cmd, args, timeout = 8000) {
  * profile.cupsOptions (optional, object) carries driver-specific options such as
  * { "MediaType": "...", "media": "A4.Borderless" } — see `lpoptions -p <printer> -l`.
  */
-export function buildLpArgs(filePath, { printer, copies = 1, scale, paperSize, cupsOptions } = {}) {
+export function buildLpArgs(filePath, { printer, copies = 1, scale, paperSize, cupsOptions, title } = {}) {
   if (!printer) throw new Error("Nama printer belum diisi.");
   if (!Number.isInteger(copies) || copies < 1 || copies > 100) throw new Error("Jumlah salinan harus 1–100.");
   const args = ["-d", printer, "-n", String(copies)];
+  // Job name in the print queue, e.g. "Booth 2 - 4r" when printing for another kiosk.
+  if (title) args.push("-t", String(title).replace(/[^\w .()-]/g, "").slice(0, 60));
   if (scale === "fit") args.push("-o", "fit-to-page");
 
   const options = { ...(cupsOptions && typeof cupsOptions === "object" ? cupsOptions : {}) };

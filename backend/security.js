@@ -7,6 +7,8 @@ const publicRoutes = new Set([
   "GET /security/pin-status", "POST /security/verify-pin",
   "POST /security/reset-pin", "POST /license/activate",
   "POST /save-print", "POST /upload-session-gdrive",
+  // Print hub routes check their own shared token (backend/printHub.js).
+  "POST /print-hub/jobs", "GET /print-hub/status",
 ]);
 
 export function createAdminSessions({ now = Date.now, ttl = 60 * 60 * 1000 } = {}) {
