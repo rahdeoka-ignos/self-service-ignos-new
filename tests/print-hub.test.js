@@ -7,7 +7,37 @@ import express from 'express';
 import multer from 'multer';
 import {
   parseHubConfig, readHubConfig, tokenMatches, forwardPrintJob, fetchHubStatus, hubUnreachableStatus, HUB_TOKEN_HEADER,
+  buildHubConfigFromForm, lanAddresses,
 } from '../backend/printHub.js';
+
+test('admin form: hub keeps its token, generates one when new, regenerates on request', () => {
+  const fresh = buildHubConfigFromForm({ role: 'hub' });
+  assert.equal(fresh.role, 'hub');
+  assert.match(fresh.token, /^[0-9a-f]{48}$/);
+  const current = { role: 'hub', token: TOKEN };
+  assert.equal(buildHubConfigFromForm({ role: 'hub' }, current).token, TOKEN); // saving again keeps it
+  const rotated = buildHubConfigFromForm({ role: 'hub', regenerateToken: true }, current).token;
+  assert.notEqual(rotated, TOKEN);
+  assert.deepEqual(buildHubConfigFromForm({ role: 'off', token: TOKEN }), { role: 'off' });
+  assert.deepEqual(
+    buildHubConfigFromForm({ role: 'kiosk', url: 'http://hub.local:5000', token: ` ${TOKEN} `, name: 'Booth 1' }),
+    { role: 'kiosk', url: 'http://hub.local:5000', token: TOKEN, name: 'Booth 1' },
+  );
+  assert.throws(() => buildHubConfigFromForm({ role: 'kiosk', url: 'http://hub.local:5000', token: '' }), /token/);
+});
+
+test('hub lists the LAN addresses kiosks can use', () => {
+  const interfaces = {
+    lo0: [{ family: 'IPv4', address: '127.0.0.1', internal: true }],
+    en0: [{ family: 'IPv4', address: '192.168.1.20', internal: false }, { family: 'IPv6', address: 'fe80::1', internal: false }],
+    en5: [{ family: 'IPv4', address: '169.254.10.2', internal: false }], // link-local, unusable
+    en1: [{ family: 4, address: '10.0.0.5', internal: false }],
+  };
+  assert.deepEqual(lanAddresses(interfaces, 'ignos-print.local'), [
+    'http://ignos-print.local:5000', 'http://192.168.1.20:5000', 'http://10.0.0.5:5000',
+  ]);
+  assert.deepEqual(lanAddresses({}, null), []);
+});
 
 const TOKEN = 'studio-secret-token-123';
 

@@ -10,74 +10,47 @@ Mac mini 2 ─┼── LAN ──► MacBook Pro (pusat print) ── USB ─�
 Mac mini 3 ─┘
 ```
 
-- Setting printer (`printers.json`: profil, `cupsOptions`, `printInset`) **cukup diatur di MacBook**.
+- Profil printer dan kompensasi pinggir (`printInset`) **cukup diatur di MacBook**.
 - Alert printer (kertas habis, tray, offline) dari MacBook **ikut muncul di semua kiosk**.
 - Di antrean print MacBook, setiap job diberi nama asal booth-nya, misalnya `Booth 2 - 4r`.
 - Kalau MacBook mati atau tidak terhubung, file tetap tersimpan di Mac mini. Kiosk akan menampilkan
   pesan gagal print dan alert "Pusat Print Tidak Terhubung".
 
+Semua pengaturan dilakukan lewat **Admin → Printer & Kertas → Pusat Print**. Tidak perlu mengedit file.
+
 ---
 
-## 1. Buat token rahasia (sekali saja)
-
-Token ini dipakai bersama oleh MacBook dan semua Mac mini. Buat dengan Terminal di Mac mana saja:
-
-```bash
-openssl rand -hex 24
-```
-
-Simpan hasilnya. Token yang **sama persis** dipakai di semua komputer.
-
-## 2. MacBook Pro (pusat print)
+## 1. MacBook Pro (pusat print)
 
 1. Sambungkan printer lewat USB, lalu install driver Epson (jangan pakai AirPrint).
-2. Atur profil printer di `public/printers.json` (atau lewat halaman Admin → Printer di MacBook):
-   `cupsOptions`, `printInset`, dan sebagainya.
-3. Buat file `data/print-hub.json`:
-   ```json
-   { "role": "hub", "token": "TOKEN-DARI-LANGKAH-1" }
-   ```
-4. Jalankan server: `node server.js`
-5. Supaya MacBook tidak putus:
+2. Jalankan server: `node server.js`. Tampilan kiosk tidak perlu dibuka di MacBook.
+3. Buka **Admin → Printer & Kertas**, lalu di kartu **Pusat Print** pilih **Pusat Print** dan klik **Simpan**.
+4. Akan muncul daftar **Kode sambung untuk kiosk**, satu per alamat MacBook (alamat `.local` dan alamat IP).
+   Klik **Salin Kode** pada salah satunya.
+5. Atur juga profil printer dan kompensasi pinggir di halaman yang sama (MacBook).
+6. Supaya MacBook tidak putus:
    - **System Settings → Battery/Energy:** aktifkan *Prevent automatic sleeping when the display is off*,
      dan biarkan charger selalu tersambung.
-   - **System Settings → Network → Firewall:** kalau firewall aktif, izinkan `node` menerima koneksi masuk.
-     Biasanya muncul popup saat server pertama kali jalan; pilih **Allow**.
-6. Catat alamat MacBook, pilih salah satu:
-   - **IP tetap (disarankan):** set *DHCP reservation* di router untuk MacBook, misalnya `192.168.1.20`.
-   - Atau pakai **Local hostname** dari *System Settings → General → Sharing*, misalnya `macs-MacBook-Pro.local`.
+   - **Firewall:** saat server pertama kali jalan dan muncul popup, pilih **Allow** untuk `node`.
 
-## 3. Setiap Mac mini (kiosk)
+## 2. Setiap Mac mini (kiosk)
 
-1. Buat file `data/print-hub.json`, dan bedakan `name` untuk setiap booth:
-   ```json
-   {
-     "role": "kiosk",
-     "url": "http://192.168.1.20:5000",
-     "token": "TOKEN-DARI-LANGKAH-1",
-     "name": "Booth 1"
-   }
-   ```
-2. Restart server (`node server.js`).
-3. `printers.json` di Mac mini **tidak dipakai lagi untuk mencetak**, karena semua setting printer ada di MacBook.
+1. Buka **Admin → Printer & Kertas → Pusat Print**, lalu pilih **Kiosk**.
+2. Tempel kode sambung dari MacBook. Alamat dan token akan terisi otomatis.
+3. Isi **Nama booth** (Booth 1, Booth 2, Booth 3).
+4. Klik **Tes Koneksi**. Kalau berhasil, muncul daftar printer yang ada di MacBook.
+   - Kalau alamat `.local` gagal, salin ulang kode dengan alamat IP dari MacBook.
+5. Klik **Simpan**. Cetakan berikutnya dari booth ini akan keluar di printer MacBook.
 
-## 4. Tes koneksi dari Mac mini
+## 3. Kalau ada masalah
 
-```bash
-curl -H "x-ignos-hub-token: TOKEN-DARI-LANGKAH-1" http://192.168.1.20:5000/api/print-hub/status
-```
-
-| Hasil | Artinya |
+| Pesan saat Tes Koneksi | Artinya |
 |---|---|
-| JSON berisi `"printers": [...]` | Koneksi dan token benar |
-| `Token pusat print salah` | Token di Mac mini berbeda dengan token di MacBook |
-| `Komputer ini bukan pusat print` | `data/print-hub.json` di MacBook belum di-set `"role": "hub"`, atau server belum di-restart |
-| `Connection refused` / timeout | Server MacBook mati, IP salah, atau diblokir firewall |
+| `Token pusat print salah` | Kode sambung sudah lama. Mungkin token di MacBook sudah diganti; salin ulang kode dari MacBook |
+| `Komputer ini bukan pusat print` | MacBook belum disimpan sebagai **Pusat Print** |
+| `tidak bisa dihubungi` | Server MacBook mati, MacBook sleep, alamat salah, atau diblokir firewall |
 
-Setelah itu, lakukan 1 transaksi 4R dari kiosk. Hasilnya harus keluar di printer MacBook, dan di
-terminal server MacBook muncul baris `[print-hub] Booth 1: 4r ... dikirim ke printer`.
+- **Buat Token Baru** di MacBook memutus semua kiosk. Setelah itu, salin ulang kode sambung ke tiap Mac mini.
+- Untuk kembali mencetak ke printer milik Mac mini itu sendiri, pilih **Cetak Sendiri** lalu **Simpan**.
 
-## Kembali ke print lokal
-
-Hapus `data/print-hub.json` atau ubah isinya menjadi `{ "role": "off" }`. Kiosk akan kembali mencetak ke
-printer yang tersambung ke komputer itu sendiri.
+Setting ini disimpan di `data/print-hub.json` di tiap komputer. File ini tidak ikut git, jadi aman untuk push/pull.

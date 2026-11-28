@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { AdminLayout } from "../components/AdminLayout";
 import { AdminConfirmModal } from "../components/AdminConfirmModal";
+import { PrintHubSettings } from "../components/PrintHubSettings";
 import { usePageTitle } from "../../hooks/usePageTitle";
 import type {
   PrinterProfile,
@@ -43,7 +44,19 @@ type FormState = {
   printerName: string;
   appliesTo: ProductType[];
   copies: number;
+  // Kept as text so values like "2." can be typed; parsed on save.
+  inset: Record<InsetSide, string>;
 };
+
+type InsetSide = "top" | "bottom" | "left" | "right";
+const INSET_SIDES: { key: InsetSide; label: string }[] = [
+  { key: "top", label: "Atas" },
+  { key: "bottom", label: "Bawah" },
+  { key: "left", label: "Kiri" },
+  { key: "right", label: "Kanan" },
+];
+const MAX_INSET_MM = 15;
+const emptyInset = (): Record<InsetSide, string> => ({ top: "0", bottom: "0", left: "0", right: "0" });
 
 const defaultForm = (): FormState => ({
   id: "",
@@ -51,7 +64,10 @@ const defaultForm = (): FormState => ({
   printerName: "",
   appliesTo: [],
   copies: 1,
+  inset: emptyInset(),
 });
+
+const formatMm = (n: number) => String(n).replace(".", ",");
 
 export function AdminPrinterPage() {
   usePageTitle("Printer & Kertas — Ignos");
@@ -211,6 +227,14 @@ export function AdminPrinterPage() {
       printerName: profile.printerName,
       appliesTo: profile.appliesTo,
       copies: profile.copies || 1,
+      inset: profile.printInset
+        ? {
+            top: String(profile.printInset.top ?? 0),
+            bottom: String(profile.printInset.bottom ?? 0),
+            left: String(profile.printInset.left ?? 0),
+            right: String(profile.printInset.right ?? 0),
+          }
+        : emptyInset(),
     });
     setDialogOpen(true);
   };
@@ -259,10 +283,29 @@ export function AdminPrinterPage() {
       return;
     }
 
+    const printInset = {} as Record<InsetSide, number>;
+    for (const { key, label } of INSET_SIDES) {
+      const raw = form.inset[key].trim().replace(",", ".");
+      const value = raw === "" ? 0 : Number(raw);
+      if (!Number.isFinite(value) || value < 0 || value > MAX_INSET_MM) {
+        setModalConfig({
+          isOpen: true,
+          title: "Kompensasi Pinggir Tidak Valid",
+          category: "Validasi Form",
+          description: `Nilai sisi ${label} harus angka 0 sampai ${MAX_INSET_MM} mm (contoh: 3 atau 2,5).`,
+          singleButton: true,
+          variant: "warning",
+        });
+        return;
+      }
+      printInset[key] = value;
+    }
+
     setSaving(true);
     try {
+      let res: Response;
       if (editProfile) {
-        await fetch(`${API}/api/printers/${editProfile.id}`, {
+        res = await fetch(`${API}/api/printers/${editProfile.id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -270,6 +313,7 @@ export function AdminPrinterPage() {
             printerName: form.printerName,
             appliesTo: form.appliesTo,
             copies: form.copies,
+            printInset,
           }),
         });
       } else {
@@ -278,7 +322,7 @@ export function AdminPrinterPage() {
           .trim()
           .replace(/[^a-z0-9]+/g, "-")
           .replace(/^-+|-+$/g, "");
-        await fetch(`${API}/api/printers`, {
+        res = await fetch(`${API}/api/printers`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -287,8 +331,21 @@ export function AdminPrinterPage() {
             printerName: form.printerName,
             appliesTo: form.appliesTo,
             copies: form.copies,
+            printInset,
           }),
         });
+      }
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        setModalConfig({
+          isOpen: true,
+          title: "Profil Gagal Disimpan",
+          category: "Printer",
+          description: body.error || `Server menolak perubahan (HTTP ${res.status}).`,
+          singleButton: true,
+          variant: "warning",
+        });
+        return;
       }
       setDialogOpen(false);
       fetchData();
@@ -377,6 +434,15 @@ export function AdminPrinterPage() {
             </button>
           </div>
         </div>
+
+        <PrintHubSettings onSaved={fetchMonitorStatus} />
+
+        {monitorData?.source === "hub" && (
+          <div className="p-4 border border-[var(--admin-border,#2a2d2f)] rounded-[8px] bg-[var(--admin-raised,#292b2f)] text-[var(--admin-secondary,#c3c7ca)] text-[13px]">
+            Kiosk ini mencetak lewat <strong>pusat print</strong>. Status di bawah berasal dari printer di pusat print,
+            tetapi profil printer &amp; kompensasi pinggir harus diubah di halaman Admin → Printer pada komputer pusat print (MacBook).
+          </div>
+        )}
 
         {systemPrinterError && (
           <div className="p-4 border border-[var(--admin-border,#2a2d2f)] rounded-[8px] bg-[var(--admin-alert,#3b2d3c)] text-[var(--admin-pending,#d7b8d6)] text-[13px] flex items-center justify-between">
@@ -694,6 +760,14 @@ export function AdminPrinterPage() {
                     <span>Jumlah Salinan Cetak:</span>
                     <span className="font-mono text-[var(--admin-text,#f4f4f5)] font-medium">{profile.copies || 1} copy</span>
                   </div>
+                  {profile.printInset && (
+                    <div className="pt-1.5 text-[12px] text-[var(--admin-muted,#92989d)] flex justify-between gap-2">
+                      <span>Kompensasi Pinggir (macOS):</span>
+                      <span className="font-mono text-[var(--admin-text,#f4f4f5)] font-medium text-right">
+                        {INSET_SIDES.map(({ key, label }) => `${label} ${formatMm(profile.printInset![key] ?? 0)}`).join(" · ")} mm
+                      </span>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -800,6 +874,31 @@ export function AdminPrinterPage() {
                     }
                     className="w-full px-3 py-2 border border-[var(--admin-border,#2a2d2f)] focus:border-[var(--admin-focus,#c0d0e7)] rounded-lg text-[13px] outline-none bg-[var(--admin-canvas,#111114)] transition-colors"
                   />
+                </div>
+
+                <div>
+                  <label className="font-medium text-[var(--admin-secondary,#c3c7ca)] mb-1 block text-[12px]">
+                    Kompensasi Pinggir Borderless (mm)
+                  </label>
+                  <p className="text-[11px] text-[var(--admin-muted,#92989d)] mb-2 leading-relaxed">
+                    Hanya dipakai saat mencetak di macOS. Naikkan angka sisi yang masih terpotong, turunkan jika pinggir putihnya terlalu lebar. Isi 0 di semua sisi untuk mematikan.
+                  </p>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    {INSET_SIDES.map(({ key, label }) => (
+                      <label key={key} className="block">
+                        <span className="text-[11px] text-[var(--admin-muted,#92989d)] mb-1 block">{label}</span>
+                        <input
+                          type="text"
+                          inputMode="decimal"
+                          value={form.inset[key]}
+                          onChange={(e) =>
+                            setForm((f) => ({ ...f, inset: { ...f.inset, [key]: e.target.value } }))
+                          }
+                          className="w-full px-3 py-2 border border-[var(--admin-border,#2a2d2f)] focus:border-[var(--admin-focus,#c0d0e7)] rounded-lg text-[13px] font-mono outline-none bg-[var(--admin-canvas,#111114)] transition-colors"
+                        />
+                      </label>
+                    ))}
+                  </div>
                 </div>
               </div>
 

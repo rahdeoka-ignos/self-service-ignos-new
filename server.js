@@ -17,8 +17,8 @@ import multer from "multer";
 import pdfToPrinter from "pdf-to-printer";
 const { print, getPrinters } = pdfToPrinter;
 import { cupsPrint, cupsListPrinters, cupsPrinterStatus, cupsCancelAllJobs, resolveQueueName } from "./backend/cupsPrinter.js";
-import { applyPrintInset, hasInset, removeQuietly } from "./backend/printInset.js";
-import { readHubConfig, tokenMatches, forwardPrintJob, fetchHubStatus, hubUnreachableStatus, HUB_TOKEN_HEADER } from "./backend/printHub.js";
+import { applyPrintInset, hasInset, removeQuietly, normalizePrintInset } from "./backend/printInset.js";
+import { readHubConfig, tokenMatches, forwardPrintJob, fetchHubStatus, hubUnreachableStatus, HUB_TOKEN_HEADER, buildHubConfigFromForm, parseHubConfig, lanAddresses } from "./backend/printHub.js";
 // Windows: pdf-to-printer (SumatraPDF) + PowerShell spooler. macOS/Linux: CUPS (lp/lpstat).
 const IS_WINDOWS = process.platform === "win32";
 
@@ -68,6 +68,8 @@ const UPLOAD_QUEUE_DIR = path.join(__dirname, "storage/upload_queue");
 const ARCHIVE_DIR = path.join(__dirname, "storage/archive");
 const CAMERA_CACHE_DIR = path.join(__dirname, "storage/camera_cache");
 
+// public/photos is git-ignored (customer photos), so a fresh clone must create it.
+if (!fs.existsSync(PHOTOS_DIR)) fs.mkdirSync(PHOTOS_DIR, { recursive: true });
 if (!fs.existsSync(UPLOAD_QUEUE_DIR)) fs.mkdirSync(UPLOAD_QUEUE_DIR, { recursive: true });
 if (!fs.existsSync(ARCHIVE_DIR)) fs.mkdirSync(ARCHIVE_DIR, { recursive: true });
 if (!fs.existsSync(CAMERA_CACHE_DIR)) fs.mkdirSync(CAMERA_CACHE_DIR, { recursive: true });
@@ -108,7 +110,8 @@ function readPrinters() {
   return JSON.parse(fs.readFileSync(PRINTERS_JSON, "utf-8"));
 }
 function writePrinters(data) {
-  fs.writeFileSync(PRINTERS_JSON, JSON.stringify(data, null, 2), "utf-8");
+  // Atomic: a print reading printers.json mid-save must never see half a file.
+  writeJsonAtomic(PRINTERS_JSON, data);
 }
 
 const templateImageStorage = multer.diskStorage({
@@ -1675,11 +1678,17 @@ app.post("/api/printers", (req, res) => {
   if (!id || !label || !printerName || !Array.isArray(appliesTo)) {
     return res.status(400).json({ error: "id, label, printerName, and appliesTo are required" });
   }
+  let printInset;
+  try {
+    printInset = normalizePrintInset(req.body.printInset);
+  } catch (err) {
+    return res.status(400).json({ error: err.message });
+  }
   const data = readPrinters();
   if (data.profiles.find((p) => p.id === id)) {
     return res.status(409).json({ error: "Printer profile already exists" });
   }
-  const entry = { id, label, printerName, appliesTo, copies: copies || 1 };
+  const entry = { id, label, printerName, appliesTo, copies: copies || 1, ...(printInset ? { printInset } : {}) };
   data.profiles.push(entry);
   writePrinters(data);
   res.json({ success: true, profile: entry });
@@ -1687,11 +1696,24 @@ app.post("/api/printers", (req, res) => {
 
 app.put("/api/printers/:id", (req, res) => {
   const { id } = req.params;
-  const changes = req.body;
+  const changes = { ...req.body };
   const data = readPrinters();
   const idx = data.profiles.findIndex((p) => p.id === id);
   if (idx === -1) return res.status(404).json({ error: "Printer profile not found" });
+  let removeInset = false;
+  if ("printInset" in changes) {
+    try {
+      changes.printInset = normalizePrintInset(changes.printInset);
+    } catch (err) {
+      return res.status(400).json({ error: err.message });
+    }
+    if (!changes.printInset) {
+      delete changes.printInset;
+      removeInset = true; // all sides 0 → no compensation
+    }
+  }
   data.profiles[idx] = { ...data.profiles[idx], ...changes };
+  if (removeInset) delete data.profiles[idx].printInset;
   writePrinters(data);
   res.json({ success: true, profile: data.profiles[idx] });
 });
@@ -1976,6 +1998,59 @@ app.post("/api/print-hub/jobs", requireHubToken, hubUpload.single("file"), async
   } finally {
     // The kiosk keeps its own copy; the spooler has ours once lp returns.
     removeQuietly(req.file.path);
+  }
+});
+
+// ── Print hub setup from Admin → Printer (admin PIN required: not a public route) ──
+function localHostName() {
+  // macOS Bonjour name ("macs-MacBook-Pro.local"), reachable by the other Macs without an IP.
+  if (process.platform !== "darwin") return Promise.resolve(null);
+  return new Promise((resolve) => {
+    execFile("scutil", ["--get", "LocalHostName"], { timeout: 3000 }, (err, stdout) => {
+      const name = String(stdout || "").trim();
+      resolve(!err && name ? `${name}.local` : null);
+    });
+  });
+}
+
+app.get("/api/print-hub/config", async (req, res) => {
+  try {
+    const config = readHubConfig(PRINT_HUB_JSON);
+    res.json({ success: true, config, addresses: lanAddresses(os.networkInterfaces(), await localHostName()) });
+  } catch (err) {
+    // A broken file must not lock the admin out of fixing it.
+    res.json({ success: true, config: { role: "off" }, configError: err.message, addresses: lanAddresses(os.networkInterfaces(), await localHostName()) });
+  }
+});
+
+app.put("/api/print-hub/config", (req, res) => {
+  let current = { role: "off" };
+  try { current = readHubConfig(PRINT_HUB_JSON); } catch { /* replaced below */ }
+  let config;
+  try {
+    config = buildHubConfigFromForm(req.body, current);
+  } catch (err) {
+    return res.status(400).json({ success: false, error: err.message.replace("print-hub.json: ", "") });
+  }
+  writeJsonAtomic(PRINT_HUB_JSON, config);
+  hubStatusCache = null;
+  printerStatusCacheTime = 0;
+  console.log(`[print-hub] mode diubah ke "${config.role}"${config.url ? ` → ${config.url}` : ""}`);
+  res.json({ success: true, config });
+});
+
+app.post("/api/print-hub/test", async (req, res) => {
+  let hub;
+  try {
+    hub = parseHubConfig({ role: "kiosk", url: req.body?.url, token: String(req.body?.token || "").trim(), name: req.body?.name });
+  } catch (err) {
+    return res.status(400).json({ success: false, error: err.message.replace("print-hub.json: ", "") });
+  }
+  try {
+    const status = await fetchHubStatus({ hub, timeoutMs: 5000 });
+    res.json({ success: true, printers: (status.printers || []).map((p) => ({ name: p.name, status: p.status })), alert: status.alert || null });
+  } catch (err) {
+    res.json({ success: false, error: err.message });
   }
 });
 

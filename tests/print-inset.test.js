@@ -4,7 +4,18 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import sharp from 'sharp';
-import { insetBox, hasInset, applyPrintInset } from '../backend/printInset.js';
+import { insetBox, hasInset, applyPrintInset, normalizePrintInset } from '../backend/printInset.js';
+
+test('admin form values are normalised and validated', () => {
+  assert.deepEqual(normalizePrintInset({ top: '5.5', bottom: 5.5, left: 3, right: 2.555 }), { top: 5.5, bottom: 5.5, left: 3, right: 2.56 });
+  assert.deepEqual(normalizePrintInset({ top: '', bottom: 4 }), { top: 0, right: 0, bottom: 4, left: 0 });
+  assert.equal(normalizePrintInset({ top: 0, bottom: 0, left: 0, right: 0 }), null); // switch off
+  assert.equal(normalizePrintInset(undefined), null);
+  assert.throws(() => normalizePrintInset({ top: 'abc' }), /top/);
+  assert.throws(() => normalizePrintInset({ left: 16 }), /left/);
+  assert.throws(() => normalizePrintInset({ right: -1 }), /right/);
+  assert.throws(() => normalizePrintInset('5'), /objek/);
+});
 
 test('inset box converts mm to pixels on a 600 dpi 4R canvas', () => {
   const box = insetBox(2400, 3600, { top: 3, bottom: 5, left: 2, right: 2.5 });

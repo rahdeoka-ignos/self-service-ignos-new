@@ -29,6 +29,25 @@ export function insetBox(width, height, inset = {}, paperShortMm = 101.6) {
   return { ...px, innerWidth, innerHeight };
 }
 
+/**
+ * Normalise a printInset coming from the admin form: numbers 0–15 mm, max 2 decimals.
+ * Returns null when every side is 0 (no compensation).
+ */
+export function normalizePrintInset(raw) {
+  if (raw === null || raw === undefined) return null;
+  if (typeof raw !== "object") throw new Error("printInset harus berupa objek { top, right, bottom, left }.");
+  const out = {};
+  for (const side of SIDES) {
+    const value = raw[side] === "" || raw[side] === undefined || raw[side] === null ? 0 : Number(raw[side]);
+    if (!Number.isFinite(value) || value < 0 || value > MAX_INSET_MM) {
+      throw new Error(`printInset.${side} harus angka 0–${MAX_INSET_MM} mm.`);
+    }
+    out[side] = Math.round(value * 100) / 100;
+  }
+  if (raw.paperShortMm !== undefined) out.paperShortMm = Number(raw.paperShortMm);
+  return SIDES.some((s) => out[s] > 0) ? out : null;
+}
+
 export const hasInset = (inset) => !!inset && SIDES.some((s) => Number(inset[s] ?? 0) > 0);
 
 /** Writes a padded copy next to the source and returns its path (caller deletes it). */

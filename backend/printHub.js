@@ -30,6 +30,37 @@ export function parseHubConfig(raw) {
   throw new Error(`print-hub.json: role "${role}" tidak dikenal (hub, kiosk, off).`);
 }
 
+export const newHubToken = () => crypto.randomBytes(24).toString("hex");
+
+/**
+ * Build the config to save from the admin form. A hub keeps its current token
+ * unless a new one is requested; an empty token on a new hub gets generated.
+ */
+export function buildHubConfigFromForm(body = {}, current = OFF) {
+  const role = String(body.role || "off");
+  if (role === "off") return { role: "off" };
+  if (role === "hub") {
+    const token = body.regenerateToken
+      ? newHubToken()
+      : String(body.token || (current.role === "hub" ? current.token : "") || newHubToken());
+    return parseHubConfig({ role, token });
+  }
+  return parseHubConfig({ role, url: body.url, token: String(body.token || "").trim(), name: body.name });
+}
+
+/** URLs other kiosks can use to reach this machine (port 5000). */
+export function lanAddresses(interfaces, localHostName, port = 5000) {
+  const urls = [];
+  if (localHostName) urls.push(`http://${localHostName}:${port}`);
+  for (const list of Object.values(interfaces || {})) {
+    for (const iface of list || []) {
+      const v4 = iface.family === "IPv4" || iface.family === 4;
+      if (v4 && !iface.internal && !iface.address.startsWith("169.254.")) urls.push(`http://${iface.address}:${port}`);
+    }
+  }
+  return [...new Set(urls)];
+}
+
 export function readHubConfig(file) {
   if (!fs.existsSync(file)) return OFF;
   return parseHubConfig(JSON.parse(fs.readFileSync(file, "utf-8")));

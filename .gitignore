@@ -58,3 +58,8 @@ ignos-kiosk-*.json
 service-account*.json
 client_secret_*.json
 oauth-token*.json
+
+# Print hub: per-machine role + shared token (see PRINT_HUB.md)
+data/print-hub.json
+# Print hub: temporary job files received from other kiosks
+storage/print-hub/

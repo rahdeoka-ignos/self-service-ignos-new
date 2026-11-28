@@ -16,6 +16,17 @@ export interface PrinterProfile {
   printerName: string;
   appliesTo: ProductType[];
   copies?: number;
+  /** macOS borderless cut-off compensation in mm (see backend/printInset.js). */
+  printInset?: PrintInset;
+  /** Extra CUPS/driver options for macOS, e.g. { EPIJ_Medi: "13" }. */
+  cupsOptions?: Record<string, string>;
+}
+
+export interface PrintInset {
+  top: number;
+  right: number;
+  bottom: number;
+  left: number;
 }
 
 export interface PrintersData {
@@ -69,4 +80,6 @@ export interface PrinterMonitorResponse {
   alert: PrinterAlertInfo | null;
   printers: PrinterStatusInfo[];
   updatedAt: string;
+  /** "hub" when this kiosk prints through the print hub (MacBook). */
+  source?: "hub";
 }
