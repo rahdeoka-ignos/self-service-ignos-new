@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { notify } from "../../utils/notify";
 import { AdminLayout } from "../components/AdminLayout";
 import { AdminConfirmModal } from "../components/AdminConfirmModal";
 import { usePricing } from "../../context/PricingContext";
@@ -43,16 +44,12 @@ export function AdminPricingPage() {
       setTimeout(() => setSaveSuccess(false), 3000);
 
       if (!result.serverSynced) {
-        setModalConfig({
-          isOpen: true,
-          title: "Pengaturan Tersimpan di Browser",
-          category: "Sinkronisasi Server Backend",
-          description: "Perubahan harga sudah langsung aktif di Kiosk. Namun terminal 'node server.js' perlu di-restart agar data tersimpan permanen ke file disk server.",
-          singleButton: true,
-          variant: "warning",
-          confirmText: "Mengerti",
-        });
+        notify.warning("Pengaturan Tersimpan di Browser", "Perubahan harga sudah langsung aktif di Kiosk. Namun terminal 'node server.js' perlu di-restart agar data tersimpan permanen ke file disk server.");
+      } else {
+        notify.success("Harga & Paket Tersimpan");
       }
+    } else {
+      notify.error("Gagal Menyimpan Harga", "Periksa koneksi ke server lalu coba lagi.");
     }
   };
 
@@ -70,6 +67,7 @@ export function AdminPricingPage() {
         await resetPricing();
         setSaveSuccess(true);
         setTimeout(() => setSaveSuccess(false), 2500);
+        notify.success("Harga Dikembalikan ke Bawaan");
       },
     });
   };

@@ -126,16 +126,20 @@ export async function getOrCreateSubfolder(drive, folderName, parentId, alternat
 
 /**
  * Membuat subfolder khusus untuk sesi customer dengan struktur hirarki:
- * Root -> Folder Bulan (contoh: "oktober") -> Folder Tanggal (contoh: "26 - OKT") -> Folder Sesi Customer
+ * Root -> [Folder Cabang (contoh: "Tabanan")] -> Folder Bulan (contoh: "oktober") -> Folder Tanggal (contoh: "26 - OKT") -> Folder Sesi Customer
  * Format folder sesi customer:
  * - Jika ada nama: IGNOS STUDIO - 16.37 (arikulantariiii)
  * - Jika nama kosong: IGNOS STUDIO - 16.37
  * @param {string} customerName - Nama customer (opsional)
- * @param {string} [parentFolderId] - ID folder induk root
+ * @param {{ branch?: string|null, parentFolderId?: string }} [options] - cabang komputer ini & ID folder induk root
  * @returns {Promise<{ folderId: string, folderName: string, webViewLink: string }>}
  */
-export async function createCustomerFolder(customerName = "", parentFolderId = PARENT_FOLDER_ID) {
+export async function createCustomerFolder(customerName = "", { branch = null, parentFolderId = PARENT_FOLDER_ID } = {}) {
   const drive = getDriveClient();
+
+  // 0. Each branch (cabang) gets its own tree: Folder Induk → Tabanan → bulan → tanggal → sesi.
+  //    Without a branch the old layout is kept: Folder Induk → bulan → tanggal → sesi.
+  const rootId = branch ? await getOrCreateSubfolder(drive, branch, parentFolderId) : parentFolderId;
 
   const now = new Date();
   const hours = now.getHours().toString().padStart(2, "0");
@@ -150,7 +154,7 @@ export async function createCustomerFolder(customerName = "", parentFolderId = P
   const dateFolderName = `${day} - ${monthShort}`; // e.g. "26 - OKT"
 
   // 1. Dapatkan atau buat folder bulan di dalam root (misal: "oktober")
-  const monthFolderId = await getOrCreateSubfolder(drive, monthName, parentFolderId);
+  const monthFolderId = await getOrCreateSubfolder(drive, monthName, rootId);
 
   // 2. Dapatkan atau buat folder tanggal di dalam folder bulan (misal: "26 - OKT" atau "05 - OKT")
   const dateFolderId = await getOrCreateSubfolder(

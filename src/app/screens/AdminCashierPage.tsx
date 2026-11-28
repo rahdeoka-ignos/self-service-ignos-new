@@ -1,4 +1,5 @@
 import { apiFetch as fetch } from "../../utils/api";
+import { notify } from "../../utils/notify";
 import { useState, useMemo, useEffect, useRef } from "react";
 import {
   User,
@@ -54,7 +55,8 @@ interface CustomItem {
 export function AdminCashierPage() {
   usePageTitle("Kasir & E-Receipt Digital — Ignos");
   const { pricing } = usePricing();
-  const { branding } = useBranding();
+  // Branch-aware: address, phone & Instagram of this computer's cabang.
+  const { effectiveBranding: branding } = useBranding();
 
   const [activeTab, setActiveTab] = useState<"pos" | "history">("pos");
 
@@ -402,26 +404,12 @@ export function AdminCashierPage() {
   // Submit Transaction & Generate E-Receipt
   const handleSaveAndGenerateReceipt = async () => {
     if (!customerName.trim()) {
-      setModalConfig({
-        isOpen: true,
-        title: "Nama Pelanggan Wajib Diisi",
-        category: "Validasi Form Kasir",
-        description: "Silakan masukkan nama pelanggan terlebih dahulu untuk mencetak bukti transaksi.",
-        singleButton: true,
-        variant: "warning",
-      });
+      notify.warning("Nama Pelanggan Wajib Diisi", "Silakan masukkan nama pelanggan terlebih dahulu untuk mencetak bukti transaksi.");
       return;
     }
 
     if (paymentMethod === "cash" && cashReceivedNum < totalBill) {
-      setModalConfig({
-        isOpen: true,
-        title: "Nominal Uang Tunai Kurang",
-        category: "Validasi Pembayaran",
-        description: `Total tagihan adalah ${formatRupiah(totalBill)}, sedangkan uang diterima baru ${formatRupiah(cashReceivedNum)}. Kurang ${formatRupiah(cashShortage)}.`,
-        singleButton: true,
-        variant: "warning",
-      });
+      notify.warning("Nominal Uang Tunai Kurang", `Total tagihan adalah ${formatRupiah(totalBill)}, sedangkan uang diterima baru ${formatRupiah(cashReceivedNum)}. Kurang ${formatRupiah(cashShortage)}.`);
       return;
     }
 
@@ -541,14 +529,7 @@ export function AdminCashierPage() {
       // Refresh history in background
       fetchHistory();
     } catch (err: any) {
-      setModalConfig({
-        isOpen: true,
-        title: "Gagal Menerbitkan E-Receipt",
-        category: "Kendala Sistem",
-        description: "Terjadi kesalahan saat memproses receipt: " + (err.message || String(err)),
-        singleButton: true,
-        variant: "danger",
-      });
+      notify.error("Gagal Menerbitkan E-Receipt", "Terjadi kesalahan saat memproses receipt: " + (err.message || String(err)));
     } finally {
       setSavingSession(false);
     }

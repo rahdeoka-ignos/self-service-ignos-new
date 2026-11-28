@@ -5,8 +5,15 @@ import {
   DEFAULT_BRANDING,
 } from "../types/branding";
 
+/** Branding as this computer should show it: global values with the active branch's address/phone/IG on top. */
+export type EffectiveBranding = StudioBrandingConfig & { branch?: { id: string; name: string } | null };
+
 interface BrandingContextType {
+  /** Global (studio-wide) branding — what Identitas Studio edits and saves. */
   branding: StudioBrandingConfig;
+  /** Use for receipts, WhatsApp messages and anything shown to customers. */
+  effectiveBranding: EffectiveBranding;
+  refreshEffectiveBranding: () => Promise<void>;
   setBranding: React.Dispatch<React.SetStateAction<StudioBrandingConfig>>;
   updateBrandingField: <K extends keyof StudioBrandingConfig>(
     key: K,
@@ -47,8 +54,19 @@ export function BrandingProvider({ children }: { children: React.ReactNode }) {
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [effective, setEffective] = useState<EffectiveBranding | null>(null);
+
+  const refreshEffectiveBranding = async () => {
+    try {
+      const res = await fetch(`${API}/api/branding/effective`);
+      if (res.ok) setEffective(await res.json());
+    } catch {
+      // Offline: fall back to the global branding below
+    }
+  };
 
   const fetchBranding = async () => {
+    refreshEffectiveBranding();
     try {
       setLoading(true);
       const res = await fetch(`${API}/api/branding`);
@@ -101,6 +119,7 @@ export function BrandingProvider({ children }: { children: React.ReactNode }) {
         if (json.branding) {
           setBranding(json.branding);
         }
+        refreshEffectiveBranding();
         return true;
       }
       return false;
@@ -121,6 +140,7 @@ export function BrandingProvider({ children }: { children: React.ReactNode }) {
     try {
       setSaving(true);
       const res = await fetch(`${API}/api/branding/reset`, { method: "POST" });
+      refreshEffectiveBranding();
       return res.ok;
     } catch {
       return true;
@@ -151,6 +171,7 @@ export function BrandingProvider({ children }: { children: React.ReactNode }) {
           localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data.branding));
         } catch {}
       }
+      refreshEffectiveBranding();
       return { success: true, url: data.url };
     } catch (err: any) {
       return { success: false, error: err.message };
@@ -161,6 +182,8 @@ export function BrandingProvider({ children }: { children: React.ReactNode }) {
     <BrandingContext.Provider
       value={{
         branding,
+        effectiveBranding: effective ?? branding,
+        refreshEffectiveBranding,
         setBranding,
         updateBrandingField,
         saveBranding,

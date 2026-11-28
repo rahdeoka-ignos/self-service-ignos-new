@@ -18,6 +18,10 @@ import pdfToPrinter from "pdf-to-printer";
 const { print, getPrinters } = pdfToPrinter;
 import { cupsPrint, cupsListPrinters, cupsPrinterStatus, cupsCancelAllJobs, resolveQueueName } from "./backend/cupsPrinter.js";
 import { applyPrintInset, hasInset, removeQuietly, normalizePrintInset } from "./backend/printInset.js";
+import {
+  readBranches, writeBranches, createBranch, updateBranch, deleteBranch,
+  readActiveBranchId, writeActiveBranch, resolveActiveBranch, applyBranchToBranding,
+} from "./backend/branch.js";
 import { readHubConfig, tokenMatches, forwardPrintJob, fetchHubStatus, hubUnreachableStatus, HUB_TOKEN_HEADER, buildHubConfigFromForm, parseHubConfig, lanAddresses } from "./backend/printHub.js";
 // Windows: pdf-to-printer (SumatraPDF) + PowerShell spooler. macOS/Linux: CUPS (lp/lpstat).
 const IS_WINDOWS = process.platform === "win32";
@@ -79,6 +83,11 @@ const PRINTERS_JSON = path.join(__dirname, "public/printers.json");
 // Kept out of public/ because it holds the shared hub token.
 const PRINT_HUB_JSON = path.join(__dirname, "data/print-hub.json");
 const PRINT_HUB_JOBS_DIR = path.join(__dirname, "storage/print-hub");
+// Branches (cabang): the shared list (tracked, like pricing.json) and the
+// branch of THIS computer (git-ignored, like print-hub.json).
+const BRANCHES_JSON = path.join(__dirname, "data/branches.json");
+const BRANCH_JSON = path.join(__dirname, "data/branch.json");
+const activeBranch = () => resolveActiveBranch(BRANCH_JSON, BRANCHES_JSON, readBranding());
 const SESSIONS_DIR = path.join(__dirname, "data");
 const SESSIONS_JSON = path.join(SESSIONS_DIR, "sessions.json");
 
@@ -238,6 +247,69 @@ app.get("/api/gdrive-upload-status", (req, res) => {
 
 app.get("/api/latest-session-drive", (req, res) => {
   res.json(latestDriveSession || { success: false, message: "Belum ada sesi Google Drive" });
+});
+
+// ── Branches (cabang) — admin only ────────────────────────────────────────
+function branchesState() {
+  const data = readBranches(BRANCHES_JSON, readBranding());
+  return { data, activeBranchId: readActiveBranchId(BRANCH_JSON, data.branches) };
+}
+
+app.get("/api/branches", (req, res) => {
+  try {
+    const { data, activeBranchId } = branchesState();
+    res.json({ success: true, branches: data.branches, activeBranchId });
+  } catch (err) {
+    res.status(500).json({ success: false, error: `Data cabang tidak dapat dibaca: ${err.message}` });
+  }
+});
+
+app.post("/api/branches", (req, res) => {
+  try {
+    const { data: next, branch } = createBranch(branchesState().data, req.body);
+    writeBranches(BRANCHES_JSON, next);
+    res.json({ success: true, branch });
+  } catch (err) {
+    res.status(400).json({ success: false, error: err.message });
+  }
+});
+
+app.put("/api/branches/:id", (req, res) => {
+  try {
+    const { data: next, branch } = updateBranch(branchesState().data, req.params.id, req.body);
+    writeBranches(BRANCHES_JSON, next);
+    res.json({ success: true, branch });
+  } catch (err) {
+    res.status(400).json({ success: false, error: err.message });
+  }
+});
+
+app.delete("/api/branches/:id", (req, res) => {
+  try {
+    const { data, activeBranchId } = branchesState();
+    writeBranches(BRANCHES_JSON, deleteBranch(data, req.params.id, activeBranchId));
+    res.json({ success: true });
+  } catch (err) {
+    res.status(400).json({ success: false, error: err.message });
+  }
+});
+
+// Which branch THIS computer belongs to.
+app.put("/api/branch", (req, res) => {
+  try {
+    const { data } = branchesState();
+    const branchId = writeActiveBranch(BRANCH_JSON, req.body?.branchId || null, data.branches);
+    const branch = data.branches.find((b) => b.id === branchId) || null;
+    console.log(`[Cabang] Komputer ini sekarang cabang: ${branch?.name || "(belum diatur)"}`);
+    res.json({ success: true, activeBranchId: branchId });
+  } catch (err) {
+    res.status(400).json({ success: false, error: err.message });
+  }
+});
+
+// Branding as receipts and messages should show it on this computer (branch values on top).
+app.get("/api/branding/effective", (req, res) => {
+  res.json(applyBranchToBranding(readBranding(), activeBranch()));
 });
 
 app.get("/api/gdrive-auth-status", async (req, res) => {
@@ -401,12 +473,17 @@ app.post("/api/upload-session-gdrive", async (req, res) => {
 
     const filePathsToUpload = fs.readdirSync(sessionStagingDir).filter((f) => /\.(jpg|jpeg|png|webp|pdf)$/i.test(f)).map((f) => childPath(sessionStagingDir, f));
 
+    const sessionBranch = activeBranch();
     const sessionMeta = {
       id: sessionId,
       timestamp: now.toISOString(),
       date: dateStr,
       time: timeStr,
       customerName: cleanCustomerName || "Customer",
+      // Cabang of the computer that served this session (null until set in Admin → Cabang).
+      // The name is copied so old sales keep their branch even if it is renamed or deleted later.
+      branch: sessionBranch?.name || null,
+      branchId: sessionBranch?.id || null,
       peopleCount: Number(peopleCount) || 1,
       coupleMode: Boolean(coupleMode),
       joinedBonus: Boolean(joinedBonus),
@@ -498,7 +575,7 @@ app.post("/api/upload-session-gdrive", async (req, res) => {
 
     try {
       console.log(`[GDrive] Mencoba membuat folder Google Drive untuk sesi: "${cleanCustomerName || "Tanpa Nama"}"...`);
-      folderResult = await createCustomerFolder(cleanCustomerName);
+      folderResult = await createCustomerFolder(cleanCustomerName, { branch: sessionMeta.branch });
       console.log(`[GDrive] Folder dibuat: ${folderResult.folderName} (${folderResult.webViewLink})`);
     } catch (err) {
       driveError = err?.message || "Gagal menghubungkan Google Drive";

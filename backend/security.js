@@ -2,7 +2,7 @@ import crypto from "node:crypto";
 
 const publicRoutes = new Set([
   "GET /photos", "GET /templates", "GET /categories", "GET /pricing",
-  "GET /branding", "GET /kiosk-theme", "GET /license/status",
+  "GET /branding", "GET /branding/effective", "GET /kiosk-theme", "GET /license/status",
   "GET /printer-status", "GET /gdrive-upload-status", "GET /camera-import/events",
   "GET /security/pin-status", "POST /security/verify-pin",
   "POST /security/reset-pin", "POST /license/activate",

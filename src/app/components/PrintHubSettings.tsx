@@ -1,5 +1,7 @@
 import { apiFetch as fetch } from "../../utils/api";
+import { notify } from "../../utils/notify";
 import { useEffect, useState } from "react";
+import { AdminConfirmModal } from "./AdminConfirmModal";
 import { Check, Copy, Eye, EyeOff, Monitor, Plug, Printer, RefreshCw, Server } from "lucide-react";
 
 const API = "http://localhost:5000";
@@ -67,7 +69,7 @@ export function PrintHubSettings({ onSaved }: { onSaved?: () => void }) {
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
   const [test, setTest] = useState<TestResult | null>(null);
-  const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
+  const [confirmRotate, setConfirmRotate] = useState(false);
 
   const load = async () => {
     try {
@@ -81,9 +83,11 @@ export function PrintHubSettings({ onSaved }: { onSaved?: () => void }) {
       setUrl(config.url || "");
       setToken(config.role === "kiosk" ? config.token || "" : "");
       setName(config.name || "");
-      if (body.configError) setMessage({ ok: false, text: `File setting rusak: ${body.configError}. Simpan ulang untuk memperbaiki.` });
+      if (body.configError) {
+        notify.warning("File Setting Pusat Print Rusak", `${body.configError}. Simpan ulang untuk memperbaiki.`, { id: "print-hub-config" });
+      }
     } catch (err) {
-      setMessage({ ok: false, text: err instanceof Error ? err.message : String(err) });
+      notify.error("Gagal Membaca Setting Pusat Print", err, { id: "print-hub-config" });
     }
   };
 
@@ -120,7 +124,6 @@ export function PrintHubSettings({ onSaved }: { onSaved?: () => void }) {
 
   const save = async (regenerateToken = false) => {
     setSaving(true);
-    setMessage(null);
     try {
       const res = await fetch(`${API}/api/print-hub/config`, {
         method: "PUT",
@@ -130,19 +133,13 @@ export function PrintHubSettings({ onSaved }: { onSaved?: () => void }) {
       const body = await res.json().catch(() => ({}));
       if (!res.ok || !body.success) throw new Error(body.error || `Gagal menyimpan (HTTP ${res.status}).`);
       await load();
-      setMessage({
-        ok: true,
-        text: regenerateToken
-          ? "Token baru dibuat. Salin kode sambung baru ke semua kiosk."
-          : role === "hub"
-            ? "Tersimpan. Komputer ini sekarang pusat print."
-            : role === "kiosk"
-              ? "Tersimpan. Cetakan dari kiosk ini akan dikirim ke pusat print."
-              : "Tersimpan. Kiosk ini mencetak ke printernya sendiri.",
-      });
+      if (regenerateToken) notify.success("Token Baru Dibuat", "Salin kode sambung baru ke semua kiosk.");
+      else if (role === "hub") notify.success("Pusat Print Aktif", "Komputer ini sekarang mencetak untuk kiosk lain.");
+      else if (role === "kiosk") notify.success("Mode Kiosk Tersimpan", "Cetakan dari kiosk ini akan dikirim ke pusat print.");
+      else notify.success("Cetak Sendiri Tersimpan", "Kiosk ini mencetak ke printernya sendiri.");
       onSaved?.();
     } catch (err) {
-      setMessage({ ok: false, text: err instanceof Error ? err.message : String(err) });
+      notify.error("Gagal Menyimpan Pusat Print", err);
     } finally {
       setSaving(false);
     }
@@ -186,7 +183,6 @@ export function PrintHubSettings({ onSaved }: { onSaved?: () => void }) {
               onClick={() => {
                 setRole(value);
                 setTest(null);
-                setMessage(null);
               }}
               className={`text-left p-3 rounded-xl border transition-colors cursor-pointer ${
                 active
@@ -264,9 +260,7 @@ export function PrintHubSettings({ onSaved }: { onSaved?: () => void }) {
                 type="button"
                 className={secondaryButton}
                 disabled={saving}
-                onClick={() => {
-                  if (window.confirm("Buat token baru? Semua kiosk harus disambung ulang dengan kode sambung yang baru.")) save(true);
-                }}
+                onClick={() => setConfirmRotate(true)}
               >
                 <RefreshCw size={13} />
                 Buat Token Baru
@@ -361,15 +355,22 @@ export function PrintHubSettings({ onSaved }: { onSaved?: () => void }) {
         </div>
       )}
 
-      {message && (
-        <p className={`text-[12px] ${message.ok ? "text-[#9fd8b4]" : "text-[var(--admin-pending,#d7b8d6)]"}`}>{message.text}</p>
-      )}
-
       <div className="flex justify-end">
         <button type="button" className={primaryButton} disabled={saving || (role === "kiosk" && (!url || !token))} onClick={() => save()}>
           {saving ? "Menyimpan..." : "Simpan"}
         </button>
       </div>
+
+      <AdminConfirmModal
+        isOpen={confirmRotate}
+        onClose={() => setConfirmRotate(false)}
+        onConfirm={() => save(true)}
+        title="Buat Token Baru?"
+        category="Pusat Print"
+        description="Semua kiosk akan terputus dari pusat print sampai kode sambung yang baru ditempel di masing-masing kiosk."
+        confirmText="Buat Token Baru"
+        variant="warning"
+      />
     </div>
   );
 }

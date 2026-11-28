@@ -1,4 +1,5 @@
 import { apiFetch as fetch } from "../../utils/api";
+import { notify } from "../../utils/notify";
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router";
 import {
@@ -41,7 +42,8 @@ Terima kasih kak, ditunggu kedatangannya yang selanjutnya🙏😊`;
 export function AdminMessagePage() {
   usePageTitle("Pesan Softcopy — Ignos");
   const navigate = useNavigate();
-  const { branding } = useBranding();
+  // Branch-aware: address, phone & Instagram of this computer's cabang.
+  const { effectiveBranding: branding } = useBranding();
 
   const [cameraImportOpen, setCameraImportOpen] = useState(false);
   const [name, setName] = useState("");
@@ -169,25 +171,10 @@ export function AdminMessagePage() {
         method: "POST",
       });
       const data = await res.json();
-      setModalConfig({
-        isOpen: true,
-        title: "Otorisasi Google Drive",
-        category: "Koneksi Cloud",
-        description:
-          data.message ||
-          "Jendela browser otorisasi Google Drive telah dibuka. Silakan izinkan akses akun Google Drive studio.",
-        singleButton: true,
-        variant: "info",
-      });
+      notify.info("Otorisasi Google Drive", data.message ||
+          "Jendela browser otorisasi Google Drive telah dibuka. Silakan izinkan akses akun Google Drive studio.");
     } catch {
-      setModalConfig({
-        isOpen: true,
-        title: "Gagal Memicu Otorisasi",
-        category: "Kendala Server",
-        description: "Tidak dapat membuka otorisasi Google Drive. Pastikan backend server.js berjalan.",
-        singleButton: true,
-        variant: "warning",
-      });
+      notify.error("Gagal Memicu Otorisasi", "Tidak dapat membuka otorisasi Google Drive. Pastikan backend server.js berjalan.");
     } finally {
       setTimeout(() => setAuthorizingDrive(false), 2500);
     }
@@ -210,34 +197,13 @@ export function AdminMessagePage() {
           });
           const data = await res.json();
           if (data.success) {
-            setModalConfig({
-              isOpen: true,
-              title: "Antrean Berhasil Diproses",
-              category: "Upload Google Drive",
-              description: data.message || "Seluruh antrean foto sedang diunggah di latar belakang.",
-              singleButton: true,
-              variant: "success",
-            });
+            notify.success("Antrean Berhasil Diproses", data.message || "Seluruh antrean foto sedang diunggah di latar belakang.");
             checkGdriveStatus();
           } else {
-            setModalConfig({
-              isOpen: true,
-              title: "Gagal Mengunggah Antrean",
-              category: "Kendala Cloud",
-              description: data.error || "Terjadi kesalahan saat memproses antrean upload.",
-              singleButton: true,
-              variant: "warning",
-            });
+            notify.error("Gagal Mengunggah Antrean", data.error || "Terjadi kesalahan saat memproses antrean upload.");
           }
         } catch (err: any) {
-          setModalConfig({
-            isOpen: true,
-            title: "Gagal Mengirim Perintah",
-            category: "Kendala Server",
-            description: "Error saat menghubungi backend: " + err.message,
-            singleButton: true,
-            variant: "warning",
-          });
+          notify.error("Gagal Mengirim Perintah", "Error saat menghubungi backend: " + err.message);
         } finally {
           setUploadingQueue(false);
         }
@@ -264,33 +230,12 @@ export function AdminMessagePage() {
           });
           const data = await res.json();
           if (data.success) {
-            setModalConfig({
-              isOpen: true,
-              title: "Kamera Siap Dipakai",
-              category: "Pembersihan Selesai",
-              description: `Berhasil mengosongkan ${data.cleared} foto dari folder kamera aktif.`,
-              singleButton: true,
-              variant: "success",
-            });
+            notify.success("Kamera Siap Dipakai", `Berhasil mengosongkan ${data.cleared} foto dari folder kamera aktif.`);
           } else {
-            setModalConfig({
-              isOpen: true,
-              title: "Gagal Mengosongkan",
-              category: "Kendala Sistem",
-              description: "Tidak dapat membersihkan foto dari folder kamera.",
-              singleButton: true,
-              variant: "warning",
-            });
+            notify.error("Gagal Mengosongkan", "Tidak dapat membersihkan foto dari folder kamera.");
           }
         } catch (err: any) {
-          setModalConfig({
-            isOpen: true,
-            title: "Gagal Menghubungi Server",
-            category: "Kendala Jaringan",
-            description: err.message,
-            singleButton: true,
-            variant: "warning",
-          });
+          notify.error("Gagal Menghubungi Server", err.message);
         } finally {
           setClearingPhotos(false);
         }

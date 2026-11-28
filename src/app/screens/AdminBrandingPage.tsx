@@ -1,4 +1,6 @@
 import { useState, useRef } from "react";
+import { notify } from "../../utils/notify";
+import { Link } from "react-router";
 import {
   Check,
   RefreshCw,
@@ -114,15 +116,9 @@ export function AdminBrandingPage() {
     if (ok) {
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 2500);
+      notify.success("Identitas Studio Tersimpan");
     } else {
-      setModalConfig({
-        isOpen: true,
-        title: "Gagal Menyimpan Identitas",
-        category: "Kendala Server",
-        description: "Terjadi kesalahan saat menyimpan identitas studio ke server. Periksa status backend port 5000.",
-        singleButton: true,
-        variant: "warning",
-      });
+      notify.error("Gagal Menyimpan Identitas", "Terjadi kesalahan saat menyimpan identitas studio ke server. Periksa status backend port 5000.");
     }
   };
 
@@ -147,14 +143,7 @@ export function AdminBrandingPage() {
     if (!file) return;
 
     if (!file.type.startsWith("image/")) {
-      setModalConfig({
-        isOpen: true,
-        title: "Format File Tidak Didukung",
-        category: "Upload Logo",
-        description: "Harap pilih file gambar dengan format PNG, JPG, WEBP, atau SVG.",
-        singleButton: true,
-        variant: "warning",
-      });
+      notify.warning("Format File Tidak Didukung", "Harap pilih file gambar dengan format PNG, JPG, WEBP, atau SVG.");
       return;
     }
 
@@ -162,14 +151,7 @@ export function AdminBrandingPage() {
       setUploadingLogo(true);
       const res = await uploadLogo(file, type);
       if (!res.success) {
-        setModalConfig({
-          isOpen: true,
-          title: "Gagal Upload Logo",
-          category: "Upload Logo",
-          description: res.error || "Terjadi kesalahan saat mengunggah file logo.",
-          singleButton: true,
-          variant: "warning",
-        });
+        notify.error("Gagal Upload Logo", res.error || "Terjadi kesalahan saat mengunggah file logo.");
       }
     } finally {
       setUploadingLogo(false);
@@ -459,6 +441,10 @@ export function AdminBrandingPage() {
               </div>
 
               <div className="md:col-span-2">
+                <p className="mb-3 p-3 rounded-lg border border-[var(--admin-border,#2a2d2f)] text-[12px] text-[var(--admin-muted,#92989d)] leading-relaxed">
+                  Alamat, nomor WA, dan Instagram <strong className="text-[var(--admin-secondary,#c3c7ca)]">per cabang</strong> diatur di halaman{" "}
+                  <Link to="/admin/branches" className="underline text-[var(--admin-secondary,#c3c7ca)]">Cabang</Link>. Nilai di sini dipakai bila kolom cabang dikosongkan.
+                </p>
                 <label className="font-medium text-[var(--admin-secondary,#c3c7ca)] mb-1.5 block text-[12px]">
                   Alamat Fisik / Lokasi Bilik
                 </label>

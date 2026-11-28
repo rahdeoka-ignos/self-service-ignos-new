@@ -1,4 +1,5 @@
 import { apiFetch as fetch } from "../../utils/api";
+import { notify } from "../../utils/notify";
 import { useEffect, useState, useMemo } from "react";
 import {
   Calendar,
@@ -58,7 +59,8 @@ function getInitials(name: string): string {
 
 export function AdminDashboardPage() {
   usePageTitle("Dashboard Operasional — Ignos");
-  const { branding } = useBranding();
+  // Branch-aware: address, phone & Instagram of this computer's cabang.
+  const { effectiveBranding: branding } = useBranding();
 
   const todayStr = useMemo(() => {
     const now = new Date();
@@ -142,24 +144,10 @@ export function AdminDashboardPage() {
           if (res.ok) {
             fetchSessions(selectedDate);
           } else {
-            setModalConfig({
-              isOpen: true,
-              title: "Gagal Menghapus Sesi",
-              category: "Terjadi Kendala",
-              description: "Server tidak dapat menghapus file rekaman sesi ini. Coba periksa koneksi backend.",
-              singleButton: true,
-              variant: "warning",
-            });
+            notify.error("Gagal Menghapus Sesi", "Server tidak dapat menghapus file rekaman sesi ini. Coba periksa koneksi backend.");
           }
         } catch (err: any) {
-          setModalConfig({
-            isOpen: true,
-            title: "Koneksi Backend Terputus",
-            category: "Kendala Jaringan",
-            description: "Tidak dapat menghubungi server lokal port 5000: " + err.message,
-            singleButton: true,
-            variant: "warning",
-          });
+          notify.error("Koneksi Backend Terputus", "Tidak dapat menghubungi server lokal port 5000: " + err.message);
         }
       },
     });
@@ -197,14 +185,7 @@ export function AdminDashboardPage() {
 
   const handlePrintClosingReceipt = async () => {
     if (!data || data.sessions.length === 0) {
-      setModalConfig({
-        isOpen: true,
-        title: "Belum Ada Transaksi",
-        category: "Struk Closing Kasir",
-        description: "Tidak ada riwayat sesi customer pada tanggal yang dipilih untuk dicetak struk rekapnya.",
-        singleButton: true,
-        variant: "info",
-      });
+      notify.info("Belum Ada Transaksi", "Tidak ada riwayat sesi customer pada tanggal yang dipilih untuk dicetak struk rekapnya.");
       return;
     }
     try {
@@ -315,34 +296,16 @@ export function AdminDashboardPage() {
       });
       const result = await res.json().catch(() => ({}));
 
-      setModalConfig(
-        result.printStatus === "skipped"
-          ? {
-              isOpen: true,
-              title: "Rekap Shift Tersimpan",
-              category: "Cetak Rekap Shift",
-              description: `File ${filename} tersimpan, tetapi tidak dicetak karena belum ada profil printer "Struk Thermal". Tambahkan profilnya di Admin → Printer & Kertas jika ingin mencetak.`,
-              singleButton: true,
-              variant: "warning",
-            }
-          : {
-              isOpen: true,
-              title: "Struk Berhasil Dikirim",
-              category: "Cetak Rekap Shift",
-              description: "File struk rekap harian telah berhasil dikirimkan ke antrian printer thermal kasir.",
-              singleButton: true,
-              variant: "success",
-            },
-      );
+      if (result.printStatus === "skipped") {
+        notify.warning(
+          "Rekap Shift Tersimpan",
+          `File ${filename} tersimpan, tetapi tidak dicetak karena belum ada profil printer "Struk Thermal". Tambahkan profilnya di Admin → Printer & Kertas jika ingin mencetak.`,
+        );
+      } else {
+        notify.success("Struk Berhasil Dikirim", "File struk rekap harian telah dikirim ke antrean printer thermal kasir.");
+      }
     } catch (err: any) {
-      setModalConfig({
-        isOpen: true,
-        title: "Gagal Mencetak Struk",
-        category: "Kendala Printer",
-        description: "Terjadi kesalahan saat memproses cetak struk: " + err.message,
-        singleButton: true,
-        variant: "warning",
-      });
+      notify.error("Gagal Mencetak Struk", "Terjadi kesalahan saat memproses cetak struk: " + err.message);
     } finally {
       setPrintingReceipt(false);
     }

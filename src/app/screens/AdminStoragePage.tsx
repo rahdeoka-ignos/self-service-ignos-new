@@ -1,4 +1,5 @@
 import { apiFetch as fetch } from "../../utils/api";
+import { notify } from "../../utils/notify";
 import { useState, useEffect } from "react";
 import {
   RefreshCw,
@@ -94,10 +95,6 @@ export function AdminStoragePage() {
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<"cleanup" | "cache" | "archive">("cleanup");
   const [cleaningAction, setCleaningAction] = useState<string | null>(null);
-  const [feedback, setFeedback] = useState<{
-    type: "success" | "error";
-    message: string;
-  } | null>(null);
 
   // Retention preset selection
   const [selectedDays, setSelectedDays] = useState<number>(7);
@@ -157,7 +154,6 @@ export function AdminStoragePage() {
     fileName?: string;
   }) => {
     setCleaningAction(payload.action + (payload.fileName || payload.date || payload.days || ""));
-    setFeedback(null);
     try {
       const res = await fetch(`${API}/api/storage-clean`, {
         method: "POST",
@@ -166,26 +162,17 @@ export function AdminStoragePage() {
       });
       const data = await res.json();
       if (data.success) {
-        setFeedback({
-          type: "success",
-          message: data.message || "Penyimpanan berhasil dibersihkan!",
-        });
+        notify.success("Penyimpanan Dibersihkan", data.message);
         if (data.stats) {
           setStats(data.stats);
         } else {
           fetchStats();
         }
       } else {
-        setFeedback({
-          type: "error",
-          message: data.error || "Gagal membersihkan penyimpanan",
-        });
+        notify.error("Gagal Membersihkan Penyimpanan", data.error);
       }
     } catch (err: any) {
-      setFeedback({
-        type: "error",
-        message: "Koneksi ke server gagal: " + err.message,
-      });
+      notify.error("Koneksi ke Server Gagal", err);
     } finally {
       setCleaningAction(null);
     }
@@ -212,17 +199,13 @@ export function AdminStoragePage() {
         body: JSON.stringify({ autoCleanEnabled, retentionDays }),
       });
       if (res.ok) {
-        setFeedback({
-          type: "success",
-          message: `Kebijakan auto-cleanup disimpan: ${autoCleanEnabled ? `Aktif (${retentionDays} hari)` : "Dinonaktifkan"}`,
-        });
+        notify.success("Kebijakan Auto-Cleanup Disimpan", autoCleanEnabled ? `Aktif, menghapus arsip lebih dari ${retentionDays} hari.` : "Auto-cleanup dinonaktifkan.");
         fetchStats();
+      } else {
+        notify.error("Gagal Menyimpan Kebijakan Penyimpanan", `Server menolak perubahan (HTTP ${res.status}).`);
       }
-    } catch {
-      setFeedback({
-        type: "error",
-        message: "Gagal menyimpan kebijakan penyimpanan",
-      });
+    } catch (err) {
+      notify.error("Gagal Menyimpan Kebijakan Penyimpanan", err);
     } finally {
       setSavingPolicy(false);
     }
@@ -259,22 +242,6 @@ export function AdminStoragePage() {
             </button>
           </div>
         </div>
-
-        {/* ── Feedback Notification (Quiet & Clean) ── */}
-        {feedback && (
-          <div className="p-3.5 rounded-[8px] border border-[var(--admin-border,#2a2d2f)] bg-[var(--admin-card,#1c1f20)] text-[var(--admin-text,#f4f4f5)] text-[13px] flex items-center justify-between ">
-            <div className="flex items-center gap-2.5">
-              <span className={`w-2 h-2 rounded-full shrink-0 ${feedback.type === "success" ? "bg-[#c9d2e1]" : "bg-[#f18e9a]"}`} />
-              <span className="font-normal">{feedback.message}</span>
-            </div>
-            <button
-              onClick={() => setFeedback(null)}
-              className="text-[12px] text-[var(--admin-muted,#92989d)] hover:text-[var(--admin-text,#f4f4f5)] cursor-pointer ml-4 shrink-0"
-            >
-              ✕
-            </button>
-          </div>
-        )}
 
         {/* ── 4 Calm Metric Cards ── */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

@@ -1,4 +1,5 @@
 import { apiFetch as fetch } from "../../utils/api";
+import { notify } from "../../utils/notify";
 import { useEffect, useState, useMemo } from "react";
 import {
   Plus,
@@ -173,25 +174,12 @@ export function AdminPrinterPage() {
           const res = await fetch(`${API}/api/printers/clear-jobs`, { method: "POST" });
           if (res.ok) {
             await fetchMonitorStatus();
+            notify.success("Antrean Cetak Dibersihkan");
           } else {
-            setModalConfig({
-              isOpen: true,
-              title: "Gagal Membersihkan Spooler",
-              category: "Kendala Sistem",
-              description: "Server tidak dapat mengosongkan antrean printer Windows. Pastikan hak akses Administrator terpenuhi.",
-              singleButton: true,
-              variant: "warning",
-            });
+            notify.error("Gagal Membersihkan Spooler", "Server tidak dapat mengosongkan antrean printer Windows. Pastikan hak akses Administrator terpenuhi.");
           }
         } catch (err: any) {
-          setModalConfig({
-            isOpen: true,
-            title: "Gagal Menghubungi Spooler",
-            category: "Kendala Server",
-            description: "Terjadi kesalahan saat memicu pembersihan spooler: " + err.message,
-            singleButton: true,
-            variant: "warning",
-          });
+          notify.error("Gagal Menghubungi Spooler", "Terjadi kesalahan saat memicu pembersihan spooler: " + err.message);
         } finally {
           setClearingJobs(false);
         }
@@ -250,36 +238,15 @@ export function AdminPrinterPage() {
 
   const handleSave = async () => {
     if (!form.label.trim()) {
-      setModalConfig({
-        isOpen: true,
-        title: "Nama Profil Diperlukan",
-        category: "Validasi Form",
-        description: "Harap isi nama profil sebelum menyimpan (misal: 4R Glossy).",
-        singleButton: true,
-        variant: "warning",
-      });
+      notify.warning("Nama Profil Diperlukan", "Harap isi nama profil sebelum menyimpan (misal: 4R Glossy).");
       return;
     }
     if (!form.printerName.trim()) {
-      setModalConfig({
-        isOpen: true,
-        title: "Printer Windows Diperlukan",
-        category: "Validasi Form",
-        description: "Harap pilih atau tentukan nama instance printer sistem Windows.",
-        singleButton: true,
-        variant: "warning",
-      });
+      notify.warning("Printer Windows Diperlukan", "Harap pilih atau tentukan nama instance printer sistem Windows.");
       return;
     }
     if (form.appliesTo.length === 0) {
-      setModalConfig({
-        isOpen: true,
-        title: "Target Produk Diperlukan",
-        category: "Validasi Form",
-        description: "Harap pilih minimal satu jenis produk foto/cetak yang berlaku untuk profil ini.",
-        singleButton: true,
-        variant: "warning",
-      });
+      notify.warning("Target Produk Diperlukan", "Harap pilih minimal satu jenis produk foto/cetak yang berlaku untuk profil ini.");
       return;
     }
 
@@ -288,14 +255,7 @@ export function AdminPrinterPage() {
       const raw = form.inset[key].trim().replace(",", ".");
       const value = raw === "" ? 0 : Number(raw);
       if (!Number.isFinite(value) || value < 0 || value > MAX_INSET_MM) {
-        setModalConfig({
-          isOpen: true,
-          title: "Kompensasi Pinggir Tidak Valid",
-          category: "Validasi Form",
-          description: `Nilai sisi ${label} harus angka 0 sampai ${MAX_INSET_MM} mm (contoh: 3 atau 2,5).`,
-          singleButton: true,
-          variant: "warning",
-        });
+        notify.warning("Kompensasi Pinggir Tidak Valid", `Nilai sisi ${label} harus angka 0 sampai ${MAX_INSET_MM} mm (contoh: 3 atau 2,5).`);
         return;
       }
       printInset[key] = value;
@@ -337,18 +297,14 @@ export function AdminPrinterPage() {
       }
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
-        setModalConfig({
-          isOpen: true,
-          title: "Profil Gagal Disimpan",
-          category: "Printer",
-          description: body.error || `Server menolak perubahan (HTTP ${res.status}).`,
-          singleButton: true,
-          variant: "warning",
-        });
+        notify.error("Profil Gagal Disimpan", body.error || `Server menolak perubahan (HTTP ${res.status}).`);
         return;
       }
       setDialogOpen(false);
       fetchData();
+      notify.success(editProfile ? "Profil Printer Diperbarui" : "Profil Printer Ditambahkan", form.label);
+    } catch (err) {
+      notify.error("Profil Gagal Disimpan", err);
     } finally {
       setSaving(false);
     }
@@ -356,11 +312,13 @@ export function AdminPrinterPage() {
 
   const handleDelete = async (profile: PrinterProfile) => {
     try {
-      await fetch(`${API}/api/printers/${profile.id}`, { method: "DELETE" });
+      const res = await fetch(`${API}/api/printers/${profile.id}`, { method: "DELETE" });
       setDeleteConfirm(null);
       fetchData();
+      if (res.ok) notify.success("Profil Printer Dihapus", profile.label);
+      else notify.error("Gagal Menghapus Profil Printer", `Server menolak (HTTP ${res.status}).`);
     } catch (err) {
-      console.error(err);
+      notify.error("Gagal Menghapus Profil Printer", err);
     }
   };
 

@@ -24,6 +24,7 @@ import { AdminMessagePage } from "./screens/AdminMessagePage";
 import { AdminTemplatePage } from "./screens/AdminTemplatePage";
 import { AdminTemplateEditorPage } from "./screens/AdminTemplateEditorPage";
 import { AdminPrinterPage } from "./screens/AdminPrinterPage";
+import { AdminBranchesPage } from "./screens/AdminBranchesPage";
 import { AdminKioskThemePage } from "./screens/AdminKioskThemePage";
 import { AdminStoragePage } from "./screens/AdminStoragePage";
 import { AdminPricingPage } from "./screens/AdminPricingPage";
@@ -199,6 +200,10 @@ export const router = createBrowserRouter([
           {
             path: "/admin/printers",
             Component: AdminPrinterPage,
+          },
+          {
+            path: "/admin/branches",
+            Component: AdminBranchesPage,
           },
           {
             path: "/admin/kiosk-theme",

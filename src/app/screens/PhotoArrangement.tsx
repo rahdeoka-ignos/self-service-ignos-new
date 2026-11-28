@@ -1,3 +1,4 @@
+import { notify } from "../../utils/notify";
 import { notifyPrintError } from "../../utils/api";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router";
@@ -518,7 +519,7 @@ export function PhotoArrangement() {
       }
     } catch (err) {
       console.error("PREVIEW ERROR:", err);
-      alert("Preview failed");
+      notify.error("Preview gagal dibuat", "Coba tekan Preview sekali lagi. Kalau masih gagal, panggil staf ya kak.");
     }
   };
 

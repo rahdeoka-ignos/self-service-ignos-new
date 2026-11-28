@@ -6,7 +6,7 @@ import path from 'node:path';
 import { transformSync } from 'esbuild';
 
 function harness() {
-  const slots = [], effects = [], listeners = new Map(), cache = new Map(), writes = [];
+  const slots = [], effects = [], listeners = new Map(), cache = new Map(), writes = [], toasts = [];
   let contextValue;
   let cursor = 0, fetcher = async () => ({ ok: false });
   const react = {
@@ -43,6 +43,8 @@ function harness() {
       if (name.endsWith('/AdminConfirmModal')) return { AdminConfirmModal: 'AdminConfirmModal' };
       if (name.endsWith('/usePageTitle')) return { usePageTitle() {} };
       if (name.endsWith('/api')) return { apiFetch: (...args) => fetcher(...args) };
+      // Toasts are recorded instead of rendered (src/utils/notify.ts wraps sonner).
+      if (name.endsWith('/notify')) return { notify: new Proxy({}, { get: (_t, kind) => (title, detail) => toasts.push({ kind, title, detail }) }) };
       const base = path.resolve(path.dirname(file), name);
       return load(base + (fs.existsSync(base + '.ts') ? '.ts' : '.tsx'));
     } });

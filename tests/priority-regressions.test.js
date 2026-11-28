@@ -278,6 +278,7 @@ test("kiosk endpoint stages the receipt, uses configured prices, and records one
     createCustomerFolder: async () => { throw new Error("Mock offline"); },
     updateDriveSession: (id, changes) => Object.assign(sessions.find((s) => s.id === id), changes),
     console: { log() {}, error() {} }, uploadProgress: null, preparingKioskSessions: new Set(),
+    activeBranch: () => ({ id: "tabanan", name: "Tabanan" }),
   };
   vm.runInNewContext(source.slice(source.indexOf('app.post("/api/upload-session-gdrive"'), source.indexOf("async function generateThumbnail")), ctx);
   const id = `KIOSK-${crypto.randomUUID()}`;
@@ -292,6 +293,9 @@ test("kiosk endpoint stages the receipt, uses configured prices, and records one
   assert.ok(sessions[0].files.includes("receipt.pdf"));
   assert.ok(fs.existsSync(path.join(f.queueDir, id, "camera.jpg")));
   assert.equal(sessions[0].driveStatus, "offline_pending");
+  assert.equal(sessions[0].branch, "Tabanan"); // cabang stamped on the sale for per-branch reports
+  assert.equal(sessions[0].branchId, "tabanan");
+  assert.equal(JSON.parse(fs.readFileSync(path.join(f.queueDir, id, "session_info.json"), "utf8")).branch, "Tabanan");
 });
 
 test("cashier endpoint is idempotent and never reports success on disk write failure", () => {

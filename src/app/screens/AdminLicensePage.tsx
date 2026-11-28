@@ -12,7 +12,7 @@ import {
   ClipboardPaste,
 } from "lucide-react";
 import { AdminLayout } from "../components/AdminLayout";
-import { AdminConfirmModal } from "../components/AdminConfirmModal";
+import { notify } from "../../utils/notify";
 import { useLicense } from "../../context/LicenseContext";
 import { usePageTitle } from "../../hooks/usePageTitle";
 
@@ -23,23 +23,6 @@ export function AdminLicensePage() {
   const [inputKey, setInputKey] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-
-  // Modal State strictly conforming to GEMINI.md Rule 5
-  const [modalConfig, setModalConfig] = useState<{
-    isOpen: boolean;
-    title: string;
-    category?: string;
-    description: string;
-    confirmText?: string;
-    cancelText?: string;
-    variant?: "danger" | "warning" | "info" | "success";
-    onConfirm: () => void;
-  }>({
-    isOpen: false,
-    title: "",
-    description: "",
-    onConfirm: () => {},
-  });
 
   const handleManualRefresh = async () => {
     setRefreshing(true);
@@ -63,15 +46,7 @@ export function AdminLicensePage() {
 
   const handleActivate = async () => {
     if (!inputKey.trim()) {
-      setModalConfig({
-        isOpen: true,
-        title: "Kode Lisensi Kosong",
-        category: "VALIDASI",
-        description: "Silakan masukkan atau tempel kode lisensi yang diberikan oleh vendor software.",
-        variant: "warning",
-        confirmText: "Mengerti",
-        onConfirm: () => setModalConfig((prev) => ({ ...prev, isOpen: false })),
-      });
+      notify.warning("Kode Lisensi Kosong", "Silakan masukkan atau tempel kode lisensi yang diberikan oleh vendor software.");
       return;
     }
 
@@ -81,25 +56,9 @@ export function AdminLicensePage() {
 
     if (result.success) {
       setInputKey("");
-      setModalConfig({
-        isOpen: true,
-        title: "Aktivasi Berhasil",
-        category: "LISENSI AKTIF",
-        description: result.message,
-        variant: "success",
-        confirmText: "Selesai",
-        onConfirm: () => setModalConfig((prev) => ({ ...prev, isOpen: false })),
-      });
+      notify.success("Aktivasi Berhasil", result.message);
     } else {
-      setModalConfig({
-        isOpen: true,
-        title: "Aktivasi Gagal",
-        category: "VERIFIKASI GAGAL",
-        description: result.message,
-        variant: "danger",
-        confirmText: "Tutup",
-        onConfirm: () => setModalConfig((prev) => ({ ...prev, isOpen: false })),
-      });
+      notify.error("Aktivasi Gagal", result.message);
     }
   };
 
@@ -438,19 +397,6 @@ export function AdminLicensePage() {
           </div>
         </div>
       </div>
-
-      {/* Confirmation / Alert Modal */}
-      <AdminConfirmModal
-        isOpen={modalConfig.isOpen}
-        onClose={() => setModalConfig((prev) => ({ ...prev, isOpen: false }))}
-        onConfirm={modalConfig.onConfirm}
-        title={modalConfig.title}
-        category={modalConfig.category}
-        description={modalConfig.description}
-        confirmText={modalConfig.confirmText}
-        cancelText={modalConfig.cancelText}
-        variant={modalConfig.variant}
-      />
     </AdminLayout>
   );
 }

@@ -1,4 +1,5 @@
 import { isIllustratedPack } from "../../utils/illustratedTheme";
+import { notify } from "../../utils/notify";
 import { useEffect, useRef, useState } from "react";
 import {
   Check,
@@ -82,15 +83,9 @@ export function AdminKioskThemePage() {
       setSaveSuccess(true);
       clearTimeout(successTimer.current);
       successTimer.current = setTimeout(() => setSaveSuccess(false), 2500);
+      notify.success("Tema Kiosk Tersimpan");
     } else {
-      setModalConfig({
-        isOpen: true,
-        title: "Gagal Menyimpan Tema",
-        category: "Kendala Server",
-        description: "Terjadi kesalahan saat menyimpan pengaturan tema ke server. Pastikan backend aktif.",
-        singleButton: true,
-        variant: "warning",
-      });
+      notify.error("Gagal Menyimpan Tema", "Terjadi kesalahan saat menyimpan pengaturan tema ke server. Pastikan backend aktif.");
     }
   };
 

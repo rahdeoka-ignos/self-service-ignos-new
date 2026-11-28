@@ -3,9 +3,30 @@ const http = require("http");
 const url = require("url");
 const fs = require("fs");
 const path = require("path");
-const { exec, execSync } = require("child_process");
+const { exec, execSync, execFile } = require("child_process");
+
+// Open the Google login page in the default browser (Windows, macOS, Linux).
+function openBrowser(target) {
+  if (process.platform === "win32") return exec(`start "" "${target}"`);
+  const opener = process.platform === "darwin" ? "open" : "xdg-open";
+  execFile(opener, [target], (err) => {
+    if (err) console.log(`Buka link ini di browser untuk login Google Drive:\n${target}`);
+  });
+}
 
 function freePort(port) {
+  if (process.platform !== "win32") {
+    // macOS/Linux: stop a previous login helper still holding the callback port.
+    try {
+      const pids = execSync(`lsof -ti tcp:${port}`, { encoding: "utf8" }).split(/\s+/).filter(Boolean);
+      for (const pid of pids) {
+        if (pid !== String(process.pid)) {
+          try { process.kill(Number(pid)); } catch {}
+        }
+      }
+    } catch {}
+    return;
+  }
   try {
     const stdout = execSync(`netstat -ano | findstr :${port}`, { encoding: "utf8" });
     const lines = stdout.trim().split("\n");
@@ -110,7 +131,7 @@ server.on("error", (err) => {
     freePort(PORT);
     setTimeout(() => {
       server.listen(PORT, () => {
-        exec(`start "" "${authUrl}"`);
+        openBrowser(authUrl);
       });
     }, 1000);
   } else {
@@ -121,6 +142,6 @@ server.on("error", (err) => {
 
 freePort(PORT);
 server.listen(PORT, () => {
-  // Buka URL di browser default Windows
-  exec(`start "" "${authUrl}"`);
+  // Buka URL di browser default
+  openBrowser(authUrl);
 });

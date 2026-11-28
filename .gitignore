@@ -63,3 +63,5 @@ oauth-token*.json
 data/print-hub.json
 # Print hub: temporary job files received from other kiosks
 storage/print-hub/
+# Branch (cabang) of this computer: Tabanan / Abiansemal, set in Admin
+data/branch.json

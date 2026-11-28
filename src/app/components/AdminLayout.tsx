@@ -17,6 +17,7 @@ import {
   Minimize2,
   Tag,
   Building2,
+  MapPin,
   ShieldCheck,
   Lock,
   KeyRound,
@@ -75,6 +76,12 @@ const NAV_PREFERENCES = [
     label: "Identitas Studio",
     icon: Building2,
     desc: "Profil, logo & struk",
+  },
+  {
+    path: "/admin/branches",
+    label: "Cabang",
+    icon: MapPin,
+    desc: "Alamat, WA & cabang komputer ini",
   },
   {
     path: "/admin/license",
@@ -192,6 +199,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
     if (location.pathname.startsWith("/admin/pricing")) return "Harga & Paket";
     if (location.pathname.startsWith("/admin/templates")) return "Templates";
     if (location.pathname.startsWith("/admin/branding")) return "Identitas Studio";
+    if (location.pathname.startsWith("/admin/branches")) return "Cabang";
     if (location.pathname.startsWith("/admin/license")) return "Lisensi Sewa";
     if (location.pathname.startsWith("/admin/kiosk-theme")) return "Tema & Alur Kiosk";
     if (location.pathname.startsWith("/admin/printers")) return "Printers";

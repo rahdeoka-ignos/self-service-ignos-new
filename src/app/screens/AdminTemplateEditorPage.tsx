@@ -1,4 +1,5 @@
 import { apiFetch as fetch } from "../../utils/api";
+import { notify } from "../../utils/notify";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import {
@@ -304,14 +305,7 @@ export function AdminTemplateEditorPage() {
         }
       } catch (err: any) {
         console.error(err);
-        setModalConfig({
-          isOpen: true,
-          title: "Gagal Memuat Template",
-          category: "Kendala Server",
-          description: err.message || "Terjadi kesalahan saat memuat data template.",
-          singleButton: true,
-          variant: "warning",
-        });
+        notify.error("Gagal Memuat Template", err.message || "Terjadi kesalahan saat memuat data template.");
       } finally {
         if (isMounted) setLoading(false);
       }
@@ -1497,14 +1491,7 @@ export function AdminTemplateEditorPage() {
         });
         if (!res.ok) {
           const err = await res.json();
-          setModalConfig({
-            isOpen: true,
-            title: "Gagal Membuat Template",
-            category: "Kendala Server",
-            description: err.error || "Gagal membuat template baru pada sistem.",
-            singleButton: true,
-            variant: "warning",
-          });
+          notify.error("Gagal Membuat Template", err.error || "Gagal membuat template baru pada sistem.");
           return;
         }
       }
@@ -1527,14 +1514,7 @@ export function AdminTemplateEditorPage() {
       navigate("/admin/templates");
     } catch (err: any) {
       console.error(err);
-      setModalConfig({
-        isOpen: true,
-        title: "Gagal Menyimpan Template",
-        category: "Kendala Penyimpanan",
-        description: "Terjadi kesalahan saat menyimpan template: " + err.message,
-        singleButton: true,
-        variant: "warning",
-      });
+      notify.error("Gagal Menyimpan Template", "Terjadi kesalahan saat menyimpan template: " + err.message);
     } finally {
       setSaving(false);
     }
@@ -1542,25 +1522,11 @@ export function AdminTemplateEditorPage() {
 
   const handleSave = async () => {
     if (!name.trim()) {
-      setModalConfig({
-        isOpen: true,
-        title: "Nama Template Diperlukan",
-        category: "Validasi Form",
-        description: "Mohon isi nama template sebelum melanjutkan penyimpanan.",
-        singleButton: true,
-        variant: "warning",
-      });
+      notify.warning("Nama Template Diperlukan", "Mohon isi nama template sebelum melanjutkan penyimpanan.");
       return;
     }
     if (!isEdit && !backgroundFile) {
-      setModalConfig({
-        isOpen: true,
-        title: "Background Diperlukan",
-        category: "Validasi Form",
-        description: "File gambar background frame wajib diunggah untuk template baru.",
-        singleButton: true,
-        variant: "warning",
-      });
+      notify.warning("Background Diperlukan", "File gambar background frame wajib diunggah untuk template baru.");
       return;
     }
     if (layout === "custom" && slots.length === 0) {

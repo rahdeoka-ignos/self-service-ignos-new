@@ -17,7 +17,8 @@ export function createQueueUploader({ queueDir, archiveDir, createFolder, upload
       const names = meta.files ?? io.readdirSync(folder).filter((f) => /\.(jpg|jpeg|png|webp|pdf)$/i.test(f));
       meta.files = names;
       if (!meta.driveFolder) {
-        meta.driveFolder = await createFolder(meta.customerName);
+        // Branch recorded when the session was saved, so a late retry still lands in the right cabang.
+        meta.driveFolder = await createFolder(meta.customerName, { branch: meta.branch || null });
         save();
       }
       meta.uploadedFiles ??= [];

@@ -18,9 +18,16 @@ Setiap pengerjaan antarmuka pengguna (khususnya Admin Portal dan Kiosk) wajib me
 - Pembungkus root layout admin wajib dikunci presisi dengan `fixed inset-0 flex bg-[#fafafa] overflow-hidden`.
 - HANYA kontainer konten utama (`<main className="flex-1 overflow-y-auto min-w-0">`) yang diizinkan memiliki scrollbar vertikal. Browser window tidak boleh memiliki scrollbar terluar.
 
-### 5. Konsistensi Komponen Modal (Zero Native Browser `alert` / `confirm`)
+### 5. Konsistensi Notifikasi (Zero Native Browser `alert` / `confirm`)
 - DILARANG KERAS memanggil dialog primitif bawaan browser (`window.alert`, `window.confirm`, `window.prompt`).
-- Seluruh kebutuhan konfirmasi aksi, peringatan, atau notifikasi wajib menggunakan komponen modal bersama: `src/app/components/AdminConfirmModal.tsx`.
+- **Keputusan** (aksi yang perlu persetujuan: hapus, reset, kosongkan) wajib memakai modal bersama `src/app/components/AdminConfirmModal.tsx`.
+- **Hasil & pemberitahuan** (berhasil, gagal, validasi form, info) wajib memakai toast bersama `notify` dari `src/utils/notify.ts`:
+  - `notify.success(judul, detail?)` — aksi berhasil (simpan, hapus, kirim).
+  - `notify.error(judul, detailAtauError?)` — aksi gagal / server tidak terhubung. Boleh langsung mengoper objek `Error`.
+  - `notify.warning(judul, detail?)` — validasi form atau kondisi yang perlu perhatian.
+  - `notify.info(judul, detail?)` — informasi netral.
+  - `notify.loading(judul)` lalu `notify.success(..., { id })` — untuk proses yang berjalan lama.
+- Judul toast singkat (2–5 kata, Title Case), penjelasan ditaruh di detail. JANGAN membuat banner/teks status sukses-gagal sendiri di halaman; pesan validasi yang melekat pada field di dalam dialog boleh tetap inline.
 
 ### 6. Harmonisasi Kontrol & Aksi Horisontal
 - Tombol eksekusi yang bergantung pada pilihan parameter (misal: tombol hapus arsip dengan pilihan hari) wajib diletakkan sejajar secara horizontal menggunakan `flex justify-between items-end`. Hindari menumpuk parameter dan tombol besar secara vertikal.
