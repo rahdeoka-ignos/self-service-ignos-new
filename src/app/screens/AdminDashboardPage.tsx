@@ -309,19 +309,31 @@ export function AdminDashboardPage() {
       const filename = `rekap-shift-${data.date}.pdf`;
       formData.append("file", blob, filename);
 
-      await fetch(`${API}/api/save-print?label=rekap-shift&printProfile=struk`, {
+      const res = await fetch(`${API}/api/save-print?label=rekap-shift&printProfile=struk`, {
         method: "POST",
         body: formData,
       });
+      const result = await res.json().catch(() => ({}));
 
-      setModalConfig({
-        isOpen: true,
-        title: "Struk Berhasil Dikirim",
-        category: "Cetak Rekap Shift",
-        description: "File struk rekap harian telah berhasil dikirimkan ke antrian printer thermal kasir.",
-        singleButton: true,
-        variant: "success",
-      });
+      setModalConfig(
+        result.printStatus === "skipped"
+          ? {
+              isOpen: true,
+              title: "Rekap Shift Tersimpan",
+              category: "Cetak Rekap Shift",
+              description: `File ${filename} tersimpan, tetapi tidak dicetak karena belum ada profil printer "Struk Thermal". Tambahkan profilnya di Admin → Printer & Kertas jika ingin mencetak.`,
+              singleButton: true,
+              variant: "warning",
+            }
+          : {
+              isOpen: true,
+              title: "Struk Berhasil Dikirim",
+              category: "Cetak Rekap Shift",
+              description: "File struk rekap harian telah berhasil dikirimkan ke antrian printer thermal kasir.",
+              singleButton: true,
+              variant: "success",
+            },
+      );
     } catch (err: any) {
       setModalConfig({
         isOpen: true,

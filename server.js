@@ -172,7 +172,12 @@ async function autoPrintFile(filePath, productType, copiesOverride, { title } = 
   if (hub.role === "kiosk") return forwardPrintJob({ hub, filePath, productType, copies: copiesOverride });
 
   const profile = findPrinterProfile(productType);
-  if (!profile) throw new Error(`Profil printer untuk ${productType} belum dikonfigurasi. File tetap tersimpan.`);
+  if (!profile) {
+    // The receipt printer is optional: a studio without a thermal printer just keeps the PDF,
+    // and the customer must not see a print error for it. Photo products still fail loudly.
+    if (productType === "struk") return "skipped";
+    throw new Error(`Profil printer untuk ${productType} belum dikonfigurasi. File tetap tersimpan.`);
+  }
   const copies = copiesOverride ?? profile.copies ?? 1;
   if (!Number.isInteger(copies) || copies < 1 || copies > 100) throw new Error("Jumlah salinan harus 1–100.");
   if (!IS_WINDOWS) {

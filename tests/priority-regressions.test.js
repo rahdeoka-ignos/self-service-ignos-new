@@ -178,6 +178,33 @@ test("Google Drive batch rejects partial failures and missing local files", asyn
   await assert.rejects(ctx.uploadMultipleFiles(["ok.jpg", "bad.jpg", "missing.jpg"], "mock"), /2 file gagal/);
 });
 
+test("receipt without a thermal printer profile is kept silently; photo products still report the missing profile", async () => {
+  const source = fs.readFileSync(new URL("../server.js", import.meta.url), "utf8");
+  let handler;
+  const printed = [];
+  const ctx = {
+    IS_WINDOWS: true, PRINT_HUB_JSON: "unused", readHubConfig: () => ({ role: "off" }),
+    hasInset: () => false, applyPrintInset: async () => { throw new Error("unused"); }, removeQuietly() {},
+    app: { post(_route, _middleware, fn) { handler = fn; } }, upload: { single() {} },
+    findPrinterProfile: () => null, // studio has no printer profiles at all
+    print: async (file) => { printed.push(file); },
+  };
+  vm.runInNewContext(source.slice(source.indexOf("async function autoPrintFile"), source.indexOf("let latestDriveSession")), ctx);
+
+  const receipt = response();
+  await handler({ file: { path: "struk.pdf", filename: "struk.pdf" }, query: { printProfile: "struk" } }, receipt);
+  assert.equal(receipt.statusCode, 200);
+  assert.equal(receipt.body.success, true);
+  assert.equal(receipt.body.printStatus, "skipped");
+  assert.equal(receipt.body.saved, true);
+
+  const photo = response();
+  await handler({ file: { path: "4r.png", filename: "4r.png" }, query: { printProfile: "4r" } }, photo);
+  assert.equal(photo.statusCode, 502);
+  assert.match(photo.body.error, /Profil printer untuk 4r belum dikonfigurasi/);
+  assert.deepEqual(printed, []);
+});
+
 test("print API waits for driver submission and returns failure while retaining saved file", async () => {
   const source = fs.readFileSync(new URL("../server.js", import.meta.url), "utf8");
   let handler, fail = true;
