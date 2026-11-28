@@ -49,6 +49,27 @@ test('inset box converts mm to pixels on a 600 dpi 4R canvas', () => {
   assert.equal(hasInset({ bottom: 1.5 }), true);
 });
 
+test('a thin light line at the very edge of a template is not stretched into a white strip', async (t) => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'inset-edge-'));
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  // Dark grey frame whose top 2 px are a near-white anti-aliasing line (like grid-delapan's export).
+  const W = 600, H = 900;
+  const src = path.join(dir, 'frame.png');
+  const line = await sharp({ create: { width: W, height: 2, channels: 3, background: { r: 232, g: 232, b: 232 } } }).png().toBuffer();
+  await sharp({ create: { width: W, height: H, channels: 3, background: { r: 95, g: 95, b: 95 } } })
+    .composite([{ input: line, left: 0, top: 0 }]).png().toFile(src);
+
+  const inset = { top: 5.5, bottom: 5.5, left: 3.5, right: 3.5 };
+  const out = await applyPrintInset(src, inset);
+  const { data, info } = await sharp(out).raw().toBuffer({ resolveWithObject: true });
+  const grey = (x, y) => data[(y * info.width + x) * info.channels];
+  const box = insetBox(W, H, inset);
+  for (const y of [0, Math.floor(box.top / 2), box.top - 1, box.top, box.top + 1]) {
+    assert.ok(grey(W / 2, y) < 120, `row ${y} should be the dark frame, got ${grey(W / 2, y)}`);
+  }
+  assert.equal(grey(W / 2, H / 2), 95); // inside the design nothing changes
+});
+
 test('padded print keeps canvas size, shrinks design into the inset box, and fills the margin with the edge colour', async (t) => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'inset-'));
   t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
