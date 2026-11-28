@@ -16,6 +16,12 @@
         "EPIJ_Medi": "13",
         "MediaType": "13",
         "EPIJ_Qual": "305"
+      },
+      "printInset": {
+        "top": 5.5,
+        "bottom": 5.5,
+        "left": 3.5,
+        "right": 3.5
       }
     }
   ]
