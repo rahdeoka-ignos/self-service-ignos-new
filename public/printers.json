@@ -8,7 +8,15 @@
       "appliesTo": [
         "4r"
       ],
-      "copies": 1
+      "copies": 1,
+      "cupsOptions": {
+        "PageSize": "EPKG.NMgn",
+        "EPIJ_Bdls": "1",
+        "EPIJ_exmg": "2",
+        "EPIJ_Medi": "13",
+        "MediaType": "13",
+        "EPIJ_Qual": "305"
+      }
     }
   ]
 }
