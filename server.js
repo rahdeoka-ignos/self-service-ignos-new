@@ -16,6 +16,9 @@ import sharp from "sharp";
 import multer from "multer";
 import pdfToPrinter from "pdf-to-printer";
 const { print, getPrinters } = pdfToPrinter;
+import { cupsPrint, cupsListPrinters, cupsPrinterStatus, cupsCancelAllJobs, resolveQueueName } from "./backend/cupsPrinter.js";
+// Windows: pdf-to-printer (SumatraPDF) + PowerShell spooler. macOS/Linux: CUPS (lp/lpstat).
+const IS_WINDOWS = process.platform === "win32";
 
 // Disable sharp cache to release file locks on Windows
 sharp.cache(false);
@@ -160,6 +163,13 @@ async function autoPrintFile(filePath, productType, copiesOverride) {
   if (!profile) throw new Error(`Profil printer untuk ${productType} belum dikonfigurasi. File tetap tersimpan.`);
   const copies = copiesOverride ?? profile.copies ?? 1;
   if (!Number.isInteger(copies) || copies < 1 || copies > 100) throw new Error("Jumlah salinan harus 1–100.");
+  if (!IS_WINDOWS) {
+    await cupsPrint(filePath, {
+      printer: profile.printerName, copies, scale: "fit",
+      paperSize: profile.paperSize, cupsOptions: profile.cupsOptions,
+    });
+    return "submitted";
+  }
   await print(filePath, {
     printer: profile.printerName, copies, printDialog: false, silent: true, scale: "fit",
     ...(profile.paperSize ? { paperSize: profile.paperSize } : {}),
@@ -1627,7 +1637,7 @@ app.post(
 
 app.get("/api/system-printers", async (req, res) => {
   try {
-    const printers = await getPrinters();
+    const printers = IS_WINDOWS ? await getPrinters() : await cupsListPrinters();
     res.json(printers);
   } catch (err) {
     res.status(500).json({ error: "Cannot list system printers", detail: err.message });
@@ -1712,11 +1722,25 @@ async function getDetailedPrinterStatus() {
     return { ...printerStatusCache, alert: simulatedPrinterAlert || printerStatusCache.alert };
   }
 
-  const { success, printers = [], jobs = [], error } = await fetchWindowsPrinterStatus();
   const printersData = readPrinters();
   const profiles = printersData.profiles || [];
+  const profilesFor = (printer) => profiles
+    .filter((prof) => IS_WINDOWS
+      ? prof.printerName.toLowerCase() === (printer.name || "").toLowerCase()
+      : resolveQueueName(prof.printerName, [printer]) === printer.name)
+    .map((prof) => ({ id: prof.id, label: prof.label, appliesTo: prof.appliesTo }));
 
-  const mappedPrinters = printers.map((p) => {
+  let error;
+  let mappedPrinters;
+  if (!IS_WINDOWS) {
+    const cups = await cupsPrinterStatus();
+    error = cups.error;
+    mappedPrinters = cups.printers.map((p) => ({ ...p, profiles: profilesFor(p) }));
+  } else {
+  const { printers = [], jobs = [], error: winError } = await fetchWindowsPrinterStatus();
+  error = winError;
+
+  mappedPrinters = printers.map((p) => {
     const printerState = p.PrinterState || 0;
     const detectedError = p.DetectedErrorState || 0;
 
@@ -1776,10 +1800,6 @@ async function getDetailedPrinterStatus() {
       statusText = "Tray Tertutup / Belum Ditarik";
     }
 
-    const matchingProfiles = profiles.filter(
-      (prof) => prof.printerName.toLowerCase() === (p.Name || "").toLowerCase()
-    );
-
     return {
       name: p.Name,
       status: statusText,
@@ -1792,13 +1812,10 @@ async function getDetailedPrinterStatus() {
       isPrinting,
       jobsCount: printerJobs.length,
       jobs: printerJobs,
-      profiles: matchingProfiles.map((prof) => ({
-        id: prof.id,
-        label: prof.label,
-        appliesTo: prof.appliesTo,
-      })),
+      profiles: profilesFor({ name: p.Name }),
     };
   });
+  }
 
   // Calculate alert for customer kiosk and admin
   let activeAlert = null;
@@ -1918,7 +1935,17 @@ app.post("/api/printer-status/test-alert", (req, res) => {
   res.json({ success: true, alert: simulatedPrinterAlert });
 });
 
-app.post("/api/printers/clear-jobs", (req, res) => {
+app.post("/api/printers/clear-jobs", async (req, res) => {
+  if (!IS_WINDOWS) {
+    try {
+      await cupsCancelAllJobs();
+      printerStatusCacheTime = 0;
+      return res.json({ success: true, message: "Antrean cetak berhasil dibersihkan" });
+    } catch (err) {
+      printerStatusCacheTime = 0;
+      return res.status(500).json({ success: false, error: err.message });
+    }
+  }
   const psScript = `Get-CimInstance Win32_PrintJob | Remove-CimInstance`;
   const b64 = Buffer.from(psScript, "utf16le").toString("base64");
   exec(`powershell -NoProfile -EncodedCommand ${b64}`, { windowsHide: true }, (err) => {

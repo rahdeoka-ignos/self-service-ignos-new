@@ -181,7 +181,8 @@ test("Google Drive batch rejects partial failures and missing local files", asyn
 test("print API waits for driver submission and returns failure while retaining saved file", async () => {
   const source = fs.readFileSync(new URL("../server.js", import.meta.url), "utf8");
   let handler, fail = true;
-  const ctx = { app: { post(_route, _middleware, fn) { handler = fn; } }, upload: { single() {} }, findPrinterProfile: () => ({ printerName: "Mock", copies: 1 }), print: async () => { if (fail) throw new Error("mock offline"); } };
+  const cupsCalls = [];
+  const ctx = { IS_WINDOWS: true, app: { post(_route, _middleware, fn) { handler = fn; } }, upload: { single() {} }, findPrinterProfile: () => ({ printerName: "Mock", copies: 1 }), print: async () => { if (fail) throw new Error("mock offline"); }, cupsPrint: async (file, opts) => { cupsCalls.push([file, opts.printer, opts.copies]); if (fail) throw new Error("mock offline"); } };
   vm.runInNewContext(source.slice(source.indexOf("async function autoPrintFile"), source.indexOf("let latestDriveSession")), ctx);
   const request = { file: { path: "fixture.png", filename: "fixture.png" }, query: { printProfile: "4r" } };
   const failure = response();
@@ -193,6 +194,18 @@ test("print API waits for driver submission and returns failure while retaining 
   const success = response();
   await handler(request, success);
   assert.equal(success.body.printStatus, "submitted");
+  assert.equal(cupsCalls.length, 0);
+  // macOS: same contract, but the job goes through CUPS
+  ctx.IS_WINDOWS = false;
+  const mac = response();
+  await handler(request, mac);
+  assert.equal(mac.body.printStatus, "submitted");
+  assert.deepEqual(cupsCalls, [["fixture.png", "Mock", 1]]);
+  fail = true;
+  const macFailure = response();
+  await handler(request, macFailure);
+  assert.equal(macFailure.statusCode, 502);
+  assert.equal(macFailure.body.saved, true);
   const missing = response();
   await handler({ query: {} }, missing);
   assert.equal(missing.statusCode, 400);
