@@ -182,7 +182,7 @@ test("print API waits for driver submission and returns failure while retaining 
   const source = fs.readFileSync(new URL("../server.js", import.meta.url), "utf8");
   let handler, fail = true;
   const cupsCalls = [];
-  const ctx = { IS_WINDOWS: true, app: { post(_route, _middleware, fn) { handler = fn; } }, upload: { single() {} }, findPrinterProfile: () => ({ printerName: "Mock", copies: 1 }), print: async () => { if (fail) throw new Error("mock offline"); }, cupsPrint: async (file, opts) => { cupsCalls.push([file, opts.printer, opts.copies]); if (fail) throw new Error("mock offline"); } };
+  const ctx = { IS_WINDOWS: true, hasInset: () => false, applyPrintInset: async () => { throw new Error("unused"); }, removeQuietly() {}, app: { post(_route, _middleware, fn) { handler = fn; } }, upload: { single() {} }, findPrinterProfile: () => ({ printerName: "Mock", copies: 1 }), print: async () => { if (fail) throw new Error("mock offline"); }, cupsPrint: async (file, opts) => { cupsCalls.push([file, opts.printer, opts.copies]); if (fail) throw new Error("mock offline"); } };
   vm.runInNewContext(source.slice(source.indexOf("async function autoPrintFile"), source.indexOf("let latestDriveSession")), ctx);
   const request = { file: { path: "fixture.png", filename: "fixture.png" }, query: { printProfile: "4r" } };
   const failure = response();

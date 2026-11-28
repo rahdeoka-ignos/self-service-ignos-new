@@ -17,6 +17,7 @@ import multer from "multer";
 import pdfToPrinter from "pdf-to-printer";
 const { print, getPrinters } = pdfToPrinter;
 import { cupsPrint, cupsListPrinters, cupsPrinterStatus, cupsCancelAllJobs, resolveQueueName } from "./backend/cupsPrinter.js";
+import { applyPrintInset, hasInset, removeQuietly } from "./backend/printInset.js";
 // Windows: pdf-to-printer (SumatraPDF) + PowerShell spooler. macOS/Linux: CUPS (lp/lpstat).
 const IS_WINDOWS = process.platform === "win32";
 
@@ -164,10 +165,19 @@ async function autoPrintFile(filePath, productType, copiesOverride) {
   const copies = copiesOverride ?? profile.copies ?? 1;
   if (!Number.isInteger(copies) || copies < 1 || copies > 100) throw new Error("Jumlah salinan harus 1–100.");
   if (!IS_WINDOWS) {
-    await cupsPrint(filePath, {
-      printer: profile.printerName, copies, scale: "fit",
-      paperSize: profile.paperSize, cupsOptions: profile.cupsOptions,
-    });
+    // Compensate the borderless overspray measured for this printer (see backend/printInset.js).
+    const padded = hasInset(profile.printInset) && /\.(png|jpe?g|webp)$/i.test(filePath)
+      ? await applyPrintInset(filePath, profile.printInset, profile.printInset.paperShortMm)
+      : null;
+    try {
+      await cupsPrint(padded || filePath, {
+        printer: profile.printerName, copies, scale: "fit",
+        paperSize: profile.paperSize, cupsOptions: profile.cupsOptions,
+      });
+    } finally {
+      // lp has copied the file into the CUPS spool once it returns.
+      if (padded) removeQuietly(padded);
+    }
     return "submitted";
   }
   await print(filePath, {
